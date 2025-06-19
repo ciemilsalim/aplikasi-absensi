@@ -19,6 +19,7 @@
                                     <th scope="col" class="px-6 py-3">NIS</th>
                                     <th scope="col" class="px-6 py-3">Tanggal</th>
                                     <th scope="col" class="px-6 py-3">Jam Masuk</th>
+                                    <th scope="col" class="px-6 py-3">Jam Pulang</th> {{-- KOLOM BARU --}}
                                 </tr>
                             </thead>
                             <tbody>
@@ -34,15 +35,27 @@
                                             {{ $attendance->attendance_time->translatedFormat('l, d F Y') }}
                                         </td>
                                         <td class="px-6 py-4">
-                                            <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+                                            <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
                                                 {{ $attendance->attendance_time->format('H:i:s') }}
                                             </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            {{-- Tampilkan jam pulang jika ada --}}
+                                            @if ($attendance->checkout_time)
+                                                <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+                                                    {{ $attendance->checkout_time->format('H:i:s') }}
+                                                </span>
+                                            @else
+                                                <span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+                                                    -
+                                                </span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr class="bg-white border-b">
-                                        <td colspan="4" class="px-6 py-4 text-center">
-                                            Belum ada data kehadiran hari ini.
+                                        <td colspan="5" class="px-6 py-4 text-center">
+                                            Belum ada data kehadiran.
                                         </td>
                                     </tr>
                                 @endforelse

@@ -14,6 +14,7 @@
     <!-- Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script>
         // Konfigurasi custom untuk Tailwind CSS agar sesuai tema
@@ -44,18 +45,14 @@
 </head>
 <body class="antialiased">
     <div class="flex flex-col min-h-screen">
-        {{-- Navigasi utama dari Breeze akan dimuat di sini --}}
         <header>
             @include('layouts.navigation')
         </header>
 
-        {{-- Konten utama halaman --}}
         <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {{-- Konten dari halaman scanner/students akan dimuat di sini menggunakan @yield --}}
             @yield('content')
         </main>
 
-        {{-- Footer sederhana untuk melengkapi tampilan --}}
         <footer class="w-full bg-white/70 backdrop-blur-sm shadow-inner mt-auto">
             <div class="container mx-auto px-6 py-4 text-center text-slate-500 text-sm">
                 &copy; {{ date('Y') }} Aplikasi Absensi Siswa.

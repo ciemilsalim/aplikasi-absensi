@@ -5,29 +5,22 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Student;
+use App\Imports\StudentsImport; // Pastikan kelas ini sudah diimpor
+use Maatwebsite\Excel\Facades\Excel; // Pastikan facade Excel sudah diimpor
 
 class StudentController extends Controller
 {
-    /**
-     * Menampilkan daftar siswa (halaman utama Data Siswa).
-     */
     public function index()
     {
         $students = Student::orderBy('name')->paginate(10);
         return view('admin.students.index', compact('students'));
     }
 
-    /**
-     * Menampilkan form untuk membuat siswa baru.
-     */
     public function create()
     {
         return view('admin.students.create');
     }
 
-    /**
-     * Menyimpan data siswa baru ke database.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -38,17 +31,11 @@ class StudentController extends Controller
         return redirect()->route('admin.students.index')->with('success', 'Siswa berhasil ditambahkan.');
     }
 
-    /**
-     * Menampilkan form untuk mengedit data siswa.
-     */
     public function edit(Student $student)
     {
         return view('admin.students.edit', compact('student'));
     }
 
-    /**
-     * Memperbarui data siswa di database.
-     */
     public function update(Request $request, Student $student)
     {
         $request->validate([
@@ -59,21 +46,47 @@ class StudentController extends Controller
         return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil diperbarui.');
     }
 
-    /**
-     * Menghapus data siswa dari database.
-     */
     public function destroy(Student $student)
     {
         $student->delete();
         return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil dihapus.');
     }
 
-    /**
-     * Menampilkan halaman untuk mencetak QR Code.
-     */
     public function qr()
     {
         $students = Student::orderBy('name')->get();
         return view('admin.students.qr', compact('students'));
+    }
+
+    /**
+     * Menampilkan form untuk impor Excel.
+     * METODE INI MEMPERBAIKI ERROR ANDA.
+     */
+    public function showImportForm()
+    {
+        return view('admin.students.import');
+    }
+
+    /**
+     * Menangani logika impor dari file Excel.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            Excel::import(new StudentsImport, $request->file('file'));
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+             $failures = $e->failures();
+             $errorMessages = [];
+             foreach ($failures as $failure) {
+                 $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+             }
+             return redirect()->back()->with('import_errors', $errorMessages);
+        }
+
+        return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil diimpor!');
     }
 }
