@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Routing\Controller; // Ditambahkan untuk memperbaiki error
+use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\Attendance;
@@ -20,7 +20,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Menampilkan daftar siswa dan QR Code mereka.
+     * Menampilkan daftar siswa dan QR Code mereka (untuk halaman publik).
      */
     public function showStudents()
     {
@@ -33,23 +33,17 @@ class AttendanceController extends Controller
      */
     public function storeAttendance(Request $request)
     {
-        // Validasi request, pastikan student_unique_id ada
         $request->validate([
             'student_unique_id' => 'required|string|exists:students,unique_id',
         ]);
 
         try {
-            // Cari siswa berdasarkan unique_id
             $student = Student::where('unique_id', $request->student_unique_id)->first();
 
             if (!$student) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Siswa tidak ditemukan.'
-                ], 404);
+                return response()->json(['status' => 'error', 'message' => 'Siswa tidak ditemukan.'], 404);
             }
 
-            // Cek apakah siswa sudah absen hari ini
             $today = Carbon::today();
             $alreadyAttended = Attendance::where('student_id', $student->id)
                 ->whereDate('attendance_time', $today)
@@ -60,10 +54,10 @@ class AttendanceController extends Controller
                     'status' => 'warning',
                     'message' => 'Anda sudah tercatat hadir hari ini.',
                     'student_name' => $student->name,
-                ], 409); // 409 Conflict
+                    'student_nis' => $student->nis, // Ditambahkan untuk konsistensi
+                ], 409);
             }
 
-            // Jika belum, simpan data absensi baru
             $attendance = new Attendance();
             $attendance->student_id = $student->id;
             $attendance->attendance_time = now();
@@ -73,11 +67,11 @@ class AttendanceController extends Controller
                 'status' => 'success',
                 'message' => 'Kehadiran berhasil dicatat!',
                 'student_name' => $student->name,
+                'student_nis' => $student->nis, // Ditambahkan untuk ditampilkan di pop-up
                 'time' => $attendance->attendance_time->format('H:i:s')
             ]);
 
         } catch (\Exception $e) {
-            // Tangani error jika terjadi
             return response()->json([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan pada server.',

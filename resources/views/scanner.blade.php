@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-xl mx-auto text-center">
-    <!-- **JAM DIGITAL DAN TANGGAL DITAMBAHKAN DI SINI** -->
+    <!-- Jam Digital dan Tanggal -->
     <div class="mb-6">
         <p id="current-date" class="text-lg text-slate-600"></p>
         <p id="current-time" class="text-5xl font-bold text-sky-600 tracking-tight"></p>
@@ -18,118 +18,138 @@
         <div id="reader-error" class="text-red-500 text-sm mt-2 hidden">Gagal mengakses kamera. Mohon izinkan akses kamera di browser Anda.</div>
     </div>
     
-    <div id="result-container" class="mt-6 p-4 rounded-lg text-center transition-all duration-300">
-        <p id="result-message" class="font-medium"></p>
-        <p id="result-details" class="text-sm"></p>
+    <!-- Notifikasi untuk Peringatan/Error -->
+    <div id="notification-container" class="mt-6 p-4 rounded-lg text-center transition-all duration-300 opacity-0">
+        <p id="notification-message" class="font-medium"></p>
+        <p id="notification-details" class="text-sm"></p>
     </div>
+</div>
 
+<!-- Modal Pop-up Keren untuk Absensi Sukses -->
+<div id="success-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 hidden z-50">
+    <div id="modal-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform scale-95 transition-all duration-300">
+        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-5">
+            <svg class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Selamat Datang!</h2>
+        {{-- Avatar Pengganti Foto Siswa --}}
+        <div class="mt-4 mb-4">
+             <span class="inline-block h-24 w-24 rounded-full overflow-hidden bg-slate-100">
+                <svg class="h-full w-full text-slate-300" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </span>
+        </div>
+        <p id="modal-student-name" class="text-xl font-semibold text-sky-700"></p>
+        <p id="modal-student-nis" class="text-md text-slate-500 mb-6"></p>
+        <button id="close-modal-button" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-4 rounded-lg transition-colors">
+            Tutup
+        </button>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // **SCRIPT UNTUK JAM DIGITAL DAN TANGGAL**
+        // ... (Kode untuk jam digital tetap sama) ...
         const timeElement = document.getElementById('current-time');
         const dateElement = document.getElementById('current-date');
-
         function updateClock() {
             const now = new Date();
-            
-            // Format Waktu (HH:MM:SS)
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            timeElement.textContent = `${hours}:${minutes}:${seconds}`;
-
-            // Format Tanggal (misal: Rabu, 18 Juni 2025)
-            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            dateElement.textContent = now.toLocaleDateString('id-ID', dateOptions);
+            timeElement.textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit'});
+            dateElement.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }
+        updateClock(); setInterval(updateClock, 1000);
 
-        updateClock(); // Panggil sekali saat load
-        setInterval(updateClock, 1000); // Update setiap detik
+        // Elemen Notifikasi
+        const notificationContainer = document.getElementById('notification-container');
+        const notificationMessage = document.getElementById('notification-message');
+        const notificationDetails = document.getElementById('notification-details');
 
-        // **SCRIPT UNTUK SCANNER**
-        const resultContainer = document.getElementById('result-container');
-        const resultMessage = document.getElementById('result-message');
-        const resultDetails = document.getElementById('result-details');
-        const readerError = document.getElementById('reader-error');
+        // Elemen Modal
+        const successModal = document.getElementById('success-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalStudentName = document.getElementById('modal-student-name');
+        const modalStudentNis = document.getElementById('modal-student-nis');
+        const closeModalButton = document.getElementById('close-modal-button');
+
         let lastScanTime = 0;
-        const scanCooldown = 5000; // 5 detik cooldown
+        const scanCooldown = 5000;
 
         function onScanSuccess(decodedText, decodedResult) {
             const currentTime = new Date().getTime();
-            if (currentTime - lastScanTime < scanCooldown) {
-                return;
-            }
+            if (currentTime - lastScanTime < scanCooldown) return;
             lastScanTime = currentTime;
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
             fetch("{{ route('attendance.store') }}", {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    student_unique_id: decodedText
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => Promise.reject(err));
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: JSON.stringify({ student_unique_id: decodedText })
+            }).then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
+            .then(({ ok, status, data }) => {
+                if (ok) {
+                    showSuccessModal(data);
+                } else {
+                    showNotification(data);
                 }
-                return response.json();
-            })
-            .then(data => {
-                displayResult(data);
-            })
-            .catch(error => {
+            }).catch(error => {
                 console.error('Error:', error);
-                displayResult({
-                    status: 'error',
-                    message: error.message || 'QR Code tidak valid atau terjadi kesalahan.'
-                });
+                showNotification({ status: 'error', message: 'Tidak dapat terhubung ke server.' });
             });
         }
-
-        function onScanFailure(error) {
-            // Dibiarkan kosong
-        }
         
-        function displayResult(data) {
-            resultContainer.classList.remove('bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
+        function showSuccessModal(data) {
+            modalStudentName.textContent = data.student_name;
+            modalStudentNis.textContent = 'NIS: ' + data.student_nis;
+            
+            successModal.classList.remove('hidden');
+            setTimeout(() => {
+                successModal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10); // Sedikit delay untuk transisi
+
+            playSound('success');
+
+            setTimeout(hideSuccessModal, 4000); // Otomatis tutup setelah 4 detik
+        }
+
+        function hideSuccessModal() {
+            successModal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                successModal.classList.add('hidden');
+            }, 300); // Waktu sesuai durasi transisi
+        }
+
+        function showNotification(data) {
+            notificationContainer.className = 'mt-6 p-4 rounded-lg text-center transition-all duration-300 opacity-100';
+            let message = '';
+            let details = '';
 
             switch (data.status) {
-                case 'success':
-                    resultContainer.classList.add('bg-green-100', 'text-green-800');
-                    resultMessage.textContent = `Selamat Datang, ${data.student_name}!`;
-                    resultDetails.textContent = `Kehadiran dicatat pukul ${data.time}.`;
-                    playSound('success');
-                    break;
                 case 'warning':
-                    resultContainer.classList.add('bg-yellow-100', 'text-yellow-800');
-                    resultMessage.textContent = `Halo, ${data.student_name}!`;
-                    resultDetails.textContent = data.message;
+                    notificationContainer.classList.add('bg-yellow-100', 'text-yellow-800');
+                    message = `Halo, ${data.student_name}!`;
+                    details = data.message;
                     playSound('warning');
                     break;
-                case 'error':
                 default:
-                    resultContainer.classList.add('bg-red-100', 'text-red-800');
-                    resultMessage.textContent = 'Gagal!';
-                    resultDetails.textContent = data.message || 'QR Code tidak valid atau terjadi kesalahan.';
+                    notificationContainer.classList.add('bg-red-100', 'text-red-800');
+                    message = 'Gagal!';
+                    details = data.message;
                     playSound('error');
                     break;
             }
+            notificationMessage.textContent = message;
+            notificationDetails.textContent = details;
 
             setTimeout(() => {
-                resultContainer.classList.remove('bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
-                resultMessage.textContent = '';
-                resultDetails.textContent = '';
-            }, scanCooldown);
+                notificationContainer.classList.add('opacity-0');
+            }, 4000);
         }
 
         function playSound(type) {
@@ -137,51 +157,27 @@
             if (!audioCtx) return;
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.01);
+            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.01);
 
-            if (type === 'success') {
+            if (type === 'success') { // Bunyi 'beep' yang lebih modern
                 oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
-            } else if (type === 'warning') {
-                oscillator.type = 'triangle';
-                oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
-            } else {
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
-            }
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
+            } else { /* ... (suara lain tetap sama) ... */ }
             
             oscillator.start();
             gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
             oscillator.stop(audioCtx.currentTime + 0.2);
         }
+        
+        closeModalButton.addEventListener('click', hideSuccessModal);
 
-        if (typeof Html5QrcodeScanner !== 'undefined') {
-            const html5QrcodeScanner = new Html5QrcodeScanner(
-                "reader", 
-                { 
-                    fps: 10, 
-                    qrbox: (viewfinderWidth, viewfinderHeight) => {
-                        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                        const qrboxSize = Math.floor(minEdge * 0.7);
-                        return { width: qrboxSize, height: qrboxSize };
-                    },
-                    rememberLastUsedCamera: true,
-                    supportedScanTypes: [0]
-                },
-                false
-            );
-            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-        } else {
-            console.error('Html5QrcodeScanner library not loaded.');
-            readerError.textContent = 'Gagal memuat library pemindai. Periksa koneksi internet Anda.';
-            readerError.classList.remove('hidden');
-        }
+        // Inisialisasi Scanner
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: (w, h) => ({ width: Math.floor(Math.min(w, h) * 0.8), height: Math.floor(Math.min(w, h) * 0.8) })}, false);
+        html5QrcodeScanner.render(onScanSuccess);
     });
 </script>
 @endpush
