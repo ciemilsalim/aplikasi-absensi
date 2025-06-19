@@ -16,16 +16,22 @@
                         {{ request()->routeIs('scanner') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
                         Pemindai
                     </a>
-                    <a href="{{ route('students.list') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out
-                        {{ request()->routeIs('students.list') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
-                        Daftar Siswa
-                    </a>
                     
                     @auth
                         @if (auth()->user()->role === 'admin')
                             <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out
-                                {{ request()->routeIs('admin.dashboard*') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
-                                Dasbor Admin
+                                {{ request()->routeIs('admin.dashboard') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
+                                Dasbor
+                            </a>
+                             {{-- Kondisi untuk Data Siswa diperbaiki di sini --}}
+                             <a href="{{ route('admin.students.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out
+                                {{ (request()->routeIs('admin.students.*') && !request()->routeIs('admin.students.qr')) ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
+                                Data Siswa
+                            </a>
+                            {{-- Menu Cetak QR --}}
+                             <a href="{{ route('admin.students.qr') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out
+                                {{ request()->routeIs('admin.students.qr') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
+                                Cetak QR
                             </a>
                         @endif
                     @endauth
@@ -35,7 +41,7 @@
             <!-- Settings Dropdown atau Link Login/Register -->
             <div class="hidden sm:flex sm:items-center sm:ml-6">
                 @auth
-                    <!-- Dropdown Pengguna (Telah Diperbaiki) -->
+                    <!-- Dropdown Pengguna -->
                     <div x-data="{ dropdownOpen: false }" class="relative">
                         <button @click="dropdownOpen = !dropdownOpen" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-600 bg-white hover:text-slate-800 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
@@ -50,15 +56,11 @@
                              class="absolute right-0 mt-2 w-48 rounded-md shadow-lg origin-top-right z-50"
                              style="display: none;">
                             <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white">
-                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-sky-50 hover:text-sky-700">
-                                    Profil
-                                </a>
-
+                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-sky-50 hover:text-sky-700">Profil</a>
                                 <!-- Form Logout -->
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <a href="{{ route('logout') }}" 
-                                       class="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-sky-50 hover:text-sky-700"
+                                    <a href="{{ route('logout') }}" class="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-sky-50 hover:text-sky-700"
                                        onclick="event.preventDefault(); this.closest('form').submit();">
                                         Log Out
                                     </a>
@@ -74,22 +76,17 @@
                     @endif
                 @endauth
             </div>
-
             <!-- Hamburger -->
             <div class="-mr-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:bg-slate-100 focus:text-slate-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width-2" d="M4 6h16M4 12h16M4 18h16" /><path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /><path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
         </div>
     </div>
-
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        {{-- Konten responsive menu tetap sama --}}
     </div>
 </nav>
 
-{{-- SCRIPT ALPINE.JS DITAMBAHKAN DI SINI UNTUK MEMASTIKAN DROPDOWN BERFUNGSI --}}
-{{-- Sebaiknya script ini ada di layout utama, tetapi ditambahkan di sini agar komponen ini mandiri --}}
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
