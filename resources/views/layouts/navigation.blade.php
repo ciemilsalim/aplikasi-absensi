@@ -30,6 +30,7 @@
                                 {{ request()->routeIs('admin.students.qr') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
                                 Cetak QR
                             </a>
+                            <a href="{{ route('admin.settings.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.settings.index') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800' }}">Pengaturan</a>
                         @endif
                     @endauth
                 </div>

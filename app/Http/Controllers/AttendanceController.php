@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\Attendance;
 use Carbon\Carbon;
+use App\Models\Setting; // Impor model Setting
 
 class AttendanceController extends Controller
 {
@@ -29,20 +30,23 @@ class AttendanceController extends Controller
                 ->first();
 
             // KASUS 1: Absen Masuk
-            if (!$attendance) {
-                // Tentukan batas waktu terlambat (contoh: 07:30 WITA)
-                $lateTime = $today->copy()->setTime(7, 30, 0);
+           if (!$attendance) {
+                // Ambil batas waktu dari database, dengan nilai default jika tidak ada
+                $batasWaktuMasuk = Setting::where('key', 'jam_masuk')->first()->value ?? '07:30';
+                list($hour, $minute) = explode(':', $batasWaktuMasuk);
+                $lateTime = $today->copy()->setTime($hour, $minute, 0);
+                
                 $status = ($now->gt($lateTime)) ? 'terlambat' : 'tepat_waktu';
 
                 $newAttendance = Attendance::create([
                     'student_id'      => $student->id,
                     'attendance_time' => $now,
-                    'status'          => $status, // Simpan status
+                    'status'          => $status,
                 ]);
 
                 return response()->json([
                     'status'            => 'clock_in',
-                    'attendance_status' => $status, // Kirim status ke pop-up
+                    'attendance_status' => $status,
                     'message'           => 'Kehadiran berhasil dicatat!',
                     'student_name'      => $student->name,
                     'student_nis'       => $student->nis,

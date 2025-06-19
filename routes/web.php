@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\Admin\SettingController; // Controller baru
 
 // Rute Publik
 Route::get('/', [AttendanceController::class, 'showScanner'])->name('scanner');
@@ -20,18 +21,20 @@ Route::get('/dashboard', function () {
     return redirect()->route('scanner');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Grup Rute untuk Admin
+// GRUP RUTE ADMIN
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Rute Cetak QR
-    Route::get('/students/qr', [StudentController::class, 'qr'])->name('students.qr');
+    // Rute Pengaturan BARU
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
-    // Rute Impor Excel
     Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');
     Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
-
+    Route::get('/students/qr', [StudentController::class, 'qr'])->name('students.qr');
     Route::resource('students', StudentController::class)->except(['show']);
+
 });
 
 // Rute Profil Pengguna
