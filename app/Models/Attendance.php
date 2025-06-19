@@ -17,12 +17,12 @@ class Attendance extends Model
     protected $fillable = [
         'student_id',
         'attendance_time',
-        'checkout_time', // Ditambahkan untuk mass assignment
+        'checkout_time',
+        'status', // Ditambahkan untuk status keterlambatan
     ];
 
     /**
      * The attributes that should be cast.
-     * INI ADALAH PERBAIKAN UNTUK ERROR ANDA.
      *
      * @var array<string, string>
      */
