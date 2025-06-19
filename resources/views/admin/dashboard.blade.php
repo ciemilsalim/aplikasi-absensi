@@ -10,15 +10,19 @@
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
-                    <!-- Form Filter Tanggal -->
+                    <!-- Form Filter & Pencarian -->
                     <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
                         <div>
                             <h3 class="text-lg font-medium">Rekap Kehadiran</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Menampilkan data untuk tanggal: {{ $selectedDate->translatedFormat('l, d F Y') }}</p>
                         </div>
                         <form method="GET" action="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
+                            {{-- Input Pencarian Nama --}}
+                            <x-text-input type="text" name="search" placeholder="Cari nama siswa..." value="{{ request('search') }}" class="w-48"/>
+
+                            {{-- Input Filter Tanggal --}}
                             <x-text-input type="date" name="tanggal" id="tanggal" value="{{ $selectedDate->format('Y-m-d') }}" />
-                            <x-primary-button type="submit">Filter</x-primary-button>
+                            <x-primary-button type="submit">Cari</x-primary-button>
                         </form>
                     </div>
 
@@ -71,7 +75,7 @@
                                 @empty
                                     <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700">
                                         <td colspan="5" class="px-6 py-4 text-center">
-                                            Tidak ada data kehadiran untuk tanggal yang dipilih.
+                                            Tidak ada data kehadiran untuk tanggal dan pencarian yang dipilih.
                                         </td>
                                     </tr>
                                 @endforelse
