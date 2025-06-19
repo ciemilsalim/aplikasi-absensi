@@ -24,8 +24,12 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Rute baru untuk halaman cetak QR
+    // Rute Cetak QR
     Route::get('/students/qr', [StudentController::class, 'qr'])->name('students.qr');
+
+    // Rute Impor Excel
+    Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');
+    Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
 
     Route::resource('students', StudentController::class)->except(['show']);
 });

@@ -13,8 +13,8 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         <!-- Scripts -->
-        {{-- Memuat Tailwind CSS langsung dari CDN untuk memastikan tampilan selalu rapi --}}
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
         <script>
             // Konfigurasi custom untuk Tailwind CSS agar sesuai tema
@@ -52,7 +52,6 @@
 
             <!-- Page Content -->
             <main>
-                {{-- 'slot' adalah tempat di mana konten dari halaman dasbor akan ditampilkan --}}
                 {{ $slot }}
             </main>
         </div>
