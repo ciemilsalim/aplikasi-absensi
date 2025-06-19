@@ -1,70 +1,77 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Dasbor Kehadiran') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-medium mb-6">Rekap Kehadiran Siswa Terbaru</h3>
+            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    
+                    <!-- Form Filter Tanggal -->
+                    <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-medium">Rekap Kehadiran</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Menampilkan data untuk tanggal: {{ $selectedDate->translatedFormat('l, d F Y') }}</p>
+                        </div>
+                        <form method="GET" action="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
+                            <x-text-input type="date" name="tanggal" id="tanggal" value="{{ $selectedDate->format('Y-m-d') }}" />
+                            <x-primary-button type="submit">Filter</x-primary-button>
+                        </form>
+                    </div>
 
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" class="px-6 py-3">Nama Siswa</th>
                                     <th scope="col" class="px-6 py-3">NIS</th>
-                                    <th scope="col" class="px-6 py-3">Tanggal</th>
                                     <th scope="col" class="px-6 py-3">Jam Masuk</th>
                                     <th scope="col" class="px-6 py-3">Jam Pulang</th>
-                                    <th scope="col" class="px-6 py-3">Status</th> <!-- KOLOM BARU -->
+                                    <th scope="col" class="px-6 py-3">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($attendances as $attendance)
-                                    <tr class="bg-white border-b hover:bg-gray-50">
-                                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                                    <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600">
+                                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                                             {{ $attendance->student->name ?? 'Siswa Dihapus' }}
                                         </th>
                                         <td class="px-6 py-4">
                                             {{ $attendance->student->nis ?? '-' }}
                                         </td>
                                         <td class="px-6 py-4">
-                                            {{ $attendance->attendance_time->translatedFormat('l, d F Y') }}
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+                                            <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
                                                 {{ $attendance->attendance_time->format('H:i:s') }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4">
                                             @if ($attendance->checkout_time)
-                                                <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+                                                <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
                                                     {{ $attendance->checkout_time->format('H:i:s') }}
                                                 </span>
                                             @else
-                                                <span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+                                                <span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-gray-300">
                                                     -
                                                 </span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4">
                                             @if ($attendance->status === 'tepat_waktu')
-                                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Tepat Waktu</span>
+                                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Tepat Waktu</span>
                                             @elseif ($attendance->status === 'terlambat')
-                                                <span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Terlambat</span>
+                                                <span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">Terlambat</span>
                                             @else
-                                                <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">-</span>
+                                                <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-slate-700 dark:text-gray-300">-</span>
                                             @endif
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr class="bg-white border-b">
-                                        <td colspan="6" class="px-6 py-4 text-center">
-                                            Belum ada data kehadiran.
+                                    <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700">
+                                        <td colspan="5" class="px-6 py-4 text-center">
+                                            Tidak ada data kehadiran untuk tanggal yang dipilih.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -72,7 +79,8 @@
                         </table>
                     </div>
                     <div class="mt-4">
-                        {{ $attendances->links() }}
+                        {{-- Menambahkan parameter filter ke link paginasi agar filter tidak hilang saat berpindah halaman --}}
+                        {{ $attendances->appends(request()->query())->links() }}
                     </div>
                 </div>
             </div>
