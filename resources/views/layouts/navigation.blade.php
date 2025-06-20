@@ -12,29 +12,39 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-1 sm:-my-px sm:ml-10 sm:flex">
                     <a href="{{ route('scanner') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out
-                        {{ request()->routeIs('scanner') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
+                        {{ request()->routeIs('scanner') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                        {{-- Ikon Pemindai --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 0 1 1.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 0 1-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
                         Pemindai
                     </a>
                     
                     @auth
                         @if (auth()->user()->role === 'admin')
-                            <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out
-                                {{ request()->routeIs('admin.dashboard') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
+                            <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.dashboard') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                                {{-- Ikon Dasbor --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
                                 Dasbor
                             </a>
-                            {{-- MENU DATA KELAS BARU --}}
-                            <a href="{{ route('admin.classes.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.classes.*') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800' }}">
+                            <a href="{{ route('admin.classes.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.classes.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                                {{-- Ikon Kelas --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
                                 Data Kelas
                             </a>
-                             <a href="{{ route('admin.students.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out
-                                {{ (request()->routeIs('admin.students.*') && !request()->routeIs('admin.students.qr')) ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
+                            <a href="{{ route('admin.students.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ (request()->routeIs('admin.students.*') && !request()->routeIs('admin.students.qr')) ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                                {{-- Ikon Siswa --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m-7.5-2.928A3 3 0 0 1 7.5 12.5m3 3a3 3 0 0 1-3-3m-3.75 2.928A9.094 9.094 0 0 1 3.75 18.72m0-5.728a3 3 0 0 1 3-3m0 0a3 3 0 0 1 3 3m0 0a3 3 0 0 1-3 3m0 0a3 3 0 0 1-3-3m9.75 0a3 3 0 0 1-3 3m3-3a3 3 0 0 0-3-3m-3.75 2.928A9.094 9.094 0 0 0 3.75 18.72m-3.75-5.728a3 3 0 0 0 3-3m0 0a3 3 0 0 0-3-3m0 0a3 3 0 0 0-3 3m0 0a3 3 0 0 0 3 3m7.5-3a3 3 0 0 0-3-3m3 3a3 3 0 0 1-3 3M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
                                 Data Siswa
                             </a>
-                             <a href="{{ route('admin.students.qr') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out
-                                {{ request()->routeIs('admin.students.qr') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
+                             <a href="{{ route('admin.students.qr') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.students.qr') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                                {{-- Ikon Cetak --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.34.057-.68.1-1.02.1C3.584 13.93 2.25 12.597 2.25 11V3c0-1.036.84-1.875 1.875-1.875h15.75c1.036 0 1.875.84 1.875 1.875v8.25c0 1.597-1.333 2.927-2.927 2.927-.34 0-.68-.043-1.02-.127a4.526 4.526 0 0 1-4.496 2.454c-1.849 0-3.483-.93-4.496-2.454Z" /></svg>
                                 Cetak QR
                             </a>
-                            <a href="{{ route('admin.settings.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.settings.index') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800' }}">Pengaturan</a>
+                            <a href="{{ route('admin.settings.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.settings.index') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                                {{-- Ikon Pengaturan --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.438 1.001s.145.761.438 1.001l1.003.827c.424.35.534.954.26 1.431l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 0 1-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.437-1.001s-.145-.761-.437-1.001l-1.004-.827a1.125 1.125 0 0 1-.26-1.431l1.296-2.247a1.125 1.125 0 0 1 1.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.213-1.28z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" /></svg>
+                                Pengaturan
+                            </a>
                         @endif
                     @endauth
                 </div>

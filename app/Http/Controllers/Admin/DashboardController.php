@@ -22,14 +22,38 @@ class DashboardController extends Controller
             'school_class_id' => 'nullable|integer|exists:school_classes,id', // Validasi untuk filter kelas
         ]);
 
+        $classes = SchoolClass::orderBy('name')->get();
         // 2. Tentukan tanggal yang akan difilter
         $selectedDate = $request->filled('tanggal')
                         ? Carbon::createFromFormat('Y-m-d', $request->tanggal)
                         : Carbon::today();
 
-        // Buat query dasar, dan muat relasi siswa beserta kelasnya
-        $attendancesQuery = Attendance::with(['student.schoolClass']) // Diperbarui untuk memuat data kelas
+        // Query dasar untuk mengambil data kehadiran pada tanggal yang dipilih
+        $attendancesQuery = Attendance::with(['student.schoolClass'])
                                       ->whereDate('attendance_time', $selectedDate);
+
+        // --- STATISTIK ---
+        // Ambil SEMUA data kehadiran hari ini untuk perhitungan statistik
+        $allAttendancesToday = (clone $attendancesQuery)->get();
+        $totalAttended = $allAttendancesToday->count();
+
+        // 1. Statistik Tepat Waktu Total (BARU)
+        $totalOnTime = $allAttendancesToday->where('status', 'tepat_waktu')->count();
+        $overallOnTimePercentage = ($totalAttended > 0) ? round(($totalOnTime / $totalAttended) * 100) : 0;
+
+        // 2. Statistik Keterlambatan Total
+        $totalLate = $allAttendancesToday->where('status', 'terlambat')->count();
+        $overallLatenessPercentage = ($totalAttended > 0) ? round(($totalLate / $totalAttended) * 100) : 0;
+
+        // 3. Statistik Kehadiran per Kelas
+        $allClassesWithStudents = SchoolClass::withCount('students')->get();
+        $attendancesByClass = $allAttendancesToday->groupBy('student.school_class_id');
+        $classAttendanceStats = $allClassesWithStudents->map(function ($class) use ($attendancesByClass) {
+            $totalStudents = $class->students_count;
+            $attendedCount = isset($attendancesByClass[$class->id]) ? $attendancesByClass[$class->id]->count() : 0;
+            $percentage = ($totalStudents > 0) ? round(($attendedCount / $totalStudents) * 100) : 0;
+            return (object)['name' => $class->name, 'percentage' => $percentage, 'ratio' => "{$attendedCount} / {$totalStudents} Siswa"];
+        });
 
         // 4. Tambahkan filter pencarian nama jika ada
         if ($request->filled('search')) {
@@ -50,13 +74,16 @@ class DashboardController extends Controller
         $attendances = $attendancesQuery->latest('attendance_time')->paginate(15);
 
         // Ambil daftar semua kelas untuk filter di view
-        $classes = SchoolClass::all();
+        // $classes = SchoolClass::all();
 
-        // 6. Kirim data ke view
+        // Kirim semua data ke view
         return view('admin.dashboard', [
             'attendances' => $attendances,
             'selectedDate' => $selectedDate,
-            'classes' => $classes, // Kirim daftar kelas ke view
+            'classes' => $classes,
+            'overallOnTimePercentage' => $overallOnTimePercentage, // Data baru
+            'overallLatenessPercentage' => $overallLatenessPercentage,
+            'classAttendanceStats' => $classAttendanceStats,
         ]);
     }
 }

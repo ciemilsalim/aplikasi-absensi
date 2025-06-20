@@ -7,6 +7,57 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            {{-- KARTU STATISTIK --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Kartu Siswa Tepat Waktu (BARU) -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center">
+                    <div class="flex-shrink-0 bg-green-100 dark:bg-green-500/20 rounded-md p-4">
+                        <svg class="h-8 w-8 text-green-500 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Siswa Tepat Waktu</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $overallOnTimePercentage }}%</p>
+                    </div>
+                </div>
+                
+                <!-- Kartu Keterlambatan Siswa -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center">
+                    <div class="flex-shrink-0 bg-red-100 dark:bg-red-500/20 rounded-md p-4">
+                        <svg class="h-8 w-8 text-red-500 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Siswa Terlambat</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $overallLatenessPercentage }}%</p>
+                    </div>
+                </div>
+
+                <!-- Kartu Kehadiran Per Kelas -->
+                @foreach($classAttendanceStats as $stat)
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Kehadiran {{ $stat->name }}</p>
+                            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $stat->percentage }}%</p>
+                        </div>
+                        <div class="flex-shrink-0 bg-sky-100 dark:bg-sky-500/20 rounded-md p-3">
+                             <svg class="h-6 w-6 text-sky-500 dark:text-sky-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mb-1">{{ $stat->ratio }}</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-slate-700">
+                            <div class="bg-sky-600 h-2 rounded-full" style="width: {{ $stat->percentage }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            {{-- TABEL KEHADIRAN --}}
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
