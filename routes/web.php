@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\Admin\SettingController; // Controller baru
 use App\Http\Controllers\Admin\SchoolClassController;
+use App\Http\Controllers\Admin\ReportController; // Controller baru
 
 // Rute Publik
 Route::get('/', [AttendanceController::class, 'showScanner'])->name('scanner');
@@ -40,6 +41,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
     Route::post('classes/assign-students', [SchoolClassController::class, 'assignStudents'])->name('classes.assign.students');
     Route::resource('classes', SchoolClassController::class);
+
+    // Rute Laporan BARU
+    Route::get('/reports', [ReportController::class, 'create'])->name('reports.create');
+    Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
 });
 
 // Rute Profil Pengguna
