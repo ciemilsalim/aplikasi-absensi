@@ -56,6 +56,16 @@
                 </div>
                 @endforeach
             </div>
+{{-- GRAFIK KEHADIRAN PER KELAS (BARU) --}}
+            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-medium">Grafik Persentase Kehadiran per Kelas</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Menampilkan data untuk tanggal: {{ $selectedDate->translatedFormat('l, d F Y') }}</p>
+                    <div class="h-80 md:h-96">
+                        <canvas id="classAttendanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
 
             {{-- TABEL KEHADIRAN --}}
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -147,4 +157,77 @@
             </div>
         </div>
     </div>
+
+     @push('scripts')
+    {{-- Memuat library Chart.js --}}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Ambil data statistik dari variabel PHP
+            const classData = @json($classAttendanceStats);
+            const isDarkMode = document.documentElement.classList.contains('dark');
+
+            // Siapkan data untuk grafik
+            const labels = classData.map(item => item.name);
+            const percentages = classData.map(item => item.percentage);
+
+            const ctx = document.getElementById('classAttendanceChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Kehadiran (%)',
+                        data: percentages,
+                        backgroundColor: 'rgba(14, 165, 233, 0.6)', // sky-500 dengan transparansi
+                        borderColor: 'rgba(14, 165, 233, 1)', // sky-500 solid
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                color: isDarkMode ? '#94a3b8' : '#64748b', // Warna teks sumbu Y
+                            },
+                            grid: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                            }
+                        },
+                        x: {
+                             ticks: {
+                                color: isDarkMode ? '#94a3b8' : '#64748b', // Warna teks sumbu X
+                            },
+                             grid: {
+                                display: false, // Sembunyikan garis grid vertikal
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false // Sembunyikan legenda karena sudah jelas dari judul
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Kehadiran: ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    @endpush
 </x-app-layout>
