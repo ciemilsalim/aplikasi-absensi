@@ -22,8 +22,23 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script>
+        // **PERBAIKAN ADA DI SINI**
+        // Skrip ini harus ada di <head> untuk mencegah layar berkedip.
+        // Ia akan menerapkan tema gelap berdasarkan pengaturan dari admin.
+        const serverDarkModeEnabled = @json($darkModeEnabled ?? false);
+
+        // Prioritas: Pilihan pengguna di browser (localStorage) > Pengaturan default dari admin
+        if (localStorage.getItem('darkMode') === 'on' || (!('darkMode' in localStorage) && serverDarkModeEnabled)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <script>
         // Konfigurasi custom untuk Tailwind CSS agar sesuai tema
         tailwind.config = {
+            darkMode: 'class', // Penting untuk mengaktifkan dark mode via class
             theme: {
                 extend: {
                     fontFamily: {

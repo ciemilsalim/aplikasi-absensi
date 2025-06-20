@@ -13,22 +13,16 @@ class LogoServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // **PERBAIKAN UTAMA ADA DI SINI**
-        // Kita mendaftarkan 'appLogoPath' sebagai singleton.
-        // Logika untuk mengambil data dari database hanya akan dijalankan
-        // satu kali, yaitu saat 'appLogoPath' pertama kali dibutuhkan.
-        $this->app->singleton('appLogoPath', function ($app) {
-            // Mencegah query database saat menjalankan perintah console
+        // Mendaftarkan 'app_settings' sebagai singleton untuk efisiensi
+        $this->app->singleton('app_settings', function ($app) {
             if ($app->runningInConsole()) {
-                return null;
+                return collect(); // Kembalikan koleksi kosong untuk perintah console
             }
-            
             try {
-                $logo = Setting::where('key', 'app_logo')->first();
-                return $logo ? $logo->value : null;
+                // Ambil semua pengaturan sekali saja
+                return Setting::pluck('value', 'key');
             } catch (\Exception $e) {
-                // Jika database belum siap atau ada error lain, kembalikan null
-                return null;
+                return collect(); // Kembalikan koleksi kosong jika ada error
             }
         });
     }
@@ -38,11 +32,15 @@ class LogoServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Sekarang, di metode boot, kita hanya memberitahu semua view
-        // untuk menggunakan singleton yang sudah kita daftarkan.
-        // Ini lebih aman karena tidak ada query database yang terjadi di sini.
+        // Bagikan data ke semua view menggunakan singleton yang sudah didaftarkan
         View::composer('*', function ($view) {
-            $view->with('appLogoPath', $this->app->make('appLogoPath'));
+            $settings = $this->app->make('app_settings');
+            
+            $view->with([
+                'appLogoPath' => $settings->get('app_logo'),
+                // Kirim status mode gelap sebagai boolean (true/false)
+                'darkModeEnabled' => $settings->get('dark_mode', 'off') === 'on',
+            ]);
         });
     }
 }
