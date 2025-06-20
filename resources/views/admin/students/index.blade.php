@@ -7,8 +7,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg dark:bg-slate-800">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex flex-wrap gap-2 justify-between items-center mb-6">
                         <h3 class="text-lg font-medium">Daftar Siswa</h3>
                         <div class="flex gap-2">
@@ -24,8 +24,8 @@
                     @endif
 
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 table-auto">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" class="px-6 py-3">Nama Siswa</th>
                                     <th scope="col" class="px-6 py-3">NIS</th>
@@ -33,10 +33,10 @@
                                     <th scope="col" class="px-6 py-3">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="text-sm font-normal text-gray-900 dark:text-gray-400 dark:bg-slate-800">
                                 @forelse ($students as $student)
-                                    <tr class="bg-white border-b hover:bg-gray-50">
-                                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ $student->name }}</th>
+                                    <tr class="border-b hover:bg-gray-700">
+                                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap">{{ $student->name }}</th>
                                         <td class="px-6 py-4">{{ $student->nis }}</td>
                                         <td class="px-6 py-4">{{ $student->schoolClass->name ?? '-'}}</td>
                                         <td class="px-6 py-4 flex items-center space-x-3">
@@ -49,7 +49,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr class="bg-white border-b">
+                                    <tr class="border-b">
                                         <td colspan="3" class="px-6 py-4 text-center">Tidak ada data siswa.</td>
                                     </tr>
                                 @endforelse

@@ -44,7 +44,7 @@
     
     <style type="text/tailwindcss">
         body {
-            @apply bg-sky-50 font-sans text-slate-700;
+            @apply bg-sky-50 font-sans text-slate-700  dark:bg-slate-900;
         }
     </style>
 </head>
@@ -54,7 +54,7 @@
             @include('layouts.navigation')
         </header>
 
-        <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 ">
             @yield('content')
         </main>
 
