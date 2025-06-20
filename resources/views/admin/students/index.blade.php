@@ -35,7 +35,7 @@
                             </thead>
                             <tbody class="text-sm font-normal text-gray-900 dark:text-gray-400 dark:bg-slate-800">
                                 @forelse ($students as $student)
-                                    <tr class="border-b hover:bg-gray-700">
+                                    <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-600">
                                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-gray-400 whitespace-nowrap">{{ $student->name }}</th>
                                         <td class="px-6 py-4">{{ $student->nis }}</td>
                                         <td class="px-6 py-4">{{ $student->schoolClass->name ?? '-'}}</td>
