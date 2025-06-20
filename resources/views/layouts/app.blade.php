@@ -60,6 +60,12 @@
             <main>
                 {{ $slot }}
             </main>
+
+            <footer class="w-full bg-white/70 backdrop-blur-sm shadow-inner mt-auto">
+                <div class="container mx-auto px-6 py-4 text-center text-slate-500 text-sm">
+                    &copy; {{ date('Y') }} Aplikasi Absensi Siswa.
+                </div>
+            </footer>
         </div>
         @stack('scripts')
     </body>

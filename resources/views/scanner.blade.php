@@ -10,10 +10,10 @@
         <p id="current-time" class="text-5xl font-bold text-sky-600 tracking-tight"></p>
     </div>
 
-    <h1 class="text-3xl font-bold text-slate-800 dark:text-slate-400 mb-2">Pindai QR Code Kehadiran</h1>
-    <p class="text-slate-600 mb-8">Arahkan QR Code pada kartu siswa ke kamera.</p>
+    <h1 class="text-3xl font-bold text-slate-800 dark:text-slate-300 mb-2">Pindai QR Code Kehadiran</h1>
+    <p class="text-slate-600 dark:text-slate-400 mb-8">Arahkan QR Code pada kartu siswa ke kamera.</p>
 
-    <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200  dark:bg-slate-900 dark:border-slate-700">
+    <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200  dark:bg-slate-800 dark:border-slate-700">
         <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 rounded-lg overflow-hidden"></div>
         <div id="reader-error" class="text-red-500 text-sm mt-2 hidden">Gagal mengakses kamera. Mohon izinkan akses kamera di browser Anda.</div>
     </div>

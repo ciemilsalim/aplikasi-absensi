@@ -54,11 +54,11 @@
             @include('layouts.navigation')
         </header>
 
-        <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 ">
+        <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
             @yield('content')
         </main>
 
-        <footer class="w-full bg-white/70 backdrop-blur-sm shadow-inner mt-auto">
+        <footer class="w-full bg-white/70 backdrop-blur-sm shadow-inner mt-auto dark:bg-slate-800 dark:text-slate-400">
             <div class="container mx-auto px-6 py-4 text-center text-slate-500 text-sm">
                 &copy; {{ date('Y') }} Aplikasi Absensi Siswa.
             </div>
