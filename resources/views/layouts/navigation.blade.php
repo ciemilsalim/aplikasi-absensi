@@ -22,6 +22,10 @@
                                 {{ request()->routeIs('admin.dashboard') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
                                 Dasbor
                             </a>
+                            {{-- MENU DATA KELAS BARU --}}
+                            <a href="{{ route('admin.classes.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.classes.*') ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800' }}">
+                                Data Kelas
+                            </a>
                              <a href="{{ route('admin.students.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out
                                 {{ (request()->routeIs('admin.students.*') && !request()->routeIs('admin.students.qr')) ? 'border-b-2 border-sky-500 text-sky-700' : 'text-slate-600 hover:text-slate-800 focus:outline-none' }}">
                                 Data Siswa

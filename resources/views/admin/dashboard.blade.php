@@ -17,10 +17,16 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400">Menampilkan data untuk tanggal: {{ $selectedDate->translatedFormat('l, d F Y') }}</p>
                         </div>
                         <form method="GET" action="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
-                            {{-- Input Pencarian Nama --}}
+                            {{-- Dropdown Filter Kelas BARU --}}
+                            <select name="school_class_id" class="w-full sm:w-auto border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
+                                <option value="">Semua Kelas</option>
+                                @foreach ($classes as $class)
+                                    <option value="{{ $class->id }}" {{ request('school_class_id') == $class->id ? 'selected' : '' }}>
+                                        {{ $class->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                             <x-text-input type="text" name="search" placeholder="Cari nama siswa..." value="{{ request('search') }}" class="w-48"/>
-
-                            {{-- Input Filter Tanggal --}}
                             <x-text-input type="date" name="tanggal" id="tanggal" value="{{ $selectedDate->format('Y-m-d') }}" />
                             <x-primary-button type="submit">Cari</x-primary-button>
                         </form>
@@ -31,7 +37,7 @@
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" class="px-6 py-3">Nama Siswa</th>
-                                    <th scope="col" class="px-6 py-3">NIS</th>
+                                    <th scope="col" class="px-6 py-3">Kelas</th> <!-- KOLOM BARU -->
                                     <th scope="col" class="px-6 py-3">Jam Masuk</th>
                                     <th scope="col" class="px-6 py-3">Jam Pulang</th>
                                     <th scope="col" class="px-6 py-3">Status</th>
@@ -44,7 +50,8 @@
                                             {{ $attendance->student->name ?? 'Siswa Dihapus' }}
                                         </th>
                                         <td class="px-6 py-4">
-                                            {{ $attendance->student->nis ?? '-' }}
+                                            {{-- Menampilkan nama kelas siswa --}}
+                                            {{ $attendance->student->schoolClass->name ?? '-' }}
                                         </td>
                                         <td class="px-6 py-4">
                                             <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
@@ -83,7 +90,6 @@
                         </table>
                     </div>
                     <div class="mt-4">
-                        {{-- Menambahkan parameter filter ke link paginasi agar filter tidak hilang saat berpindah halaman --}}
                         {{ $attendances->appends(request()->query())->links() }}
                     </div>
                 </div>

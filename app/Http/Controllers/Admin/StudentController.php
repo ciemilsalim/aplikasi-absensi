@@ -7,40 +7,60 @@ use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Imports\StudentsImport; // Pastikan kelas ini sudah diimpor
 use Maatwebsite\Excel\Facades\Excel; // Pastikan facade Excel sudah diimpor
+use App\Models\SchoolClass; // Impor model SchoolClass
 
 class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::orderBy('name')->paginate(10);
+         // Menambahkan relasi 'schoolClass' untuk efisiensi query
+        $students = Student::with('schoolClass')->orderBy('name')->paginate(10);
         return view('admin.students.index', compact('students'));
     }
 
+    /**
+     * Menampilkan form untuk membuat siswa baru.
+     */
     public function create()
     {
-        return view('admin.students.create');
+        // Ambil semua data kelas untuk ditampilkan di dropdown
+        $classes = SchoolClass::orderBy('name')->get();
+        return view('admin.students.create', compact('classes'));
     }
 
+    /**
+     * Menyimpan data siswa baru ke database.
+     */
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'nis' => 'required|string|max:50|unique:students,nis',
+            'school_class_id' => 'nullable|exists:school_classes,id', // Validasi untuk kelas
         ]);
         Student::create($request->all());
         return redirect()->route('admin.students.index')->with('success', 'Siswa berhasil ditambahkan.');
     }
 
+    /**
+     * Menampilkan form untuk mengedit data siswa.
+     */
     public function edit(Student $student)
     {
-        return view('admin.students.edit', compact('student'));
+        // Ambil semua data kelas untuk ditampilkan di dropdown
+        $classes = SchoolClass::orderBy('name')->get();
+        return view('admin.students.edit', compact('student', 'classes'));
     }
 
+    /**
+     * Memperbarui data siswa di database.
+     */
     public function update(Request $request, Student $student)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'nis' => 'required|string|max:50|unique:students,nis,' . $student->id,
+            'school_class_id' => 'nullable|exists:school_classes,id', // Validasi untuk kelas
         ]);
         $student->update($request->all());
         return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil diperbarui.');

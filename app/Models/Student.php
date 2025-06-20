@@ -14,6 +14,7 @@ class Student extends Model
     protected $fillable = [
         'name',
         'nis',
+        'school_class_id',
         'unique_id'
     ];
 
@@ -31,5 +32,10 @@ class Student extends Model
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function schoolClass()
+    {
+        return $this->belongsTo(SchoolClass::class);
     }
 }

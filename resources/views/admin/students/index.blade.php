@@ -29,6 +29,7 @@
                                 <tr>
                                     <th scope="col" class="px-6 py-3">Nama Siswa</th>
                                     <th scope="col" class="px-6 py-3">NIS</th>
+                                    <th scope="col" class="px-6 py-3">Kelas</th>
                                     <th scope="col" class="px-6 py-3">Aksi</th>
                                 </tr>
                             </thead>
@@ -37,6 +38,7 @@
                                     <tr class="bg-white border-b hover:bg-gray-50">
                                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ $student->name }}</th>
                                         <td class="px-6 py-4">{{ $student->nis }}</td>
+                                        <td class="px-6 py-4">{{ $student->schoolClass->name ?? '-'}}</td>
                                         <td class="px-6 py-4 flex items-center space-x-3">
                                             <a href="{{ route('admin.students.edit', $student) }}" class="font-medium text-blue-600 hover:underline">Edit</a>
                                             <form action="{{ route('admin.students.destroy', $student) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
