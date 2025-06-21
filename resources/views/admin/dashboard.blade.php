@@ -1,3 +1,10 @@
+@php
+// Definisikan data untuk breadcrumb halaman ini
+$breadcrumbs = [
+    ['title' => 'Dasbor', 'url' => route('admin.dashboard')]
+];
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -7,6 +14,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            {{-- Panggil komponen breadcrumb di sini --}}
+            <x-breadcrumb :breadcrumbs="$breadcrumbs" />
             {{-- KARTU STATISTIK --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                 <!-- Kartu Siswa Tepat Waktu (BARU) -->

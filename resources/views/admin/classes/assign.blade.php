@@ -1,3 +1,12 @@
+@php
+// Definisikan data untuk breadcrumb halaman ini
+$breadcrumbs = [
+    ['title' => 'Data', 'url' => '#'], // Item tanpa link
+    ['title' => 'Kelas', 'url' => route('admin.classes.index')],
+    ['title' => 'Atur Siswa', 'url' => route('admin.classes.assign', $schoolClass)]
+];
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -7,6 +16,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <x-breadcrumb :breadcrumbs="$breadcrumbs" />
             @if (session('success'))
                 <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 sm:rounded-lg" role="alert"><p>{{ session('success') }}</p></div>
             @endif

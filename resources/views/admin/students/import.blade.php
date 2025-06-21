@@ -1,3 +1,12 @@
+@php
+// Definisikan data untuk breadcrumb halaman ini
+$breadcrumbs = [
+    ['title' => 'Data', 'url' => '#'],
+    ['title' => 'Siswa', 'url' => route('admin.students.index')],
+    ['title' => 'Import Siswa', 'url' => route('admin.students.import.form')]
+];
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -6,7 +15,8 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-2xl mx-auto sm:px-10 lg:px-10">
+            <x-breadcrumb :breadcrumbs="$breadcrumbs" />
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <form action="{{ route('admin.students.import') }}" method="POST" enctype="multipart/form-data">
                     @csrf

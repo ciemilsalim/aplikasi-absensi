@@ -1,3 +1,10 @@
+@php
+// Definisikan data untuk breadcrumb halaman ini
+$breadcrumbs = [
+    ['title' => 'Laporan', 'url' => route('admin.reports.create')]
+];
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -7,6 +14,7 @@
 
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+            <x-breadcrumb :breadcrumbs="$breadcrumbs" />
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 {{-- Arahkan form untuk membuka hasil di tab baru --}}
                 <form action="{{ route('admin.reports.generate') }}" method="POST" target="_blank">

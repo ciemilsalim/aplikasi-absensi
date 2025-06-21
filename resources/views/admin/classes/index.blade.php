@@ -1,3 +1,11 @@
+@php
+// Definisikan data untuk breadcrumb halaman ini
+$breadcrumbs = [
+    ['title' => 'Data', 'url' => '#'], // Item tanpa link
+    ['title' => 'Kelas', 'url' => route('admin.classes.index')]
+];
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -7,6 +15,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <x-breadcrumb :breadcrumbs="$breadcrumbs" />
             {{-- Form Tambah Kelas --}}
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <form action="{{ route('admin.classes.store') }}" method="POST">
