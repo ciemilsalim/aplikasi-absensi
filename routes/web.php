@@ -9,16 +9,23 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\Admin\SettingController; // Controller baru
 use App\Http\Controllers\Admin\SchoolClassController;
 use App\Http\Controllers\Admin\ReportController; // Controller baru
+use App\Http\Controllers\Admin\ParentController;
+use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
+use App\Http\Middleware\ParentMiddleware;
 
 // Rute Publik
 Route::get('/', [AttendanceController::class, 'showScanner'])->name('scanner');
 Route::post('/attendance', [AttendanceController::class, 'storeAttendance'])->name('attendance.store');
 Route::get('/students-list', [AttendanceController::class, 'showStudents'])->name('students.list');
 
-// Pengalihan setelah login
+// Pengalihan setelah login (Diperbarui)
 Route::get('/dashboard', function () {
-    if (auth()->check() && auth()->user()->role === 'admin') {
+    $user = auth()->user();
+    if ($user->role === 'admin') {
         return redirect()->route('admin.dashboard');
+    }
+    if ($user->role === 'parent') {
+        return redirect()->route('parent.dashboard');
     }
     return redirect()->route('scanner');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -45,7 +52,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Rute Laporan BARU
     Route::get('/reports', [ReportController::class, 'create'])->name('reports.create');
     Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+
+    // Rute Manajemen Orang Tua BARU
+    Route::resource('parents', ParentController::class);
 });
+
+// GRUP RUTE ORANG TUA (BARU)
+Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(function () {
+    Route::get('/dashboard', [ParentDashboardController::class, 'index'])->name('dashboard');
+});
+
 
 // Rute Profil Pengguna
 Route::middleware('auth')->group(function () {

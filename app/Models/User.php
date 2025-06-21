@@ -45,4 +45,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Mendefinisikan relasi "satu-ke-satu" ke model ParentModel.
+     * INI ADALAH PERBAIKAN UNTUK ERROR ANDA.
+     */
+    public function parent()
+    {
+        return $this->hasOne(ParentModel::class);
+    }
 }

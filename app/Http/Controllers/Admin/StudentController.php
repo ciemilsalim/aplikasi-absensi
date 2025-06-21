@@ -38,9 +38,14 @@ class StudentController extends Controller
             'nis' => 'required|string|max:50|unique:students,nis',
             'school_class_id' => 'nullable|exists:school_classes,id', // Validasi untuk kelas
         ]);
-        Student::create($request->all());
+        // Tambahkan logika ini untuk membuat unique_id secara manual
+        $data = $request->all();
+        $data['unique_id'] = (string) \Illuminate\Support\Str::uuid();
+
+        Student::create($data); // Gunakan data yang sudah dimodifikasi
+
         return redirect()->route('admin.students.index')->with('success', 'Siswa berhasil ditambahkan.');
-    }
+        }
 
     /**
      * Menampilkan form untuk mengedit data siswa.
