@@ -31,8 +31,9 @@
                                 </button>
                                 <div x-show="open" @click.away="open = false" x-transition class="absolute mt-44 w-48 rounded-md shadow-lg origin-top-right z-50" style="display: none;">
                                     <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white dark:bg-slate-700">
-                                        <x-dropdown-link :href="route('admin.classes.index')">Data Kelas</x-dropdown-link>
-                                        <x-dropdown-link :href="route('admin.students.index')">Data Siswa</x-dropdown-link>
+                                        {{-- PERBAIKAN DI SINI: Mengganti x-dropdown-link dengan <a> standar dan menambahkan kelas dark mode --}}
+                                        <a href="{{ route('admin.classes.index') }}" class="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition">Data Kelas</a>
+                                        <a href="{{ route('admin.students.index') }}" class="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition">Data Siswa</a>
                                     </div>
                                 </div>
                             </div>
