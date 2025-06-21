@@ -22,18 +22,21 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
                                 Dasbor
                             </a>
-                            <a href="{{ route('admin.classes.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.classes.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
-                                Data Kelas
-                            </a>
-                            <a href="{{ route('admin.students.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ (request()->routeIs('admin.students.*') && !request()->routeIs('admin.students.qr')) ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m-7.5-2.928A3 3 0 0 1 7.5 12.5m3 3a3 3 0 0 1-3-3m-3.75 2.928A9.094 9.094 0 0 1 3.75 18.72m0-5.728a3 3 0 0 1 3-3m0 0a3 3 0 0 1 3 3m0 0a3 3 0 0 1-3 3m0 0a3 3 0 0 1-3-3m9.75 0a3 3 0 0 1-3 3m3-3a3 3 0 0 0-3-3m-3.75 2.928A9.094 9.094 0 0 0 3.75 18.72m-3.75-5.728a3 3 0 0 0 3-3m0 0a3 3 0 0 0-3-3m0 0a3 3 0 0 0-3 3m0 0a3 3 0 0 0 3 3m7.5-3a3 3 0 0 0-3-3m3 3a3 3 0 0 1-3 3M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
-                                Data Siswa
-                            </a>
-                            <a href="{{ route('admin.students.qr') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.students.qr') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.34.057-.68.1-1.02.1C3.584 13.93 2.25 12.597 2.25 11V3c0-1.036.84-1.875 1.875-1.875h15.75c1.036 0 1.875.84 1.875 1.875v8.25c0 1.597-1.333 2.927-2.927 2.927-.34 0-.68-.043-1.02-.127a4.526 4.526 0 0 1-4.496 2.454c-1.849 0-3.483-.93-4.496-2.454Z" /></svg>
-                                Cetak QR
-                            </a>
+                            <!-- Dropdown Menu DATA BARU -->
+                            <div class="hidden lg:flex lg:items-center" x-data="{ open: false }">
+                                <button @click="open = !open" class="inline-flex items-center px-4 pt-1 h-16 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.students.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" /></svg>
+                                    <span>Data</span>
+                                    <svg class="fill-current h-4 w-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                </button>
+                                <div x-show="open" @click.away="open = false" x-transition class="absolute mt-44 w-48 rounded-md shadow-lg origin-top-right z-50" style="display: none;">
+                                    <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white dark:bg-slate-700">
+                                        <x-dropdown-link :href="route('admin.classes.index')">Data Kelas</x-dropdown-link>
+                                        <x-dropdown-link :href="route('admin.students.index')">Data Siswa</x-dropdown-link>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             {{-- MENU LAPORAN BARU --}}
                             <a href="{{ route('admin.reports.create') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.reports.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.75h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5-1.5a1.5 1.5 0 0 1-1.5-1.5V6.75A2.25 2.25 0 0 1 4.5 4.5h15a2.25 2.25 0 0 1 2.25 2.25v12.75a1.5 1.5 0 0 1-1.5 1.5h-16.5a1.5 1.5 0 0 1-1.5-1.5Z" /></svg>
@@ -97,7 +100,6 @@
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dasbor</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.classes.index')" :active="request()->routeIs('admin.classes.*')">Data Kelas</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*') && !request()->routeIs('admin.students.qr')">Data Siswa</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.students.qr')" :active="request()->routeIs('admin.students.qr')">Cetak QR</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.settings.index')" :active="request()->routeIs('admin.settings.index')">Pengaturan</x-responsive-nav-link>
                 @endif
             @endauth

@@ -12,6 +12,11 @@
                     <div class="flex flex-wrap gap-2 justify-between items-center mb-6">
                         <h3 class="text-lg font-medium">Daftar Siswa</h3>
                         <div class="flex gap-2">
+                            {{-- Tombol Cetak QR BARU --}}
+                            <a href="{{ route('admin.students.qr') }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 text-sm font-medium">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.34.057-.68.1-1.02.1C3.584 13.93 2.25 12.597 2.25 11V3c0-1.036.84-1.875 1.875-1.875h15.75c1.036 0 1.875.84 1.875 1.875v8.25c0 1.597-1.333 2.927-2.927 2.927-.34 0-.68-.043-1.02-.127a4.526 4.526 0 0 1-4.496 2.454c-1.849 0-3.483-.93-4.496-2.454Z" /></svg>
+                                Cetak Semua QR
+                            </a>
                             <a href="{{ route('admin.students.import.form') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">Impor dari Excel</a>
                             <a href="{{ route('admin.students.create') }}" class="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm font-medium">Tambah Siswa</a>
                         </div>
