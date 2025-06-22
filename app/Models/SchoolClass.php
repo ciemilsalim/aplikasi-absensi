@@ -1,5 +1,5 @@
 <?php
-
+// File: app/Models/SchoolClass.php (Diperbarui)
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class SchoolClass extends Model
 {
     use HasFactory;
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'teacher_id']; // Tambahkan teacher_id
 
-    public function students()
+    public function students() { return $this->hasMany(Student::class); }
+
+    // Relasi baru ke guru sebagai wali kelas
+    public function homeroomTeacher()
     {
-        return $this->hasMany(Student::class);
+        return $this->belongsTo(Teacher::class, 'teacher_id');
     }
 }

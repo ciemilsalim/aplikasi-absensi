@@ -28,11 +28,13 @@ use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardControll
 */
 
 // == RUTE PUBLIK ==
+// Dapat diakses oleh siapa saja tanpa perlu login.
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 Route::get('/scanner', [AttendanceController::class, 'showScanner'])->name('scanner');
 Route::post('/attendance', [AttendanceController::class, 'storeAttendance'])->name('attendance.store');
 
 // == RUTE AUTENTIKASI & PENGALIHAN ==
+// Rute-rute ini menangani logika setelah login.
 Route::get('/dashboard', function () {
     $user = auth()->user();
     if ($user->role === 'admin')   { return redirect()->route('admin.dashboard'); }
@@ -47,8 +49,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+
 // == GRUP RUTE ADMIN ==
+// Semua rute di sini dilindungi dan hanya bisa diakses oleh admin.
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // Rute Dasbor Utama (Menampilkan rekap kehadiran)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Rute Laporan
@@ -59,24 +65,30 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
-    // Rute Manajemen Data (CRUD)
-    Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
+    // Rute Manajemen Kelas (dipecah dari resource untuk kejelasan)
+    Route::get('/classes', [SchoolClassController::class, 'index'])->name('classes.index');
+    Route::post('/classes', [SchoolClassController::class, 'store'])->name('classes.store');
+    Route::get('/classes/{class}/edit', [SchoolClassController::class, 'edit'])->name('classes.edit');
+    Route::put('/classes/{class}', [SchoolClassController::class, 'update'])->name('classes.update');
+    Route::delete('/classes/{class}', [SchoolClassController::class, 'destroy'])->name('classes.destroy');
+    Route::get('classes/{class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
     Route::post('classes/assign-students', [SchoolClassController::class, 'assignStudents'])->name('classes.assign.students');
-    Route::resource('classes', SchoolClassController::class);
     
+    // Rute Manajemen Siswa
     Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');
     Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
     Route::get('/students/qr', [StudentController::class, 'qr'])->name('students.qr');
-    Route::resource('students', StudentController::class);
+    Route::resource('students', StudentController::class)->parameters(['students' => 'student']);
 
+    // Rute Manajemen Ortu
     Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
     Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
-    Route::resource('parents', ParentController::class);
+    Route::resource('parents', ParentController::class)->parameters(['parents' => 'parent']);
 
+    // Rute Manajemen Guru
     Route::get('/teachers/import', [TeacherController::class, 'showImportForm'])->name('teachers.import.form');
     Route::post('/teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
-    Route::resource('teachers', TeacherController::class);
-    
+    Route::resource('teachers', TeacherController::class)->parameters(['teachers' => 'teacher']);
 });
 
 // == GRUP RUTE ORANG TUA ==

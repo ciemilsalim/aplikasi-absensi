@@ -1,6 +1,5 @@
 <?php
-// File: app/Models/Teacher.php (Baru)
-
+// File: app/Models/Teacher.php (Diperbarui)
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,16 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Teacher extends Model
 {
     use HasFactory;
+    protected $fillable = ['user_id', 'name', 'nip', 'phone_number'];
+    
+    public function user() { return $this->belongsTo(User::class); }
 
-    protected $fillable = [
-        'user_id',
-        'name',
-        'nip',
-        'phone_number',
-    ];
-
-    public function user()
+    // Relasi baru untuk mengecek apakah guru ini adalah wali kelas
+    public function homeroomClass()
     {
-        return $this->belongsTo(User::class);
+        return $this->hasOne(SchoolClass::class, 'teacher_id');
     }
 }
