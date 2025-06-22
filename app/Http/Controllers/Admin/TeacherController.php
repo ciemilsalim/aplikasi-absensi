@@ -46,6 +46,34 @@ class TeacherController extends Controller
         return redirect()->route('admin.teachers.index')->with('success', 'Akun guru berhasil dibuat.');
     }
 
+    public function edit(Teacher $teacher)
+    {
+        return view('admin.teachers.edit', compact('teacher'));
+    }
+
+    public function update(Request $request, Teacher $teacher)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$teacher->user_id],
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'nip' => ['nullable', 'string', 'max:255', 'unique:teachers,nip,'.$teacher->id],
+            'phone_number' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $user = $teacher->user;
+        $user->name = $request->name;
+        $user->email = $request->email;
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+        $user->save();
+
+        $teacher->update($request->only('name', 'nip', 'phone_number'));
+
+        return redirect()->route('admin.teachers.index')->with('success', 'Data guru berhasil diperbarui.');
+    }
+
      /**
      * Menampilkan form untuk impor data guru dari Excel.
      */
