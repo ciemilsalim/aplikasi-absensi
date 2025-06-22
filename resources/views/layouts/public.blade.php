@@ -62,8 +62,19 @@
             @apply bg-sky-50 font-sans text-slate-700  dark:bg-slate-900;
         }
     </style>
+
+    <style>
+        #page-loader { transition: opacity 0.3s ease-in-out; }
+        #page-content { opacity: 0; transition: opacity 0.4s ease-in-out; }
+        #page-content.loaded { opacity: 1; }
+    </style>
 </head>
-<body class="antialiased">
+<body class="antialiased font-sans h-full">
+    <!-- Page Loader -->
+    <div id="page-loader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-slate-900">
+        <div class="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-sky-600"></div>
+    </div>
+
     <div class="flex flex-col min-h-screen">
         <header>
             @include('layouts.navigation')
@@ -81,5 +92,48 @@
     </div>
 
     @stack('scripts')
+
+    <script>
+        // JavaScript untuk Loader dan Transisi Halaman
+        document.addEventListener('DOMContentLoaded', function() {
+            const loader = document.getElementById('page-loader');
+            const content = document.getElementById('page-content');
+
+            window.addEventListener('load', () => {
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; }, 300);
+                }
+                if(content) { content.classList.add('loaded'); }
+            });
+
+            document.body.addEventListener('click', function(e) {
+                const link = e.target.closest('a');
+                if (!link) return;
+                const href = link.getAttribute('href');
+                const target = link.getAttribute('target');
+
+                if (target === '_blank' || (href && href.startsWith('#'))) return;
+                
+                if(link.closest('form') && link.closest('form').getAttribute('action').includes('logout')) {
+                     if (loader) { loader.style.display = 'flex'; setTimeout(() => { loader.style.opacity = '1'; }, 10); }
+                     return;
+                }
+
+                if(href && href !== window.location.href && !href.startsWith('javascript:')) {
+                    e.preventDefault();
+                    if(loader) {
+                        loader.style.display = 'flex';
+                        setTimeout(() => {
+                            loader.style.opacity = '1';
+                            window.location.href = href;
+                        }, 50);
+                    } else {
+                        window.location.href = href;
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
