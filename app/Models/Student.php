@@ -48,6 +48,11 @@ class Student extends Model
         return $this->belongsToMany(ParentModel::class, 'parent_student', 'student_id', 'parent_id');
     }
 
+    public function leaveRequests() 
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
     /**
      * Otomatis membuat unique_id saat siswa baru dibuat.
      * PERBAIKAN: Memastikan hanya ada satu metode boot() di dalam kelas.

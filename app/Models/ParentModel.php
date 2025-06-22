@@ -25,4 +25,9 @@ class ParentModel extends Model
     {
         return $this->belongsToMany(Student::class, 'parent_student', 'parent_id', 'student_id');
     }
+
+    public function leaveRequests() 
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
 }

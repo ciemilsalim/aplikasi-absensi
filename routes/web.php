@@ -21,6 +21,9 @@ use App\Http\Controllers\Parent\DashboardController as ParentDashboardController
 // Teacher Controller
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 
+use App\Http\Controllers\Admin\LeaveRequestController as AdminLeaveRequestController;
+use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestController;
+
 /*
 |--------------------------------------------------------------------------
 | Rute Web
@@ -89,11 +92,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/teachers/import', [TeacherController::class, 'showImportForm'])->name('teachers.import.form');
     Route::post('/teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
     Route::resource('teachers', TeacherController::class)->parameters(['teachers' => 'teacher']);
+
+    Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
+    Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
+    Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
 });
 
-// == GRUP RUTE ORANG TUA ==
+// GRUP RUTE ORANG TUA
 Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(function () {
     Route::get('/dashboard', [ParentDashboardController::class, 'index'])->name('dashboard');
+    Route::resource('leave-requests', ParentLeaveRequestController::class)->only(['index', 'create', 'store']);
 });
 
 // == GRUP RUTE GURU ==
