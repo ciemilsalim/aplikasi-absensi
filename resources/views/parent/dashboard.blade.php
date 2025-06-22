@@ -18,7 +18,8 @@
                             <ul class="mt-2 space-y-2">
                                 @forelse($student->attendances as $attendance)
                                     <li class="flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-700 rounded-md">
-                                        <div>
+                                         <div>
+                                            {{-- PERBAIKAN: Menggunakan translatedFormat untuk menampilkan tanggal dalam Bahasa Indonesia --}}
                                             <p class="font-semibold">{{ $attendance->attendance_time->translatedFormat('l, d F Y') }}</p>
                                             <p class="text-xs text-gray-600 dark:text-gray-400">
                                                 Masuk: {{ $attendance->attendance_time->format('H:i') }} | Pulang: {{ $attendance->checkout_time ? $attendance->checkout_time->format('H:i') : '-' }}
