@@ -59,6 +59,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
 
     // Rute Manajemen Orang Tua BARU
+    // Rute Impor Orang Tua BARU
+    Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
+    Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
     Route::resource('parents', ParentController::class);
 });
 

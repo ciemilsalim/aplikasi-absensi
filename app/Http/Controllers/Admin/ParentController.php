@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ParentModel;
 use App\Models\User;
 use App\Models\Student;
+use App\Imports\ParentsImport; // Impor kelas baru
+use Maatwebsite\Excel\Facades\Excel; // Impor facade Excel
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -108,5 +110,36 @@ class ParentController extends Controller
         $parent->user()->delete();
         
         return redirect()->route('admin.parents.index')->with('success', 'Akun orang tua berhasil dihapus.');
+    }
+
+    /**
+     * Menampilkan form untuk impor data orang tua dari Excel.
+     */
+    public function showImportForm()
+    {
+        return view('admin.parents.import');
+    }
+
+    /**
+     * Menangani proses impor dari file Excel.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            Excel::import(new ParentsImport, $request->file('file'));
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+             $failures = $e->failures();
+             $errorMessages = [];
+             foreach ($failures as $failure) {
+                 $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+             }
+             return redirect()->back()->with('import_errors', $errorMessages);
+        }
+
+        return redirect()->route('admin.parents.index')->with('success', 'Data orang tua berhasil diimpor!');
     }
 }

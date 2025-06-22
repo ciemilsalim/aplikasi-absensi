@@ -17,9 +17,15 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-medium">Daftar Akun Orang Tua</h3>
-                        <a href="{{ route('admin.parents.create') }}" class="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm font-medium">
-                            Tambah Akun Orang Tua
-                        </a>
+                        <div class="flex gap-2">
+                            {{-- Tombol Impor Excel BARU --}}
+                            <a href="{{ route('admin.parents.import.form') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
+                                Impor dari Excel
+                            </a>
+                            <a href="{{ route('admin.parents.create') }}" class="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm font-medium">
+                                Tambah Akun
+                            </a>
+                        </div>
                     </div>
 
                     @if (session('success'))
