@@ -13,6 +13,9 @@ use App\Http\Controllers\Admin\ReportController; // Controller baru
 use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
 use App\Http\Middleware\ParentMiddleware;
+use App\Http\Controllers\Admin\TeacherController;
+use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
+use App\Http\Middleware\TeacherMiddleware;
 
 // == RUTE PUBLIK ==
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome'); // Halaman utama baru
@@ -25,6 +28,7 @@ Route::get('/dashboard', function () {
     $user = auth()->user();
     if ($user->role === 'admin') { return redirect()->route('admin.dashboard'); }
     if ($user->role === 'parent') { return redirect()->route('parent.dashboard'); }
+    if ($user->role === 'teacher') { return redirect()->route('teacher.dashboard'); } // Tambahkan ini
     return redirect()->route('welcome');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -63,11 +67,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
     Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
     Route::resource('parents', ParentController::class);
+
+    // Rute Manajemen Guru BARU
+    Route::resource('teachers', TeacherController::class); // Tambahkan ini
 });
 
 // GRUP RUTE ORANG TUA (BARU)
 Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(function () {
     Route::get('/dashboard', [ParentDashboardController::class, 'index'])->name('dashboard');
+});
+
+// GRUP RUTE GURU (BARU)
+Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->group(function () {
+    Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
 });
 
 

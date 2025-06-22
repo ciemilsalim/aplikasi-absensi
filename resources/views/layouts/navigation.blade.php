@@ -26,18 +26,18 @@
                                 Dasbor
                             </a>
                             <!-- Dropdown Menu DATA BARU -->
-                            <div class="hidden lg:flex lg:items-center" x-data="{ open: false }">
-                                <button @click="open = !open" class="inline-flex items-center px-4 pt-1 h-16 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.students.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                            <div class="hidden lg:flex lg:items-center relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="inline-flex items-center px-4 pt-1 h-16 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.students.*') || request()->routeIs('admin.parents.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" /></svg>
-                                    <span>Data</span>
+                                    <span>DATA</span>
                                     <svg class="fill-current h-4 w-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                                 </button>
-                                <div x-show="open" @click.away="open = false" x-transition class="absolute mt-44 w-48 rounded-md shadow-lg origin-top-right z-50" style="display: none;">
+                                <div x-show="open" @click.away="open = false" x-transition class="absolute top-full mt-2 w-48 rounded-md shadow-lg z-50" style="display: none;">
                                     <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white dark:bg-slate-700">
-                                        {{-- PERBAIKAN DI SINI: Mengganti x-dropdown-link dengan <a> standar dan menambahkan kelas dark mode --}}
-                                        <a href="{{ route('admin.parents.index') }}" class="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 transition">Manajemen Ortu</a>
-                                        <a href="{{ route('admin.classes.index') }}" class="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition">Data Kelas</a>
-                                        <a href="{{ route('admin.students.index') }}" class="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition">Data Siswa</a>
+                                        <a href="{{ route('admin.parents.index') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600">Manajemen Ortu</a>
+                                        <a href="{{ route('admin.teachers.index') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600">Data Guru</a>
+                                        <a href="{{ route('admin.classes.index') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600">Data Kelas</a>
+                                        <a href="{{ route('admin.students.index') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600">Data Siswa</a>
                                     </div>
                                 </div>
                             </div>
@@ -116,15 +116,19 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden" x-show="open" x-transition>
         <div class="pt-2 pb-3 space-y-1">
             @if (!Auth::check() || Auth::user()->role !== 'parent')
-            <x-responsive-nav-link :href="route('scanner')" :active="request()->routeIs('scanner')">Pemindai</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('scanner')" :active="request()->routeIs('scanner')">Pemindai</x-responsive-nav-link>
             @endif
             @auth
                 @if(auth()->user()->role === 'admin')
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dasbor</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.parents.index')" :active="request()->routeIs('admin.parents.*')">Manajemen Ortu</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.classes.index')" :active="request()->routeIs('admin.classes.*')">Data Kelas</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*') && !request()->routeIs('admin.students.qr')">Data Siswa</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">Data Siswa</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.reports.create')" :active="request()->routeIs('admin.reports.*')">Laporan</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.settings.index')" :active="request()->routeIs('admin.settings.index')">Pengaturan</x-responsive-nav-link>
+                @endif
+                @if(auth()->user()->role === 'parent')
+                    <x-responsive-nav-link :href="route('parent.dashboard')" :active="request()->routeIs('parent.dashboard')">Dasbor Anak</x-responsive-nav-link>
                 @endif
             @endauth
         </div>
