@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\WelcomeController; // Controller baru
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\AdminMiddleware;
@@ -13,22 +14,26 @@ use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
 use App\Http\Middleware\ParentMiddleware;
 
-// Rute Publik
-Route::get('/', [AttendanceController::class, 'showScanner'])->name('scanner');
+// == RUTE PUBLIK ==
+Route::get('/', [WelcomeController::class, 'index'])->name('welcome'); // Halaman utama baru
+Route::get('/scanner', [AttendanceController::class, 'showScanner'])->name('scanner'); // Halaman pemindai
 Route::post('/attendance', [AttendanceController::class, 'storeAttendance'])->name('attendance.store');
-Route::get('/students-list', [AttendanceController::class, 'showStudents'])->name('students.list');
 
-// Pengalihan setelah login (Diperbarui)
+
+// == RUTE AUTENTIKASI & PENGALIHAN ==
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    if ($user->role === 'admin') {
-        return redirect()->route('admin.dashboard');
-    }
-    if ($user->role === 'parent') {
-        return redirect()->route('parent.dashboard');
-    }
-    return redirect()->route('scanner');
+    if ($user->role === 'admin') { return redirect()->route('admin.dashboard'); }
+    if ($user->role === 'parent') { return redirect()->route('parent.dashboard'); }
+    return redirect()->route('welcome');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
 
 // GRUP RUTE ADMIN
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
