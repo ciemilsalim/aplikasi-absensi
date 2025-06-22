@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\SchoolClass;
+use App\Models\Student; // Impor model Student
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -28,60 +29,37 @@ class DashboardController extends Controller
 
         // --- STATISTIK ---
         $allAttendancesToday = (clone $attendancesQuery)->get();
-        $totalStudentsWithRecords = $allAttendancesToday->count();
-
-        // Statistik Persentase Izin & Sakit (BARU)
-        $totalIzin = $allAttendancesToday->where('status', 'izin')->count();
-        $totalSakit = $allAttendancesToday->where('status', 'sakit')->count();
-        $overallIzinPercentage = ($totalStudentsWithRecords > 0) ? round(($totalIzin / $totalStudentsWithRecords) * 100) : 0;
-        $overallSakitPercentage = ($totalStudentsWithRecords > 0) ? round(($totalSakit / $totalStudentsWithRecords) * 100) : 0;
         
-        // Statistik Tepat Waktu & Terlambat
+        // Perhitungan Statistik Total (BARU)
+        $totalAllStudents = Student::count();
+        $totalPresent = $allAttendancesToday->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
+        $totalAbsent = $totalAllStudents - $allAttendancesToday->count();
+        
+        $overallAttendancePercentage = ($totalAllStudents > 0) ? round(($totalPresent / $totalAllStudents) * 100) : 0;
+        $overallAbsentPercentage = ($totalAllStudents > 0) ? round(($totalAbsent / $totalAllStudents) * 100) : 0;
+        
+        // Statistik lainnya
         $totalOnTime = $allAttendancesToday->where('status', 'tepat_waktu')->count();
         $totalLate = $allAttendancesToday->where('status', 'terlambat')->count();
         $totalEffectivelyAttended = $totalOnTime + $totalLate;
         $overallOnTimePercentage = ($totalEffectivelyAttended > 0) ? round(($totalOnTime / $totalEffectivelyAttended) * 100) : 0;
         $overallLatenessPercentage = ($totalEffectivelyAttended > 0) ? round(($totalLate / $totalEffectivelyAttended) * 100) : 0;
-
-        // Statistik Kehadiran per Kelas (Diperbarui untuk tidak menghitung izin/sakit)
-        $allClassesWithStudents = SchoolClass::withCount('students')->get();
-        $attendancesByClass = $allAttendancesToday
-                                ->whereIn('status', ['tepat_waktu', 'terlambat']) // Hanya hitung yang benar-benar hadir
-                                ->groupBy('student.school_class_id');
         
+        $totalIzin = $allAttendancesToday->where('status', 'izin')->count();
+        $totalSakit = $allAttendancesToday->where('status', 'sakit')->count();
+
+        // Statistik per kelas
+        $allClassesWithStudents = SchoolClass::withCount('students')->get();
+        $attendancesByClass = $allAttendancesToday->whereIn('status', ['tepat_waktu', 'terlambat'])->groupBy('student.school_class_id');
         $classAttendanceStats = $allClassesWithStudents->map(function ($class) use ($attendancesByClass) {
-            $totalStudents = $class->students_count;
+            $totalStudentsInClass = $class->students_count;
             $attendedCount = isset($attendancesByClass[$class->id]) ? $attendancesByClass[$class->id]->count() : 0;
-            $percentage = ($totalStudents > 0) ? round(($attendedCount / $totalStudents) * 100) : 0;
-            return (object)[
-                'name' => $class->name,
-                'percentage' => $percentage,
-                'ratio' => "{$attendedCount} / {$totalStudents} Siswa Hadir",
-            ];
+            $percentage = ($totalStudentsInClass > 0) ? round(($attendedCount / $totalStudentsInClass) * 100) : 0;
+            return (object)['name' => $class->name, 'percentage' => $percentage, 'ratio' => "{$attendedCount} / {$totalStudentsInClass} Siswa Hadir"];
         });
 
-        // 4. Tambahkan filter pencarian nama jika ada
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $attendancesQuery->whereHas('student', function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            });
-        }
-
-                // 5. Terapkan filter kelas jika ada
-        if ($request->filled('school_class_id')) {
-            $attendancesQuery->whereHas('student', function ($query) use ($request) {
-                $query->where('school_class_id', $request->school_class_id);
-            });
-        }
-
-        // 5. Ambil data yang sudah difilter dengan paginasi
-        $attendances = $attendancesQuery->latest('attendance_time')->paginate(15);
-
-        // Ambil daftar semua kelas untuk filter di view
-        // $classes = SchoolClass::all();
-
-         $attendances = (clone $attendancesQuery)
+        // --- FILTER TABEL ---
+        $attendances = (clone $attendancesQuery)
             ->when($request->filled('search'), function ($q) use ($request) {
                 $q->whereHas('student', fn($sq) => $sq->where('name', 'like', '%' . $request->search . '%'));
             })
@@ -95,14 +73,13 @@ class DashboardController extends Controller
             'attendances' => $attendances,
             'selectedDate' => $selectedDate,
             'classes' => $classes,
+            'overallAttendancePercentage' => $overallAttendancePercentage,
+            'overallAbsentPercentage' => $overallAbsentPercentage,
             'overallOnTimePercentage' => $overallOnTimePercentage,
             'overallLatenessPercentage' => $overallLatenessPercentage,
-            'overallIzinPercentage' => $overallIzinPercentage,
-            'overallSakitPercentage' => $overallSakitPercentage,
+            'totalIzin' => $totalIzin, // Kirim jumlah, bukan persen
+            'totalSakit' => $totalSakit, // Kirim jumlah, bukan persen
             'classAttendanceStats' => $classAttendanceStats,
         ]);
     }
 }
-
-
-      

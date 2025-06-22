@@ -12,7 +12,27 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             {{-- KARTU STATISTIK --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Kartu Total Kehadiran (BARU) -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center">
+                    <div class="flex-shrink-0 bg-teal-100 dark:bg-teal-500/20 rounded-md p-4">
+                        <svg class="h-8 w-8 text-teal-500 dark:text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m-7.5-2.928A3 3 0 0 1 7.5 12.5m3 3a3 3 0 0 1-3-3m-3.75 2.928A9.094 9.094 0 0 1 3.75 18.72m0-5.728a3 3 0 0 1 3-3m0 0a3 3 0 0 1 3 3m0 0a3 3 0 0 1-3 3m0 0a3 3 0 0 1-3-3m9.75 0a3 3 0 0 1-3 3m3-3a3 3 0 0 0-3-3m-3.75 2.928A9.094 9.094 0 0 0 3.75 18.72m-3.75-5.728a3 3 0 0 0 3-3m0 0a3 3 0 0 0-3-3m0 0a3 3 0 0 0-3 3m0 0a3 3 0 0 0 3 3m7.5-3a3 3 0 0 0-3-3m3 3a3 3 0 0 1-3 3M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Kehadiran</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $overallAttendancePercentage }}%</p>
+                    </div>
+                </div>
+                <!-- Kartu Total Tidak Hadir (BARU) -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center">
+                    <div class="flex-shrink-0 bg-orange-100 dark:bg-orange-500/20 rounded-md p-4">
+                        <svg class="h-8 w-8 text-orange-500 dark:text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Tidak Hadir</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $overallAbsentPercentage }}%</p>
+                    </div>
+                </div>
                 <!-- Kartu Tepat Waktu -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center">
                     <div class="flex-shrink-0 bg-green-100 dark:bg-green-500/20 rounded-md p-4">
@@ -37,14 +57,14 @@
                         <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $overallLatenessPercentage }}%</p>
                     </div>
                 </div>
-                <!-- Kartu Izin -->
+                  <!-- Kartu Izin -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center">
                     <div class="flex-shrink-0 bg-purple-100 dark:bg-purple-500/20 rounded-md p-4">
                         <svg class="h-8 w-8 text-purple-500 dark:text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08H4.125A2.25 2.25 0 0 0 1.875 6.108v11.785c0 1.24.962 2.231 2.125 2.249H5.125m9.375-4.5H18m-6.375-3.75h.008v.008h-.008v-.008Zm0 3.75h.008v.008h-.008v-.008Zm0 3.75h.008v.008h-.008v-.008Z" /></svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Siswa Izin</p>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $overallIzinPercentage }}%</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $totalIzin }} <span class="text-base font-medium">Siswa</span></p>
                     </div>
                 </div>
                 <!-- Kartu Sakit -->
@@ -54,7 +74,7 @@
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Siswa Sakit</p>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $overallSakitPercentage }}%</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $totalSakit }} <span class="text-base font-medium">Siswa</span></p>
                     </div>
                 </div>
             </div>
