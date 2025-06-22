@@ -1,7 +1,5 @@
-<!-- File: resources/views/admin/teachers/index.blade.php -->
 <x-app-layout>
     <x-slot name="header">
-        {{-- Breadcrumb dipindahkan ke sini --}}
         <x-breadcrumb :breadcrumbs="[
             ['title' => 'Data', 'url' => '#'],
             ['title' => 'Data Guru', 'url' => route('admin.teachers.index')]
@@ -13,15 +11,19 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {{-- Breadcrumb dihapus dari sini --}}
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
                         <h3 class="text-lg font-medium">Daftar Akun Guru</h3>
-                        <a href="{{ route('admin.teachers.create') }}" class="inline-flex items-center px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm font-medium">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                            Tambah Guru
-                        </a>
+                        <div class="flex gap-2">
+                            <a href="{{ route('admin.teachers.import.form') }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
+                                Impor dari Excel
+                            </a>
+                            <a href="{{ route('admin.teachers.create') }}" class="inline-flex items-center px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm font-medium">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                Tambah Guru
+                            </a>
+                        </div>
                     </div>
 
                     @if (session('success'))
