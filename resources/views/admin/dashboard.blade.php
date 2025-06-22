@@ -7,6 +7,7 @@ $breadcrumbs = [
 
 <x-app-layout>
     <x-slot name="header">
+        <x-breadcrumb :breadcrumbs="$breadcrumbs" class="mb-4" />
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Dasbor Kehadiran') }}
         </h2>
@@ -14,8 +15,7 @@ $breadcrumbs = [
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {{-- Panggil komponen breadcrumb di sini --}}
-            <x-breadcrumb :breadcrumbs="$breadcrumbs" />
+            
             {{-- KARTU STATISTIK --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                 <!-- Kartu Siswa Tepat Waktu (BARU) -->

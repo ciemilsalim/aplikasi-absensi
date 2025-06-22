@@ -7,6 +7,7 @@ $breadcrumbs = [
 
 <x-app-layout>
     <x-slot name="header">
+        <x-breadcrumb :breadcrumbs="$breadcrumbs" class="mb-4" />
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Pengaturan Aplikasi') }}
         </h2>
@@ -14,8 +15,7 @@ $breadcrumbs = [
 
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <x-breadcrumb :breadcrumbs="$breadcrumbs" />
-            
+          
             {{-- Form Pengaturan Aplikasi --}}
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">

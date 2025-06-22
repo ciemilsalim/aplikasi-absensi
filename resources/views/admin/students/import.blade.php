@@ -9,6 +9,7 @@ $breadcrumbs = [
 
 <x-app-layout>
     <x-slot name="header">
+        <x-breadcrumb :breadcrumbs="$breadcrumbs" class="mb-4" />
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Impor Data Siswa dari Excel') }}
         </h2>
@@ -16,7 +17,7 @@ $breadcrumbs = [
 
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-10 lg:px-10">
-            <x-breadcrumb :breadcrumbs="$breadcrumbs" />
+            
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <form action="{{ route('admin.students.import') }}" method="POST" enctype="multipart/form-data">
                     @csrf

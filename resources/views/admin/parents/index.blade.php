@@ -1,5 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
+        <x-breadcrumb :breadcrumbs="[
+            ['title' => 'Data', 'url' => '#'], // Item tanpa link
+            ['title' => 'Orang Tua', 'url' => route('admin.parents.index')]
+        ]" class="mb-4" />
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Manajemen Orang Tua') }}
         </h2>
@@ -7,10 +11,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <x-breadcrumb :breadcrumbs="[
-                ['title' => 'Data', 'url' => '#'],
-                ['title' => 'Manajemen Ortu', 'url' => route('admin.parents.index')]
-            ]" />
+            
 
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
