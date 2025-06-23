@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ParentMiddleware;
 use App\Http\Middleware\TeacherMiddleware;
+use App\Http\Middleware\ScannerAccessMiddleware; // Impor middleware baru
 // Admin Controllers
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SchoolClassController;
@@ -36,8 +37,6 @@ use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestCo
 // == RUTE PUBLIK ==
 // Dapat diakses oleh siapa saja tanpa perlu login.
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
-Route::get('/scanner', [AttendanceController::class, 'showScanner'])->name('scanner');
-Route::post('/attendance', [AttendanceController::class, 'storeAttendance'])->name('attendance.store');
 
 // == RUTE AUTENTIKASI & PENGALIHAN ==
 // Rute-rute ini menangani logika setelah login.
@@ -115,6 +114,12 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::get('/leave-requests', [TeacherLeaveRequestController::class, 'index'])->name('leave_requests.index');
     Route::post('/leave-requests/{leaveRequest}/approve', [TeacherLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
     Route::post('/leave-requests/{leaveRequest}/reject', [TeacherLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
+});
+
+// == GRUP RUTE UNTUK AKSES PEMINDAI (BARU) ==
+Route::middleware(['auth', 'scanner.access'])->group(function () {
+    Route::get('/scanner', [AttendanceController::class, 'showScanner'])->name('scanner');
+    Route::post('/attendance', [AttendanceController::class, 'storeAttendance'])->name('attendance.store');
 });
 
 // Mengimpor rute-rute autentikasi bawaan

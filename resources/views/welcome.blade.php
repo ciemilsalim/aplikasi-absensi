@@ -96,10 +96,10 @@
                             Memudahkan pencatatan kehadiran siswa secara cepat, akurat, dan real-time. Ucapkan selamat tinggal pada absensi manual.
                         </p>
                         <div class="mt-10 flex items-center gap-x-6 animated" style="animation-name: fadeInUp; animation-delay: 0.6s;">
-                            <a href="{{ route('scanner') }}" class="rounded-md bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
+                            <a href="{{ route('login') }}" class="rounded-md bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
                                 Mulai Absen
                             </a>
-                            <a href="{{ route('login') }}" class="text-sm font-semibold leading-6 text-white">Login <span aria-hidden="true">→</span></a>
+                            {{-- <a href="{{ route('login') }}" class="text-sm font-semibold leading-6 text-white">Login <span aria-hidden="true">→</span></a> --}}
                         </div>
                     </div>
                     <div class="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow">
