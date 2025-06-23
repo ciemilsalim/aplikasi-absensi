@@ -7,8 +7,8 @@
                <div class="shrink-0 flex items-center">
                     <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center gap-3">
                         <x-application-logo class="block h-9 w-auto" />
-                        {{-- Nama Aplikasi di Samping Logo --}}
-                        <span class="hidden sm:block font-bold text-xl text-slate-800 dark:text-white tracking-tight">
+                        {{-- PERBAIKAN: Menampilkan nama aplikasi di mobile --}}
+                        <span class="block font-bold text-xl text-slate-800 dark:text-white tracking-tight">
                             {{ config('app.name', 'AbsensiSiswa') }}
                         </span>
                     </a>
@@ -138,11 +138,11 @@
 <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden" x-show="open" x-transition>
         <div class="pt-2 pb-3 space-y-1">
-            
+            {{-- PERBAIKAN: Logika untuk menampilkan menu Pemindai di mobile --}}
+            @if(Auth::guest() || (Auth::check() && (Auth::user()->role === 'admin' || (Auth::user()->role === 'teacher' && Auth::user()->teacher?->homeroomClass))))
+                <x-responsive-nav-link :href="route('scanner')" :active="request()->routeIs('scanner')">Pemindai</x-responsive-nav-link>
+            @endif
             @auth
-                @if(auth()->user()->role === 'admin' || (auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass))
-                    <x-responsive-nav-link :href="route('scanner')" :active="request()->routeIs('scanner')">Pemindai</x-responsive-nav-link>
-                @endif
                 @if(auth()->user()->role === 'admin')
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dasbor</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.parents.index')" :active="request()->routeIs('admin.parents.*')">Manajemen Ortu</x-responsive-nav-link>

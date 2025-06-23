@@ -1,40 +1,41 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
-
-        <!-- Favicon Dinamis (BARU) -->
+        
         @if (isset($appLogoPath) && $appLogoPath)
             <link rel="icon" type="image/png" href="{{ asset('storage/' . $appLogoPath) }}">
         @endif
 
-        <!-- Fonts -->
+        {{-- Memuat Google Font 'Poppins' --}}
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-        <!-- Scripts -->
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+        
         <script>
             // Skrip ini harus ada di <head> untuk mencegah layar berkedip (FOUC)
-            if (localStorage.getItem('darkMode') === 'on' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            const serverDarkModeEnabled = @json($darkModeEnabled ?? false);
+            if (localStorage.getItem('darkMode') === 'on' || (!('darkMode' in localStorage) && serverDarkModeEnabled)) {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
             }
         </script>
+        
         <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
         <script>
             tailwind.config = {
                 darkMode: 'class', // Aktifkan mode gelap berbasis class
                 theme: {
                     extend: {
-                        fontFamily: { sans: ['Inter', 'sans-serif'] },
+                        // Mengganti font utama menjadi 'Poppins'
+                        fontFamily: { 
+                            sans: ['Poppins', 'sans-serif'] 
+                        },
                         colors: {
                             sky: { 50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1',800:'#075985',900:'#0c4a6e',950:'#082f49' }
                         }
@@ -42,30 +43,20 @@
                 }
             }
         </script>
-        <style>
-            /* Gaya untuk Loader dan Transisi Halaman */
-            #page-loader {
-                transition: opacity 0.3s ease-in-out;
-            }
-            #page-content {
-                opacity: 0;
-                transition: opacity 0.4s ease-in-out;
-            }
-            #page-content.loaded {
-                opacity: 1;
+        <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+        <style type="text/tailwindcss">
+            /* Menerapkan font Poppins ke body */
+            body { 
+                @apply font-sans; 
             }
         </style>
     </head>
     <body class="font-sans antialiased">
-        <!-- Page Loader -->
-        <div id="page-loader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-sky-50 dark:bg-slate-900">
-            <div class="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-sky-600"></div>
-        </div>
-
         <div class="min-h-screen bg-sky-50 dark:bg-slate-900">
-            {{-- Header dengan Sticky Navigation BARU --}}
+            {{-- Navigasi yang lebih stylish dengan backdrop-blur --}}
             <header x-data="{ atTop: true }" @scroll.window="atTop = (window.pageYOffset < 50)" 
-                    :class="{ 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md': !atTop }" 
+                    :class="{ 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg': !atTop }" 
                     class="sticky top-0 z-50 transition-all duration-300">
                 @include('layouts.navigation')
             </header>
@@ -83,63 +74,24 @@
             <main>
                 {{ $slot }}
             </main>
-
-            <footer class="w-full bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm shadow-inner mt-auto">
-            <div class="container mx-auto px-6 py-4 text-center text-slate-500 dark:text-slate-400 text-sm">
-                &copy; {{ date('Y') }} Aplikasi Absensi Siswa.
-            </div>
-        </footer>
         </div>
+
+        {{-- Tombol Kembali ke Atas --}}
+        <div x-data="{ show: false }" 
+             @scroll.window="show = (window.pageYOffset > 300)"
+             class="fixed bottom-5 right-5 z-50">
+            <button x-show="show" 
+                    @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
+                    x-transition
+                    class="p-3 rounded-full bg-sky-600 text-white shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+                    aria-label="Kembali ke atas"
+                    style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                </svg>
+            </button>
+        </div>
+
         @stack('scripts')
-
-         <script>
-            // JavaScript untuk Loader dan Transisi Halaman
-            document.addEventListener('DOMContentLoaded', function() {
-                const loader = document.getElementById('page-loader');
-                const content = document.getElementById('page-content');
-
-                // Sembunyikan loader setelah halaman selesai dimuat
-                window.addEventListener('load', () => {
-                    if(loader) {
-                        loader.style.opacity = '0';
-                        setTimeout(() => { loader.style.display = 'none'; }, 300);
-                    }
-                    if(content) { content.classList.add('loaded'); }
-                });
-
-                // Tampilkan loader saat link internal diklik (kecuali beberapa kasus)
-                document.body.addEventListener('click', function(e) {
-                    const link = e.target.closest('a');
-                    if (!link) return;
-
-                    const href = link.getAttribute('href');
-                    const target = link.getAttribute('target');
-
-                    // Abaikan jika link membuka tab baru atau merupakan anchor
-                    if (target === '_blank' || (href && href.startsWith('#'))) {
-                        return;
-                    }
-                    
-                    // Abaikan jika link adalah bagian dari form logout
-                    if(link.closest('form') && link.closest('form').getAttribute('action').includes('logout')) {
-                         if (loader) { loader.style.display = 'flex'; setTimeout(() => { loader.style.opacity = '1'; }, 10); }
-                         return;
-                    }
-
-                    if(href && href !== window.location.href && !href.startsWith('javascript:')) {
-                        e.preventDefault();
-                        if (loader) {
-                            loader.style.display = 'flex';
-                            setTimeout(() => {
-                                loader.style.opacity = '1';
-                                window.location.href = href;
-                            }, 50);
-                        } else {
-                            window.location.href = href;
-                        }
-                    }
-                });
-            });
-        </script>
     </body>
 </html>
