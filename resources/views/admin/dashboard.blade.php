@@ -90,13 +90,14 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
                     <!-- Form Filter & Pencarian -->
                     <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
                         <div>
                             <h3 class="text-lg font-medium">Rekap Kehadiran Harian</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Menampilkan data untuk tanggal: {{ $selectedDate->translatedFormat('l, d F Y') }}</p>
                         </div>
                         <form method="GET" action="{{ route('admin.dashboard') }}" class="flex flex-wrap items-center gap-2">
                             <x-text-input type="text" name="search" placeholder="Cari nama siswa..." value="{{ request('search') }}" class="w-full sm:w-auto"/>
@@ -111,7 +112,7 @@
                         </form>
                     </div>
                     
-                    <!-- Tabel Kehadiran -->
+                    <!-- Tabel Kehadiran (Diperbarui) -->
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
@@ -120,7 +121,7 @@
                                     <th scope="col" class="px-6 py-3">Kelas</th>
                                     <th scope="col" class="px-6 py-3">Jam Masuk</th>
                                     <th scope="col" class="px-6 py-3">Jam Pulang</th>
-                                    <th scope="col" class="px-6 py-3">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -129,13 +130,27 @@
                                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ $attendance->student->name ?? 'Siswa Dihapus' }}</th>
                                         <td class="px-6 py-4">{{ $attendance->student->schoolClass->name ?? '-' }}</td>
                                         <td class="px-6 py-4">
-                                            @if(in_array($attendance->status, ['izin', 'sakit']))<span class="text-gray-400 dark:text-gray-500">-</span>@else<span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ $attendance->attendance_time->format('H:i:s') }}</span>@endif
+                                            @if(in_array($attendance->status, ['izin', 'sakit', 'alpa']))
+                                                <span class="text-gray-400 dark:text-gray-500">-</span>
+                                            @else
+                                                <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ $attendance->attendance_time->format('H:i:s') }}</span>
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4">
-                                            @if ($attendance->checkout_time)<span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">{{ $attendance->checkout_time->format('H:i:s') }}</span>@else<span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-gray-300">-</span>@endif
+                                            @if ($attendance->checkout_time)
+                                                <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">{{ $attendance->checkout_time->format('H:i:s') }}</span>
+                                            @else
+                                                <span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-gray-300">-</span>
+                                            @endif
                                         </td>
-                                        <td class="px-6 py-4">
-                                            @if ($attendance->status === 'tepat_waktu')<span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Tepat Waktu</span>@elseif ($attendance->status === 'terlambat')<span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">Terlambat</span>@elseif ($attendance->status === 'izin')<span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-purple-900 dark:text-purple-300">Izin</span>@elseif ($attendance->status === 'sakit')<span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-amber-900 dark:text-amber-300">Sakit</span>@else<span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-slate-700 dark:text-gray-300">-</span>@endif
+                                        <td class="px-6 py-4 text-center">
+                                            @if ($attendance->status === 'tepat_waktu')<span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Tepat Waktu</span>
+                                            @elseif ($attendance->status === 'terlambat')<span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">Terlambat</span>
+                                            @elseif ($attendance->status === 'izin')<span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-purple-900 dark:text-purple-300">Izin</span>
+                                            @elseif ($attendance->status === 'sakit')<span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-amber-900 dark:text-amber-300">Sakit</span>
+                                            @elseif ($attendance->status === 'alpa')<span class="bg-red-200 text-red-900 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-red-800 dark:text-red-300">Alpa</span>
+                                            @else<span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-slate-700 dark:text-gray-300">-</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

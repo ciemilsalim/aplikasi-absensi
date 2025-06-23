@@ -110,6 +110,9 @@ Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(
 Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
 
+    // Rute BARU untuk menandai kehadiran oleh wali kelas
+    Route::post('/mark-attendance', [TeacherDashboardController::class, 'markAttendance'])->name('mark.attendance');
+
     // Rute Pengajuan Izin untuk Wali Kelas (BARU)
     Route::get('/leave-requests', [TeacherLeaveRequestController::class, 'index'])->name('leave_requests.index');
     Route::post('/leave-requests/{leaveRequest}/approve', [TeacherLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
