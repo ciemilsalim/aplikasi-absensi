@@ -16,13 +16,16 @@ use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\LeaveRequestController as AdminLeaveRequestController;
 // Parent Controller
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
+use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestController;
 // Teacher Controller
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
+use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestController;
 
-use App\Http\Controllers\Admin\LeaveRequestController as AdminLeaveRequestController;
-use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -107,6 +110,11 @@ Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(
 // == GRUP RUTE GURU ==
 Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
+
+    // Rute Pengajuan Izin untuk Wali Kelas (BARU)
+    Route::get('/leave-requests', [TeacherLeaveRequestController::class, 'index'])->name('leave_requests.index');
+    Route::post('/leave-requests/{leaveRequest}/approve', [TeacherLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
+    Route::post('/leave-requests/{leaveRequest}/reject', [TeacherLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
 });
 
 // Mengimpor rute-rute autentikasi bawaan

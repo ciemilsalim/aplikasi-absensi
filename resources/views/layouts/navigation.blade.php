@@ -10,9 +10,9 @@
                     </a>
                 </div>
 
-                <!-- Navigation Links (Desktop) -->
+                <!-- Navigation Links (Desktop - tampil di layar besar 'lg') -->
                 <div class="hidden space-x-1 lg:-my-px lg:ml-10 lg:flex">
-                    @if (!Auth::check() || Auth::user()->role !== 'parent')
+                    @if (!Auth::check() || (Auth::check() && Auth::user()->role === 'admin'))
                         <a href="{{ route('scanner') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('scanner') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 0 1 1.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 0 1-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
                             Pemindai
@@ -24,6 +24,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
                                 Dasbor
                             </a>
+
                             <!-- Dropdown Menu DATA -->
                             <div class="hidden lg:flex lg:items-center relative" x-data="{ open: false }">
                                 <button @click="open = !open" class="inline-flex items-center px-4 pt-1 h-16 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.students.*') || request()->routeIs('admin.parents.*') || request()->routeIs('admin.teachers.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
@@ -62,6 +63,15 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                                 Izin/Sakit
                             </a>
+                        @endif
+                         @if(auth()->user()->role === 'teacher')
+                            <a href="{{ route('teacher.dashboard') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('teacher.dashboard') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">Dasbor</a>
+                            @if(Auth::user()->teacher && Auth::user()->teacher->homeroomClass)
+                                <a href="{{ route('teacher.leave_requests.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('teacher.leave_requests.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" /></svg>
+                                    Pengajuan Izin
+                                </a>
+                            @endif
                         @endif
                     @endauth
                 </div>
@@ -112,20 +122,17 @@
 
             <!-- Hamburger (tampil di layar kecil & tablet) -->
             <div class="-mr-2 flex items-center lg:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-700 focus:text-gray-500 dark:focus:text-gray-400 transition">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 focus:outline-none transition">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /><path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu (tampil di layar kecil & tablet) -->
+<!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden" x-show="open" x-transition>
         <div class="pt-2 pb-3 space-y-1">
-            @if (!Auth::check() || Auth::user()->role !== 'parent')
+            @if (!Auth::check() || Auth::user()->role === 'admin')
                 <x-responsive-nav-link :href="route('scanner')" :active="request()->routeIs('scanner')">Pemindai</x-responsive-nav-link>
             @endif
             @auth
@@ -135,13 +142,19 @@
                     <x-responsive-nav-link :href="route('admin.teachers.index')" :active="request()->routeIs('admin.teachers.*')">Data Guru</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.classes.index')" :active="request()->routeIs('admin.classes.*')">Data Kelas</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">Data Siswa</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.reports.create')" :active="request()->routeIs('admin.reports.*')">Laporan</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.leave_requests.index')" :active="request()->routeIs('admin.leave_requests.*')">Pengajuan Izin</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.reports.create')" :active="request()->routeIs('admin.reports.*')">Laporan</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.settings.index')" :active="request()->routeIs('admin.settings.index')">Pengaturan</x-responsive-nav-link>
                 @endif
                 @if(auth()->user()->role === 'parent')
                     <x-responsive-nav-link :href="route('parent.dashboard')" :active="request()->routeIs('parent.dashboard')">Dasbor Anak</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('parent.leave-requests.index')" :active="request()->routeIs('parent.leave-requests.*')">Izin/Sakit</x-responsive-nav-link>
+                @endif
+                @if(auth()->user()->role === 'teacher')
+                    <x-responsive-nav-link :href="route('teacher.dashboard')" :active="request()->routeIs('teacher.dashboard')">Dasbor</x-responsive-nav-link>
+                    @if(Auth::user()->teacher && Auth::user()->teacher->homeroomClass)
+                        <x-responsive-nav-link :href="route('teacher.leave_requests.index')" :active="request()->routeIs('teacher.leave_requests.*')">Pengajuan Izin</x-responsive-nav-link>
+                    @endif
                 @endif
             @endauth
         </div>
