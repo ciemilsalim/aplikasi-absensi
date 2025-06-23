@@ -38,7 +38,10 @@
     @else
     {{-- Untuk halaman welcome/scanner yang menggunakan @yield dan memiliki layout standar --}}
     <div class="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
-        <header>
+        {{-- Header dengan Sticky Navigation BARU --}}
+        <header x-data="{ atTop: true }" @scroll.window="atTop = (window.pageYOffset < 50)" 
+                :class="{ 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-md': !atTop }" 
+                class="sticky top-0 z-50 transition-all duration-300">
             @include('layouts.navigation')
         </header>
 
