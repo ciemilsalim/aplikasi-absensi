@@ -6,14 +6,14 @@
 <div class="max-w-xl mx-auto text-center">
     <!-- Jam Digital dan Tanggal -->
     <div class="mb-6">
-        <p id="current-date" class="text-lg text-slate-600 dark:text-slate-500"></p>
+        <p id="current-date" class="text-lg text-slate-600"></p>
         <p id="current-time" class="text-5xl font-bold text-sky-600 tracking-tight"></p>
     </div>
 
-    <h1 class="text-3xl font-bold text-slate-800 dark:text-slate-300 mb-2">Pindai QR Code Kehadiran</h1>
-    <p class="text-slate-600 dark:text-slate-400 mb-8">Arahkan QR Code pada kartu siswa ke kamera.</p>
+    <h1 class="text-3xl font-bold text-slate-800 mb-2">Pindai QR Code Kehadiran</h1>
+    <p class="text-slate-600 mb-8">Arahkan QR Code pada kartu siswa ke kamera.</p>
 
-    <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200  dark:bg-slate-800 dark:border-slate-700">
+    <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
         <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 rounded-lg overflow-hidden"></div>
         <div id="reader-error" class="text-red-500 text-sm mt-2 hidden">Gagal mengakses kamera. Mohon izinkan akses kamera di browser Anda.</div>
     </div>
@@ -111,6 +111,14 @@
                     modalTitle.textContent = 'Absensi Selesai';
                     playSound('warning');
                     break;
+                // **CASE BARU**: Untuk menangani siswa yang izin atau sakit
+                case 'on_leave':
+                    modalIconContainer.classList.add('bg-orange-100', 'dark:bg-orange-900');
+                    modalIconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />`;
+                    modalIconSvg.classList.add('text-orange-600', 'dark:text-orange-400');
+                    modalTitle.textContent = 'Absensi Tidak Diizinkan';
+                    playSound('error');
+                    break;
                 default:
                     modalIconContainer.classList.add('bg-red-100');
                     modalIconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`;
@@ -120,8 +128,14 @@
                     break;
             }
             
-            modalStudentName.textContent = data.student_name || data.message;
-            modalStudentNis.textContent = data.student_nis ? 'NIS: ' + data.student_nis : '';
+            // Menyesuaikan tampilan teks berdasarkan status
+            if (data.status === 'on_leave') {
+                modalStudentName.textContent = data.student_name;
+                modalStudentNis.textContent = data.message;
+            } else {
+                modalStudentName.textContent = data.student_name || data.message;
+                modalStudentNis.textContent = data.student_nis ? 'NIS: ' + data.student_nis : '';
+            }
             
             attendanceModal.classList.remove('hidden');
             setTimeout(() => {

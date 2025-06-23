@@ -29,6 +29,16 @@ class AttendanceController extends Controller
                 ->whereDate('attendance_time', $today)
                 ->first();
 
+            // **LOGIKA BARU**: Cek jika siswa sudah tercatat izin atau sakit hari ini
+            if ($attendance && in_array($attendance->status, ['izin', 'sakit'])) {
+                return response()->json([
+                    'status'        => 'on_leave', // Status baru untuk menandakan siswa sedang izin/sakit
+                    'message'       => 'Anda sudah tercatat ' . $attendance->status . ' hari ini dan tidak dapat melakukan absensi.',
+                    'student_name'  => $student->name,
+                    'student_nis'   => $student->nis,
+                ], 409); // 409 Conflict, karena aksi tidak dapat diproses.
+            }
+
             // KASUS 1: Absen Masuk
            if (!$attendance) {
                 // Ambil batas waktu dari database, dengan nilai default jika tidak ada
