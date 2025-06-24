@@ -20,19 +20,27 @@ class LeaveRequestController extends Controller
         
         // Pastikan guru ini adalah wali kelas
         if (!$teacher || !$teacher->homeroomClass) {
-            return redirect()->route('teacher.dashboard')->with('error', 'Anda bukan wali kelas.');
+            return redirect()->route('teacher.dashboard')->with('error', 'Halaman ini hanya untuk wali kelas.');
         }
 
         // Ambil ID siswa dari kelas perwalian
         $studentIds = $teacher->homeroomClass->students->pluck('id');
 
-        // Ambil pengajuan hanya dari siswa-siswa tersebut
-        $leaveRequests = LeaveRequest::whereIn('student_id', $studentIds)
+        // 1. Ambil pengajuan yang masih 'pending' untuk siswa perwalian
+        $pendingRequests = LeaveRequest::whereIn('student_id', $studentIds)
+                                     ->where('status', 'pending')
+                                     ->with(['student', 'parent'])
+                                     ->oldest()
+                                     ->get();
+
+        // 2. Ambil pengajuan yang sudah diproses sebagai riwayat
+        $processedRequests = LeaveRequest::whereIn('student_id', $studentIds)
+                                     ->whereIn('status', ['approved', 'rejected'])
                                      ->with(['student', 'parent', 'approver'])
-                                     ->latest()
+                                     ->latest('updated_at')
                                      ->paginate(10);
                                      
-        return view('teacher.leave_requests.index', compact('leaveRequests'));
+        return view('teacher.leave_requests.index', compact('pendingRequests', 'processedRequests'));
     }
 
     /**
@@ -85,7 +93,7 @@ class LeaveRequestController extends Controller
     }
 
     /**
-     * Helper untuk otorisasi aksi.
+     * Helper untuk memastikan guru hanya bisa memproses siswa perwaliannya.
      */
     private function authorizeAction(LeaveRequest $leaveRequest)
     {

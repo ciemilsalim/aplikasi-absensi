@@ -11,54 +11,50 @@ use Carbon\CarbonPeriod;
 class LeaveRequestController extends Controller
 {
     /**
-     * Menampilkan daftar semua pengajuan izin/sakit.
+     * Menampilkan daftar pengajuan yang perlu diproses dan riwayatnya.
      */
     public function index()
     {
-        $leaveRequests = LeaveRequest::with(['student.schoolClass', 'parent', 'approver'])
-                                     ->latest()
+        // 1. Ambil pengajuan yang masih 'pending'
+        $pendingRequests = LeaveRequest::where('status', 'pending')
+                                     ->with(['student.schoolClass', 'parent'])
+                                     ->oldest() // Proses yang paling lama masuk lebih dulu
+                                     ->get();
+
+        // 2. Ambil pengajuan yang sudah diproses (disetujui/ditolak) sebagai riwayat
+        $processedRequests = LeaveRequest::whereIn('status', ['approved', 'rejected'])
+                                     ->with(['student.schoolClass', 'parent', 'approver'])
+                                     ->latest('updated_at') // Tampilkan yang terbaru diproses
                                      ->paginate(10);
                                      
-        return view('admin.leave_requests.index', compact('leaveRequests'));
+        return view('admin.leave_requests.index', compact('pendingRequests', 'processedRequests'));
     }
 
     /**
      * Menyetujui pengajuan dan membuat catatan kehadiran.
-     * INI ADALAH LOGIKA UTAMA YANG ANDA MINTA.
      */
     public function approve(LeaveRequest $leaveRequest)
     {
-        // Pastikan hanya pengajuan yang 'pending' yang bisa diproses
         if ($leaveRequest->status !== 'pending') {
             return redirect()->back()->with('error', 'Pengajuan ini sudah pernah diproses.');
         }
 
-        // 1. Update status pengajuan menjadi 'approved'
         $leaveRequest->status = 'approved';
-        $leaveRequest->approved_by = Auth::id(); // Catat siapa yang menyetujui
+        $leaveRequest->approved_by = Auth::id();
         $leaveRequest->save();
 
-        // 2. Buat perulangan tanggal dari tanggal mulai hingga tanggal selesai
         $period = CarbonPeriod::create($leaveRequest->start_date, $leaveRequest->end_date);
-
-        // 3. Untuk setiap tanggal, buat atau perbarui catatan di tabel 'attendances'
         foreach ($period as $date) {
             Attendance::updateOrCreate(
                 [
-                    // Cari absensi berdasarkan siswa dan tanggal
                     'student_id' => $leaveRequest->student_id,
-                    'attendance_time' => $date->startOfDay(), // Gunakan awal hari sebagai penanda waktu
+                    'attendance_time' => $date->startOfDay(),
                 ],
-                [
-                    // Atur statusnya menjadi 'izin' atau 'sakit'
-                    'status' => $leaveRequest->type,
-                    // Pastikan jam pulang dikosongkan jika ada
-                    'checkout_time' => null, 
-                ]
+                [ 'status' => $leaveRequest->type, 'checkout_time' => null ]
             );
         }
 
-        return redirect()->route('admin.leave_requests.index')->with('success', 'Pengajuan berhasil disetujui dan data kehadiran telah diperbarui.');
+        return redirect()->route('admin.leave_requests.index')->with('success', 'Pengajuan berhasil disetujui.');
     }
 
     /**
@@ -66,7 +62,6 @@ class LeaveRequestController extends Controller
      */
     public function reject(Request $request, LeaveRequest $leaveRequest)
     {
-        // Pastikan hanya pengajuan yang 'pending' yang bisa diproses
         if ($leaveRequest->status !== 'pending') {
             return redirect()->back()->with('error', 'Pengajuan ini sudah pernah diproses.');
         }
@@ -74,7 +69,7 @@ class LeaveRequestController extends Controller
         $request->validate(['rejection_reason' => 'required|string|max:255']);
 
         $leaveRequest->status = 'rejected';
-        $leaveRequest->approved_by = Auth::id(); // Catat siapa yang menolak
+        $leaveRequest->approved_by = Auth::id();
         $leaveRequest->rejection_reason = $request->rejection_reason;
         $leaveRequest->save();
 
