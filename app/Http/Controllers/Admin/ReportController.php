@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SchoolClass;
 use App\Models\Student;
-use App\Models\Attendance;
-use Barryvdh\DomPDF\Facade\Pdf; // Impor facade PDF
+use App\Models\Setting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class ReportController extends Controller
 {
@@ -35,7 +36,6 @@ class ReportController extends Controller
         $date = Carbon::createFromFormat('Y-m', $request->month);
         $monthName = $date->translatedFormat('F Y');
         
-        // Ambil semua siswa di kelas tersebut beserta data kehadirannya
         $students = Student::where('school_class_id', $class->id)
                             ->with(['attendances' => function ($query) use ($date) {
                                 $query->whereYear('attendance_time', $date->year)
@@ -44,25 +44,61 @@ class ReportController extends Controller
                             ->orderBy('name')
                             ->get();
 
-        // Siapkan data untuk view PDF
-        $reportData = $students->map(function ($student) {
+        // Hitung statistik detail untuk setiap siswa
+        $reportData = $students->map(function ($student) use ($date) {
+            $attendancesInMonth = $student->attendances;
+
+            $tepatWaktu = $attendancesInMonth->where('status', 'tepat_waktu')->count();
+            $terlambat = $attendancesInMonth->where('status', 'terlambat')->count();
+            $hadir = $tepatWaktu + $terlambat;
+            $sakit = $attendancesInMonth->where('status', 'sakit')->count();
+            $izin = $attendancesInMonth->where('status', 'izin')->count();
+
+            // Hitung hari kerja dalam sebulan (asumsi Senin-Sabtu)
+            $workDays = 0;
+            for ($day = 1; $day <= $date->daysInMonth; $day++) {
+                if (!$date->copy()->setDay($day)->isSunday()) {
+                    $workDays++;
+                }
+            }
+            $totalRecords = $attendancesInMonth->count();
+            $alpa = $workDays - $totalRecords;
+
             return (object)[
                 'name' => $student->name,
                 'nis' => $student->nis,
-                'hadir' => $student->attendances->count(),
-                'tepat_waktu' => $student->attendances->where('status', 'tepat_waktu')->count(),
-                'terlambat' => $student->attendances->where('status', 'terlambat')->count(),
+                'hadir' => $hadir,
+                'tepat_waktu' => $tepatWaktu,
+                'terlambat' => $terlambat,
+                'sakit' => $sakit,
+                'izin' => $izin,
+                'alpa' => $alpa > 0 ? $alpa : 0,
             ];
         });
+
+        // Ambil data sekolah dari pengaturan
+        $settings = Setting::pluck('value', 'key');
+        $schoolName = $settings->get('school_name', config('app.name'));
+        $schoolAddress = $settings->get('school_address');
+        $logoPath = $settings->get('app_logo');
+        
+        // Konversi logo ke base64 agar bisa disematkan di PDF
+        $logoBase64 = null;
+        if ($logoPath && Storage::disk('public')->exists($logoPath)) {
+            $logoData = Storage::disk('public')->get($logoPath);
+            $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
+        }
 
         // Buat PDF
         $pdf = Pdf::loadView('admin.reports.pdf', [
             'reportData' => $reportData,
             'className' => $class->name,
             'monthName' => $monthName,
+            'schoolName' => $schoolName,
+            'schoolAddress' => $schoolAddress,
+            'logoBase64' => $logoBase64,
         ]);
 
-        // Tampilkan PDF di browser
         return $pdf->stream('laporan-kehadiran-' . $class->name . '-' . $date->format('F-Y') . '.pdf');
     }
 }
