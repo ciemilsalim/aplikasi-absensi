@@ -14,15 +14,21 @@
         <div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-white dark:bg-slate-900">
             <div class="mx-auto w-full max-w-sm lg:w-96">
                 <div>
-                     <a href="{{ route('welcome') }}">
+                       {{-- PERBAIKAN: Menampilkan nama aplikasi dan nama sekolah --}}
+                     <a href="{{ route('welcome') }}" class="flex items-center gap-3">
                         <x-application-logo class="h-12 w-auto text-sky-600 dark:text-sky-500" />
+                        <div>
+                            <p class="font-bold text-xl text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'AbsensiSiswa') }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">{{ $appName ?? 'Nama Sekolah Anda' }}</p>
+                        </div>
                     </a>
                     <h2 class="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Buat Akun Baru</h2>
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
                         Sudah punya akun?
-                        <a href="{{ route('login') }}" class="font-medium text-sky-600 hover:text-sky-500">Login di sini</a>
+                        <a href="{{ route('login') }}" class="font-medium text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300">Login di sini</a>
                     </p>
                 </div>
+                    
 
                 <div class="mt-8">
                     {{-- PERBAIKAN: Menambahkan class 'space-y-6' untuk spasi yang konsisten --}}

@@ -10,7 +10,6 @@
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $appLogoPath) }}">
     @endif
     
-    {{-- Memuat Google Font 'Poppins' --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,7 +29,6 @@
             darkMode: 'class', 
             theme: { 
                 extend: { 
-                    // Mengganti font utama menjadi 'Poppins'
                     fontFamily: { 
                         sans: ['Poppins', 'sans-serif'] 
                     },
@@ -44,20 +42,21 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <style type="text/tailwindcss">
-        /* Menerapkan font Poppins ke body */
         body { 
             @apply font-sans; 
         }
     </style>
 </head>
 <body class="antialiased font-sans h-full">
+    {{-- Layout ini sekarang cukup fleksibel untuk menangani semua halaman tamu --}}
     @if (isset($slot))
-        {{-- Untuk halaman login/register yang menggunakan <slot> --}}
-        {{ $slot }}
+        {{-- Untuk halaman login/register yang menggunakan <slot> dan sudah memiliki layout sendiri --}}
+        <div class="bg-white dark:bg-slate-900">
+            {{ $slot }}
+        </div>
     @else
-    {{-- Untuk halaman welcome/scanner yang menggunakan @yield --}}
+    {{-- Untuk halaman welcome/scanner yang menggunakan @yield dan memerlukan layout standar --}}
     <div class="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
-        {{-- Navigasi yang lebih stylish dengan backdrop-blur --}}
         <header x-data="{ atTop: true }" @scroll.window="atTop = (window.pageYOffset < 50)" 
                 :class="{ 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg': !atTop }" 
                 class="sticky top-0 z-50 transition-all duration-300">

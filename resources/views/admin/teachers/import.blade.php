@@ -19,8 +19,7 @@
                         <div class="bg-sky-50 border-l-4 border-sky-400 text-sky-800 p-4 rounded-md dark:bg-sky-900/50 dark:text-sky-300" role="alert">
                             <p class="font-bold">Petunjuk Penting</p>
                             <ul class="list-disc list-inside mt-2 text-sm">
-                                <li>Pastikan file Anda berformat <strong>.xlsx</strong> atau <strong>.xls</strong>.</li>
-                                <li>Baris pertama file harus berisi heading: <strong>nama</strong>, <strong>email</strong>, <strong>password</strong>.</li>
+                                <li>Pastikan heading kolom adalah <strong>nama</strong>, <strong>email</strong>, dan <strong>password</strong>.</li>
                                 <li>Heading <strong>nip</strong> dan <strong>nomor_hp</strong> bersifat opsional.</li>
                                 <li>Email dan NIP tidak boleh duplikat dengan data yang sudah ada.</li>
                             </ul>
@@ -44,7 +43,7 @@
                         </div>
                     </div>
                     <div class="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-end gap-4">
-                        <a href="{{ route('admin.teachers.index') }}" class="text-sm font-medium">Batal</a>
+                        <a href="{{ route('admin.teachers.index') }}" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Batal</a>
                         <x-primary-button>Mulai Proses Impor</x-primary-button>
                     </div>
                 </form>

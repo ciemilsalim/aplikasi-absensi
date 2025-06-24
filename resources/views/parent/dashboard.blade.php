@@ -10,6 +10,17 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            
+            {{-- PERBAIKAN: Menambahkan Welcome Section --}}
+            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <h3 class="text-xl font-semibold">Selamat Datang, {{ Auth::user()->name }}!</h3>
+                    <p class="text-gray-500 dark:text-gray-400 mt-1">
+                        Ini adalah halaman dasbor Anda. Di sini Anda dapat memantau riwayat kehadiran anak-anak Anda dan mengajukan izin jika diperlukan.
+                    </p>
+                </div>
+            </div>
+
             @if (session('error'))
                 <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 sm:rounded-lg" role="alert">
                     <p>{{ session('error') }}</p>
@@ -17,7 +28,7 @@
             @endif
 
             @forelse($students as $student)
-                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white dark:bg-slate-800 shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                             <div>
