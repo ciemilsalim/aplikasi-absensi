@@ -4,7 +4,11 @@
     <div class="flex h-16 shrink-0 items-center gap-x-3">
         <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center gap-3">
             <x-application-logo class="block h-9 w-auto" />
-            <span class="font-bold text-xl text-slate-800 dark:text-white tracking-tight">{{ $appName ?? config('app.name', 'AbsensiSiswa') }}</span>
+            {{-- PERBAIKAN: Menampilkan nama aplikasi dan nama sekolah secara terpisah --}}
+            <div>
+                <p class="font-bold text-lg text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'AbsensiSiswa') }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">{{ $appName ?? 'Nama Sekolah' }}</p>
+            </div>
         </a>
     </div>
     
@@ -39,18 +43,15 @@
             <li>
                 <div class="text-xs font-semibold leading-6 text-gray-400">Administrasi</div>
                 <ul role="list" class="-mx-2 mt-2 space-y-1">
-                    {{-- PERBAIKAN: Ikon untuk Manajemen Ortu --}}
                      <li><a href="{{ route('admin.parents.index') }}" class="{{ request()->routeIs('admin.parents.*') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" /></svg>
                         Manajemen Ortu
                     </a></li>
-                    {{-- PERBAIKAN: Ikon untuk Data Guru --}}
                      <li><a href="{{ route('admin.teachers.index') }}" class="{{ request()->routeIs('admin.teachers.*') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0-5.455-1.743l-1.558-.467m-6.323-.878A11.962 11.962 0 0 1 3 12.878V12l8.242-8.242a1 1 0 0 1 1.414 0l8.242 8.242v.878a11.962 11.962 0 0 1-4.212 4.212l-.467-1.558A9.38 9.38 0 0 0 15 19.128Z" /></svg>
                         Data Guru
                     </a></li>
                      <li><a href="{{ route('admin.classes.index') }}" class="{{ request()->routeIs('admin.classes.*') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"><svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>Data Kelas</a></li>
-                     {{-- PERBAIKAN: Ikon untuk Data Siswa --}}
                      <li><a href="{{ route('admin.students.index') }}" class="{{ request()->routeIs('admin.students.*') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443a55.378 55.378 0 0 1 5.25 2.882V15a.75.75 0 1 0 0 1.5m0 0v3.675a55.378 55.378 0 0 1-5.25 2.882m5.25-6.557a3 3 0 0 0-3 3v1.5a3 3 0 1 0 6 0v-1.5a3 3 0 0 0-3-3Z" /></svg>
                         Data Siswa
