@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\Setting;
+use Illuminate\Database\QueryException;
 
 class LogoServiceProvider extends ServiceProvider
 {
@@ -13,16 +14,21 @@ class LogoServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Mendaftarkan 'app_settings' sebagai singleton untuk efisiensi
+        // Mendaftarkan 'app_settings' sebagai singleton untuk efisiensi.
+        // Logika untuk mengambil data dari database hanya akan dijalankan
+        // satu kali, yaitu saat pertama kali dibutuhkan.
         $this->app->singleton('app_settings', function ($app) {
+            // Mencegah query database saat menjalankan perintah console
             if ($app->runningInConsole()) {
-                return collect(); // Kembalikan koleksi kosong untuk perintah console
+                return collect();
             }
+            
             try {
-                // Ambil semua pengaturan sekali saja
+                // Ambil semua pengaturan dari database
                 return Setting::pluck('value', 'key');
-            } catch (\Exception $e) {
-                return collect(); // Kembalikan koleksi kosong jika ada error
+            } catch (QueryException $e) {
+                // Jika database belum siap atau ada error lain, kembalikan koleksi kosong
+                return collect();
             }
         });
     }
@@ -32,13 +38,14 @@ class LogoServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Bagikan data ke semua view menggunakan singleton yang sudah didaftarkan
+        // Sekarang, di metode boot, kita hanya memberitahu semua view
+        // untuk menggunakan singleton yang sudah kita daftarkan.
         View::composer('*', function ($view) {
             $settings = $this->app->make('app_settings');
             
             $view->with([
                 'appLogoPath' => $settings->get('app_logo'),
-                // Kirim status mode gelap sebagai boolean (true/false)
+                'appName' => $settings->get('school_name', config('app.name', 'AbsensiSiswa')),
                 'darkModeEnabled' => $settings->get('dark_mode', 'off') === 'on',
             ]);
         });
