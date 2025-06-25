@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'parent' => \App\Http\Middleware\ParentMiddleware::class, // Tambahkan ini
             'teacher' => \App\Http\Middleware\TeacherMiddleware::class, // Tambahkan ini
             'scanner.access' => \App\Http\Middleware\ScannerAccessMiddleware::class, // Tambahkan ini
+            
+        ]);
+        $middleware->web(append: [
+                \App\Http\Middleware\UpdateLastSeenMiddleware::class, // Tambahkan ini
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ParentModel;
 use App\Models\User;
 use App\Models\Student;
-use App\Imports\ParentsImport; // Impor kelas baru
-use Maatwebsite\Excel\Facades\Excel; // Impor facade Excel
+use App\Imports\ParentsImport; // Pastikan ini diimpor
+use Maatwebsite\Excel\Facades\Excel; // Pastikan ini diimpor
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -15,11 +15,24 @@ use Illuminate\Validation\Rules;
 class ParentController extends Controller
 {
     /**
-     * Menampilkan daftar semua orang tua.
+     * Menampilkan daftar semua orang tua dengan paginasi.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $parents = ParentModel::with('user')->withCount('students')->latest()->paginate(10);
+        $query = ParentModel::query()->with('user')->withCount('students');
+
+        // Terapkan filter pencarian jika ada
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $parents = $query->latest()->paginate(10);
         return view('admin.parents.index', compact('parents'));
     }
 
@@ -59,18 +72,11 @@ class ParentController extends Controller
     }
 
     /**
-     * Menampilkan form untuk menghubungkan siswa ke orang tua.
-     * PERBAIKAN: Menggunakan ID untuk mencari model secara manual.
+     * Menampilkan form untuk menghubungkan siswa ke akun orang tua.
      */
-    public function edit($id)
+    public function edit(ParentModel $parent)
     {
-        $parent = ParentModel::findOrFail($id);
-
-        // Ambil siswa yang sudah terhubung dengan orang tua ini
         $studentsLinked = $parent->students()->orderBy('name')->get();
-        $linkedStudentIds = $studentsLinked->pluck('id');
-
-        // Ambil siswa yang belum punya wali sama sekali
         $studentsNotLinked = Student::whereDoesntHave('parents')->orderBy('name')->get();
 
         return view('admin.parents.edit', compact('parent', 'studentsLinked', 'studentsNotLinked'));
@@ -78,12 +84,9 @@ class ParentController extends Controller
 
     /**
      * Memperbarui hubungan antara orang tua dan siswa.
-     * PERBAIKAN: Menggunakan ID untuk mencari model secara manual.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, ParentModel $parent)
     {
-        $parent = ParentModel::findOrFail($id);
-        
         $request->validate([
             'students_to_add' => ['nullable', 'array'],
             'students_to_remove' => ['nullable', 'array'],
@@ -97,16 +100,14 @@ class ParentController extends Controller
             $parent->students()->detach($request->students_to_remove);
         }
 
-        return redirect()->route('admin.parents.edit', $parent->id)->with('success', 'Hubungan siswa berhasil diperbarui.');
+        return redirect()->route('admin.parents.edit', $parent)->with('success', 'Hubungan siswa berhasil diperbarui.');
     }
 
     /**
      * Menghapus akun orang tua dan user yang terkait.
-     * PERBAIKAN: Menggunakan ID untuk mencari model secara manual.
      */
-    public function destroy($id)
+    public function destroy(ParentModel $parent)
     {
-        $parent = ParentModel::findOrFail($id);
         $parent->user()->delete();
         
         return redirect()->route('admin.parents.index')->with('success', 'Akun orang tua berhasil dihapus.');
@@ -141,5 +142,19 @@ class ParentController extends Controller
         }
 
         return redirect()->route('admin.parents.index')->with('success', 'Data orang tua berhasil diimpor!');
+    }
+
+
+    /**
+     * Mengambil daftar ID user orang tua yang sedang online.
+     */
+    public function getOnlineStatus()
+    {
+        // Orang tua dianggap online jika aktivitas terakhirnya dalam 5 menit terakhir
+        $onlineParentUserIds = User::where('role', 'parent')
+                               ->where('last_seen_at', '>', now()->subMinutes(5))
+                               ->pluck('id'); // Ambil ID dari tabel 'users'
+
+        return response()->json($onlineParentUserIds);
     }
 }

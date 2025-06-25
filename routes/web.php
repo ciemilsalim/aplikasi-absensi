@@ -88,6 +88,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('students', StudentController::class)->parameters(['students' => 'student']);
 
     // Rute Manajemen Ortu
+    Route::get('/parents/online-status', [ParentController::class, 'getOnlineStatus'])->name('parents.online_status');
     Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
     Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
     Route::resource('parents', ParentController::class)->parameters(['parents' => 'parent']);
@@ -100,6 +101,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
     Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
     Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
+
 });
 
 // GRUP RUTE ORANG TUA
