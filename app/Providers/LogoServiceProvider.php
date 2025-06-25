@@ -46,6 +46,7 @@ class LogoServiceProvider extends ServiceProvider
             $view->with([
                 'appLogoPath' => $settings->get('app_logo'),
                 'appName' => $settings->get('school_name', config('app.name', 'AbsensiSiswa')),
+                // PERBAIKAN: Mengirim status mode gelap sebagai boolean (true/false) ke semua halaman
                 'darkModeEnabled' => $settings->get('dark_mode', 'off') === 'on',
             ]);
         });

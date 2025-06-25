@@ -66,8 +66,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/reports', [ReportController::class, 'create'])->name('reports.create');
     Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
     
-    // Rute Pengaturan
-    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    // Rute Pengaturan BARU
+    Route::get('/settings/identity', [SettingController::class, 'identity'])->name('settings.identity');
+    Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
+    Route::get('/settings/attendance', [SettingController::class, 'attendance'])->name('settings.attendance');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
     // Rute Manajemen Kelas (dipecah dari resource untuk kejelasan)
