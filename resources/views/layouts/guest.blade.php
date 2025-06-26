@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full scroll-smooth">
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-t">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name', 'Laravel'))</title>
@@ -47,27 +47,27 @@
         }
     </style>
 </head>
-<body class="antialiased font-sans h-full">
-    {{-- Layout ini sekarang cukup fleksibel untuk menangani semua halaman tamu --}}
+<body class="antialiased font-sans h-full bg-slate-50 dark:bg-slate-900">
     @if (isset($slot))
-        {{-- Untuk halaman login/register yang menggunakan <slot> dan sudah memiliki layout sendiri --}}
-        <div class="bg-white dark:bg-slate-900">
-            {{ $slot }}
-        </div>
+        {{-- Untuk halaman login/register yang sudah memiliki layout full-page sendiri --}}
+        {{ $slot }}
     @else
-    {{-- Untuk halaman welcome/scanner yang menggunakan @yield dan memerlukan layout standar --}}
-    <div class="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
+    {{-- Untuk halaman welcome/scanner yang memerlukan wrapper layout --}}
+    <div class="flex flex-col min-h-screen">
+        {{-- PERBAIKAN: Menyamakan style header sticky dengan layout app --}}
         <header x-data="{ atTop: true }" @scroll.window="atTop = (window.pageYOffset < 50)" 
-                :class="{ 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg': !atTop }" 
+                :class="{ 'bg-white dark:bg-slate-800 shadow-md': !atTop }" 
                 class="sticky top-0 z-50 transition-all duration-300">
             @include('layouts.navigation')
         </header>
+
         <main class="flex-grow">
             @yield('content')
         </main>
-        <footer class="w-full bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm shadow-inner mt-auto">
+
+        <footer class="w-full bg-white dark:bg-slate-800/50 shadow-inner-top mt-auto">
             <div class="container mx-auto px-6 py-4 text-center text-slate-500 dark:text-slate-400 text-sm">
-                &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}.
+                &copy; {{ date('Y') }} {{ $appName ?? config('app.name', 'Laravel') }}.
             </div>
         </footer>
     </div>
