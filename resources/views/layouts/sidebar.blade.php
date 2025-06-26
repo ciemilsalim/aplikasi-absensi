@@ -42,7 +42,7 @@
             <li>
                 <div class="text-xs font-semibold leading-6 text-gray-400">Administrasi</div>
                 <ul role="list" class="-mx-2 mt-2 space-y-1">
-                    <li><a href="{{ route('admin.parents.index') }}" class="{{ request()->routeIs('admin.parents.*') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                     <li><a href="{{ route('admin.parents.index') }}" class="{{ request()->routeIs('admin.parents.*') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283-.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" /></svg>
                         Manajemen Ortu
                     </a></li>
@@ -55,7 +55,20 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443a55.378 55.378 0 0 1 5.25 2.882V15a.75.75 0 1 0 0 1.5m0 0v3.675a55.378 55.378 0 0 1-5.25 2.882m5.25-6.557a3 3 0 0 0-3 3v1.5a3 3 0 1 0 6 0v-1.5a3 3 0 0 0-3-3Z" /></svg>
                         Data Siswa
                     </a></li>
-                     <li><a href="{{ route('admin.leave_requests.index') }}" class="{{ request()->routeIs('admin.leave_requests.*') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"><svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" /></svg>Pengajuan Izin</a></li>
+                     <li>
+                        {{-- PERBAIKAN: Menambahkan badge notifikasi --}}
+                        <a href="{{ route('admin.leave_requests.index') }}" class="{{ request()->routeIs('admin.leave_requests.*') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex items-center justify-between gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                            <span class="flex gap-x-3">
+                                <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" /></svg>
+                                Pengajuan Izin
+                            </span>
+                            @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
+                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-medium">
+                                    {{ $pendingLeaveRequestsCount }}
+                                </span>
+                            @endif
+                        </a>
+                    </li>
                      <li><a href="{{ route('admin.reports.create') }}" class="{{ request()->routeIs('admin.reports.*') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"><svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.75h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5-1.5a1.5 1.5 0 0 1-1.5-1.5V6.75A2.25 2.25 0 0 1 4.5 4.5h15a2.25 2.25 0 0 1 2.25 2.25v12.75a1.5 1.5 0 0 1-1.5 1.5h-16.5a1.5 1.5 0 0 1-1.5-1.5Z" /></svg>Laporan</a></li>
                 </ul>
             </li>
