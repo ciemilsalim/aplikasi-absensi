@@ -79,7 +79,7 @@ class StudentController extends Controller
 
     public function qr()
     {
-        $students = Student::orderBy('name')->get();
+        $students = Student::with('schoolClass')->orderBy('name')->get();
         return view('admin.students.qr', compact('students'));
     }
 

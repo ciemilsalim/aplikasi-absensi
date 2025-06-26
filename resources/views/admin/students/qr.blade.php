@@ -26,42 +26,28 @@
                     </div>
 
                     {{-- Grid untuk menampilkan kartu-kartu siswa --}}
-                    <div id="card-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div id="card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         @forelse ($students as $student)
                             <div class="student-card-container break-inside-avoid">
-                                <!-- Sisi Depan Kartu -->
-                                <div class="student-card-front bg-gradient-to-br from-sky-500 to-indigo-600 rounded-2xl shadow-lg p-4 text-white relative overflow-hidden">
-                                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full"></div>
-                                    <div class="absolute -bottom-12 -left-8 w-40 h-40 bg-white/10 rounded-full"></div>
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold text-base">{{ config('app.name', 'AbsensiSiswa') }}</p>
-                                            <p class="text-xs opacity-80">Kartu Pelajar & Absensi</p>
-                                        </div>
-                                        @if ($appLogoPath)
-                                            <img src="{{ asset('storage/' . $appLogoPath) }}" alt="Logo" class="h-10 w-10 object-contain bg-white rounded-full p-1">
-                                        @endif
+                                {{-- PERBAIKAN: Desain kartu dengan header berwarna --}}
+                                <div class="w-full h-full bg-white dark:bg-slate-800 rounded-2xl shadow-lg flex flex-col text-center relative overflow-hidden">
+                                    <!-- Header Kartu Berwarna -->
+                                    <div class="bg-sky-600 dark:bg-sky-700 text-white p-4 text-center rounded-t-2xl">
+                                        <p class="font-bold text-base leading-tight">{{ $appName }}</p>
+                                        <p class="text-xs text-sky-200 leading-tight">{{ config('app.name', 'AbsensiSiswa') }}</p>
                                     </div>
-                                    <div class="mt-6 flex items-center gap-4">
-                                        <div class="w-20 h-20 bg-white/30 rounded-lg flex items-center justify-center">
-                                            <svg class="w-12 h-12 text-white/70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
-                                        </div>
-                                        <div>
-                                            <p class="font-bold text-base leading-tight">{{ $student->name }}</p>
-                                            <p class="text-xs opacity-90">NIS: {{ $student->nis }}</p>
-                                            <p class="text-xs opacity-90">Kelas: {{ $student->schoolClass->name ?? '-' }}</p>
+
+                                    <!-- Konten Utama -->
+                                    <div class="flex-grow flex flex-col items-center justify-center p-4">
+                                        <div class="p-2 bg-white rounded-lg shadow-md inline-block">
+                                            {!! QrCode::size(120)->generate($student->unique_id) !!}
                                         </div>
                                     </div>
-                                </div>
-                                <!-- Sisi Belakang Kartu -->
-                                <div class="student-card-back bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-4 mt-2">
-                                    <div class="flex flex-col items-center justify-center h-full">
-                                        <div class="p-1.5 bg-white rounded-lg shadow-inner">
-                                            {!! QrCode::size(85)->generate($student->unique_id) !!}
-                                        </div>
-                                        <p class="text-[10px] text-center text-gray-500 dark:text-gray-400 mt-2">Gunakan QR Code untuk absensi masuk dan pulang.</p>
-                                        <div class="border-t border-dashed w-full my-2 dark:border-slate-700"></div>
-                                        <p class="text-[9px] text-center text-gray-500 dark:text-gray-400">Jika kartu hilang, segera lapor ke pihak sekolah.</p>
+                                    
+                                    <!-- Footer -->
+                                    <div class="w-full p-4 border-t border-gray-100 dark:border-slate-700">
+                                        <p class="font-bold text-lg text-slate-800 dark:text-white truncate" title="{{ $student->name }}">{{ $student->name }}</p>
+                                        <p class="text-sm text-slate-500 dark:text-slate-400">NIS: {{ $student->nis }} | {{ $student->schoolClass->name ?? 'Tanpa Kelas' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -76,56 +62,51 @@
 
     <style>
         @media print {
-            .print-hidden, [x-data], header, footer, x-slot, nav {
-                display: none !important;
+            body > * { visibility: hidden; }
+            #card-grid, #card-grid * { visibility: visible; }
+            #card-grid {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 0.5cm;
+                margin: 0;
             }
-            body {
-                padding: 0 !important;
-                margin: 0 !important;
-                background-color: #fff !important;
-            }
-            main {
-                padding: 0.5rem !important;
-            }
-            .py-12 {
-                padding: 0 !important;
-            }
-            .bg-white, .dark\:bg-slate-800, .max-w-7xl {
-                box-shadow: none !important;
-                border: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                background-color: transparent !important;
-            }
+            .print-hidden { display: none !important; }
+            body { background-color: #fff !important; }
             
-            /* PERBAIKAN UKURAN KARTU NAMA */
             #card-grid {
                 display: flex !important;
                 flex-wrap: wrap !important;
-                gap: 5mm !important;
+                gap: 0.5 !important;
                 justify-content: flex-start;
             }
             .student-card-container {
-                width: 85.6mm;
-                height: 108mm; /* Kira-kira 2x tinggi kartu nama + margin */
+                width: 53.98mm; /* Lebar kartu nama standar */
+                height: 85.6mm; /* Tinggi kartu nama standar */
                 page-break-inside: avoid;
-                border: 1px dashed #ccc; /* PERBAIKAN: Menambahkan garis tepi untuk panduan potong */
-                border-radius: 1rem; /* Menyesuaikan radius dengan kartu di dalamnya */
-                overflow: hidden; /* Memastikan konten tidak keluar dari border */
-            }
-            .student-card-front, .student-card-back {
-                width: 100%;
-                height: 53.98mm; /* Ukuran tinggi kartu nama standar */
-                box-sizing: border-box;
-                border-radius: 0; /* Hapus radius dari kartu individu saat print */
+                border: 0.25mm solid #e5e7eb;
                 box-shadow: none !important;
+                border-radius: 0 !important;
+                background-color: #fff !important;
             }
-            .student-card-back {
-                margin-top: 0 !important;
+            .dark .student-card-container, .dark .p-2 {
+                background-color: #fff !important;
             }
-            .student-card-front {
+            .dark .text-white, .dark .text-slate-400, .dark .text-slate-800, .dark .text-slate-500, .dark .text-slate-300, .dark .text-slate-700 {
+                color: #000 !important;
+            }
+            .student-card-container .p-4 {
+                padding: 0.5rem !important;
+            }
+            /* PERBAIKAN: Memaksa pencetakan warna background header */
+            .student-card-container .bg-sky-600 {
+                background-color: #0284c7 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+            .student-card-container .text-white, .student-card-container .text-sky-200 {
+                color: #fff !important;
             }
         }
         .break-inside-avoid {
