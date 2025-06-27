@@ -43,7 +43,13 @@
                             <tbody>
                                 @forelse ($teachers as $teacher)
                                 <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600">
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $teacher->name }}</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                        <div class="flex items-center">
+                                            {{-- Indikator Status Online BARU --}}
+                                            <span id="status-dot-{{ $teacher->user_id }}" class="h-2.5 w-2.5 rounded-full bg-gray-400 mr-3 transition-colors duration-500" title="Offline"></span>
+                                            {{ $teacher->name }}
+                                        </div>
+                                    </td>
                                     <td class="px-6 py-4">{{ $teacher->nip ?? '-' }}</td>
                                     <td class="px-6 py-4">{{ $teacher->user->email }}</td>
                                     <td class="px-6 py-4 flex items-center space-x-3">
@@ -66,4 +72,34 @@
             </div>
         </div>
     </div>
+      @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function fetchOnlineStatus() {
+                fetch('{{ route('admin.teachers.online_status') }}')
+                    .then(response => response.json())
+                    .then(onlineUserIds => {
+                        document.querySelectorAll('[id^="status-dot-"]').forEach(dot => {
+                            dot.classList.remove('bg-green-500');
+                            dot.classList.add('bg-gray-400');
+                            dot.title = 'Offline';
+                        });
+
+                        onlineUserIds.forEach(userId => {
+                            const dot = document.getElementById(`status-dot-${userId}`);
+                            if (dot) {
+                                dot.classList.remove('bg-gray-400');
+                                dot.classList.add('bg-green-500');
+                                dot.title = 'Online';
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Gagal mengambil status online guru:', error));
+            }
+
+            fetchOnlineStatus();
+            setInterval(fetchOnlineStatus, 30000); 
+        });
+    </script>
+    @endpush
 </x-app-layout>

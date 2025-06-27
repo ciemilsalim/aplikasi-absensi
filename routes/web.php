@@ -30,6 +30,7 @@ use App\Http\Controllers\AboutController; // Controller baru
 
 
 
+
 /*
 |--------------------------------------------------------------------------
 | Rute Web
@@ -99,6 +100,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('parents', ParentController::class)->parameters(['parents' => 'parent']);
 
     // Rute Manajemen Guru
+    // Rute BARU untuk mendapatkan status online guru
+    Route::get('/teachers/online-status', [TeacherController::class, 'getOnlineStatus'])->name('teachers.online_status');
+
     Route::get('/teachers/import', [TeacherController::class, 'showImportForm'])->name('teachers.import.form');
     Route::post('/teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
     Route::resource('teachers', TeacherController::class)->parameters(['teachers' => 'teacher']);

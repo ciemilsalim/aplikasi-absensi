@@ -104,6 +104,16 @@ class TeacherController extends Controller
 
         return redirect()->route('admin.teachers.index')->with('success', 'Data guru berhasil diimpor!');
     }
+
+    public function getOnlineStatus()
+    {
+        // Guru dianggap online jika aktivitas terakhirnya dalam 5 menit terakhir
+        $onlineTeacherUserIds = User::where('role', 'teacher')
+                               ->where('last_seen_at', '>', now()->subMinutes(5))
+                               ->pluck('id');
+
+        return response()->json($onlineTeacherUserIds);
+    }
     
     // Metode edit, update, destroy dapat ditambahkan di sini
 }
