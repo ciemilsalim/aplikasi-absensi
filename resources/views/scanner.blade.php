@@ -3,24 +3,34 @@
 @section('title', 'Pemindai QR Absensi')
 
 @section('content')
-<div class="max-w-xl mx-auto text-center px-4 pt-16 sm:pt-24">
-    <!-- Jam Digital dan Tanggal -->
-    <div class="mb-6 animate-[fade-in-up_0.8s_ease-out_forwards]">
-        <p id="current-date" class="text-lg text-slate-600 dark:text-slate-400"></p>
-        <p id="current-time" class="text-5xl font-bold text-sky-600 dark:text-sky-400 tracking-tight"></p>
+{{-- PERBAIKAN: Desain ulang total halaman scanner --}}
+<div class="relative min-h-[calc(100vh-128px)] flex items-center justify-center overflow-hidden px-4">
+    <!-- Latar Belakang Abstrak -->
+    <div class="absolute inset-0 -z-10">
+        <div class="absolute inset-0 bg-white dark:bg-slate-900"></div>
+        <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-slate-50 dark:bg-slate-800/50" style="clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 100%);"></div>
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-sky-200/50 dark:bg-sky-900/50 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-200/50 dark:bg-indigo-900/50 rounded-full blur-3xl animate-pulse [animation-delay:-2s]"></div>
     </div>
 
-    <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.2s;">Pindai QR Code Kehadiran</h1>
-    <p class="text-slate-600 dark:text-slate-400 mb-8 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.3s;">Arahkan QR Code pada kartu siswa ke kamera.</p>
-    
-    <!-- Wadah untuk Pemindai -->
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.4s;">
-        <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden"></div>
-        <div id="reader-error" class="text-red-500 text-sm mt-2 hidden">Gagal mengakses kamera/lokasi. Mohon izinkan akses di browser Anda.</div>
+    <div class="w-full max-w-xl text-center">
+        <!-- Jam Digital dan Tanggal -->
+        <div class="mb-6 animate-[fade-in-up_0.8s_ease-out_forwards]">
+            <p id="current-date" class="text-lg text-slate-600 dark:text-slate-400"></p>
+            <p id="current-time" class="text-5xl font-bold text-sky-600 dark:text-sky-400 tracking-tight"></p>
+        </div>
+
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.2s;">Pindai QR Code Kehadiran</h1>
+        <p class="text-slate-600 dark:text-slate-400 mb-8 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.3s;">Arahkan QR Code pada kartu siswa ke kamera.</p>
+
+        <div class="bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.4s;">
+            <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden"></div>
+            <div id="reader-error" class="text-red-500 text-sm mt-2 hidden">Gagal mengakses kamera/lokasi. Mohon izinkan akses di browser Anda.</div>
+        </div>
     </div>
 </div>
 
-<!-- Modal Pop-up Keren untuk Status Absensi -->
+<!-- Modal Pop-up Keren untuk Absensi -->
 <div id="attendance-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 hidden z-50">
     <div id="modal-content" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform scale-95 transition-all duration-300">
         <div id="modal-icon-container" class="mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5">
@@ -29,7 +39,9 @@
         <h2 id="modal-title" class="text-2xl font-bold text-slate-800 dark:text-white mb-2"></h2>
         <div class="mt-4 mb-4">
              <span class="inline-block h-24 w-24 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700">
-                <svg class="h-full w-full text-slate-300 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <svg class="h-full w-full text-slate-300 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
               </span>
         </div>
         <p id="modal-student-name" class="text-xl font-semibold text-sky-700 dark:text-sky-400"></p>
@@ -163,7 +175,7 @@
                     modalIconContainer.classList.add('bg-red-100', 'dark:bg-red-900');
                     modalIconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />`;
                     modalIconSvg.classList.add('text-red-600', 'dark:text-red-400');
-                    modalTitle.textContent = 'Gagal!';
+                    modalTitle.textContent = 'Gagal! tidak dikenali';
                     playSound('error');
                     break;
             }

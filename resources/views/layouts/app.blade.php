@@ -119,6 +119,13 @@
                     </div>
                 </main>
             </div>
+
+            <footer class="lg:pl-72">
+                <div class="py-4 text-center text-xs text-slate-500 dark:text-slate-400 border-t dark:border-slate-700">
+                    &copy; {{ date('Y') }} {{ $appName ?? config('app.name') }}.
+                    <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a>
+                </div>
+            </footer>
         </div>
     </div>
     

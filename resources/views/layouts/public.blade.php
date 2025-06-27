@@ -85,9 +85,10 @@
         <main class="flex-grow">
             @yield('content')
         </main>
-        <footer class="w-full bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm shadow-inner mt-auto">
-            <div class="container mx-auto px-6 py-4 text-center text-slate-500 dark:text-slate-400 text-sm">
-                &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}.
+        <footer class="w-full bg-slate-100 dark:bg-slate-800 mt-4">
+            <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. Hak Cipta Dilindungi.
+                 - <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a>
             </div>
         </footer>
     </div>

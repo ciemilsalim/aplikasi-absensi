@@ -14,6 +14,7 @@
     
     {{-- Tombol Notifikasi & Dark Mode --}}
     <div class="flex items-center gap-x-2">
+        {{-- Notifikasi untuk Admin --}}
         @if(auth()->user()->role === 'admin')
             <a href="{{ route('admin.leave_requests.index') }}" class="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
                 <span class="sr-only">Lihat notifikasi</span>
@@ -37,7 +38,7 @@
             </button>
         @endif
         
-        {{-- Notifikasi untuk Guru Wali Kelas (BARU) --}}
+        {{-- Notifikasi untuk Guru Wali Kelas --}}
         @if(auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass)
             <a href="{{ route('teacher.leave_requests.index') }}" class="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
                 <span class="sr-only">Lihat notifikasi</span>

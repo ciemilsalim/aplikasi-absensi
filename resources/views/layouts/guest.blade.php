@@ -87,9 +87,10 @@
             @yield('content')
         </main>
 
-        <footer class="w-full bg-white dark:bg-slate-800/50 shadow-inner-top mt-auto">
+        <footer class="w-full bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm shadow-inner mt-auto">
             <div class="container mx-auto px-6 py-4 text-center text-slate-500 dark:text-slate-400 text-sm">
-                &copy; {{ date('Y') }} {{ $appName ?? config('app.name', 'Laravel') }}.
+                &copy; {{ date('Y') }} {{ $appName ?? config('app.name') }}. 
+                <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a>
             </div>
         </footer>
     </div>

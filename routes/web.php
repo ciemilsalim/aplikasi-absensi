@@ -24,6 +24,8 @@ use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestCont
 // Teacher Controller
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestController;
+//publik
+use App\Http\Controllers\AboutController; // Controller baru
 
 
 
@@ -37,6 +39,9 @@ use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestCo
 // == RUTE PUBLIK ==
 // Dapat diakses oleh siapa saja tanpa perlu login.
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
+Route::get('/about', [AboutController::class, 'index'])->name('about'); // Rute baru
+Route::get('/scanner', [AttendanceController::class, 'showScanner'])->name('scanner');
+Route::post('/attendance', [AttendanceController::class, 'storeAttendance'])->name('attendance.store');
 
 // == RUTE AUTENTIKASI & PENGALIHAN ==
 // Rute-rute ini menangani logika setelah login.
