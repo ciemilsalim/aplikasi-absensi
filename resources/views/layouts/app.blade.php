@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-{{-- PERBAIKAN: Memindahkan semua kelas background ke tag <body> --}}
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full scroll-smooth">
 <head>
     <meta charset="utf-8">
@@ -16,9 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <script>
-        // Variabel $darkModeEnabled dikirim dari LogoServiceProvider.
         const serverDarkModeEnabled = @json($darkModeEnabled ?? false);
-        // Prioritas: Pilihan pengguna di browser (localStorage) > Pengaturan default dari admin
         if (localStorage.getItem('darkMode') === 'on' || (!('darkMode' in localStorage) && serverDarkModeEnabled)) {
             document.documentElement.classList.add('dark');
         } else {
@@ -47,59 +44,72 @@
     @stack('styles')
     
     <style type="text/tailwindcss">
-        /* PERBAIKAN: Menghapus bg-transparent agar warna dari body bisa diterapkan */
         body { 
-            @apply font-sans text-slate-700 dark:text-slate-300; 
+            @apply font-sans; 
         }
+        #page-loader { transition: opacity 0.5s ease-in-out; }
+        #page-content { opacity: 0; transition: opacity 0.5s ease-in-out; }
+        #page-content.loaded { opacity: 1; }
     </style>
 </head>
-{{-- PERBAIKAN: Menerapkan background di body dan menghapus dari div di bawahnya --}}
 <body class="h-full antialiased bg-slate-50 dark:bg-slate-900">
-    <div x-data="{ sidebarOpen: false }" class="relative h-full">
-        <!-- Sidebar untuk Mobile (Off-canvas) -->
-        <div x-show="sidebarOpen" class="relative z-40 lg:hidden" @click.away="sidebarOpen = false" x-transition>
-            <div class="fixed inset-0 bg-gray-600/80"></div>
-            <div class="fixed inset-0 flex">
-                <div class="relative mr-16 flex w-full max-w-xs flex-1">
-                    <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
-                        <button type="button" class="-m-2.5 p-2.5" @click="sidebarOpen = false">
-                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                    </div>
-                    @include('layouts.sidebar')
-                </div>
-            </div>
+    <!-- Page Loader -->
+    <div id="page-loader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div class="flex items-center justify-center space-x-2">
+            <div class="h-5 w-5 rounded-full bg-sky-600 animate-pulse [animation-delay:-0.3s]"></div>
+            <div class="h-5 w-5 rounded-full bg-sky-600 animate-pulse [animation-delay:-0.15s]"></div>
+            <div class="h-5 w-5 rounded-full bg-sky-600 animate-pulse"></div>
         </div>
+    </div>
 
-        <!-- Sidebar Statis untuk Desktop -->
-        <div class="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-72 lg:flex-col">
-            @include('layouts.sidebar')
-        </div>
-        
-        <!-- Konten Utama -->
-        <div class="lg:pl-72">
-            <!-- Header Sticky di Atas -->
-            {{-- PERBAIKAN: Menyamakan warna header dengan sidebar dan menghapus efek blur --}}
-            <div class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-                <button type="button" class="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden" @click="sidebarOpen = true">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
-                </button>
-                <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 justify-end">
-                    @include('layouts.topbar-profile')
-                </div>
-            </div>
-
-            <main class="py-10">
-                <div class="px-4 sm:px-6 lg:px-8">
-                    @if (isset($header))
-                        <div class="mb-6">
-                            {{ $header }}
+    <!-- Wrapper Konten Utama -->
+    <div id="page-content">
+        <div x-data="{ sidebarOpen: false }" class="relative h-full">
+            <!-- Sidebar untuk Mobile (Off-canvas) -->
+            <div x-show="sidebarOpen" class="relative z-40 lg:hidden" @click.away="sidebarOpen = false" x-transition>
+                <div class="fixed inset-0 bg-gray-600/80"></div>
+                <div class="fixed inset-0 flex">
+                    <div class="relative mr-16 flex w-full max-w-xs flex-1">
+                        <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
+                            <button type="button" class="-m-2.5 p-2.5" @click="sidebarOpen = false">
+                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
                         </div>
-                    @endif
-                    
-                    {{ $slot }}
+                        @include('layouts.sidebar')
+                    </div>
                 </div>
-            </main>
+            </div>
+
+            <!-- Sidebar Statis untuk Desktop -->
+            <div class="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-72 lg:flex-col">
+                @include('layouts.sidebar')
+            </div>
+            
+            <!-- Konten Utama -->
+            <div class="lg:pl-72">
+                <!-- Header Sticky di Atas -->
+                {{-- PERBAIKAN: Warna latar header disamakan dengan sidebar dan efek blur dihapus untuk tampilan yang lebih solid --}}
+                <div class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+                    <button type="button" class="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden" @click="sidebarOpen = true">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                    </button>
+                    <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 justify-end">
+                        @include('layouts.topbar-profile')
+                    </div>
+                </div>
+
+                <main class="py-10">
+                    <div class="px-4 sm:px-6 lg:px-8">
+                        @if (isset($header))
+                            <div class="mb-6">
+                                {{ $header }}
+                            </div>
+                        @endif
+                        
+                        {{ $slot }}
+                    </div>
+                </main>
+            </div>
         </div>
     </div>
     
@@ -110,5 +120,19 @@
     </div>
 
     @stack('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loader = document.getElementById('page-loader');
+            const content = document.getElementById('page-content');
+
+            window.addEventListener('load', () => {
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; }, 500);
+                }
+                if(content) { content.classList.add('loaded'); }
+            });
+        });
+    </script>
 </body>
 </html>
