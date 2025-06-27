@@ -47,6 +47,12 @@
                                     </div>
                                 </div>
                             </div>
+            
+                            <a href="{{ route('admin.announcements.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.leave_requests.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 0 1-4.5-4.5V7.5a4.5 4.5 0 0 1 4.5-4.5h7.5a4.5 4.5 0 0 1 4.5 4.5v1.25m-16.5 6.375c0 .621.504 1.125 1.125 1.125h11.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5Z" /></svg>
+                                Pengumuman
+                            </a>
+                        
                             <a href="{{ route('admin.leave_requests.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.leave_requests.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" /></svg>
                                 Pengajuan Izin
@@ -149,6 +155,7 @@
                     <x-responsive-nav-link :href="route('admin.teachers.index')" :active="request()->routeIs('admin.teachers.*')">Data Guru</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.classes.index')" :active="request()->routeIs('admin.classes.*')">Data Kelas</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">Data Siswa</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.announcements.index')" :active="request()->routeIs('admin.announcements.*')">Pengumuman</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.leave_requests.index')" :active="request()->routeIs('admin.leave_requests.*')">Pengajuan Izin</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.reports.create')" :active="request()->routeIs('admin.reports.*')">Laporan</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.settings.identity')" :active="request()->routeIs('admin.settings.identity')">Pengaturan</x-responsive-nav-link>

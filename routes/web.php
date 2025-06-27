@@ -18,6 +18,8 @@ use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\LeaveRequestController as AdminLeaveRequestController;
+use App\Http\Controllers\Admin\AnnouncementController;
+
 // Parent Controller
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
 use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestController;
@@ -26,6 +28,7 @@ use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardControll
 use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestController;
 //publik
 use App\Http\Controllers\AboutController; // Controller baru
+
 
 
 
@@ -110,7 +113,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
     Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
     Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
-
+    
+    // Rute Pengumuman
+    Route::resource('announcements', AnnouncementController::class); // Rute baru untuk pengumuman
 });
 
 // GRUP RUTE ORANG TUA
