@@ -11,54 +11,46 @@ use Illuminate\Database\QueryException;
 
 class LogoServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        // Mendaftarkan 'app_settings' sebagai singleton untuk efisiensi.
-        // Logika ini hanya akan dijalankan sekali per permintaan.
         $this->app->singleton('app_settings', function ($app) {
-            // Mencegah query database saat menjalankan perintah console
-            if ($app->runningInConsole()) {
-                return collect();
-            }
-            
-            try {
-                // Ambil semua pengaturan dari database
-                return Setting::pluck('value', 'key');
-            } catch (QueryException $e) {
-                // Jika database belum siap, kembalikan koleksi kosong
-                return collect();
-            }
+            if ($app->runningInConsole()) { return collect(); }
+            try { return Setting::pluck('value', 'key'); } 
+            catch (QueryException $e) { return collect(); }
         });
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        // Bagikan data ke semua view menggunakan singleton yang sudah didaftarkan.
         View::composer('*', function ($view) {
             $settings = $this->app->make('app_settings');
+            $user = Auth::user();
             
             $pendingLeaveRequestsCount = 0;
-            // Hanya jalankan query jika pengguna adalah admin yang sudah login
-            if (Auth::check() && Auth::user()->role === 'admin') {
+            $teacherPendingLeaveRequestsCount = 0;
+
+            if (Auth::check()) {
                 try {
-                    $pendingLeaveRequestsCount = LeaveRequest::where('status', 'pending')->count();
+                    // Notifikasi untuk Admin
+                    if ($user->role === 'admin') {
+                        $pendingLeaveRequestsCount = LeaveRequest::where('status', 'pending')->count();
+                    }
+                    // Notifikasi untuk Guru Wali Kelas
+                    if ($user->role === 'teacher' && $user->teacher?->homeroomClass) {
+                        $studentIds = $user->teacher->homeroomClass->students()->pluck('id');
+                        $teacherPendingLeaveRequestsCount = LeaveRequest::whereIn('student_id', $studentIds)->where('status', 'pending')->count();
+                    }
                 } catch (QueryException $e) {
-                    $pendingLeaveRequestsCount = 0;
+                    // Biarkan 0 jika ada masalah database
                 }
             }
             
-            // Mengirim semua data yang diperlukan ke semua view
             $view->with([
                 'appLogoPath' => $settings->get('app_logo'),
                 'appName' => $settings->get('school_name', config('app.name', 'AbsensiSiswa')),
                 'darkModeEnabled' => $settings->get('dark_mode', 'off') === 'on',
-                'pendingLeaveRequestsCount' => $pendingLeaveRequestsCount,
+                'pendingLeaveRequestsCount' => $pendingLeaveRequestsCount, // Untuk Admin
+                'teacherPendingLeaveRequestsCount' => $teacherPendingLeaveRequestsCount, // Untuk Guru
             ]);
         });
     }
