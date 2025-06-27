@@ -45,14 +45,35 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
+    @stack('styles')
+    
     <style type="text/tailwindcss">
-        /* Menerapkan font Poppins ke body */
-        body { 
-            @apply font-sans; 
+        body { @apply font-sans; }
+        /* PERBAIKAN: Logika baru untuk loader dan transisi halaman */
+        .loader-container {
+            @apply fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        }
+        .loader-hidden {
+            @apply opacity-0 invisible;
+        }
+        .content-wrapper {
+            @apply opacity-0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .content-visible {
+            @apply opacity-100;
         }
     </style>
 </head>
 <body class="antialiased font-sans h-full">
+    <!-- Page Loader BARU -->
+    <div id="page-loader" class="loader-container">
+        <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+    </div>
     {{-- Layout ini sekarang khusus untuk halaman welcome/scanner --}}
     <div class="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
         {{-- Navigasi yang lebih stylish dengan backdrop-blur --}}
@@ -88,5 +109,18 @@
     </div>
 
     @stack('scripts')
+    <script>
+        // Skrip untuk menyembunyikan loader dan menampilkan konten
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('page-loader');
+            const content = document.getElementById('page-content');
+            if (loader) {
+                loader.classList.add('loader-hidden');
+            }
+            if (content) {
+                content.classList.add('content-visible');
+            }
+        });
+    </script>
 </body>
 </html>

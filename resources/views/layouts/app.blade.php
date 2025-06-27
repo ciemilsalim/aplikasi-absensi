@@ -44,22 +44,31 @@
     @stack('styles')
     
     <style type="text/tailwindcss">
-        body { 
-            @apply font-sans; 
+        body { @apply font-sans; }
+        /* PERBAIKAN: Logika baru untuk loader dan transisi halaman */
+        .loader-container {
+            @apply fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
         }
-        #page-loader { transition: opacity 0.5s ease-in-out; }
-        #page-content { opacity: 0; transition: opacity 0.5s ease-in-out; }
-        #page-content.loaded { opacity: 1; }
+        .loader-hidden {
+            @apply opacity-0 invisible;
+        }
+        .content-wrapper {
+            @apply opacity-0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .content-visible {
+            @apply opacity-100;
+        }
     </style>
 </head>
 <body class="h-full antialiased bg-slate-50 dark:bg-slate-900">
-    <!-- Page Loader -->
-    <div id="page-loader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div class="flex items-center justify-center space-x-2">
-            <div class="h-5 w-5 rounded-full bg-sky-600 animate-pulse [animation-delay:-0.3s]"></div>
-            <div class="h-5 w-5 rounded-full bg-sky-600 animate-pulse [animation-delay:-0.15s]"></div>
-            <div class="h-5 w-5 rounded-full bg-sky-600 animate-pulse"></div>
-        </div>
+    <!-- Page Loader BARU -->
+    <div id="page-loader" class="loader-container">
+        <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
     </div>
 
     <!-- Wrapper Konten Utama -->
@@ -121,17 +130,16 @@
 
     @stack('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // Skrip untuk menyembunyikan loader dan menampilkan konten
+        window.addEventListener('load', () => {
             const loader = document.getElementById('page-loader');
             const content = document.getElementById('page-content');
-
-            window.addEventListener('load', () => {
-                if(loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(() => { loader.style.display = 'none'; }, 500);
-                }
-                if(content) { content.classList.add('loaded'); }
-            });
+            if (loader) {
+                loader.classList.add('loader-hidden');
+            }
+            if (content) {
+                content.classList.add('content-visible');
+            }
         });
     </script>
 </body>
