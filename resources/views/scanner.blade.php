@@ -3,30 +3,19 @@
 @section('title', 'Pemindai QR Absensi')
 
 @section('content')
-{{-- PERBAIKAN: Desain ulang total halaman scanner --}}
-<div class="relative min-h-[calc(100vh-128px)] flex items-center justify-center overflow-hidden px-4">
-    <!-- Latar Belakang Abstrak -->
-    <div class="absolute inset-0 -z-10">
-        <div class="absolute inset-0 bg-white dark:bg-slate-900"></div>
-        <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-slate-50 dark:bg-slate-800/50" style="clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 100%);"></div>
-        <div class="absolute top-0 left-1/4 w-96 h-96 bg-sky-200/50 dark:bg-sky-900/50 rounded-full blur-3xl animate-pulse"></div>
-        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-200/50 dark:bg-indigo-900/50 rounded-full blur-3xl animate-pulse [animation-delay:-2s]"></div>
+<div class="max-w-xl mx-auto text-center px-4 pt-16 sm:pt-24">
+    <!-- Jam Digital dan Tanggal -->
+    <div class="mb-6 animate-[fade-in-up_0.8s_ease-out_forwards]">
+        <p id="current-date" class="text-lg text-slate-600 dark:text-slate-400"></p>
+        <p id="current-time" class="text-5xl font-bold text-sky-600 dark:text-sky-400 tracking-tight"></p>
     </div>
 
-    <div class="w-full max-w-xl text-center">
-        <!-- Jam Digital dan Tanggal -->
-        <div class="mb-6 animate-[fade-in-up_0.8s_ease-out_forwards]">
-            <p id="current-date" class="text-lg text-slate-600 dark:text-slate-400"></p>
-            <p id="current-time" class="text-5xl font-bold text-sky-600 dark:text-sky-400 tracking-tight"></p>
-        </div>
+    <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.2s;">Pindai QR Code Kehadiran</h1>
+    <p class="text-slate-600 dark:text-slate-400 mb-8 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.3s;">Arahkan QR Code pada kartu siswa ke kamera.</p>
 
-        <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.2s;">Pindai QR Code Kehadiran</h1>
-        <p class="text-slate-600 dark:text-slate-400 mb-8 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.3s;">Arahkan QR Code pada kartu siswa ke kamera.</p>
-
-        <div class="bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.4s;">
-            <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden"></div>
-            <div id="reader-error" class="text-red-500 text-sm mt-2 hidden">Gagal mengakses kamera/lokasi. Mohon izinkan akses di browser Anda.</div>
-        </div>
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.4s;">
+        <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden"></div>
+        <div id="reader-error" class="text-red-500 text-sm mt-2 hidden">Gagal mengakses kamera/lokasi. Mohon izinkan akses di browser Anda.</div>
     </div>
 </div>
 
@@ -175,7 +164,7 @@
                     modalIconContainer.classList.add('bg-red-100', 'dark:bg-red-900');
                     modalIconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />`;
                     modalIconSvg.classList.add('text-red-600', 'dark:text-red-400');
-                    modalTitle.textContent = 'Gagal! tidak dikenali';
+                    modalTitle.textContent = 'Gagal!';
                     playSound('error');
                     break;
             }
@@ -198,29 +187,24 @@
             setTimeout(() => attendanceModal.classList.add('hidden'), 300);
         }
         
+        // PERBAIKAN: Fungsi playSound diubah untuk memainkan file audio dari folder public
         function playSound(type) {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (!audioCtx) return;
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
-            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.01);
+            let audioFile;
+
             if (type === 'success') {
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
+                audioFile = '{{ asset('sounds/success.mp3') }}'; // Pastikan file ini ada di public/sounds/
             } else if (type === 'warning') {
-                oscillator.type = 'triangle';
-                oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
-            } else {
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
+                audioFile = '{{ asset('sounds/warning.mp3') }}'; // Pastikan file ini ada di public/sounds/
+            } else { // error
+                audioFile = '{{ asset('sounds/error.mp3') }}'; // Pastikan file ini ada di public/sounds/
             }
-            oscillator.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
-            oscillator.stop(audioCtx.currentTime + 0.2);
+            
+            try {
+                const audio = new Audio(audioFile);
+                audio.play();
+            } catch (e) {
+                console.error("Gagal memainkan suara:", e);
+            }
         }
         
         // 5. Fungsi untuk menginisialisasi scanner
