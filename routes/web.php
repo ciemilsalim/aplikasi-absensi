@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\LeaveRequestController as AdminLeaveRequestController;
 use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\BackupController; // Controller baru
 
 // Parent Controller
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
@@ -29,10 +30,15 @@ use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestCo
 //publik
 use App\Http\Controllers\AboutController; // Controller baru
 
-
-
-
-
+// Route::get('/debug/backup-env', function () {
+//     return response()->json([
+//         'php_user' => exec('whoami'),
+//         'php_path_env' => getenv('PATH'),
+//         'which_mysqldump' => exec('which mysqldump'),
+//         'is_mysqldump_exist' => file_exists(trim(exec('which mysqldump'))),
+//         'current_env_user' => get_current_user(),
+//     ]);
+// });
 
 /*
 |--------------------------------------------------------------------------
@@ -116,6 +122,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Rute Pengumuman
     Route::resource('announcements', AnnouncementController::class); // Rute baru untuk pengumuman
+
+    // Rute Backup Database (Diperbarui untuk Spatie)
+    Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
+    // Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create'); // Mengarah ke metode baru
+    Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
+    Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
+    Route::post('/backup/manual-db-backup', [BackupController::class, 'manualBackupDatabase'])->name('backup.manualbackup');
 });
 
 // GRUP RUTE ORANG TUA
