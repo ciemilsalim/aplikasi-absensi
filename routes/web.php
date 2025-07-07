@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\NotificationController;
 // Middleware
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ParentMiddleware;
@@ -135,6 +136,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(function () {
     Route::get('/dashboard', [ParentDashboardController::class, 'index'])->name('dashboard');
     Route::resource('leave-requests', ParentLeaveRequestController::class)->only(['index', 'create', 'store']);
+
+    // Rute BARU untuk notifikasi
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
 
 // == GRUP RUTE GURU ==

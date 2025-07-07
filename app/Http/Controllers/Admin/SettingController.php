@@ -72,6 +72,8 @@ class SettingController extends Controller
                 'jam_pulang' => 'required|date_format:H:i|after:jam_masuk',
             ]);
             $settingsToUpdate = array_merge($settingsToUpdate, $request->only(['jam_masuk', 'jam_pulang']));
+            // PERBAIKAN: Logika untuk menangani checkbox notifikasi alpa
+            $settingsToUpdate['send_absent_notification'] = $request->has('send_absent_notification') ? 'on' : 'off';
         }
         
         // Jalankan validasi

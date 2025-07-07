@@ -11,17 +11,25 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
-            'parent' => \App\Http\Middleware\ParentMiddleware::class, // Tambahkan ini
-            'teacher' => \App\Http\Middleware\TeacherMiddleware::class, // Tambahkan ini
-            'scanner.access' => \App\Http\Middleware\ScannerAccessMiddleware::class, // Tambahkan ini
-            
-        ]);
+        // PERBAIKAN: Menambahkan middleware global dan alias
+        
+        // Middleware ini akan berjalan pada setiap permintaan web
         $middleware->web(append: [
-                \App\Http\Middleware\UpdateLastSeenMiddleware::class, // Tambahkan ini
+            \App\Http\Middleware\UpdateLastSeenMiddleware::class,
+        ]);
+
+        // Mendaftarkan alias untuk middleware peran
+        $middleware->alias([
+            'admin'          => \App\Http\Middleware\AdminMiddleware::class,
+            'parent'         => \App\Http\Middleware\ParentMiddleware::class,
+            'teacher'        => \App\Http\Middleware\TeacherMiddleware::class,
+            'scanner.access' => \App\Http\Middleware\ScannerAccessMiddleware::class,
         ]);
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withSchedule(function ($schedule) {
+        // PERBAIKAN: Menjadwalkan perintah untuk mengecek siswa yang alpa
+        $schedule->command('attendance:check-absent')->weekdays()->dailyAt('23:00');
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
