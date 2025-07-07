@@ -59,38 +59,38 @@ class BackupController extends Controller
      */
     // public function create()
     // {
-    //     // try {
-    //     //     set_time_limit(3000);
+    //     try {
+    //         set_time_limit(3000);
 
-    //     //     $command = [
-    //     //         'php',
-    //     //         base_path('artisan'),
-    //     //         'backup:run',
-    //     //         '--only-db',
-    //     //     ];
+    //         $command = [
+    //             'php',
+    //             base_path('artisan'),
+    //             'backup:run',
+    //             '--only-db',
+    //         ];
 
-    //     //     $process = new Process($command, base_path());
-    //     //     $process->setTimeout(3000);
-    //     //     $process->run();
+    //         $process = new Process($command, base_path());
+    //         $process->setTimeout(3000);
+    //         $process->run();
 
-    //     //     if ($process->isSuccessful()) {
-    //     //         Log::info("Backup via web berhasil. Output: " . $process->getOutput());
-    //     //         return redirect()->route('admin.backup.index')->with('success', 'Backup database berhasil dibuat!');
-    //     //     } else {
-    //     //         throw new ProcessFailedException($process);
-    //     //     }
+    //         if ($process->isSuccessful()) {
+    //             Log::info("Backup via web berhasil. Output: " . $process->getOutput());
+    //             return redirect()->route('admin.backup.index')->with('success', 'Backup database berhasil dibuat!');
+    //         } else {
+    //             throw new ProcessFailedException($process);
+    //         }
             
-    //     // } catch (ProcessFailedException $exception) {
-    //     //     // PERBAIKAN: Menangkap dan menampilkan pesan error yang lebih spesifik
-    //     //     $process = $exception->getProcess();
-    //     //     $errorOutput = $process->getErrorOutput();
+    //     } catch (ProcessFailedException $exception) {
+    //         // PERBAIKAN: Menangkap dan menampilkan pesan error yang lebih spesifik
+    //         $process = $exception->getProcess();
+    //         $errorOutput = $process->getErrorOutput();
             
-    //     //     Log::error('Backup Gagal: ' . $errorOutput);
-    //     //     return redirect()->route('admin.backup.index')->with('error', 'Gagal membuat backup: ' . $errorOutput);
-    //     // } catch (\Exception $e) {
-    //     //     Log::error('Backup Gagal (Exception Umum): ' . $e->getMessage());
-    //     //     return redirect()->route('admin.backup.index')->with('error', 'Gagal membuat backup: ' . $e->getMessage());
-    //     // }
+    //         Log::error('Backup Gagal: ' . $errorOutput);
+    //         return redirect()->route('admin.backup.index')->with('error', 'Gagal membuat backup: ' . $errorOutput);
+    //     } catch (\Exception $e) {
+    //         Log::error('Backup Gagal (Exception Umum): ' . $e->getMessage());
+    //         return redirect()->route('admin.backup.index')->with('error', 'Gagal membuat backup: ' . $e->getMessage());
+    //     }
 
 
     //     try {
