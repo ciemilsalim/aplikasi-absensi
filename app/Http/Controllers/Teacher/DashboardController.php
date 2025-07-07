@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\Student;
 use App\Models\Attendance;
 use Carbon\Carbon;
@@ -25,6 +26,7 @@ class DashboardController extends Controller
 
         $class = $teacher->homeroomClass;
         $today = Carbon::today();
+        $thirtyDaysAgo = now()->subDays(30);
 
         $studentsInClass = Student::where('school_class_id', $class->id)->orderBy('name')->get();
         $studentIds = $studentsInClass->pluck('id');
@@ -67,9 +69,27 @@ class DashboardController extends Controller
             $chartData[] = $percentage;
         }
 
+        // --- LOGIKA BARU: Mengambil Siswa yang Perlu Perhatian ---
+        $studentsForAttention = Student::whereIn('id', $studentIds)
+            ->withCount([
+                'attendances as late_count' => function ($query) use ($thirtyDaysAgo) {
+                    $query->where('status', 'terlambat')->where('attendance_time', '>=', $thirtyDaysAgo);
+                },
+                'attendances as alpha_count' => function ($query) use ($thirtyDaysAgo) {
+                    $query->where('status', 'alpa')->where('attendance_time', '>=', $thirtyDaysAgo);
+                }
+            ])
+            ->having('late_count', '>', 2) // Contoh: lebih dari 2x terlambat
+            ->orHaving('alpha_count', '>', 1) // Contoh: lebih dari 1x alpa
+            ->orderByDesc('late_count')
+            ->orderByDesc('alpha_count')
+            ->take(5) // Ambil 5 siswa teratas
+            ->get();
+
         return view('teacher.dashboard', compact(
             'teacher', 'class', 'studentsInClass', 'attendancesToday',
             'onTimeCount', 'lateCount', 'sickCount', 'permitCount', 'alphaCount', 'noRecordCount',
+            'studentsForAttention', // Kirim data baru ke view
             'chartLabels', 'chartData' // Kirim data grafik ke view
         ));
     }
