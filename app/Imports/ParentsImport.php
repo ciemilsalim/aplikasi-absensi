@@ -31,7 +31,7 @@ class ParentsImport implements ToModel, WithHeadingRow, WithValidation
         return new ParentModel([
             'user_id'       => $user->id,
             'name'          => $row['nama'],
-            'phone_number'  => $row['nomor_hp'],
+            'phone_number'  => $row['nomor_hp'] ?? null,
         ]);
     }
 
@@ -44,9 +44,12 @@ class ParentsImport implements ToModel, WithHeadingRow, WithValidation
     {
         return [
             'nama' => ['required', 'string', 'max:255'],
-            'nomor_hp' => ['required', 'string', 'unique:parents,phone_number'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'min:8'],
+            
+            // PERBAIKAN: Menghapus validasi 'string' agar lebih fleksibel
+            // terhadap format angka dari Excel.
+            'nomor_hp' => ['required', 'unique:parents,phone_number'],
         ];
     }
 }
