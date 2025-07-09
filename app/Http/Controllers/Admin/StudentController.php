@@ -3,18 +3,29 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Student;
-use App\Imports\StudentsImport; // Pastikan kelas ini sudah diimpor
-use Maatwebsite\Excel\Facades\Excel; // Pastikan facade Excel sudah diimpor
-use App\Models\SchoolClass; // Impor model SchoolClass
+use App\Models\SchoolClass;
+use App\Imports\StudentsImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class StudentController extends Controller
 {
-    public function index()
+    /**
+     * Menampilkan daftar siswa dengan fitur pencarian.
+     */
+    public function index(Request $request)
     {
-         // Menambahkan relasi 'schoolClass' untuk efisiensi query
-        $students = Student::with('schoolClass')->orderBy('name')->paginate(10);
+        $query = Student::with('schoolClass');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+        }
+
+        $students = $query->orderBy('name')->paginate(10);
         return view('admin.students.index', compact('students'));
     }
 
@@ -23,7 +34,6 @@ class StudentController extends Controller
      */
     public function create()
     {
-        // Ambil semua data kelas untuk ditampilkan di dropdown
         $classes = SchoolClass::orderBy('name')->get();
         return view('admin.students.create', compact('classes'));
     }
@@ -36,23 +46,22 @@ class StudentController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'nis' => 'required|string|max:50|unique:students,nis',
-            'school_class_id' => 'nullable|exists:school_classes,id', // Validasi untuk kelas
+            'school_class_id' => 'nullable|exists:school_classes,id',
         ]);
-        // Tambahkan logika ini untuk membuat unique_id secara manual
-        $data = $request->all();
-        $data['unique_id'] = (string) \Illuminate\Support\Str::uuid();
 
-        Student::create($data); // Gunakan data yang sudah dimodifikasi
+        $data = $request->all();
+        $data['unique_id'] = (string) Str::uuid();
+
+        Student::create($data);
 
         return redirect()->route('admin.students.index')->with('success', 'Siswa berhasil ditambahkan.');
-        }
+    }
 
     /**
      * Menampilkan form untuk mengedit data siswa.
      */
     public function edit(Student $student)
     {
-        // Ambil semua data kelas untuk ditampilkan di dropdown
         $classes = SchoolClass::orderBy('name')->get();
         return view('admin.students.edit', compact('student', 'classes'));
     }
@@ -65,27 +74,24 @@ class StudentController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'nis' => 'required|string|max:50|unique:students,nis,' . $student->id,
-            'school_class_id' => 'nullable|exists:school_classes,id', // Validasi untuk kelas
+            'school_class_id' => 'nullable|exists:school_classes,id',
         ]);
+
         $student->update($request->all());
         return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil diperbarui.');
     }
 
+    /**
+     * Menghapus data siswa.
+     */
     public function destroy(Student $student)
     {
         $student->delete();
         return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil dihapus.');
     }
 
-    public function qr()
-    {
-        $students = Student::with('schoolClass')->orderBy('name')->get();
-        return view('admin.students.qr', compact('students'));
-    }
-
     /**
-     * Menampilkan form untuk impor Excel.
-     * METODE INI MEMPERBAIKI ERROR ANDA.
+     * Menampilkan form untuk impor data siswa dari Excel.
      */
     public function showImportForm()
     {
@@ -93,7 +99,7 @@ class StudentController extends Controller
     }
 
     /**
-     * Menangani logika impor dari file Excel.
+     * Menangani proses impor dari file Excel.
      */
     public function import(Request $request)
     {
@@ -107,11 +113,20 @@ class StudentController extends Controller
              $failures = $e->failures();
              $errorMessages = [];
              foreach ($failures as $failure) {
-                 $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+                 $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors()) . ' (Nilai: ' . $failure->values()[$failure->attribute()] . ')';
              }
              return redirect()->back()->with('import_errors', $errorMessages);
         }
 
         return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil diimpor!');
+    }
+    
+    /**
+     * Menampilkan halaman pratinjau cetak kartu QR.
+     */
+    public function qr()
+    {
+        $students = Student::with('schoolClass')->orderBy('name')->get();
+        return view('admin.students.qr', compact('students'));
     }
 }

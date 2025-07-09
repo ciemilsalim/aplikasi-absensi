@@ -19,13 +19,14 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation
     {
         return new Student([
             'name'      => $row['nama'],
-            'nis'       => $row['nis'],
-            'unique_id' => (string) Str::uuid(), // Otomatis buat ID unik
+            // PERBAIKAN: Mengubah NIS menjadi string untuk memastikan konsistensi
+            'nis'       => (string) $row['nis'],
+            'unique_id' => (string) Str::uuid(),
         ]);
     }
 
     /**
-     * Tentukan aturan validasi untuk setiap baris.
+     * Tentukan aturan validasi untuk setiap baris di file Excel.
      *
      * @return array
      */
@@ -33,21 +34,8 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation
     {
         return [
             'nama' => 'required|string|max:255',
-            'nis' => 'required|string|unique:students,nis',
-        ];
-    }
-
-    /**
-     * Pesan kustom untuk validasi.
-     *
-     * @return array
-     */
-    public function customValidationMessages()
-    {
-        return [
-            'nama.required' => 'Kolom nama tidak boleh kosong.',
-            'nis.required' => 'Kolom NIS tidak boleh kosong.',
-            'nis.unique' => 'NIS :input sudah terdaftar.',
+            // Memastikan validasi juga memeriksa sebagai string
+            'nis'  => 'required|unique:students,nis',
         ];
     }
 }
