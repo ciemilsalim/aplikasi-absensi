@@ -3,19 +3,29 @@
 @section('title', 'Pemindai QR Absensi')
 
 @section('content')
-<div class="max-w-xl mx-auto text-center px-4 pt-16 sm:pt-24">
-    <!-- Jam Digital dan Tanggal -->
-    <div class="mb-6 animate-[fade-in-up_0.8s_ease-out_forwards]">
-        <p id="current-date" class="text-lg text-slate-600 dark:text-slate-400"></p>
-        <p id="current-time" class="text-5xl font-bold text-sky-600 dark:text-sky-400 tracking-tight"></p>
+<div class="relative min-h-[calc(100vh-128px)] flex items-center justify-center overflow-hidden px-4">
+    <!-- Latar Belakang Abstrak -->
+    <div class="absolute inset-0 -z-10">
+        <div class="absolute inset-0 bg-white dark:bg-slate-900"></div>
+        <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-slate-50 dark:bg-slate-800/50" style="clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 100%);"></div>
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-sky-200/50 dark:bg-sky-900/50 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-200/50 dark:bg-indigo-900/50 rounded-full blur-3xl animate-pulse [animation-delay:-2s]"></div>
     </div>
 
-    <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.2s;">Pindai QR Code Kehadiran</h1>
-    <p class="text-slate-600 dark:text-slate-400 mb-8 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.3s;">Arahkan QR Code pada kartu siswa ke kamera.</p>
+    <div class="w-full max-w-xl text-center">
+        <!-- Jam Digital dan Tanggal -->
+        <div class="mb-6 animate-[fade-in-up_0.8s_ease-out_forwards]">
+            <p id="current-date" class="text-lg text-slate-600 dark:text-slate-400"></p>
+            <p id="current-time" class="text-5xl font-bold text-sky-600 dark:text-sky-400 tracking-tight"></p>
+        </div>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.4s;">
-        <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden"></div>
-        <div id="reader-error" class="text-red-500 text-sm mt-2 hidden">Gagal mengakses kamera/lokasi. Mohon izinkan akses di browser Anda.</div>
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.2s;">Pindai QR Code Kehadiran</h1>
+        <p class="text-slate-600 dark:text-slate-400 mb-8 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.3s;">Arahkan QR Code pada kartu siswa ke kamera.</p>
+
+        <div class="bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.4s;">
+            <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden"></div>
+            <div id="reader-error" class="text-red-500 text-sm mt-2 hidden">Gagal mengakses kamera/lokasi. Mohon izinkan akses di browser Anda.</div>
+        </div>
     </div>
 </div>
 
@@ -65,28 +75,56 @@
         updateClock(); 
         setInterval(updateClock, 1000);
 
-        // 1. Meminta lokasi GPS saat halaman dimuat
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    userCoordinates = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    };
-                    initializeScanner(); // Inisialisasi scanner HANYA setelah lokasi berhasil didapat
-                },
-                (error) => {
-                    readerError.textContent = 'Gagal mendapatkan lokasi GPS. Izinkan akses lokasi dan segarkan halaman.';
-                    readerError.classList.remove('hidden');
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
-        } else {
-             readerError.textContent = 'Browser Anda tidak mendukung Geolocation.';
-             readerError.classList.remove('hidden');
+        // 1. Fungsi untuk meminta lokasi GPS
+        function requestGpsLocation() {
+            readerError.textContent = 'Meminta akses lokasi GPS...';
+            readerError.classList.remove('hidden');
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userCoordinates = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        console.log('Lokasi GPS berhasil didapatkan:', userCoordinates);
+                        // 2. Jika lokasi berhasil, lanjutkan untuk inisialisasi scanner
+                        initializeScanner();
+                    },
+                    (error) => {
+                        console.error("Error mendapatkan lokasi: ", error.message);
+                        readerError.textContent = 'Gagal mendapatkan lokasi GPS. Izinkan akses lokasi dan segarkan halaman.';
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                readerError.textContent = 'Browser Anda tidak mendukung Geolocation.';
+            }
         }
-        
-        // 2. Fungsi yang dijalankan saat scan berhasil
+
+        // 3. Fungsi untuk menginisialisasi scanner (setelah lokasi didapat)
+        function initializeScanner() {
+            readerError.textContent = 'Meminta akses kamera...';
+
+            try {
+                const html5QrcodeScanner = new Html5QrcodeScanner(
+                    "reader", 
+                    { fps: 10, qrbox: (w, h) => ({ width: Math.floor(Math.min(w, h) * 0.8), height: Math.floor(Math.min(w, h) * 0.8) })}, 
+                    false
+                );
+                html5QrcodeScanner.render(onScanSuccess, (error) => {
+                    // onScanFailure callback, bisa diabaikan atau untuk logging
+                });
+                // Sembunyikan pesan error jika render berhasil dimulai
+                readerError.classList.add('hidden');
+            } catch (e) {
+                console.error("Gagal memulai scanner:", e);
+                readerError.textContent = 'Gagal memulai kamera. Pastikan izin telah diberikan.';
+                readerError.classList.remove('hidden');
+            }
+        }
+
+        // 4. Fungsi yang dijalankan saat scan berhasil
         function onScanSuccess(decodedText, decodedResult) {
             if (!userCoordinates) {
                 alert('Lokasi GPS belum siap. Mohon tunggu atau izinkan akses lokasi.');
@@ -95,7 +133,6 @@
             if (Date.now() - lastScanTime < scanCooldown) return;
             lastScanTime = Date.now();
             
-            // 3. Kirim data lokasi bersamaan dengan data QR
             fetch("{{ route('attendance.store') }}", {
                 method: 'POST',
                 headers: { 
@@ -110,15 +147,21 @@
                 })
             }).then(response => response.json().then(data => ({ status: response.status, body: data })))
             .then(({ status, body }) => {
-                 if(status === 403) body.status = 'location_error'; // Menangani status Forbidden dari server
+                 if(status === 403) body.status = 'location_error';
                  showModal(body);
             }).catch(error => {
-                console.error("Fetch error:", error);
                 showModal({ status: 'error', message: 'Tidak dapat terhubung ke server.' });
             });
         }
-
-        // 4. Fungsi untuk menampilkan modal pop-up berdasarkan status
+        
+        function playSound(type) {
+            let audioFile;
+            if (type === 'success') { audioFile = '{{ asset('sounds/success.mp3') }}'; } 
+            else if (type === 'warning') { audioFile = '{{ asset('sounds/warning.mp3') }}'; } 
+            else { audioFile = '{{ asset('sounds/error.mp3') }}'; }
+            try { new Audio(audioFile).play(); } catch (e) { console.error("Gagal memainkan suara:", e); }
+        }
+        
         function showModal(data) {
             modalIconContainer.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5';
             modalIconSvg.className = 'h-12 w-12';
@@ -187,37 +230,8 @@
             setTimeout(() => attendanceModal.classList.add('hidden'), 300);
         }
         
-        // PERBAIKAN: Fungsi playSound diubah untuk memainkan file audio dari folder public
-        function playSound(type) {
-            let audioFile;
-
-            if (type === 'success') {
-                audioFile = '{{ asset('sounds/success.mp3') }}'; // Pastikan file ini ada di public/sounds/
-            } else if (type === 'warning') {
-                audioFile = '{{ asset('sounds/warning.mp3') }}'; // Pastikan file ini ada di public/sounds/
-            } else { // error
-                audioFile = '{{ asset('sounds/error.mp3') }}'; // Pastikan file ini ada di public/sounds/
-            }
-            
-            try {
-                const audio = new Audio(audioFile);
-                audio.play();
-            } catch (e) {
-                console.error("Gagal memainkan suara:", e);
-            }
-        }
-        
-        // 5. Fungsi untuk menginisialisasi scanner
-        function initializeScanner() {
-            if (typeof Html5QrcodeScanner !== 'undefined') {
-                const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: (w, h) => ({ width: Math.floor(Math.min(w, h) * 0.8), height: Math.floor(Math.min(w, h) * 0.8) })}, false);
-                html5QrcodeScanner.render(onScanSuccess, (error) => {
-                    // onScanFailure callback, diabaikan untuk menjaga pemindaian terus berjalan
-                });
-            } else {
-                setTimeout(initializeScanner, 100);
-            }
-        }
+        // Mulai alur dengan meminta lokasi GPS terlebih dahulu
+        requestGpsLocation();
     });
 </script>
 @endpush
