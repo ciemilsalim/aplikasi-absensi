@@ -46,9 +46,12 @@ class TeachersImport implements ToModel, WithHeadingRow, WithValidation
         return [
             'nama' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
-            'nip' => ['nullable', 'string', 'unique:teachers,nip'],
-            'nomor_hp' => ['nullable', 'string'],
+            'password' => ['required', 'min:8'],
+            
+            // PERBAIKAN: Menghapus validasi 'string' agar lebih fleksibel
+            // terhadap format angka dari Excel.
+            'nip' => ['nullable', 'unique:teachers,nip'],
+            'nomor_hp' => ['nullable'],
         ];
     }
 }
