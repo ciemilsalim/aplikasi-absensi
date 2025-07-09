@@ -31,6 +31,10 @@
                     <span id="button-text">Mulai Pindai</span>
                 </button>
             </div>
+            
+            <div id="camera-switch-container" class="mt-4 text-center hidden">
+                <button id="camera-switch-button" class="text-sm text-sky-600 dark:text-sky-400 hover:underline">Ganti Kamera</button>
+            </div>
 
             <div id="reader-error" class="text-red-500 text-sm mt-2 hidden"></div>
         </div>
@@ -62,15 +66,20 @@
     document.addEventListener('DOMContentLoaded', function () {
         let userCoordinates = null;
         let lastScanTime = 0;
-        const scanCooldown = 3000; // Cooldown dipersingkat menjadi 3 detik
+        const scanCooldown = 3000;
+        
         const readerDiv = document.getElementById('reader');
         const readerError = document.getElementById('reader-error');
         const controlsDiv = document.getElementById('scanner-controls');
         const startButton = document.getElementById('start-scan-button');
         const buttonText = document.getElementById('button-text');
         const buttonIcon = document.getElementById('button-icon');
+        const switchContainer = document.getElementById('camera-switch-container');
+        const switchButton = document.getElementById('camera-switch-button');
         
         let html5QrCode = null;
+        let cameras = [];
+        let currentCameraIndex = 0;
 
         const modal = {
             element: document.getElementById('attendance-modal'),
@@ -100,10 +109,7 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        userCoordinates = {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        };
+                        userCoordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
                         initializeScanner();
                     },
                     (error) => {
@@ -126,26 +132,56 @@
             readerDiv.classList.remove('hidden');
             
             html5QrCode = new Html5Qrcode("reader");
-            
+
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length) {
+                    cameras = devices;
+                    let backCameraIndex = cameras.findIndex(camera => camera.label.toLowerCase().includes('back'));
+                    currentCameraIndex = backCameraIndex !== -1 ? backCameraIndex : 0;
+                    
+                    startScannerWithCamera(cameras[currentCameraIndex].id);
+
+                    if (cameras.length > 1) {
+                        switchContainer.classList.remove('hidden');
+                    }
+                } else {
+                    throw new Error("Tidak ada kamera yang ditemukan.");
+                }
+            }).catch(err => {
+                readerError.textContent = "Gagal mengakses kamera: " + err.message;
+                readerError.classList.remove('hidden');
+                resetUI();
+            });
+        }
+        
+        function startScannerWithCamera(cameraId) {
             html5QrCode.start(
-                { facingMode: "environment" },
+                cameraId, 
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 onScanSuccess,
-                (errorMessage) => { /* Abaikan error */ }
+                (errorMessage) => { /* Abaikan error tidak nemu QR */ }
             ).catch((err) => {
-                readerError.textContent = "Gagal memulai kamera. Pastikan izin telah diberikan.";
+                readerError.textContent = "Gagal memulai kamera yang dipilih.";
                 readerError.classList.remove('hidden');
                 resetUI();
             });
         }
 
+        switchButton.addEventListener('click', () => {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+                    startScannerWithCamera(cameras[currentCameraIndex].id);
+                }).catch(err => {
+                    console.error("Gagal menghentikan kamera untuk beralih.", err);
+                });
+            }
+        });
+
         function onScanSuccess(decodedText, decodedResult) {
             if (Date.now() - lastScanTime < scanCooldown) return;
             lastScanTime = Date.now();
             
-            // PERBAIKAN: Hapus panggilan stopScanning() agar kamera tetap aktif
-            // stopScanning(); 
-
             fetch("{{ route('attendance.store') }}", {
                 method: 'POST',
                 headers: { 
@@ -166,7 +202,7 @@
                 showModal({ status: 'error', message: 'Tidak dapat terhubung ke server.' });
             });
         }
-
+        
         function showModal(data) {
             modal.iconContainer.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5';
             modal.iconSvg.className = 'h-12 w-12';
@@ -260,15 +296,13 @@
         function resetUI() {
             controlsDiv.classList.remove('hidden');
             readerDiv.classList.add('hidden');
+            switchContainer.classList.add('hidden');
             resetButton();
         }
 
         // Mulai alur dengan menampilkan tombol
         resetButton();
         startButton.disabled = false;
-        buttonText.textContent = 'Mulai Pindai QR Code';
-        buttonIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 0 1 1.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 0 1-.937-.938v-3.375c0-.517.42-.938.938-.938z" />`;
-        buttonIcon.classList.remove('animate-spin');
     });
 </script>
 @endpush
