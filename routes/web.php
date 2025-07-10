@@ -160,5 +160,10 @@ Route::middleware(['auth', 'scanner.access'])->group(function () {
     Route::post('/attendance', [AttendanceController::class, 'storeAttendance'])->name('attendance.store');
 });
 
+// Rute untuk halaman offline
+Route::get('/offline', function () {
+    return view('offline');
+})->name('offline');
+
 // Mengimpor rute-rute autentikasi bawaan
 require __DIR__.'/auth.php';

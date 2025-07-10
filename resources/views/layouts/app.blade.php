@@ -13,6 +13,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="{{ asset('/manifest.json') }}">
+    <meta name="theme-color" content="#0284c7"/>
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192x192.png') }}">
     
     <script>
         const serverDarkModeEnabled = @json($darkModeEnabled ?? false);
@@ -148,6 +153,21 @@
                 content.classList.add('content-visible');
             }
         });
+    </script>
+
+    {{-- Skrip untuk mendaftarkan Service Worker --}}
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('Service Worker registration failed: ', registrationError);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
