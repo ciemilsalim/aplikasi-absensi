@@ -54,7 +54,7 @@ class LeaveRequestController extends Controller
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'type' => ['required', Rule::in(['sakit', 'izin'])],
             'reason' => ['required', 'string', 'max:1000'],
-            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'], // Maks 2MB
+            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10104'], // Maks 2MB
         ]);
 
         $attachmentPath = null;

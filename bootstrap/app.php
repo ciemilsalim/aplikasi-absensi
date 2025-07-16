@@ -28,7 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function ($schedule) {
         // PERBAIKAN: Menjadwalkan perintah untuk mengecek siswa yang alpa
-        $schedule->command('attendance:check-absent')->weekdays()->dailyAt('09:00');
+        $schedule->command('attendance:check-absent')->weekdays()->dailyAt('01:20')
+            ->description('Cek siswa yang alpa setiap hari kerja pada pukul 01:20');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
