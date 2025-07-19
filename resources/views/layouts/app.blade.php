@@ -27,8 +27,8 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
     <script>
         tailwind.config = {
             darkMode: 'class',
