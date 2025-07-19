@@ -13,9 +13,22 @@ use Illuminate\Validation\Rules;
 
 class TeacherController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $teachers = Teacher::with('user')->latest()->paginate(10);
+        $query = Teacher::query()->with('user');
+
+        // Terapkan filter pencarian jika ada
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $teachers = $query->latest()->paginate(10);
         return view('admin.teachers.index', compact('teachers'));
     }
 
@@ -115,5 +128,15 @@ class TeacherController extends Controller
         return response()->json($onlineTeacherUserIds);
     }
     
-    // Metode edit, update, destroy dapat ditambahkan di sini
+    /**
+     * Menghapus data guru dari database.
+     */
+    public function destroy(Teacher $teacher)
+    {
+        // Karena relasi di database diatur dengan onDelete('cascade'),
+        // menghapus data user akan otomatis menghapus data guru yang terhubung.
+        $teacher->user()->delete();
+        
+        return redirect()->route('admin.teachers.index')->with('success', 'Akun guru berhasil dihapus.');
+    }
 }
