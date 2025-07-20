@@ -10,32 +10,72 @@ use App\Models\ParentModel;
 use App\Models\Teacher;
 use App\Models\Conversation;
 use App\Models\Message;
+use Illuminate\Support\Facades\Log;
 
 class ChatController extends Controller
 {
     /**
      * Menampilkan halaman utama obrolan.
-     * Metode ini sekarang menangani pengambilan daftar kontak dan pesan.
      */
-    public function index(Conversation $conversation = null)
+    public function index()
+    {
+        // Metode ini sekarang hanya bertugas menampilkan view utama.
+        // Data akan diambil oleh JavaScript.
+        return view('chat.index');
+    }
+
+    /**
+     * Mengambil daftar percakapan (kontak) untuk pengguna yang sedang login.
+     * Metode ini dipanggil oleh JavaScript (fetch).
+     */
+    public function getConversations()
     {
         $user = Auth::user();
-        $allConversations = $this->getConversationsForUser($user);
-        $messages = collect();
+        $conversationIds = [];
 
-        // Jika sebuah percakapan dipilih, ambil pesannya
-        if ($conversation) {
-            $this->authorizeConversationAccess($conversation);
-            $messages = $conversation->messages()->with('user')->get();
-            // Tandai pesan sebagai sudah dibaca
-            $conversation->messages()->where('user_id', '!=', $user->id)->whereNull('read_at')->update(['read_at' => now()]);
+        try {
+            if ($user->role === 'parent') {
+                $parent = $user->parent;
+                if (!$parent) {
+                    Log::error('Data parent tidak ditemukan untuk user ID: ' . $user->id);
+                    return response()->json([], 404); // Kirim respons kosong jika data tidak lengkap
+                }
+
+                $students = $parent->students()->with('schoolClass.homeroomTeacher')->get();
+                foreach ($students as $student) {
+                    if ($student->schoolClass && $student->schoolClass->homeroomTeacher) {
+                        $conversation = Conversation::firstOrCreate(['parent_id' => $parent->id, 'teacher_id' => $student->schoolClass->homeroomTeacher->id, 'student_id' => $student->id]);
+                        $conversationIds[] = $conversation->id;
+                    }
+                }
+            } elseif ($user->role === 'teacher' && $user->teacher?->homeroomClass) {
+                $teacher = $user->teacher;
+                $students = $teacher->homeroomClass->students()->with('parents')->get();
+                foreach ($students as $student) {
+                    foreach ($student->parents as $parent) {
+                        $conversation = Conversation::firstOrCreate(['parent_id' => $parent->id, 'teacher_id' => $teacher->id, 'student_id' => $student->id]);
+                        $conversationIds[] = $conversation->id;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Gagal mengambil percakapan untuk user ID ' . $user->id . ': ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal mengambil data percakapan.'], 500);
         }
 
-        return view('chat.index', [
-            'conversations' => $allConversations,
-            'activeConversation' => $conversation,
-            'messages' => $messages,
-        ]);
+        $conversations = Conversation::whereIn('id', $conversationIds)->with(['student', 'teacher.user', 'parent.user'])->get();
+        return response()->json($conversations);
+    }
+
+    /**
+     * Mengambil semua pesan dari satu percakapan.
+     */
+    public function getMessages(Conversation $conversation)
+    {
+        $this->authorizeConversationAccess($conversation);
+        $conversation->messages()->where('user_id', '!=', Auth::id())->whereNull('read_at')->update(['read_at' => now()]);
+        $messages = $conversation->messages()->with('user')->get();
+        return response()->json($messages);
     }
 
     /**
@@ -44,55 +84,26 @@ class ChatController extends Controller
     public function storeMessage(Request $request, Conversation $conversation)
     {
         $this->authorizeConversationAccess($conversation);
-
         $request->validate(['body' => 'required|string']);
-
-        $conversation->messages()->create([
+        $message = $conversation->messages()->create([
             'user_id' => Auth::id(),
             'body' => $request->body,
         ]);
-
-        // Setelah mengirim pesan, kembali ke halaman obrolan yang sama
-        return redirect()->route('chat.index', $conversation);
+        $message->load('user');
+        return response()->json($message, 201);
     }
 
     /**
-     * Helper untuk mengambil daftar percakapan.
-     */
-    private function getConversationsForUser(User $user)
-    {
-        $conversationIds = [];
-
-        if ($user->role === 'parent') {
-            $parent = $user->parent;
-            $students = $parent->students()->with('schoolClass.homeroomTeacher')->get();
-            foreach ($students as $student) {
-                if ($student->schoolClass && $student->schoolClass->homeroomTeacher) {
-                    $conversation = Conversation::firstOrCreate(['parent_id' => $parent->id, 'teacher_id' => $student->schoolClass->homeroomTeacher->id, 'student_id' => $student->id]);
-                    $conversationIds[] = $conversation->id;
-                }
-            }
-        } elseif ($user->role === 'teacher' && $user->teacher?->homeroomClass) {
-            $teacher = $user->teacher;
-            $students = $teacher->homeroomClass->students()->with('parents')->get();
-            foreach ($students as $student) {
-                foreach ($student->parents as $parent) {
-                    $conversation = Conversation::firstOrCreate(['parent_id' => $parent->id, 'teacher_id' => $teacher->id, 'student_id' => $student->id]);
-                    $conversationIds[] = $conversation->id;
-                }
-            }
-        }
-
-        return Conversation::whereIn('id', $conversationIds)->with(['student', 'teacher.user', 'parent.user'])->get();
-    }
-
-    /**
-     * Helper untuk otorisasi.
+     * Helper untuk otorisasi akses ke percakapan.
      */
     private function authorizeConversationAccess(Conversation $conversation)
     {
         $user = Auth::user();
-        if ($user->role === 'parent' && $conversation->parent_id !== $user->parent->id) abort(403);
-        if ($user->role === 'teacher' && $conversation->teacher_id !== $user->teacher->id) abort(403);
+        if ($user->role === 'parent' && $conversation->parent_id !== $user->parent?->id) {
+            abort(403);
+        }
+        if ($user->role === 'teacher' && $conversation->teacher_id !== $user->teacher?->id) {
+            abort(403);
+        }
     }
 }

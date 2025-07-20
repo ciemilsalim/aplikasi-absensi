@@ -71,8 +71,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Rute-rute BARU untuk Fitur Obrolan (Versi Sederhana)
-    Route::get('/chat/{conversation?}', [ChatController::class, 'index'])->name('chat.index');
-    Route::post('/chat/{conversation}/messages', [ChatController::class, 'storeMessage'])->name('chat.store_message');
+    // Route::get('/chat/{conversation?}', [ChatController::class, 'index'])->name('chat.index');
+    // Route::post('/chat/{conversation}/messages', [ChatController::class, 'storeMessage'])->name('chat.store_message');
+    // Rute-rute BARU untuk Fitur Obrolan
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/conversations', [ChatController::class, 'getConversations'])->name('chat.conversations');
+    Route::get('/chat/conversations/{conversation}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
+    Route::post('/chat/conversations/{conversation}/messages', [ChatController::class, 'storeMessage'])->name('chat.store_message');
 });
 
 
