@@ -16,7 +16,8 @@
                     <div class="flex flex-wrap gap-2 justify-between items-center mb-6">
                         <h3 class="text-lg font-medium">Daftar Siswa</h3>
                         <div class="flex gap-2">
-                            <a href="{{ route('admin.students.qr') }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 text-sm font-medium">
+                            {{-- PERBAIKAN: Menambahkan parameter filter ke link cetak QR --}}
+                            <a href="{{ route('admin.students.qr', request()->query()) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 text-sm font-medium">
                                 Cetak Semua QR
                             </a>
                             <a href="{{ route('admin.students.import.form') }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">

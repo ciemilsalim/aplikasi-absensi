@@ -135,11 +135,28 @@ class StudentController extends Controller
     }
     
     /**
-     * Menampilkan halaman pratinjau cetak kartu QR.
+     * Menampilkan halaman pratinjau cetak kartu QR berdasarkan filter.
      */
-    public function qr()
+    public function qr(Request $request)
     {
-        $students = Student::with('schoolClass')->orderBy('name')->get();
+        $query = Student::with('schoolClass');
+
+        // PERBAIKAN: Menerapkan filter yang sama dari halaman index
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('school_class_id')) {
+            $query->where('school_class_id', $request->school_class_id);
+        }
+
+        // Mengambil semua siswa yang cocok (tanpa paginasi) untuk dicetak
+        $students = $query->orderBy('name')->get();
+        
         return view('admin.students.qr', compact('students'));
     }
 }
