@@ -30,6 +30,7 @@ use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardControll
 use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestController;
 //publik
 use App\Http\Controllers\AboutController; // Controller baru
+use App\Http\Controllers\ChatController; // Controller baru
 
 // Route::get('/debug/backup-env', function () {
 //     return response()->json([
@@ -68,6 +69,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Rute-rute BARU untuk Fitur Obrolan (Versi Sederhana)
+    Route::get('/chat/{conversation?}', [ChatController::class, 'index'])->name('chat.index');
+    Route::post('/chat/{conversation}/messages', [ChatController::class, 'storeMessage'])->name('chat.store_message');
 });
 
 
