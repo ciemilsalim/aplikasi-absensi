@@ -9,7 +9,6 @@
         </h2>
     </x-slot>
 
-    {{-- Menambahkan Alpine.js data untuk mengontrol modal --}}
     <div x-data="{ showConfirmModal: false, deleteUrl: '' }" class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -35,13 +34,22 @@
                         </div>
                     @endif
 
-                    {{-- Form Pencarian BARU --}}
-                    <form method="GET" action="{{ route('admin.students.index') }}" class="mb-6">
-                        <div class="relative">
+                    {{-- Form Pencarian & Filter --}}
+                    <form method="GET" action="{{ route('admin.students.index') }}" class="mb-6 flex flex-col sm:flex-row gap-4">
+                        <div class="relative flex-grow">
                             <x-text-input type="text" name="search" placeholder="Cari berdasarkan nama atau NIS..." value="{{ request('search') }}" class="w-full pl-10"/>
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
                             </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select name="school_class_id" class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
+                                <option value="">Semua Kelas</option>
+                                @foreach($classes as $class)
+                                    <option value="{{ $class->id }}" {{ request('school_class_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-primary-button type="submit">Filter</x-primary-button>
                         </div>
                     </form>
 
@@ -70,7 +78,6 @@
                                         <td class="px-6 py-4">
                                             <div class="flex items-center justify-center gap-4">
                                                 <a href="{{ route('admin.students.edit', $student) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                                                {{-- Tombol Hapus sekarang memicu modal --}}
                                                 <button type="button" 
                                                         @click="showConfirmModal = true; deleteUrl = '{{ route('admin.students.destroy', $student) }}'"
                                                         class="font-medium text-red-600 dark:text-red-500 hover:underline">
@@ -82,7 +89,7 @@
                                 @empty
                                     <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700">
                                         <td colspan="4" class="px-6 py-4 text-center">
-                                            Tidak ada data siswa.
+                                            Tidak ada data siswa yang cocok dengan filter.
                                         </td>
                                     </tr>
                                 @endforelse

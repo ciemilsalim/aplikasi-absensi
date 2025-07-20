@@ -13,20 +13,33 @@ use Illuminate\Support\Str;
 class StudentController extends Controller
 {
     /**
-     * Menampilkan daftar siswa dengan fitur pencarian.
+     * Menampilkan daftar siswa dengan fitur pencarian dan filter kelas.
      */
     public function index(Request $request)
     {
+        // Ambil semua kelas untuk ditampilkan di dropdown filter
+        $classes = SchoolClass::orderBy('name')->get();
+
         $query = Student::with('schoolClass');
 
+        // Terapkan filter pencarian jika ada
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        // PERBAIKAN: Terapkan filter berdasarkan kelas yang dipilih
+        if ($request->filled('school_class_id')) {
+            $query->where('school_class_id', $request->school_class_id);
         }
 
         $students = $query->orderBy('name')->paginate(10);
-        return view('admin.students.index', compact('students'));
+
+        // Kirim data kelas ke view
+        return view('admin.students.index', compact('students', 'classes'));
     }
 
     /**
