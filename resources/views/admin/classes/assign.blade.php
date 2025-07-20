@@ -15,7 +15,24 @@
             @if (session('success'))
                 <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 sm:rounded-lg" role="alert"><p>{{ session('success') }}</p></div>
             @endif
-            <form action="{{ route('admin.classes.assign.students') }}" method="POST">
+            
+            {{-- PERBAIKAN: Menambahkan Alpine.js untuk mengelola state checkbox --}}
+            <form x-data="{
+                studentsToAdd: [],
+                studentsToRemove: [],
+                toggleAllToAdd(event) {
+                    const checkboxes = document.querySelectorAll('input[name=\'students_to_add[]\']');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = event.target.checked;
+                    });
+                },
+                toggleAllToRemove(event) {
+                    const checkboxes = document.querySelectorAll('input[name=\'students_to_remove[]\']');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = event.target.checked;
+                    });
+                }
+            }" action="{{ route('admin.classes.assign.students') }}" method="POST">
                 @csrf
                 <input type="hidden" name="school_class_id" value="{{ $schoolClass->id }}">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -24,6 +41,17 @@
                     <div class="bg-white dark:bg-slate-800 shadow-sm sm:rounded-lg p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Siswa di Kelas Ini ({{ $studentsInClass->count() }})</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Centang untuk mengeluarkan siswa dari kelas ini.</p>
+                        
+                        {{-- Checkbox "Pilih Semua" BARU --}}
+                        @if($studentsInClass->isNotEmpty())
+                        <div class="mb-2 border-b pb-2 dark:border-slate-700">
+                            <label class="flex items-center">
+                                <input type="checkbox" @click="toggleAllToRemove" class="rounded dark:bg-slate-900 border-gray-300 dark:border-slate-600 text-red-600 shadow-sm focus:ring-red-500">
+                                <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Pilih Semua</span>
+                            </label>
+                        </div>
+                        @endif
+
                         <div class="max-h-96 overflow-y-auto space-y-2 pr-2">
                             @forelse ($studentsInClass as $student)
                                 <label class="flex items-center p-3 rounded-md bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer">
@@ -40,6 +68,17 @@
                     <div class="bg-white dark:bg-slate-800 shadow-sm sm:rounded-lg p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Siswa Tanpa Kelas ({{ $studentsWithoutClass->count() }})</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Centang untuk memasukkan siswa ke kelas ini.</p>
+                         
+                         {{-- Checkbox "Pilih Semua" BARU --}}
+                         @if($studentsWithoutClass->isNotEmpty())
+                         <div class="mb-2 border-b pb-2 dark:border-slate-700">
+                            <label class="flex items-center">
+                                <input type="checkbox" @click="toggleAllToAdd" class="rounded dark:bg-slate-900 border-gray-300 dark:border-slate-600 text-sky-600 shadow-sm focus:ring-sky-500">
+                                <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Pilih Semua</span>
+                            </label>
+                        </div>
+                        @endif
+
                          <div class="max-h-96 overflow-y-auto space-y-2 pr-2">
                             @forelse ($studentsWithoutClass as $student)
                                 <label class="flex items-center p-3 rounded-md bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer">
