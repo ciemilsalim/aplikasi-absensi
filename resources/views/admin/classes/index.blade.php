@@ -9,9 +9,10 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    {{-- Menambahkan Alpine.js data untuk mengontrol modal --}}
+    <div x-data="{ showConfirmModal: false, deleteUrl: '' }" class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {{-- Form ini sekarang HANYA untuk Menambah Kelas Baru --}}
+            {{-- Form Tambah/Edit Kelas yang Interaktif --}}
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <form action="{{ route('admin.classes.store') }}" method="POST">
                     @csrf
@@ -60,7 +61,7 @@
                                     <th scope="col" class="px-6 py-3">Nama Kelas</th>
                                     <th scope="col" class="px-6 py-3">Wali Kelas</th>
                                     <th scope="col" class="px-6 py-3">Jumlah Siswa</th>
-                                    <th scope="col" class="px-6 py-3">Aksi</th>
+                                    <th scope="col" class="px-6 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -69,15 +70,17 @@
                                     <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $class->name }}</td>
                                     <td class="px-6 py-4">{{ $class->homeroomTeacher->name ?? '-' }}</td>
                                     <td class="px-6 py-4">{{ $class->students_count }}</td>
-                                    <td class="px-6 py-4 flex flex-wrap gap-4">
-                                        <a href="{{ route('admin.classes.assign', $class) }}" class="font-medium text-green-600 dark:text-green-500 hover:underline">Atur Siswa</a>
-                                        {{-- Tombol Edit sekarang mengarah ke halaman baru --}}
-                                        <a href="{{ route('admin.classes.edit', $class) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                                        <form action="{{ route('admin.classes.destroy', $class) }}" method="POST" onsubmit="return confirm('Menghapus kelas akan melepaskan semua siswa dari kelas ini. Lanjutkan?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="font-medium text-red-600 dark:text-red-500 hover:underline">Hapus</button>
-                                        </form>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center justify-center gap-4">
+                                            <a href="{{ route('admin.classes.assign', $class) }}" class="font-medium text-green-600 dark:text-green-500 hover:underline">Atur Siswa</a>
+                                            <a href="{{ route('admin.classes.edit', $class) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                                            {{-- Tombol Hapus sekarang memicu modal --}}
+                                            <button type="button" 
+                                                    @click="showConfirmModal = true; deleteUrl = '{{ route('admin.classes.destroy', $class) }}'"
+                                                    class="font-medium text-red-600 dark:text-red-500 hover:underline">
+                                                Hapus
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -87,6 +90,46 @@
                         </table>
                     </div>
                     <div class="mt-4">{{ $classes->links() }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Konfirmasi Hapus -->
+        <div x-show="showConfirmModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" 
+             style="display: none;">
+            <div @click.away="showConfirmModal = false" 
+                 x-show="showConfirmModal"
+                 x-transition
+                 class="w-full max-w-md p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+                <div class="text-center">
+                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                        <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                    </div>
+                    <h3 class="mt-5 text-lg font-medium text-gray-900 dark:text-white">Hapus Data Kelas?</h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Apakah Anda yakin ingin menghapus kelas ini? Tindakan ini akan melepaskan semua siswa dari kelas ini, namun tidak akan menghapus data siswa.
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-center gap-4">
+                    <form :action="deleteUrl" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <x-danger-button type="submit">
+                            Ya, Hapus
+                        </x-danger-button>
+                    </form>
+                    <x-secondary-button @click="showConfirmModal = false">
+                        Batal
+                    </x-secondary-button>
                 </div>
             </div>
         </div>
