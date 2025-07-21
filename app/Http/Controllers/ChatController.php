@@ -135,7 +135,14 @@ class ChatController extends Controller
             Log::error('Gagal mengambil percakapan: ' . $e->getMessage());
             return collect();
         }
-        return Conversation::whereIn('id', $conversationIds)->with(['student', 'teacher.user', 'parent.user'])->get();
+
+        // PERBAIKAN: Menambahkan hitungan pesan yang belum dibaca
+        return Conversation::whereIn('id', $conversationIds)
+            ->with(['student', 'teacher.user', 'parent.user'])
+            ->withCount(['messages as unread_messages_count' => function ($query) {
+                $query->where('user_id', '!=', Auth::id())->whereNull('read_at');
+            }])
+            ->get();
     }
 
     private function authorizeConversationAccess(Conversation $conversation)

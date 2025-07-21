@@ -18,32 +18,29 @@ class AdminChatController extends Controller
      */
     public function index(ParentModel $selectedParent = null)
     {
-        // Ambil semua orang tua untuk ditampilkan sebagai daftar kontak
+        $adminId = Auth::id();
         $parents = ParentModel::with('user')->whereHas('user')->orderBy('name')->get();
+
+        // PERBAIKAN: Menambahkan hitungan pesan yang belum dibaca untuk setiap orang tua
+        $parents->each(function ($parent) use ($adminId) {
+            $conversation = AdminConversation::firstOrCreate(
+                ['parent_id' => $parent->id, 'admin_id' => $adminId]
+            );
+            $parent->unread_messages_count = $conversation->messages()
+                ->where('user_id', '!=', $adminId)
+                ->whereNull('read_at')
+                ->count();
+        });
         
         $messages = collect();
         $activeConversation = null;
 
-        // Jika ada orang tua yang dipilih, muat percakapannya
         if ($selectedParent && $selectedParent->exists) {
-            $adminId = Auth::id();
-
-            // Cari atau buat percakapan baru antara admin dan orang tua ini
             $activeConversation = AdminConversation::firstOrCreate(
-                [
-                    'parent_id' => $selectedParent->id,
-                    'admin_id' => $adminId,
-                ]
+                ['parent_id' => $selectedParent->id, 'admin_id' => $adminId]
             );
-
-            // Ambil semua pesan dari percakapan ini
             $messages = $activeConversation->messages()->with('user')->get();
-
-            // Tandai semua pesan dari orang tua sebagai sudah dibaca
-            $activeConversation->messages()
-                ->where('user_id', '!=', $adminId)
-                ->whereNull('read_at')
-                ->update(['read_at' => now()]);
+            $activeConversation->messages()->where('user_id', '!=', $adminId)->whereNull('read_at')->update(['read_at' => now()]);
         }
         
         return view('admin.chat.index', compact('parents', 'selectedParent', 'activeConversation', 'messages'));

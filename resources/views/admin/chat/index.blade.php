@@ -17,15 +17,15 @@
                         <div id="contact-list" class="flex-grow overflow-y-auto">
                             @forelse($parents as $parent)
                                 <a href="{{ route('admin.chat.index', ['selectedParent' => $parent->id]) }}" class="contact-button w-full text-left p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition {{ ($selectedParent && $selectedParent->id === $parent->id) ? 'bg-sky-100 dark:bg-sky-900/50' : '' }}">
-                                    <div class="relative">
-                                        <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600">
-                                            <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                                        </span>
-                                    </div>
+                                    <div class="relative"><span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span></div>
                                     <div class="flex-grow">
                                         <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $parent->name }}</p>
                                         <p class="text-xs text-slate-500 dark:text-slate-400">{{ $parent->user->email ?? 'Email tidak tersedia' }}</p>
                                     </div>
+                                    {{-- Badge Notifikasi BARU --}}
+                                    @if($parent->unread_messages_count > 0)
+                                        <span class="ml-auto text-xs bg-red-500 text-white font-bold rounded-full h-5 w-5 flex items-center justify-center">{{ $parent->unread_messages_count }}</span>
+                                    @endif
                                 </a>
                             @empty
                                 <div class="p-4 text-center text-sm text-slate-500">Tidak ada data orang tua.</div>
