@@ -76,8 +76,9 @@ class ParentController extends Controller
      */
     public function edit(ParentModel $parent)
     {
-        $studentsLinked = $parent->students()->orderBy('name')->get();
-        $studentsNotLinked = Student::whereDoesntHave('parents')->orderBy('name')->get();
+        // PERBAIKAN: Memuat relasi 'schoolClass' untuk menampilkan nama kelas
+        $studentsLinked = $parent->students()->with('schoolClass')->orderBy('name')->get();
+        $studentsNotLinked = Student::whereDoesntHave('parents')->with('schoolClass')->orderBy('name')->get();
 
         return view('admin.parents.edit', compact('parent', 'studentsLinked', 'studentsNotLinked'));
     }
