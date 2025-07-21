@@ -50,9 +50,7 @@
         <h2 id="modal-title" class="text-2xl font-bold text-slate-800 dark:text-white mb-2"></h2>
         <div class="mt-4 mb-4">
              <span class="inline-block h-24 w-24 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700">
-                <svg class="h-full w-full text-slate-300 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+                <svg class="h-full w-full text-slate-300 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </span>
         </div>
         <p id="modal-student-name" class="text-xl font-semibold text-sky-700 dark:text-sky-400"></p>
@@ -197,6 +195,7 @@
             }).then(response => response.json().then(data => ({ status: response.status, body: data })))
             .then(({ status, body }) => {
                  if(status === 403) body.status = 'location_error';
+                 if(status === 409) body.status = body.status || 'completed';
                  showModal(body);
             }).catch(error => {
                 showModal({ status: 'error', message: 'Tidak dapat terhubung ke server.' });
@@ -228,6 +227,13 @@
                     modal.iconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />`;
                     modal.iconSvg.classList.add('text-yellow-600', 'dark:text-yellow-400');
                     modal.title.textContent = 'Absensi Selesai';
+                    playSound('warning');
+                    break;
+                case 'already_clocked_in':
+                    modal.iconContainer.classList.add('bg-yellow-100', 'dark:bg-yellow-900');
+                    modal.iconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />`;
+                    modal.iconSvg.classList.add('text-yellow-600', 'dark:text-yellow-400');
+                    modal.title.textContent = 'Sudah Absen Masuk';
                     playSound('warning');
                     break;
                 case 'on_leave':
