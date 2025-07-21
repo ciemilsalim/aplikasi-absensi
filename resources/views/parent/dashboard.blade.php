@@ -28,7 +28,8 @@
                                 <p class="font-bold">{{ $notification->title }}</p>
                                 <p class="text-sm">{{ $notification->message }}</p>
                             </div>
-                            <form action="{{ route('parent.notifications.read', $notification) }}" method="POST">
+                            {{-- PERBAIKAN: Menggunakan nama rute yang benar --}}
+                            <form action="{{ route('notifications.read', $notification) }}" method="POST">
                                 @csrf
                                 <button @click="show = false" type="submit" class="ml-4 text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-200" title="Tandai sudah dibaca">
                                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>

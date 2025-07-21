@@ -10,37 +10,110 @@ use App\Models\ParentModel;
 use App\Models\Teacher;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\AdminConversation;
 use Illuminate\Support\Facades\Log;
 
 class ChatController extends Controller
 {
     /**
      * Menampilkan halaman utama obrolan.
+     * Metode ini sekarang menangani pengambilan daftar kontak dan pesan.
      */
-    public function index()
+    public function index(Conversation $conversation = null)
     {
-        // Metode ini sekarang hanya bertugas menampilkan view utama.
-        // Data akan diambil oleh JavaScript.
-        return view('chat.index');
+        $user = Auth::user();
+        $allConversations = $this->getConversationsForUser($user);
+        $messages = collect();
+        $activeConversation = null;
+        $adminConversation = null;
+
+        if ($user->role === 'parent') {
+            $admin = User::where('role', 'admin')->first();
+            if ($admin) {
+                $adminConversation = AdminConversation::firstOrCreate(
+                    ['parent_id' => $user->parent->id, 'admin_id' => $admin->id]
+                );
+            }
+        }
+
+        if ($conversation && $conversation->exists) {
+            $this->authorizeConversationAccess($conversation);
+            $messages = $conversation->messages()->with('user')->get();
+            $conversation->messages()->where('user_id', '!=', $user->id)->whereNull('read_at')->update(['read_at' => now()]);
+            $activeConversation = $conversation;
+        }
+
+        return view('chat.index', [
+            'conversations' => $allConversations,
+            'adminConversation' => $adminConversation,
+            'activeConversation' => $activeConversation,
+            'messages' => $messages,
+        ]);
     }
 
     /**
-     * Mengambil daftar percakapan (kontak) untuk pengguna yang sedang login.
-     * Metode ini dipanggil oleh JavaScript (fetch).
+     * Menyimpan pesan baru (Guru <-> Ortu).
      */
-    public function getConversations()
+    public function storeMessage(Request $request, Conversation $conversation)
+    {
+        $this->authorizeConversationAccess($conversation);
+        $request->validate(['body' => 'required|string']);
+        $conversation->messages()->create([
+            'user_id' => Auth::id(),
+            'body' => $request->body,
+        ]);
+        return redirect()->route('chat.index', $conversation);
+    }
+    
+    /**
+     * Menampilkan halaman obrolan dengan admin.
+     */
+    public function showAdminChat()
     {
         $user = Auth::user();
-        $conversationIds = [];
+        if ($user->role !== 'parent') abort(403);
+        
+        $parent = $user->parent;
+        $admin = User::where('role', 'admin')->first();
+        if (!$admin) return redirect()->route('chat.index')->with('error', 'Tidak ada admin.');
 
+        $adminConversation = AdminConversation::firstOrCreate(
+            ['parent_id' => $parent->id, 'admin_id' => $admin->id]
+        );
+        
+        $teacherConversations = $this->getConversationsForUser($user);
+        $messages = $adminConversation->messages()->with('user')->get();
+        $adminConversation->messages()->where('user_id', '!=', $user->id)->whereNull('read_at')->update(['read_at' => now()]);
+
+        return view('chat.index', [
+            'conversations' => $teacherConversations,
+            'adminConversation' => $adminConversation,
+            'activeConversation' => $adminConversation, // Set admin chat as active
+            'messages' => $messages,
+        ]);
+    }
+
+    /**
+     * Menyimpan pesan dari orang tua ke admin.
+     */
+    public function storeAdminMessage(Request $request, AdminConversation $conversation)
+    {
+        if ($conversation->parent_id !== Auth::user()->parent?->id) abort(403);
+        $request->validate(['body' => 'required|string']);
+        $conversation->messages()->create([
+            'user_id' => Auth::id(),
+            'body' => $request->body,
+        ]);
+        return redirect()->route('chat.admin');
+    }
+
+    private function getConversationsForUser(User $user)
+    {
+        $conversationIds = [];
         try {
             if ($user->role === 'parent') {
                 $parent = $user->parent;
-                if (!$parent) {
-                    Log::error('Data parent tidak ditemukan untuk user ID: ' . $user->id);
-                    return response()->json([], 404); // Kirim respons kosong jika data tidak lengkap
-                }
-
+                if (!$parent) return collect();
                 $students = $parent->students()->with('schoolClass.homeroomTeacher')->get();
                 foreach ($students as $student) {
                     if ($student->schoolClass && $student->schoolClass->homeroomTeacher) {
@@ -59,51 +132,16 @@ class ChatController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            Log::error('Gagal mengambil percakapan untuk user ID ' . $user->id . ': ' . $e->getMessage());
-            return response()->json(['error' => 'Gagal mengambil data percakapan.'], 500);
+            Log::error('Gagal mengambil percakapan: ' . $e->getMessage());
+            return collect();
         }
-
-        $conversations = Conversation::whereIn('id', $conversationIds)->with(['student', 'teacher.user', 'parent.user'])->get();
-        return response()->json($conversations);
+        return Conversation::whereIn('id', $conversationIds)->with(['student', 'teacher.user', 'parent.user'])->get();
     }
 
-    /**
-     * Mengambil semua pesan dari satu percakapan.
-     */
-    public function getMessages(Conversation $conversation)
-    {
-        $this->authorizeConversationAccess($conversation);
-        $conversation->messages()->where('user_id', '!=', Auth::id())->whereNull('read_at')->update(['read_at' => now()]);
-        $messages = $conversation->messages()->with('user')->get();
-        return response()->json($messages);
-    }
-
-    /**
-     * Menyimpan pesan baru.
-     */
-    public function storeMessage(Request $request, Conversation $conversation)
-    {
-        $this->authorizeConversationAccess($conversation);
-        $request->validate(['body' => 'required|string']);
-        $message = $conversation->messages()->create([
-            'user_id' => Auth::id(),
-            'body' => $request->body,
-        ]);
-        $message->load('user');
-        return response()->json($message, 201);
-    }
-
-    /**
-     * Helper untuk otorisasi akses ke percakapan.
-     */
     private function authorizeConversationAccess(Conversation $conversation)
     {
         $user = Auth::user();
-        if ($user->role === 'parent' && $conversation->parent_id !== $user->parent?->id) {
-            abort(403);
-        }
-        if ($user->role === 'teacher' && $conversation->teacher_id !== $user->teacher?->id) {
-            abort(403);
-        }
+        if ($user->role === 'parent' && $conversation->parent_id !== $user->parent?->id) abort(403);
+        if ($user->role === 'teacher' && $conversation->teacher_id !== $user->teacher?->id) abort(403);
     }
 }
