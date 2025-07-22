@@ -17,12 +17,9 @@ class StudentController extends Controller
      */
     public function index(Request $request)
     {
-        // Ambil semua kelas untuk ditampilkan di dropdown filter
         $classes = SchoolClass::orderBy('name')->get();
-
         $query = Student::with('schoolClass');
 
-        // Terapkan filter pencarian jika ada
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -31,14 +28,11 @@ class StudentController extends Controller
             });
         }
 
-        // PERBAIKAN: Terapkan filter berdasarkan kelas yang dipilih
         if ($request->filled('school_class_id')) {
             $query->where('school_class_id', $request->school_class_id);
         }
 
         $students = $query->orderBy('name')->paginate(10);
-
-        // Kirim data kelas ke view
         return view('admin.students.index', compact('students', 'classes'));
     }
 
@@ -135,13 +129,12 @@ class StudentController extends Controller
     }
     
     /**
-     * Menampilkan halaman pratinjau cetak kartu QR berdasarkan filter.
+     * Menampilkan halaman pratinjau cetak kartu QR.
      */
     public function qr(Request $request)
     {
         $query = Student::with('schoolClass');
 
-        // PERBAIKAN: Menerapkan filter yang sama dari halaman index
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -154,7 +147,6 @@ class StudentController extends Controller
             $query->where('school_class_id', $request->school_class_id);
         }
 
-        // Mengambil semua siswa yang cocok (tanpa paginasi) untuk dicetak
         $students = $query->orderBy('name')->get();
         
         return view('admin.students.qr', compact('students'));

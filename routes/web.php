@@ -102,7 +102,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
     Route::post('classes/assign-students', [SchoolClassController::class, 'assignStudents'])->name('classes.assign.students');
     Route::resource('classes', SchoolClassController::class);
-    Route::resource('students', StudentController::class);
+    Route::resource('students', StudentController::class)->except(['show']);
     Route::resource('parents', ParentController::class);
     Route::resource('teachers', TeacherController::class);
     Route::resource('announcements', AnnouncementController::class);
