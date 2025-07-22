@@ -11,30 +11,18 @@ use Illuminate\Validation\Rule;
 
 class SchoolClassController extends Controller
 {
-    /**
-     * Menampilkan halaman utama manajemen kelas.
-     */
     public function index()
     {
         $classes = SchoolClass::with('homeroomTeacher')->withCount('students')->paginate(10);
         $teachers = Teacher::with('homeroomClass')->orderBy('name')->get();
         return view('admin.classes.index', compact('classes', 'teachers'));
     }
-    
-    /**
-     * Menampilkan form untuk membuat kelas baru.
-     */
+
     public function create()
     {
-        // Fungsi ini bisa dibiarkan kosong jika form tambah ada di halaman index,
-        // atau dibuat untuk halaman tambah terpisah di masa depan.
         return redirect()->route('admin.classes.index');
     }
 
-
-    /**
-     * Menyimpan data kelas baru.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -46,55 +34,47 @@ class SchoolClassController extends Controller
         SchoolClass::create($request->all());
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil ditambahkan.');
     }
-
-     public function edit(SchoolClass $class)
+    
+    public function edit(SchoolClass $schoolClass)
     {
         $teachers = Teacher::with('homeroomClass')->orderBy('name')->get();
-        return view('admin.classes.edit', [
-            'schoolClass' => $class, // Kirim ke view dengan nama yang konsisten
-            'teachers' => $teachers,
-        ]);
+        return view('admin.classes.edit', compact('schoolClass', 'teachers'));
     }
 
-    /**
-     * Memperbarui data kelas yang sudah ada.
-     */
-    public function update(Request $request, SchoolClass $class)
+    public function update(Request $request, SchoolClass $schoolClass)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('school_classes')->ignore($class->id)],
-            'teacher_id' => ['nullable', 'exists:teachers,id', Rule::unique('school_classes', 'teacher_id')->ignore($class->id)],
+            'name' => ['required', 'string', 'max:255', Rule::unique('school_classes')->ignore($schoolClass->id)],
+            'teacher_id' => ['nullable', 'exists:teachers,id', Rule::unique('school_classes', 'teacher_id')->ignore($schoolClass->id)],
         ], [
             'teacher_id.unique' => 'Guru ini sudah menjadi wali di kelas lain.'
         ]);
         
-        $class->update($request->all());
+        $schoolClass->update($request->all());
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil diperbarui.');
     }
 
-    /**
-     * Menghapus data kelas.
-     */
-    public function destroy(SchoolClass $class)
+    public function destroy(SchoolClass $schoolClass)
     {
-        $class->delete();
+        $schoolClass->delete();
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil dihapus.');
     }
 
     /**
      * Menampilkan form untuk penempatan siswa massal.
+     * PERBAIKAN: Memastikan query mengambil data yang benar untuk setiap kolom.
      */
-    public function showAssignForm(SchoolClass $class)
+    public function showAssignForm(SchoolClass $schoolClass)
     {
-        $studentsInClass = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        // Mengambil siswa yang ID kelasnya cocok dengan kelas ini
+        $studentsInClass = Student::where('school_class_id', $schoolClass->id)->orderBy('name')->get();
+        
+        // Mengambil siswa yang ID kelasnya masih kosong (null)
         $studentsWithoutClass = Student::whereNull('school_class_id')->orderBy('name')->get();
 
-        return view('admin.classes.assign', [
-            'schoolClass' => $class,
-            'studentsInClass' => $studentsInClass,
-            'studentsWithoutClass' => $studentsWithoutClass,
-        ]);
+        return view('admin.classes.assign', compact('schoolClass', 'studentsInClass', 'studentsWithoutClass'));
     }
+
     /**
      * Memproses penempatan siswa massal.
      */
