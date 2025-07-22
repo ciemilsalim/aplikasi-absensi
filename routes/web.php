@@ -60,7 +60,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // PERBAIKAN: Rute spesifik diletakkan SEBELUM rute dengan parameter
     // Rute Obrolan Admin <-> Ortu (untuk Orang Tua)
     Route::get('/chat/admin', [ChatController::class, 'showAdminChat'])->name('chat.admin');
     Route::post('/chat/admin/{conversation}/messages', [ChatController::class, 'storeAdminMessage'])->name('chat.store_admin_message');
@@ -101,10 +100,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Manajemen Data (CRUD)
     Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
     Route::post('classes/assign-students', [SchoolClassController::class, 'assignStudents'])->name('classes.assign.students');
-    Route::resource('classes', SchoolClassController::class);
+    Route::resource('classes', SchoolClassController::class)->except(['show']);
     Route::resource('students', StudentController::class)->except(['show']);
-    Route::resource('parents', ParentController::class);
-    Route::resource('teachers', TeacherController::class);
+    // PERBAIKAN: Menambahkan pengecualian untuk rute 'show'
+    Route::resource('parents', ParentController::class)->except(['show']);
+    Route::resource('teachers', TeacherController::class)->except(['show']);
     Route::resource('announcements', AnnouncementController::class);
     
     // Impor Data
