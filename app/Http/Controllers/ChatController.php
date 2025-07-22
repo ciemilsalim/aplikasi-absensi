@@ -19,7 +19,7 @@ class ChatController extends Controller
      * Menampilkan halaman utama obrolan.
      * Metode ini sekarang menangani pengambilan daftar kontak dan pesan.
      */
-    public function index(Conversation $conversation = null)
+     public function index(Conversation $conversation = null)
     {
         $user = Auth::user();
         $allConversations = $this->getConversationsForUser($user);
@@ -33,6 +33,12 @@ class ChatController extends Controller
                 $adminConversation = AdminConversation::firstOrCreate(
                     ['parent_id' => $user->parent->id, 'admin_id' => $admin->id]
                 );
+                
+                // PERBAIKAN: Menambahkan hitungan pesan yang belum dibaca dari admin
+                $adminConversation->unread_messages_count = $adminConversation->messages()
+                    ->where('user_id', '!=', $user->id) // Pesan yang bukan dari orang tua ini
+                    ->whereNull('read_at')
+                    ->count();
             }
         }
 

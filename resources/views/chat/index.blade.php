@@ -19,20 +19,27 @@
                             @if(Auth::user()->role === 'parent' && isset($adminConversation))
                                 <a href="{{ route('chat.admin') }}" class="w-full text-left p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition {{ request()->routeIs('chat.admin') ? 'bg-sky-100 dark:bg-sky-900/50' : '' }}">
                                     <div class="relative"><span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span></div>
-                                    <div class="flex-grow"><p class="font-semibold text-sm text-slate-800 dark:text-white">Admin Sekolah</p><p class="text-xs text-slate-500 dark:text-slate-400">Hubungi administrasi</p></div>
+                                    <div class="flex-grow">
+                                        <p class="font-semibold text-sm text-slate-800 dark:text-white">Admin Sekolah</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Hubungi administrasi</p>
+                                    </div>
+                                    {{-- PERBAIKAN: Menampilkan badge notifikasi dari admin --}}
+                                    @if(isset($adminConversation->unread_messages_count) && $adminConversation->unread_messages_count > 0)
+                                        <span class="ml-auto text-xs bg-red-500 text-white font-bold rounded-full h-5 w-5 flex items-center justify-center">{{ $adminConversation->unread_messages_count }}</span>
+                                    @endif
                                 </a>
                             @endif
                             
+                            {{-- Kontak Wali Kelas / Orang Tua --}}
                             @forelse($conversations as $conv)
-                                <a href="{{ route('chat.index', $conv) }}" class="w-full text-left p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition {{-- ... --}}">
-                                    <div class="relative"><span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg><!-- ... --></svg></span></div>
+                                <a href="{{ route('chat.index', $conv) }}" class="w-full text-left p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition {{ $activeConversation && get_class($activeConversation) === 'App\Models\Conversation' && $activeConversation->id === $conv->id ? 'bg-sky-100 dark:bg-sky-900/50' : '' }}">
+                                    <div class="relative"><span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span></div>
                                     <div class="flex-grow">
                                         <p class="font-semibold text-sm text-slate-800 dark:text-white">
                                             @if(Auth::user()->role === 'parent') {{ $conv->teacher->user->name ?? 'Guru Dihapus' }} @else {{ $conv->parent->user->name ?? 'Orang Tua Dihapus' }} @endif
                                         </p>
                                         <p class="text-xs text-slate-500 dark:text-slate-400">Siswa: {{ $conv->student->name }}</p>
                                     </div>
-                                    {{-- Badge Notifikasi BARU --}}
                                     @if($conv->unread_messages_count > 0)
                                         <span class="ml-auto text-xs bg-red-500 text-white font-bold rounded-full h-5 w-5 flex items-center justify-center">{{ $conv->unread_messages_count }}</span>
                                     @endif
