@@ -18,7 +18,7 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Pantau kehadiran dan ajukan izin untuk putra/putri Anda di sini.</p>
                 </div>
 
-                {{-- Notifikasi Internal --}}
+                {{-- Notifikasi Internal untuk Siswa Alpa --}}
                 @if($unreadNotifications->isNotEmpty())
                     @foreach($unreadNotifications as $notification)
                     <div x-data="{ show: true }" x-show="show" x-transition class="bg-yellow-100 dark:bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 p-4 rounded-r-lg" role="alert">
@@ -28,7 +28,6 @@
                                 <p class="font-bold">{{ $notification->title }}</p>
                                 <p class="text-sm">{{ $notification->message }}</p>
                             </div>
-                            {{-- PERBAIKAN: Menggunakan nama rute yang benar --}}
                             <form action="{{ route('notifications.read', $notification) }}" method="POST">
                                 @csrf
                                 <button @click="show = false" type="submit" class="ml-4 text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-200" title="Tandai sudah dibaca">
@@ -40,6 +39,31 @@
                     @endforeach
                 @endif
             </div>
+
+            <!-- Pengumuman dari Admin -->
+            @if($announcements->isNotEmpty())
+            <div class="space-y-4">
+                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Pengumuman Terbaru</h3>
+                 @foreach($announcements as $announcement)
+                    <div class="bg-sky-100 dark:bg-sky-900/50 border-l-4 border-sky-500 text-sky-800 dark:text-sky-200 p-4 rounded-r-lg" role="alert">
+                        <div class="flex">
+                            <div class="py-1">
+                                <svg class="h-6 w-6 text-sky-500 mr-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 0 1-4.5-4.5V7.5a4.5 4.5 0 0 1 4.5-4.5h7.5a4.5 4.5 0 0 1 4.5 4.5v1.25m-16.5 6.375c0 .621.504 1.125 1.125 1.125h11.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5Z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-bold">{{ $announcement->title }}</p>
+                                <p class="text-xs text-sky-700 dark:text-sky-300/80 mb-2">Dipublikasikan pada {{ $announcement->published_at->translatedFormat('d F Y') }}</p>
+                                <div class="text-sm">
+                                    {!! nl2br(e($announcement->content)) !!}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                 @endforeach
+            </div>
+            @endif
 
             <!-- Tombol Aksi Utama -->
             <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
