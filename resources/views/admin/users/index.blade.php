@@ -18,7 +18,26 @@
         }
     }" class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {{-- ... (Kartu Statistik) ... --}}
+
+            <!-- Kartu Statistik Pengguna -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Pengguna</p>
+                    <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{-- $totalUsersCount --}}50</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Admin & Operator</p>
+                    <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{-- $adminOperatorCount --}}5</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Guru</p>
+                    <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{-- $teacherCount --}}20</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Orang Tua</p>
+                    <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{-- $parentCount --}}25</p>
+                </div>
+            </div>
 
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -37,15 +56,31 @@
                         <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert"><p>{{ session('error') ?? session('warning') }}</p></div>
                     @endif
                     
-                    {{-- ... (Form Pencarian & Filter) ... --}}
+                    <!-- Form Pencarian & Filter -->
+                    <form method="GET" action="{{ route('admin.users.index') }}" class="mb-6 flex flex-col sm:flex-row gap-4">
+                        <div class="relative flex-grow">
+                            <x-text-input type="text" name="search" placeholder="Cari berdasarkan nama atau email..." value="{{ request('search') }}" class="w-full pl-10"/>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select name="role" class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
+                                <option value="">Semua Peran</option>
+                                <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="operator" {{ request('role') == 'operator' ? 'selected' : '' }}>Operator</option>
+                                <option value="teacher" {{ request('role') == 'teacher' ? 'selected' : '' }}>Guru</option>
+                                <option value="parent" {{ request('role') == 'parent' ? 'selected' : '' }}>Orang Tua</option>
+                            </select>
+                            <x-primary-button type="submit">Filter</x-primary-button>
+                        </div>
+                    </form>
 
                     <!-- Tindakan Massal -->
                     <div x-show="selectedUsers.length > 0" class="mb-4 bg-slate-100 dark:bg-slate-700 p-4 rounded-lg flex items-center gap-4" style="display: none;">
                         <span class="text-sm font-medium text-slate-700 dark:text-slate-200"><span x-text="selectedUsers.length"></span> pengguna dipilih</span>
-                        {{-- PERBAIKAN: Tombol dibungkus dalam form yang fungsional --}}
                         <form action="{{ route('admin.users.bulk_destroy') }}" method="POST" onsubmit="return confirm('Anda yakin ingin menghapus semua pengguna yang dipilih?');">
                             @csrf
-                            {{-- Input tersembunyi untuk setiap user ID yang dipilih --}}
                             <template x-for="userId in selectedUsers" :key="userId">
                                 <input type="hidden" name="user_ids[]" :value="userId">
                             </template>
@@ -83,13 +118,28 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         @php
-                                            $isOnline = $user->last_seen_at && $user->last_seen_at instanceof \Carbon\Carbon && $user->last_seen_at->gt(now()->subMinutes(5));
+                                            $isOnline = false;
+                                            if ($user->last_seen_at) {
+                                                try {
+                                                    // PERBAIKAN: Selalu parse tanggal untuk memastikan tipe datanya adalah objek Carbon
+                                                    $lastSeen = \Carbon\Carbon::parse($user->last_seen_at);
+                                                    $isOnline = $lastSeen->gt(now()->subMinutes(5));
+                                                } catch (\Exception $e) {
+                                                    $isOnline = false;
+                                                }
+                                            }
                                         @endphp
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $isOnline ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }}">
                                             {{ $isOnline ? 'Online' : 'Offline' }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">{{ $user->last_seen_at ? ($user->last_seen_at instanceof \Carbon\Carbon ? $user->last_seen_at->diffForHumans() : 'Invalid Date') : 'Belum pernah' }}</td>
+                                    <td class="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">
+                                        @if($user->last_seen_at)
+                                            {{ \Carbon\Carbon::parse($user->last_seen_at)->diffForHumans() }}
+                                        @else
+                                            Belum pernah
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-4">
                                             <a href="{{ route('admin.users.edit', $user) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
