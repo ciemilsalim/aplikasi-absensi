@@ -4,11 +4,9 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">{{ __('Obrolan dengan Orang Tua') }}</h2>
     </x-slot>
 
-    {{-- Menghapus padding 'py-12' agar chat box bisa memenuhi tinggi layar --}}
     <div class="py-0">
         <div class="max-w-full mx-auto">
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm">
-                {{-- Mengubah struktur flex dan tinggi agar lebih responsif --}}
                 <div class="flex h-[calc(100vh-4rem-1px)]">
                     
                     <!-- Sidebar Kontak (Daftar Orang Tua) -->
@@ -72,11 +70,16 @@
                                 <div class="p-4 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 flex-shrink-0">
                                     <form action="{{ route('admin.chat.store_message', $activeConversation) }}" method="POST">
                                         @csrf
-                                        <div class="flex items-center">
-                                            <x-text-input name="body" type="text" class="flex-grow" placeholder="Ketik balasan Anda..." autocomplete="off" required />
-                                            <x-primary-button type="submit" class="ml-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>
-                                            </x-primary-button>
+                                        {{-- PERBAIKAN: Menggunakan struktur flex yang lebih andal --}}
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-grow">
+                                                <x-text-input name="body" type="text" class="w-full" placeholder="Ketik balasan Anda..." autocomplete="off" required />
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <x-primary-button type="submit">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>
+                                                </x-primary-button>
+                                            </div>
                                         </div>
                                     </form>
                                 </div>
