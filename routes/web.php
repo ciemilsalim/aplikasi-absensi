@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\LeaveRequestController as AdminLeaveRequestContro
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\AdminChatController;
+use App\Http\Controllers\Admin\UserController; // Controller baru
 
 // Parent Controller
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
@@ -48,7 +49,7 @@ Route::get('/about', [AboutController::class, 'index'])->name('about');
 // == RUTE AUTENTIKASI & PENGALIHAN ==
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    if ($user->role === 'admin')   { return redirect()->route('admin.dashboard'); }
+    if (in_array($user->role, ['admin', 'operator'])) { return redirect()->route('admin.dashboard');}
     if ($user->role === 'parent')  { return redirect()->route('parent.dashboard'); }
     if ($user->role === 'teacher') { return redirect()->route('teacher.dashboard'); }
     return redirect()->route('welcome');
@@ -79,57 +80,63 @@ Route::middleware(['auth', 'scanner.access'])->group(function () {
 });
 
 // == GRUP RUTE ADMIN ==
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    // Rute yang bisa diakses oleh Admin & Operator
+    Route::middleware(['role:admin,operator'])->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/reports', [ReportController::class, 'create'])->name('reports.create');
+        Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+    });
+
+    // Rute yang HANYA bisa diakses oleh Admin
+    Route::middleware(['role:admin'])->group(function () {
+        // Pengaturan
+        Route::get('/settings/identity', [SettingController::class, 'identity'])->name('settings.identity');
+        Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
+        Route::get('/settings/attendance', [SettingController::class, 'attendance'])->name('settings.attendance');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     
-    // Laporan
-    Route::get('/reports', [ReportController::class, 'create'])->name('reports.create');
-    Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+        // Pengajuan Izin
+        Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
+        Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
+        Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
     
-    // Pengaturan
-    Route::get('/settings/identity', [SettingController::class, 'identity'])->name('settings.identity');
-    Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
-    Route::get('/settings/attendance', [SettingController::class, 'attendance'])->name('settings.attendance');
-    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
-
-    // Pengajuan Izin
-    Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
-    Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
-    Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
-
-    // Manajemen Data (CRUD)
-    Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
-    Route::post('classes/assign-students', [SchoolClassController::class, 'assignStudents'])->name('classes.assign.students');
-    Route::resource('classes', SchoolClassController::class)->except(['show']);
-    Route::resource('students', StudentController::class)->except(['show']);
-    Route::resource('parents', ParentController::class)->except(['show']);
-    Route::resource('teachers', TeacherController::class)->except(['show']);
-    Route::resource('announcements', AnnouncementController::class);
+        // Manajemen Data (CRUD)
+        Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
+        Route::post('classes/assign-students', [SchoolClassController::class, 'assignStudents'])->name('classes.assign.students');
+        Route::resource('classes', SchoolClassController::class)->except(['show']);
+        Route::resource('students', StudentController::class)->except(['show']);
+        Route::resource('parents', ParentController::class)->except(['show']);
+        Route::resource('teachers', TeacherController::class)->except(['show']);
+        Route::resource('announcements', AnnouncementController::class);
+        Route::resource('users', UserController::class)->except(['show']);
+        Route::post('users/bulk-destroy', [UserController::class, 'bulkDestroy'])->name('users.bulk_destroy'); // Rute BARU
+        
+        // Impor Data
+        Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');
+        Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
+        Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
+        Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
+        Route::get('/teachers/import', [TeacherController::class, 'showImportForm'])->name('teachers.import.form');
+        Route::post('/teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
     
-    // Impor Data
-    Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');
-    Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
-    Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
-    Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
-    Route::get('/teachers/import', [TeacherController::class, 'showImportForm'])->name('teachers.import.form');
-    Route::post('/teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
-
-    // Status Online
-    Route::get('/parents/online-status', [ParentController::class, 'getOnlineStatus'])->name('parents.online_status');
-    Route::get('/teachers/online-status', [TeacherController::class, 'getOnlineStatus'])->name('teachers.online_status');
-
-    // Cetak QR
-    Route::get('/students/qr', [StudentController::class, 'qr'])->name('students.qr');
-
-    // PERBAIKAN: Menambahkan kembali rute untuk Backup
-    Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
-    Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
-    Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
-    Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
+        // Status Online
+        Route::get('/parents/online-status', [ParentController::class, 'getOnlineStatus'])->name('parents.online_status');
+        Route::get('/teachers/online-status', [TeacherController::class, 'getOnlineStatus'])->name('teachers.online_status');
     
-    // Obrolan Admin
-    Route::get('/chat/{selectedParent?}', [AdminChatController::class, 'index'])->name('chat.index');
-    Route::post('/chat/conversations/{conversation}', [AdminChatController::class, 'storeMessage'])->name('chat.store_message');
+        // Cetak QR
+        Route::get('/students/qr', [StudentController::class, 'qr'])->name('students.qr');
+    
+        // Backup
+        Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
+        Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
+        Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
+        Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
+        
+        // Obrolan Admin
+        Route::get('/chat/{selectedParent?}', [AdminChatController::class, 'index'])->name('chat.index');
+        Route::post('/chat/conversations/{conversation}', [AdminChatController::class, 'storeMessage'])->name('chat.store_message');
+    });
 });
 
 // == GRUP RUTE ORANG TUA ==

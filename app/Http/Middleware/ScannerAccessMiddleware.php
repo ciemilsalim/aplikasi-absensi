@@ -33,6 +33,10 @@ class ScannerAccessMiddleware
             return $next($request);
         }
 
+        if ($user->role === 'admin' || $user->role === 'operator' || ($user->role === 'teacher' && $user->teacher?->homeroomClass)) {
+            return $next($request);
+        }
+
         // Jika tidak memenuhi syarat, kembalikan ke dasbor dengan pesan error
         return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki hak akses ke halaman pemindai.');
     }

@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'parent'         => \App\Http\Middleware\ParentMiddleware::class,
             'teacher'        => \App\Http\Middleware\TeacherMiddleware::class,
             'scanner.access' => \App\Http\Middleware\ScannerAccessMiddleware::class,
+            'role' => \App\Http\Middleware\CheckRoleMiddleware::class,
         ]);
     })
     ->withSchedule(function ($schedule) {
