@@ -9,7 +9,7 @@
         <div class="max-w-full mx-auto">
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm">
                 {{-- PERBAIKAN: Mengubah struktur flex dan tinggi agar lebih responsif --}}
-                <div class="flex h-[calc(100vh-4rem-1px)]"> {{-- Tinggi 100% viewport dikurangi tinggi header --}}
+                <div class="flex h-[calc(100vh-4rem-1px)]">
                     
                     <!-- Sidebar Kontak -->
                     <div class="w-full lg:w-1/3 border-r border-gray-200 dark:border-slate-700 flex flex-col @if($activeConversation) hidden lg:flex @endif">
@@ -20,7 +20,10 @@
                             @if(Auth::user()->role === 'parent' && isset($adminConversation))
                                 <a href="{{ route('chat.admin') }}" class="w-full text-left p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition {{ request()->routeIs('chat.admin') ? 'bg-sky-100 dark:bg-sky-900/50' : '' }}">
                                     <div class="relative"><span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span></div>
-                                    <div class="flex-grow"><p class="font-semibold text-sm text-slate-800 dark:text-white">Admin Sekolah</p><p class="text-xs text-slate-500 dark:text-slate-400">Hubungi administrasi</p></div>
+                                    <div class="flex-grow">
+                                        <p class="font-semibold text-sm text-slate-800 dark:text-white">Admin Sekolah</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Hubungi administrasi</p>
+                                    </div>
                                     @if(isset($adminConversation->unread_messages_count) && $adminConversation->unread_messages_count > 0)
                                         <span class="ml-auto text-xs bg-red-500 text-white font-bold rounded-full h-5 w-5 flex items-center justify-center">{{ $adminConversation->unread_messages_count }}</span>
                                     @endif
@@ -81,9 +84,13 @@
                                 <div class="p-4 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 flex-shrink-0">
                                     <form action="{{ request()->routeIs('chat.admin') ? route('chat.store_admin_message', $activeConversation) : route('chat.store_message', $activeConversation) }}" method="POST">
                                         @csrf
-                                        <div class="flex items-center">
-                                            <x-text-input name="body" type="text" class="flex-grow" placeholder="Ketik pesan Anda..." autocomplete="off" required />
-                                            <x-primary-button type="submit" class="ml-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg></x-primary-button>
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-grow">
+                                                <x-text-input name="body" type="text" class="w-full" placeholder="Ketik pesan Anda..." autocomplete="off" required />
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <x-primary-button type="submit"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg></x-primary-button>
+                                            </div>
                                         </div>
                                     </form>
                                 </div>
