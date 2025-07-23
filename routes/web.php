@@ -102,7 +102,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('classes/assign-students', [SchoolClassController::class, 'assignStudents'])->name('classes.assign.students');
     Route::resource('classes', SchoolClassController::class)->except(['show']);
     Route::resource('students', StudentController::class)->except(['show']);
-    // PERBAIKAN: Menambahkan pengecualian untuk rute 'show'
     Route::resource('parents', ParentController::class)->except(['show']);
     Route::resource('teachers', TeacherController::class)->except(['show']);
     Route::resource('announcements', AnnouncementController::class);
@@ -122,7 +121,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Cetak QR
     Route::get('/students/qr', [StudentController::class, 'qr'])->name('students.qr');
 
-    // Backup
+    // PERBAIKAN: Menambahkan kembali rute untuk Backup
     Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
     Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
     Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');

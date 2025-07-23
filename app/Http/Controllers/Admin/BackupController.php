@@ -139,7 +139,7 @@ class BackupController extends Controller
         return redirect()->route('admin.backup.index')->with('error', 'File backup tidak ditemukan.');
     }
 
-   public function manualBackupDatabase()
+   public function create()
     {
         set_time_limit(300); // Hindari timeout 60 detik
 

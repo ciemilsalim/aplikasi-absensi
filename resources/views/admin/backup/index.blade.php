@@ -17,7 +17,7 @@
                              <h3 class="text-lg font-medium">Cadangan Database</h3>
                              <p class="text-sm text-gray-500 dark:text-gray-400">Buat cadangan database secara berkala untuk keamanan data.</p>
                         </div>
-                        <form action="{{ route('admin.backup.manualbackup') }}" method="POST">
+                        <form action="{{ route('admin.backup.create') }}" method="POST">
                             @csrf
                             <x-primary-button type="submit">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
