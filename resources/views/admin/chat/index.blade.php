@@ -4,9 +4,11 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">{{ __('Obrolan dengan Orang Tua') }}</h2>
     </x-slot>
 
+    {{-- Menghapus padding 'py-12' agar chat box bisa memenuhi tinggi layar --}}
     <div class="py-0">
         <div class="max-w-full mx-auto">
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm">
+                {{-- Mengubah struktur flex dan tinggi agar lebih responsif --}}
                 <div class="flex h-[calc(100vh-4rem-1px)]">
                     
                     <!-- Sidebar Kontak (Daftar Orang Tua) -->
