@@ -17,7 +17,6 @@ class ChatController extends Controller
 {
     /**
      * Menampilkan halaman utama obrolan.
-     * Metode ini sekarang menangani pengambilan daftar kontak dan pesan.
      */
     public function index(Conversation $conversation = null)
     {
@@ -34,7 +33,6 @@ class ChatController extends Controller
                     ['parent_id' => $user->parent->id, 'admin_id' => $admin->id]
                 );
                 
-                // PERBAIKAN: Menambahkan hitungan pesan yang belum dibaca dari admin
                 $adminConversation->unread_messages_count = $adminConversation->messages()
                     ->where('user_id', '!=', $user->id)
                     ->whereNull('read_at')
@@ -44,7 +42,10 @@ class ChatController extends Controller
 
         if ($conversation && $conversation->exists) {
             $this->authorizeConversationAccess($conversation);
-            $messages = $conversation->messages()->with('user')->get();
+            // PERBARUAN: Mengelompokkan pesan berdasarkan tanggal
+            $messages = $conversation->messages()->with('user')->get()->groupBy(function($message) {
+                return $message->created_at->format('Y-m-d');
+            });
             $conversation->messages()->where('user_id', '!=', $user->id)->whereNull('read_at')->update(['read_at' => now()]);
             $activeConversation = $conversation;
         }
@@ -88,7 +89,12 @@ class ChatController extends Controller
         );
         
         $teacherConversations = $this->getConversationsForUser($user);
-        $messages = $adminConversation->messages()->with('user')->get();
+        
+        // PERBARUAN: Mengelompokkan pesan admin berdasarkan tanggal
+        $messages = $adminConversation->messages()->with('user')->get()->groupBy(function($message) {
+            return $message->created_at->format('Y-m-d');
+        });
+
         $adminConversation->messages()->where('user_id', '!=', $user->id)->whereNull('read_at')->update(['read_at' => now()]);
 
         return view('chat.index', [
@@ -142,12 +148,18 @@ class ChatController extends Controller
             return collect();
         }
 
-        // PERBAIKAN: Menambahkan hitungan pesan yang belum dibaca
+        // PERBARUAN: Menambahkan subquery untuk waktu pesan terakhir dan mengurutkan berdasarkan itu
         return Conversation::whereIn('id', $conversationIds)
             ->with(['student', 'teacher.user', 'parent.user'])
+            ->addSelect(['*', 'last_message_at' => Message::select('created_at')
+                ->whereColumn('conversation_id', 'conversations.id')
+                ->orderByDesc('created_at')
+                ->limit(1)
+            ])
             ->withCount(['messages as unread_messages_count' => function ($query) {
                 $query->where('user_id', '!=', Auth::id())->whereNull('read_at');
             }])
+            ->orderByDesc('last_message_at')
             ->get();
     }
 

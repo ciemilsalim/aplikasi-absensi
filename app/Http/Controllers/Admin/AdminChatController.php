@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminConversation;
 use App\Models\ParentModel;
+use App\Models\AdminMessage; // Pastikan model ini diimpor
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,9 +20,22 @@ class AdminChatController extends Controller
     public function index(ParentModel $selectedParent = null)
     {
         $adminId = Auth::id();
-        $parents = ParentModel::with('user')->whereHas('user')->orderBy('name')->get();
 
-        // PERBAIKAN: Menambahkan hitungan pesan yang belum dibaca untuk setiap orang tua
+        // Mengambil parent dengan subquery untuk mendapatkan waktu pesan terakhir
+        // dan mengurutkannya berdasarkan waktu tersebut.
+        $parents = ParentModel::with('user')
+            ->whereHas('user')
+            ->addSelect(['*', 'last_message_at' => AdminMessage::select('admin_messages.created_at')
+                ->from('admin_messages')
+                ->join('admin_conversations', 'admin_conversations.id', '=', 'admin_messages.admin_conversation_id')
+                ->whereColumn('admin_conversations.parent_id', 'parents.id')
+                ->orderByDesc('admin_messages.created_at')
+                ->limit(1)
+            ])
+            ->orderByDesc('last_message_at') // Urutkan berdasarkan waktu pesan terakhir
+            ->get();
+
+        // Menambahkan hitungan pesan yang belum dibaca
         $parents->each(function ($parent) use ($adminId) {
             $conversation = AdminConversation::firstOrCreate(
                 ['parent_id' => $parent->id, 'admin_id' => $adminId]
@@ -39,7 +53,10 @@ class AdminChatController extends Controller
             $activeConversation = AdminConversation::firstOrCreate(
                 ['parent_id' => $selectedParent->id, 'admin_id' => $adminId]
             );
-            $messages = $activeConversation->messages()->with('user')->get();
+            // PERBARUAN: Mengelompokkan pesan berdasarkan tanggal
+            $messages = $activeConversation->messages()->with('user')->get()->groupBy(function($message) {
+                return $message->created_at->format('Y-m-d');
+            });
             $activeConversation->messages()->where('user_id', '!=', $adminId)->whereNull('read_at')->update(['read_at' => now()]);
         }
         
