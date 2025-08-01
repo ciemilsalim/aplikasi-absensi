@@ -30,41 +30,6 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
                                 Dasbor
                             </a>
-
-                            <!-- Dropdown Menu DATA -->
-                            {{-- <div class="hidden lg:flex lg:items-center relative" x-data="{ open: false }">
-                                <button @click="open = !open" class="inline-flex items-center px-4 pt-1 h-16 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.classes.*') || request()->routeIs('admin.students.*') || request()->routeIs('admin.parents.*') || request()->routeIs('admin.teachers.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" /></svg>
-                                    <span>DATA</span>
-                                    <svg class="fill-current h-4 w-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                                </button>
-                                <div x-show="open" @click.away="open = false" x-transition class="absolute top-full mt-2 w-48 rounded-md shadow-lg z-50" style="display: none;">
-                                    <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white dark:bg-slate-700">
-                                        <a href="{{ route('admin.parents.index') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600">Manajemen Ortu</a>
-                                        <a href="{{ route('admin.teachers.index') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600">Data Guru</a>
-                                        <a href="{{ route('admin.classes.index') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600">Data Kelas</a>
-                                        <a href="{{ route('admin.students.index') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600">Data Siswa</a>
-                                    </div>
-                                </div>
-                            </div> --}}
-            
-                            {{-- <a href="{{ route('admin.announcements.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.leave_requests.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 0 1-4.5-4.5V7.5a4.5 4.5 0 0 1 4.5-4.5h7.5a4.5 4.5 0 0 1 4.5 4.5v1.25m-16.5 6.375c0 .621.504 1.125 1.125 1.125h11.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5Z" /></svg>
-                                Pengumuman
-                            </a> --}}
-                        
-                            {{-- <a href="{{ route('admin.leave_requests.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.leave_requests.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" /></svg>
-                                Pengajuan Izin
-                            </a> --}}
-                             {{-- <a href="{{ route('admin.reports.create') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.reports.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.75h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5-1.5a1.5 1.5 0 0 1-1.5-1.5V6.75A2.25 2.25 0 0 1 4.5 4.5h15a2.25 2.25 0 0 1 2.25 2.25v12.75a1.5 1.5 0 0 1-1.5 1.5h-16.5a1.5 1.5 0 0 1-1.5-1.5Z" /></svg>
-                                Laporan
-                            </a>
-                            <a href="{{ route('admin.settings.identity') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.settings.identity') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.438 1.001s.145.761.438 1.001l1.003.827c.424.35.534.954.26 1.431l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 0 1-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.437-1.001s-.145-.761-.437-1.001l-1.004-.827a1.125 1.125 0 0 1-.26-1.431l1.296-2.247a1.125 1.125 0 0 1 1.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.213-1.28z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" /></svg>
-                                Pengaturan
-                            </a> --}}
                         @endif
                         @if(auth()->user()->role === 'parent')
                              <a href="{{ route('parent.dashboard') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('parent.dashboard') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
@@ -83,19 +48,22 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" /></svg>
                                     Pengajuan Izin
                                 </a>
+                                {{-- === TAUTAN BARU UNTUK DESKTOP === --}}
+                                <a href="{{ route('teacher.attendance.history') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('teacher.attendance.history') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18" /></svg>
+                                    Riwayat Kehadiran
+                                </a>
                             @endif
                         @endif
                     @endauth
                 </div>
             </div>
 
-
             <!-- Settings Dropdown atau Link Login/Register -->
             <div class="hidden lg:flex lg:items-center lg:ml-6">
                 @auth
                     <div x-data="{ dropdownOpen: false }" class="relative">
                         <button @click="dropdownOpen = !dropdownOpen" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-600 dark:text-gray-300 bg-white dark:bg-slate-800 hover:text-slate-800 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                            {{-- Ikon Pengguna BARU --}}
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 text-slate-500 dark:text-gray-400">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
@@ -144,7 +112,6 @@
 <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden" x-show="open" x-transition>
         <div class="pt-2 pb-3 space-y-1">
-            {{-- PERBAIKAN: Logika untuk menampilkan menu Pemindai di mobile --}}
             @if(Auth::guest() || (Auth::check() && (Auth::user()->role === 'admin' || (Auth::user()->role === 'teacher' && Auth::user()->teacher?->homeroomClass))))
                 <x-responsive-nav-link :href="route('scanner')" :active="request()->routeIs('scanner')">Pemindai</x-responsive-nav-link>
             @endif
@@ -168,6 +135,8 @@
                     <x-responsive-nav-link :href="route('teacher.dashboard')" :active="request()->routeIs('teacher.dashboard')">Dasbor</x-responsive-nav-link>
                     @if(Auth::user()->teacher && Auth::user()->teacher->homeroomClass)
                         <x-responsive-nav-link :href="route('teacher.leave_requests.index')" :active="request()->routeIs('teacher.leave_requests.*')">Pengajuan Izin</x-responsive-nav-link>
+                        {{-- === TAUTAN BARU UNTUK MOBILE === --}}
+                        <x-responsive-nav-link :href="route('teacher.attendance.history')" :active="request()->routeIs('teacher.attendance.history')">Riwayat Kehadiran</x-responsive-nav-link>
                     @endif
                 @endif
             @endauth

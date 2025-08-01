@@ -128,4 +128,99 @@ class DashboardController extends Controller
 
         return redirect()->back()->with('success', 'Status kehadiran untuk siswa ' . $student->name . ' berhasil diperbarui.');
     }
+
+    /**
+     * [METODE BARU] Menampilkan halaman riwayat kehadiran dengan filter.
+     */
+    public function showAttendanceHistory(Request $request)
+    {
+        $teacher = Auth::user()->teacher;
+        
+        if (!$teacher || !$teacher->homeroomClass) {
+            return view('teacher.dashboard-no-class', compact('teacher'));
+        }
+
+        $class = $teacher->homeroomClass;
+        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $studentIds = $students->pluck('id');
+
+        // Validasi dan tentukan rentang tanggal
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->startOfMonth();
+        $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now();
+
+        // Ambil data kehadiran
+        $attendances = Attendance::whereIn('student_id', $studentIds)
+            ->whereBetween('attendance_time', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->get()
+            ->groupBy('student_id')
+            ->map(function ($studentAttendances) {
+                return $studentAttendances->keyBy(function ($item) {
+                    return Carbon::parse($item->attendance_time)->format('Y-m-d');
+                });
+            });
+
+        // Buat periode tanggal untuk header tabel
+        $period = CarbonPeriod::create($startDate, $endDate);
+
+        return view('teacher.attendance-history', compact(
+            'teacher', 
+            'class', 
+            'students', 
+            'attendances', 
+            'period', 
+            'startDate', 
+            'endDate'
+        ));
+    }
+
+    public function updateAttendance(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'date' => 'required|date_format:Y-m-d',
+            'status' => 'required|in:tepat_waktu,terlambat,izin,sakit,alpa,hapus',
+        ]);
+
+        $teacher = Auth::user()->teacher;
+        $student = Student::findOrFail($request->student_id);
+
+        // Pastikan guru adalah wali kelas dari siswa yang bersangkutan
+        if (!$teacher || $teacher->homeroomClass?->id !== $student->school_class_id) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak untuk mengubah data siswa ini.');
+        }
+
+        $attendanceDate = Carbon::parse($request->date)->startOfDay();
+
+        // Cari data kehadiran
+        $attendance = Attendance::where('student_id', $student->id)
+                                ->whereDate('attendance_time', $attendanceDate)
+                                ->first();
+        
+        // Jika user memilih "hapus"
+        if ($request->status === 'hapus') {
+            if ($attendance) {
+                $attendance->delete();
+                return redirect()->back()->with('success', 'Data kehadiran berhasil dihapus.');
+            }
+            return redirect()->back(); // Tidak ada yang perlu dihapus
+        }
+
+        // Gunakan updateOrCreate untuk memperbarui atau membuat data baru
+        Attendance::updateOrCreate(
+            [
+                'student_id' => $student->id,
+                'attendance_time' => $attendanceDate,
+            ],
+            [
+                'status' => $request->status,
+            ]
+        );
+
+        return redirect()->back()->with('success', 'Kehadiran untuk ' . $student->name . ' pada tanggal ' . $attendanceDate->format('d/m/Y') . ' berhasil diperbarui.');
+    }
 }
