@@ -19,7 +19,6 @@ class StudentController extends Controller
     {
         $classes = SchoolClass::orderBy('name')->get();
         
-        // Validasi parameter untuk pengurutan
         $sortBy = in_array($request->query('sort_by'), ['name', 'nis', 'class_name']) 
             ? $request->query('sort_by') 
             : 'name';
@@ -28,7 +27,6 @@ class StudentController extends Controller
             ? $request->query('sort_direction') 
             : 'asc';
 
-        // Validasi parameter untuk jumlah data per halaman
         $perPage = in_array($request->query('per_page'), [10, 25, 50, 100])
             ? $request->query('per_page')
             : 10;
@@ -47,7 +45,6 @@ class StudentController extends Controller
             $query->where('school_class_id', $request->school_class_id);
         }
 
-        // Terapkan pengurutan
         if ($sortBy === 'class_name') {
             $query->orderBy(
                 SchoolClass::select('name')
@@ -128,6 +125,21 @@ class StudentController extends Controller
     {
         $student->delete();
         return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil dihapus.');
+    }
+
+    /**
+     * [METODE BARU] Menghapus beberapa siswa sekaligus (hapus massal).
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:students,id',
+        ]);
+
+        Student::whereIn('id', $request->student_ids)->delete();
+
+        return redirect()->route('admin.students.index')->with('success', 'Siswa yang dipilih berhasil dihapus.');
     }
 
     /**

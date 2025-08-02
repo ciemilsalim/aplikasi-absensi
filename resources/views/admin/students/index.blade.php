@@ -22,7 +22,15 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
         </h2>
     </x-slot>
 
-    <div x-data="{ showConfirmModal: false, deleteUrl: '' }" class="py-12">
+    <div x-data="{ 
+        showConfirmModal: false, 
+        deleteUrl: '',
+        selectedStudents: [],
+        toggleAll(event) {
+            const checkboxes = document.querySelectorAll('input[name=\'student_ids[]\']');
+            this.selectedStudents = event.target.checked ? Array.from(checkboxes).map(cb => cb.value) : [];
+        }
+    }" class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -84,10 +92,23 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                         </div>
                     </form>
 
+                    <!-- Tindakan Massal -->
+                    <div x-show="selectedStudents.length > 0" class="mb-4 bg-slate-100 dark:bg-slate-700 p-4 rounded-lg flex items-center gap-4" style="display: none;">
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-200"><span x-text="selectedStudents.length"></span> siswa dipilih</span>
+                        <form action="{{ route('admin.students.bulk_destroy') }}" method="POST" onsubmit="return confirm('Anda yakin ingin menghapus semua siswa yang dipilih?');">
+                            @csrf
+                            <template x-for="studentId in selectedStudents" :key="studentId">
+                                <input type="hidden" name="student_ids[]" :value="studentId">
+                            </template>
+                            <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">Hapus yang Dipilih</button>
+                        </form>
+                    </div>
+
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                 <tr>
+                                    <th scope="col" class="p-4"><input type="checkbox" @click="toggleAll($event)" class="rounded border-gray-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500"></th>
                                     <th scope="col" class="px-6 py-3">{!! sortable_link('Nama Siswa', 'name', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3">{!! sortable_link('NIS', 'nis', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3">{!! sortable_link('Kelas', 'class_name', $sortBy, $sortDirection) !!}</th>
@@ -97,6 +118,7 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                             <tbody>
                                 @forelse ($students as $student)
                                     <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600">
+                                        <td class="p-4"><input type="checkbox" name="student_ids[]" x-model="selectedStudents" value="{{ $student->id }}" class="rounded border-gray-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500"></td>
                                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                                             {{ $student->name }}
                                         </th>
@@ -119,7 +141,7 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                     </tr>
                                 @empty
                                     <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700">
-                                        <td colspan="4" class="px-6 py-4 text-center">
+                                        <td colspan="5" class="px-6 py-4 text-center">
                                             Tidak ada data siswa yang cocok dengan filter.
                                         </td>
                                     </tr>

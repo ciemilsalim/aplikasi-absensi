@@ -110,7 +110,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::resource('teachers', TeacherController::class)->except(['show']);
         Route::resource('announcements', AnnouncementController::class);
         Route::resource('users', UserController::class)->except(['show']);
-        Route::post('users/bulk-destroy', [UserController::class, 'bulkDestroy'])->name('users.bulk_destroy'); // Rute BARU
+        Route::post('users/bulk-destroy', [UserController::class, 'bulkDestroy'])->name('users.bulk_destroy');
+        Route::post('students/bulk-destroy', [StudentController::class, 'bulkDestroy'])->name('students.bulk_destroy');
         
         // Impor Data
         Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');
