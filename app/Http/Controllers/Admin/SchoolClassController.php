@@ -11,11 +11,55 @@ use Illuminate\Validation\Rule;
 
 class SchoolClassController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $classes = SchoolClass::with('homeroomTeacher')->withCount('students')->paginate(10);
+        $sortBy = in_array($request->query('sort_by'), ['name', 'teacher_name', 'students_count']) 
+            ? $request->query('sort_by') 
+            : 'name';
+
+        $sortDirection = in_array($request->query('sort_direction'), ['asc', 'desc']) 
+            ? $request->query('sort_direction') 
+            : 'asc';
+
+        $perPage = in_array($request->query('per_page'), [10, 25, 50, 100])
+            ? $request->query('per_page')
+            : 10;
+
+        $query = SchoolClass::query()->with('homeroomTeacher')->withCount('students');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('homeroomTeacher', function($teacherQuery) use ($search) {
+                      $teacherQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // PERBAIKAN: Menggunakan subquery untuk sortir berdasarkan nama guru.
+        // Metode ini tidak akan menghilangkan kolom 'students_count'.
+        if ($sortBy === 'teacher_name') {
+            $query->orderBy(
+                Teacher::select('name')
+                    ->whereColumn('teachers.id', 'school_classes.teacher_id')
+                    ->limit(1),
+                $sortDirection
+            );
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $classes = $query->paginate($perPage);
         $teachers = Teacher::with('homeroomClass')->orderBy('name')->get();
-        return view('admin.classes.index', compact('classes', 'teachers'));
+
+        return view('admin.classes.index', [
+            'classes' => $classes,
+            'teachers' => $teachers,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+            'perPage' => $perPage,
+        ]);
     }
 
     public function create()
@@ -35,49 +79,47 @@ class SchoolClassController extends Controller
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil ditambahkan.');
     }
     
-    public function edit(SchoolClass $schoolClass)
+    public function edit(SchoolClass $class)
     {
         $teachers = Teacher::with('homeroomClass')->orderBy('name')->get();
-        return view('admin.classes.edit', compact('schoolClass', 'teachers'));
+        return view('admin.classes.edit', compact('class', 'teachers'));
     }
 
-    public function update(Request $request, SchoolClass $schoolClass)
+    public function update(Request $request, SchoolClass $class)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('school_classes')->ignore($schoolClass->id)],
-            'teacher_id' => ['nullable', 'exists:teachers,id', Rule::unique('school_classes', 'teacher_id')->ignore($schoolClass->id)],
+            'name' => ['required', 'string', 'max:255', Rule::unique('school_classes')->ignore($class->id)],
+            'teacher_id' => ['nullable', 'exists:teachers,id', Rule::unique('school_classes', 'teacher_id')->ignore($class->id)],
         ], [
             'teacher_id.unique' => 'Guru ini sudah menjadi wali di kelas lain.'
         ]);
         
-        $schoolClass->update($request->all());
+        $class->update($request->all());
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil diperbarui.');
     }
 
-    public function destroy(SchoolClass $schoolClass)
+    public function destroy(SchoolClass $class)
     {
-        $schoolClass->delete();
+        $class->delete();
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil dihapus.');
     }
 
-    /**
-     * Menampilkan form untuk penempatan siswa massal.
-     * PERBAIKAN: Memastikan query mengambil data yang benar untuk setiap kolom.
-     */
-    public function showAssignForm(SchoolClass $schoolClass)
+    // PERBAIKAN: Mengganti nama variabel agar cocok dengan parameter rute '{school_class}'
+    public function showAssignForm(SchoolClass $school_class)
     {
-        // Mengambil siswa yang ID kelasnya cocok dengan kelas ini
-        $studentsInClass = Student::where('school_class_id', $schoolClass->id)->orderBy('name')->get();
+        // Menggunakan relasi dari model yang sudah di-binding dengan benar
+        $studentsInClass = $school_class->students()->orderBy('name')->get();
         
-        // Mengambil siswa yang ID kelasnya masih kosong (null)
         $studentsWithoutClass = Student::whereNull('school_class_id')->orderBy('name')->get();
 
-        return view('admin.classes.assign', compact('schoolClass', 'studentsInClass', 'studentsWithoutClass'));
+        // Mengirimkan variabel ke view dengan nama 'class' agar view tidak perlu diubah
+        return view('admin.classes.assign', [
+            'class' => $school_class,
+            'studentsInClass' => $studentsInClass,
+            'studentsWithoutClass' => $studentsWithoutClass
+        ]);
     }
 
-    /**
-     * Memproses penempatan siswa massal.
-     */
     public function assignStudents(Request $request)
     {
         $request->validate([

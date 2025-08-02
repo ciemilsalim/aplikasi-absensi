@@ -13,11 +13,26 @@ use Illuminate\Support\Str;
 class StudentController extends Controller
 {
     /**
-     * Menampilkan daftar siswa dengan fitur pencarian dan filter kelas.
+     * Menampilkan daftar siswa dengan fitur pencarian, filter, sortir, dan paginasi dinamis.
      */
     public function index(Request $request)
     {
         $classes = SchoolClass::orderBy('name')->get();
+        
+        // Validasi parameter untuk pengurutan
+        $sortBy = in_array($request->query('sort_by'), ['name', 'nis', 'class_name']) 
+            ? $request->query('sort_by') 
+            : 'name';
+
+        $sortDirection = in_array($request->query('sort_direction'), ['asc', 'desc']) 
+            ? $request->query('sort_direction') 
+            : 'asc';
+
+        // Validasi parameter untuk jumlah data per halaman
+        $perPage = in_array($request->query('per_page'), [10, 25, 50, 100])
+            ? $request->query('per_page')
+            : 10;
+
         $query = Student::with('schoolClass');
 
         if ($request->filled('search')) {
@@ -32,8 +47,26 @@ class StudentController extends Controller
             $query->where('school_class_id', $request->school_class_id);
         }
 
-        $students = $query->orderBy('name')->paginate(10);
-        return view('admin.students.index', compact('students', 'classes'));
+        // Terapkan pengurutan
+        if ($sortBy === 'class_name') {
+            $query->orderBy(
+                SchoolClass::select('name')
+                    ->whereColumn('id', 'students.school_class_id'),
+                $sortDirection
+            );
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $students = $query->paginate($perPage);
+
+        return view('admin.students.index', [
+            'students' => $students,
+            'classes' => $classes,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+            'perPage' => $perPage,
+        ]);
     }
 
     /**

@@ -1,9 +1,22 @@
+@php
+// Helper function untuk membuat link sortir
+function sortable_link($title, $column, $sortBy, $sortDirection) {
+    $direction = ($sortBy === $column && $sortDirection === 'asc') ? 'desc' : 'asc';
+    $arrow = '';
+    if ($sortBy === $column) {
+        $arrow = $sortDirection === 'asc' ? '&#9650;' : '&#9660;';
+    }
+    $queryParams = array_merge(request()->query(), ['sort_by' => $column, 'sort_direction' => $direction]);
+    return '<a href="' . route('admin.students.index', $queryParams) . '" class="flex items-center gap-2">' . $title . ' <span class="text-sky-500">' . $arrow . '</span></a>';
+}
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <x-breadcrumb :breadcrumbs="[
             ['title' => 'Data', 'url' => '#'],
             ['title' => 'Siswa', 'url' => route('admin.students.index')]
-        ]" class="mb-4" />
+        ]" />
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Manajemen Data Siswa') }}
         </h2>
@@ -16,14 +29,16 @@
                     <div class="flex flex-wrap gap-2 justify-between items-center mb-6">
                         <h3 class="text-lg font-medium">Daftar Siswa</h3>
                         <div class="flex gap-2">
-                            {{-- PERBAIKAN: Menambahkan parameter filter ke link cetak QR --}}
                             <a href="{{ route('admin.students.qr', request()->query()) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 text-sm font-medium">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 0 1 1.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 0 1-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
                                 Cetak Semua QR
                             </a>
                             <a href="{{ route('admin.students.import.form') }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" /></svg>
                                 Impor dari Excel
                             </a>
                             <a href="{{ route('admin.students.create') }}" class="inline-flex items-center px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm font-medium">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                                 Tambah Siswa
                             </a>
                         </div>
@@ -35,22 +50,37 @@
                         </div>
                     @endif
 
-                    {{-- Form Pencarian & Filter --}}
-                    <form method="GET" action="{{ route('admin.students.index') }}" class="mb-6 flex flex-col sm:flex-row gap-4">
-                        <div class="relative flex-grow">
-                            <x-text-input type="text" name="search" placeholder="Cari berdasarkan nama atau NIS..." value="{{ request('search') }}" class="w-full pl-10"/>
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                    <form method="GET" action="{{ route('admin.students.index') }}" class="mb-6">
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <input type="hidden" name="sort_by" value="{{ request('sort_by') }}">
+                            <input type="hidden" name="sort_direction" value="{{ request('sort_direction') }}">
+                            
+                            <div class="relative flex-grow">
+                                <x-text-input type="text" name="search" placeholder="Cari berdasarkan nama atau NIS..." value="{{ request('search') }}" class="w-full pl-10"/>
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <select name="school_class_id" class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
-                                <option value="">Semua Kelas</option>
-                                @foreach($classes as $class)
-                                    <option value="{{ $class->id }}" {{ request('school_class_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>
-                                @endforeach
-                            </select>
-                            <x-primary-button type="submit">Filter</x-primary-button>
+
+                            <div class="flex items-center gap-4">
+                                <select name="school_class_id" class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
+                                    <option value="">Semua Kelas</option>
+                                    @foreach($classes as $class)
+                                        <option value="{{ $class->id }}" {{ request('school_class_id') == $class->id ? 'selected' : '' }}>{{ $class->name }}</option>
+                                    @endforeach
+                                </select>
+                                
+                                <div class="flex items-center gap-2">
+                                    <label for="per_page" class="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">Tampilkan:</label>
+                                    <select name="per_page" id="per_page" onchange="this.form.submit()" class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
+                                        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                                        <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                                        <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                                        <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+                                    </select>
+                                </div>
+                                <x-primary-button type="submit">Filter</x-primary-button>
+                            </div>
                         </div>
                     </form>
 
@@ -58,9 +88,9 @@
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3">Nama Siswa</th>
-                                    <th scope="col" class="px-6 py-3">NIS</th>
-                                    <th scope="col" class="px-6 py-3">Kelas</th>
+                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Nama Siswa', 'name', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3">{!! sortable_link('NIS', 'nis', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Kelas', 'class_name', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -106,12 +136,7 @@
 
         <!-- Modal Konfirmasi Hapus -->
         <div x-show="showConfirmModal" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
+             x-transition
              class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" 
              style="display: none;">
             <div @click.away="showConfirmModal = false" 

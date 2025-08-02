@@ -5,8 +5,9 @@
             ['title' => 'Data Kelas', 'url' => route('admin.classes.index')],
             ['title' => 'Atur Siswa', 'url' => '#']
         ]" class="mb-4" />
+        {{-- PERBAIKAN: Menggunakan variabel $class --}}
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Atur Siswa untuk Kelas: <span class="text-sky-600">{{ $schoolClass->name }}</span>
+            Atur Siswa untuk Kelas: <span class="text-sky-600">{{ $class->name }}</span>
         </h2>
     </x-slot>
 
@@ -16,7 +17,6 @@
                 <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 sm:rounded-lg" role="alert"><p>{{ session('success') }}</p></div>
             @endif
             
-            {{-- PERBAIKAN: Menambahkan Alpine.js untuk mengelola state checkbox --}}
             <form x-data="{
                 studentsToAdd: [],
                 studentsToRemove: [],
@@ -34,7 +34,8 @@
                 }
             }" action="{{ route('admin.classes.assign.students') }}" method="POST">
                 @csrf
-                <input type="hidden" name="school_class_id" value="{{ $schoolClass->id }}">
+                {{-- PERBAIKAN: Menggunakan variabel $class --}}
+                <input type="hidden" name="school_class_id" value="{{ $class->id }}">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
                     <!-- Kolom Siswa di dalam Kelas -->
@@ -42,7 +43,6 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Siswa di Kelas Ini ({{ $studentsInClass->count() }})</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Centang untuk mengeluarkan siswa dari kelas ini.</p>
                         
-                        {{-- Checkbox "Pilih Semua" BARU --}}
                         @if($studentsInClass->isNotEmpty())
                         <div class="mb-2 border-b pb-2 dark:border-slate-700">
                             <label class="flex items-center">
@@ -69,7 +69,6 @@
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Siswa Tanpa Kelas ({{ $studentsWithoutClass->count() }})</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Centang untuk memasukkan siswa ke kelas ini.</p>
                          
-                         {{-- Checkbox "Pilih Semua" BARU --}}
                          @if($studentsWithoutClass->isNotEmpty())
                          <div class="mb-2 border-b pb-2 dark:border-slate-700">
                             <label class="flex items-center">

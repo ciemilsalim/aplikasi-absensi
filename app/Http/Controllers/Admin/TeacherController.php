@@ -15,6 +15,20 @@ class TeacherController extends Controller
 {
     public function index(Request $request)
     {
+        // Validasi parameter untuk pengurutan
+        $sortBy = in_array($request->query('sort_by'), ['name', 'nip', 'email']) 
+            ? $request->query('sort_by') 
+            : 'created_at';
+
+        $sortDirection = in_array($request->query('sort_direction'), ['asc', 'desc']) 
+            ? $request->query('sort_direction') 
+            : 'desc';
+
+        // Validasi parameter untuk jumlah data per halaman
+        $perPage = in_array($request->query('per_page'), [10, 25, 50, 100])
+            ? $request->query('per_page')
+            : 10;
+
         $query = Teacher::query()->with('user');
 
         // Terapkan filter pencarian jika ada
@@ -28,8 +42,23 @@ class TeacherController extends Controller
             });
         }
 
-        $teachers = $query->latest()->paginate(10);
-        return view('admin.teachers.index', compact('teachers'));
+        // Terapkan pengurutan
+        if ($sortBy === 'email') {
+            $query->join('users', 'teachers.user_id', '=', 'users.id')
+                  ->orderBy('users.email', $sortDirection)
+                  ->select('teachers.*');
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $teachers = $query->paginate($perPage);
+
+        return view('admin.teachers.index', [
+            'teachers' => $teachers,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+            'perPage' => $perPage,
+        ]);
     }
 
     public function create()
