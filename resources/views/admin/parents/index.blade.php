@@ -1,3 +1,16 @@
+@php
+// Helper function untuk membuat link sortir
+function sortable_link($title, $column, $sortBy, $sortDirection) {
+    $direction = ($sortBy === $column && $sortDirection === 'asc') ? 'desc' : 'asc';
+    $arrow = '';
+    if ($sortBy === $column) {
+        $arrow = $sortDirection === 'asc' ? '&#9650;' : '&#9660;';
+    }
+    $queryParams = array_merge(request()->query(), ['sort_by' => $column, 'sort_direction' => $direction]);
+    return '<a href="' . route('admin.parents.index', $queryParams) . '" class="flex items-center gap-2">' . $title . ' <span class="text-sky-500">' . $arrow . '</span></a>';
+}
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <x-breadcrumb :breadcrumbs="[
@@ -41,10 +54,28 @@
                     @endif
                     
                     <form method="GET" action="{{ route('admin.parents.index') }}" class="mb-6">
-                        <div class="relative">
-                            <x-text-input type="text" name="search" placeholder="Cari berdasarkan nama atau email..." value="{{ request('search') }}" class="w-full pl-10"/>
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <input type="hidden" name="sort_by" value="{{ request('sort_by') }}">
+                            <input type="hidden" name="sort_direction" value="{{ request('sort_direction') }}">
+                            
+                            <div class="relative flex-grow">
+                                <x-text-input type="text" name="search" placeholder="Cari berdasarkan nama atau email..." value="{{ request('search') }}" class="w-full pl-10"/>
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-2">
+                                    <label for="per_page" class="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">Tampilkan:</label>
+                                    <select name="per_page" id="per_page" onchange="this.form.submit()" class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
+                                        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                                        <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                                        <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                                        <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+                                    </select>
+                                </div>
+                                <x-primary-button type="submit">Cari</x-primary-button>
                             </div>
                         </div>
                     </form>
@@ -53,10 +84,10 @@
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3">Nama Orang Tua</th>
-                                    <th scope="col" class="px-6 py-3">Email Login</th>
+                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Nama Orang Tua', 'name', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Email Login', 'email', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3">Nomor HP</th>
-                                    <th scope="col" class="px-6 py-3 text-center">Jumlah Anak</th>
+                                    <th scope="col" class="px-6 py-3 text-center">{!! sortable_link('Jumlah Anak', 'students_count', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>

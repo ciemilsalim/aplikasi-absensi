@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ParentModel;
 use App\Models\User;
 use App\Models\Student;
-use App\Imports\ParentsImport; // Pastikan ini diimpor
-use Maatwebsite\Excel\Facades\Excel; // Pastikan ini diimpor
+use App\Imports\ParentsImport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -15,10 +15,24 @@ use Illuminate\Validation\Rules;
 class ParentController extends Controller
 {
     /**
-     * Menampilkan daftar semua orang tua dengan paginasi.
+     * Menampilkan daftar semua orang tua dengan paginasi, sortir, dan filter.
      */
     public function index(Request $request)
     {
+        // Validasi parameter untuk pengurutan
+        $sortBy = in_array($request->query('sort_by'), ['name', 'email', 'students_count']) 
+            ? $request->query('sort_by') 
+            : 'created_at';
+
+        $sortDirection = in_array($request->query('sort_direction'), ['asc', 'desc']) 
+            ? $request->query('sort_direction') 
+            : 'desc';
+
+        // Validasi parameter untuk jumlah data per halaman
+        $perPage = in_array($request->query('per_page'), [10, 25, 50, 100])
+            ? $request->query('per_page')
+            : 10;
+
         $query = ParentModel::query()->with('user')->withCount('students');
 
         // Terapkan filter pencarian jika ada
@@ -31,9 +45,26 @@ class ParentController extends Controller
                   });
             });
         }
+        
+        // Terapkan pengurutan
+        if ($sortBy === 'email') {
+            // Jika sortir berdasarkan email, kita perlu join tabel users
+            $query->join('users', 'parents.user_id', '=', 'users.id')
+                  ->orderBy('users.email', $sortDirection)
+                  ->select('parents.*'); // Penting: pilih kolom dari tabel parents saja
+        } else {
+            // Untuk kolom lain, order by biasa sudah cukup
+            $query->orderBy($sortBy, $sortDirection);
+        }
 
-        $parents = $query->latest()->paginate(10);
-        return view('admin.parents.index', compact('parents'));
+        $parents = $query->paginate($perPage);
+
+        return view('admin.parents.index', [
+            'parents' => $parents,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+            'perPage' => $perPage,
+        ]);
     }
 
     /**
@@ -76,7 +107,6 @@ class ParentController extends Controller
      */
     public function edit(ParentModel $parent)
     {
-        // PERBAIKAN: Memuat relasi 'schoolClass' untuk menampilkan nama kelas
         $studentsLinked = $parent->students()->with('schoolClass')->orderBy('name')->get();
         $studentsNotLinked = Student::whereDoesntHave('parents')->with('schoolClass')->orderBy('name')->get();
 
@@ -151,10 +181,9 @@ class ParentController extends Controller
      */
     public function getOnlineStatus()
     {
-        // Orang tua dianggap online jika aktivitas terakhirnya dalam 5 menit terakhir
         $onlineParentUserIds = User::where('role', 'parent')
                                ->where('last_seen_at', '>', now()->subMinutes(5))
-                               ->pluck('id'); // Ambil ID dari tabel 'users'
+                               ->pluck('id');
 
         return response()->json($onlineParentUserIds);
     }
