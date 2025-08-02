@@ -28,6 +28,11 @@ class UserController extends Controller
             ? $request->query('sort_direction') 
             : 'desc';
 
+        // PERBARUAN: Validasi parameter untuk jumlah data per halaman
+        $perPage = in_array($request->query('per_page'), [10, 25, 50, 100])
+            ? $request->query('per_page')
+            : 10; // Nilai default
+
         $query = User::query();
 
         // Terapkan filter pencarian jika ada
@@ -41,19 +46,21 @@ class UserController extends Controller
 
         // Terapkan filter berdasarkan peran jika ada
         if ($request->filled('role')) {
-            $query->where('role', 'request->role');
+            $query->where('role', $request->role);
         }
 
         // Terapkan pengurutan
         $query->orderBy($sortBy, $sortDirection);
 
-        $users = $query->paginate(10);
+        // PERBARUAN: Gunakan variabel $perPage untuk paginasi
+        $users = $query->paginate($perPage);
 
-        // Mengirim data ke view, termasuk parameter sortir untuk membuat link
+        // Mengirim data ke view, termasuk parameter sortir dan per_page
         return view('admin.users.index', [
             'users' => $users,
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
+            'perPage' => $perPage, // Kirim variabel perPage ke view
         ]);
     }
 

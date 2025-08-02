@@ -33,7 +33,7 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
     }" class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            {{-- Kartu Statistik tidak diubah, jadi saya hapus dari sini agar lebih ringkas --}}
+            {{-- Kartu Statistik bisa ditambahkan kembali di sini jika perlu --}}
 
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -53,26 +53,39 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                     @endif
                     
                     <!-- Form Pencarian & Filter -->
-                    <form method="GET" action="{{ route('admin.users.index') }}" class="mb-6 flex flex-col sm:flex-row gap-4">
-                        {{-- Menyimpan parameter sortir saat melakukan filter --}}
-                        <input type="hidden" name="sort_by" value="{{ request('sort_by') }}">
-                        <input type="hidden" name="sort_direction" value="{{ request('sort_direction') }}">
+                    <form method="GET" action="{{ route('admin.users.index') }}" class="mb-6">
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            {{-- Menyimpan parameter sortir saat melakukan filter --}}
+                            <input type="hidden" name="sort_by" value="{{ request('sort_by') }}">
+                            <input type="hidden" name="sort_direction" value="{{ request('sort_direction') }}">
 
-                        <div class="relative flex-grow">
-                            <x-text-input type="text" name="search" placeholder="Cari berdasarkan nama atau email..." value="{{ request('search') }}" class="w-full pl-10"/>
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                            <div class="relative flex-grow">
+                                <x-text-input type="text" name="search" placeholder="Cari berdasarkan nama atau email..." value="{{ request('search') }}" class="w-full pl-10"/>
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <select name="role" class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
-                                <option value="">Semua Peran</option>
-                                <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="operator" {{ request('role') == 'operator' ? 'selected' : '' }}>Operator</option>
-                                <option value="teacher" {{ request('role') == 'teacher' ? 'selected' : '' }}>Guru</option>
-                                <option value="parent" {{ request('role') == 'parent' ? 'selected' : '' }}>Orang Tua</option>
-                            </select>
-                            <x-primary-button type="submit">Filter</x-primary-button>
+                            <div class="flex items-center gap-4">
+                                <select name="role" class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
+                                    <option value="">Semua Peran</option>
+                                    <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                                    <option value="operator" {{ request('role') == 'operator' ? 'selected' : '' }}>Operator</option>
+                                    <option value="teacher" {{ request('role') == 'teacher' ? 'selected' : '' }}>Guru</option>
+                                    <option value="parent" {{ request('role') == 'parent' ? 'selected' : '' }}>Orang Tua</option>
+                                </select>
+                                
+                                <div class="flex items-center gap-2">
+                                    <label for="per_page" class="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">Tampilkan:</label>
+                                    <select name="per_page" id="per_page" onchange="this.form.submit()" class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-sm">
+                                        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                                        <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                                        <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                                        <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+                                    </select>
+                                </div>
+
+                                <x-primary-button type="submit">Filter</x-primary-button>
+                            </div>
                         </div>
                     </form>
 
