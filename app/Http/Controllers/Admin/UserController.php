@@ -15,26 +15,46 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     /**
-     * Menampilkan daftar semua pengguna dengan fitur pencarian dan filter.
+     * Menampilkan daftar semua pengguna dengan fitur pencarian, filter, dan sortir.
      */
     public function index(Request $request)
     {
+        // Validasi parameter untuk pengurutan
+        $sortBy = in_array($request->query('sort_by'), ['name', 'email', 'role', 'last_seen_at']) 
+            ? $request->query('sort_by') 
+            : 'created_at';
+
+        $sortDirection = in_array($request->query('sort_direction'), ['asc', 'desc']) 
+            ? $request->query('sort_direction') 
+            : 'desc';
+
         $query = User::query();
 
         // Terapkan filter pencarian jika ada
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
+            });
         }
 
         // Terapkan filter berdasarkan peran jika ada
         if ($request->filled('role')) {
-            $query->where('role', $request->role);
+            $query->where('role', 'request->role');
         }
 
-        $users = $query->latest()->paginate(10);
-        return view('admin.users.index', compact('users'));
+        // Terapkan pengurutan
+        $query->orderBy($sortBy, $sortDirection);
+
+        $users = $query->paginate(10);
+
+        // Mengirim data ke view, termasuk parameter sortir untuk membuat link
+        return view('admin.users.index', [
+            'users' => $users,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+        ]);
     }
 
     /**

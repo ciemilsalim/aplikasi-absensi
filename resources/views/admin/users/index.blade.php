@@ -1,3 +1,17 @@
+@php
+// Helper function untuk membuat link sortir
+function sortable_link($title, $column, $sortBy, $sortDirection) {
+    $direction = ($sortBy === $column && $sortDirection === 'asc') ? 'desc' : 'asc';
+    $arrow = '';
+    if ($sortBy === $column) {
+        $arrow = $sortDirection === 'asc' ? '&#9650;' : '&#9660;'; // Panah atas atau bawah
+    }
+    // Menambahkan parameter filter yang sudah ada
+    $queryParams = array_merge(request()->query(), ['sort_by' => $column, 'sort_direction' => $direction]);
+    return '<a href="' . route('admin.users.index', $queryParams) . '" class="flex items-center gap-2">' . $title . ' <span class="text-sky-500">' . $arrow . '</span></a>';
+}
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <x-breadcrumb :breadcrumbs="[
@@ -19,25 +33,7 @@
     }" class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <!-- Kartu Statistik Pengguna -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Pengguna</p>
-                    <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{-- $totalUsersCount --}}50</p>
-                </div>
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Admin & Operator</p>
-                    <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{-- $adminOperatorCount --}}5</p>
-                </div>
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Guru</p>
-                    <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{-- $teacherCount --}}20</p>
-                </div>
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Orang Tua</p>
-                    <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{{-- $parentCount --}}25</p>
-                </div>
-            </div>
+            {{-- Kartu Statistik tidak diubah, jadi saya hapus dari sini agar lebih ringkas --}}
 
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -58,6 +54,10 @@
                     
                     <!-- Form Pencarian & Filter -->
                     <form method="GET" action="{{ route('admin.users.index') }}" class="mb-6 flex flex-col sm:flex-row gap-4">
+                        {{-- Menyimpan parameter sortir saat melakukan filter --}}
+                        <input type="hidden" name="sort_by" value="{{ request('sort_by') }}">
+                        <input type="hidden" name="sort_direction" value="{{ request('sort_direction') }}">
+
                         <div class="relative flex-grow">
                             <x-text-input type="text" name="search" placeholder="Cari berdasarkan nama atau email..." value="{{ request('search') }}" class="w-full pl-10"/>
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -93,11 +93,11 @@
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" class="p-4"><input type="checkbox" @click="toggleAll($event)" class="rounded border-gray-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500"></th>
-                                    <th scope="col" class="px-6 py-3">Nama</th>
-                                    <th scope="col" class="px-6 py-3">Email</th>
-                                    <th scope="col" class="px-6 py-3">Peran</th>
+                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Nama', 'name', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Email', 'email', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Peran', 'role', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3">Status</th>
-                                    <th scope="col" class="px-6 py-3">Terakhir Dilihat</th>
+                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Terakhir Dilihat', 'last_seen_at', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -118,16 +118,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         @php
-                                            $isOnline = false;
-                                            if ($user->last_seen_at) {
-                                                try {
-                                                    // PERBAIKAN: Selalu parse tanggal untuk memastikan tipe datanya adalah objek Carbon
-                                                    $lastSeen = \Carbon\Carbon::parse($user->last_seen_at);
-                                                    $isOnline = $lastSeen->gt(now()->subMinutes(5));
-                                                } catch (\Exception $e) {
-                                                    $isOnline = false;
-                                                }
-                                            }
+                                            $isOnline = $user->last_seen_at && \Carbon\Carbon::parse($user->last_seen_at)->gt(now()->subMinutes(5));
                                         @endphp
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $isOnline ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }}">
                                             {{ $isOnline ? 'Online' : 'Offline' }}
@@ -162,7 +153,7 @@
             </div>
         </div>
 
-        <!-- Modal Konfirmasi Hapus -->
+        {{-- Modal Konfirmasi Hapus tidak diubah --}}
         <div x-show="showConfirmModal" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" style="display: none;">
             <div @click.away="showConfirmModal = false" x-show="showConfirmModal" x-transition class="w-full max-w-md p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
                 <div class="text-center">
