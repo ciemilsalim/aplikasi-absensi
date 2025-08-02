@@ -23,9 +23,9 @@ class BackupController extends Controller
     {
         $backups = [];
         try {
-            $diskName = config('backup.backup.destination.disks')[0] ?? 'local';
-            $backupDirectory = config('backup.backup.destination.path');
-            $disk = Storage::disk($diskName);
+            // PERBAIKAN: Menggunakan path storage yang lebih konsisten
+            $backupDirectory = 'SIASEK'; 
+            $disk = Storage::disk('local');
 
             if (!$disk->exists($backupDirectory)) {
                 $disk->makeDirectory($backupDirectory);
@@ -55,72 +55,17 @@ class BackupController extends Controller
     }
 
     /**
-     * Membuat file backup baru menggunakan Spatie Backup via Symfony Process.
-     */
-    // public function create()
-    // {
-    //     try {
-    //         set_time_limit(3000);
-
-    //         $command = [
-    //             'php',
-    //             base_path('artisan'),
-    //             'backup:run',
-    //             '--only-db',
-    //         ];
-
-    //         $process = new Process($command, base_path());
-    //         $process->setTimeout(3000);
-    //         $process->run();
-
-    //         if ($process->isSuccessful()) {
-    //             Log::info("Backup via web berhasil. Output: " . $process->getOutput());
-    //             return redirect()->route('admin.backup.index')->with('success', 'Backup database berhasil dibuat!');
-    //         } else {
-    //             throw new ProcessFailedException($process);
-    //         }
-            
-    //     } catch (ProcessFailedException $exception) {
-    //         // PERBAIKAN: Menangkap dan menampilkan pesan error yang lebih spesifik
-    //         $process = $exception->getProcess();
-    //         $errorOutput = $process->getErrorOutput();
-            
-    //         Log::error('Backup Gagal: ' . $errorOutput);
-    //         return redirect()->route('admin.backup.index')->with('error', 'Gagal membuat backup: ' . $errorOutput);
-    //     } catch (\Exception $e) {
-    //         Log::error('Backup Gagal (Exception Umum): ' . $e->getMessage());
-    //         return redirect()->route('admin.backup.index')->with('error', 'Gagal membuat backup: ' . $e->getMessage());
-    //     }
-
-
-    //     try {
-    //         Artisan::call('backup:run --only-db');
-
-    //         return response()->json([
-    //             'message' => 'Backup database berhasil!',
-    //             'output' => Artisan::output(),
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Backup database gagal!',
-    //             'error' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
-
-    /**
      * Mengunduh file backup.
      */
     public function download($filename)
     {
-        $diskName = config('backup.backup.destination.disks')[0] ?? 'local';
-        $path = config('backup.backup.destination.path') . '/' . $filename;
+        $path = 'SIASEK/' . $filename;
 
-        if (!Storage::disk($diskName)->exists($path)) {
-            abort(404);
+        if (!Storage::disk('local')->exists($path)) {
+            abort(404, 'File backup tidak ditemukan.');
         }
         
-        return Storage::disk($diskName)->download($path);
+        return Storage::disk('local')->download($path);
     }
 
     /**
@@ -128,11 +73,10 @@ class BackupController extends Controller
      */
     public function delete($filename)
     {
-        $diskName = config('backup.backup.destination.disks')[0] ?? 'local';
-        $path = config('backup.backup.destination.path') . '/' . $filename;
+        $path = 'SIASEK/' . $filename;
 
-        if (Storage::disk($diskName)->exists($path)) {
-            Storage::disk($diskName)->delete($path);
+        if (Storage::disk('local')->exists($path)) {
+            Storage::disk('local')->delete($path);
             return redirect()->route('admin.backup.index')->with('success', 'Backup berhasil dihapus.');
         }
 
@@ -141,13 +85,16 @@ class BackupController extends Controller
 
    public function create()
     {
-        set_time_limit(300); // Hindari timeout 60 detik
+        set_time_limit(300); // Hindari timeout
 
         $dbName = env('DB_DATABASE');
         $dbUser = env('DB_USERNAME');
         $dbPass = env('DB_PASSWORD');
         $host   = env('DB_HOST', '127.0.0.1');
-        $pathToMysqldump = 'D:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysqldump.exe';
+        
+        // PERBAIKAN: Menghapus path hardcoded dan mengandalkan PATH environment
+        // Ini lebih portabel dan tidak bergantung pada struktur folder lokal (seperti D:\laragon)
+        $pathToMysqldump = 'mysqldump'; 
 
         $backupFolder = storage_path('app/SIASEK');
         if (!file_exists($backupFolder)) {
@@ -160,11 +107,13 @@ class BackupController extends Controller
 
         // === 1. BACKUP DATABASE ===
         $command = "\"{$pathToMysqldump}\" --user={$dbUser} --password={$dbPass} --host={$host} {$dbName} > \"{$sqlPath}\"";
-        exec($command, $output, $resultCode);
+        
+        // PERBAIKAN: Menambahkan backslash `\` sebelum `exec`
+        \exec($command, $output, $resultCode);
 
         if ($resultCode !== 0) {
             return redirect()->route('admin.backup.index')
-                ->with('error', 'Gagal membuat backup database (code: ' . $resultCode . ')');
+                ->with('error', 'Gagal membuat backup database. Pastikan mysqldump ada di PATH environment server Anda.');
         }
 
         // === 2. BUAT FILE ZIP ===
@@ -173,32 +122,7 @@ class BackupController extends Controller
         $zipPath = $backupFolder . DIRECTORY_SEPARATOR . $zipFilename;
 
         if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
-            // Tambahkan file SQL ke dalam ZIP
             $zip->addFile($sqlPath, $sqlFile);
-
-            // Tambahkan seluruh isi project (kecuali folder tertentu)
-            $rootPath = base_path();
-            $exclude = ['vendor', 'node_modules', 'storage', '.git'];
-
-            $files = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($rootPath, RecursiveDirectoryIterator::SKIP_DOTS),
-                RecursiveIteratorIterator::LEAVES_ONLY
-            );
-
-            foreach ($files as $file) {
-                $filePath = $file->getRealPath();
-                $relativePath = str_replace($rootPath . DIRECTORY_SEPARATOR, '', $filePath);
-
-                // Lewati folder yang dikecualikan
-                foreach ($exclude as $ex) {
-                    if (str_starts_with($relativePath, $ex . '/') || str_starts_with($relativePath, $ex . '\\')) {
-                        continue 2;
-                    }
-                }
-
-                $zip->addFile($filePath, $relativePath);
-            }
-
             $zip->close();
 
             // Hapus file .sql setelah masuk ke dalam ZIP
@@ -207,11 +131,10 @@ class BackupController extends Controller
             }
 
             return redirect()->route('admin.backup.index')
-                ->with('success', 'Backup lengkap berhasil: ' . $zipFilename);
+                ->with('success', 'Backup database berhasil dibuat: ' . $zipFilename);
         } else {
             return redirect()->route('admin.backup.index')
                 ->with('error', 'Gagal membuat file ZIP.');
         }
     }
-
 }
