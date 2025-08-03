@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Collection;
 use ZipArchive;
 
 class BackupController extends Controller
@@ -17,7 +19,7 @@ class BackupController extends Controller
     {
         $backups = [];
         try {
-            $backupDirectory = 'SIASEK'; // Nama folder di storage/app/
+            $backupDirectory = 'SIASEK';
             $disk = Storage::disk('local');
 
             if (!$disk->exists($backupDirectory)) {
@@ -48,19 +50,34 @@ class BackupController extends Controller
     }
 
     /**
-     * Membuat file backup baru menggunakan exec() untuk lingkungan server.
+     * Membuat file backup baru dengan logika kondisional untuk lokal dan server.
      */
     public function create()
     {
-        set_time_limit(300); // Hindari timeout
+        set_time_limit(300);
 
+        // Cek apakah lingkungan saat ini adalah 'local'
+        if (env('APP_ENV') === 'local') {
+            // --- LOGIKA UNTUK LINGKUNGAN LOKAL (menggunakan exec) ---
+            return $this->createBackupLocal();
+        } else {
+            // --- LOGIKA UNTUK LINGKUNGAN SERVER (menggunakan Artisan::call) ---
+            return $this->createBackupServer();
+        }
+    }
+
+    /**
+     * Metode backup untuk lingkungan lokal menggunakan exec().
+     */
+    private function createBackupLocal()
+    {
         $dbName = env('DB_DATABASE');
         $dbUser = env('DB_USERNAME');
         $dbPass = env('DB_PASSWORD');
         $dbHost = env('DB_HOST', '127.0.0.1');
         
-        // PERBAIKAN: Menggunakan path generik untuk mysqldump
-        $pathToMysqldump = 'mysqldump';
+        // Path spesifik untuk Laragon di Windows
+        $pathToMysqldump = 'D:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysqldump.exe';
 
         $backupFolder = storage_path('app/SIASEK');
         if (!file_exists($backupFolder)) {
@@ -71,38 +88,65 @@ class BackupController extends Controller
         $sqlFile = "backup-{$timestamp}.sql";
         $sqlPath = $backupFolder . DIRECTORY_SEPARATOR . $sqlFile;
 
-        // === 1. BACKUP DATABASE ===
-        // PERBAIKAN: Menghapus kutip ganda yang tidak perlu untuk kompatibilitas server
-        $command = "{$pathToMysqldump} --user={$dbUser} --password={$dbPass} --host={$dbHost} {$dbName} > {$sqlPath}";
+        $command = "\"{$pathToMysqldump}\" --user={$dbUser} --password={$dbPass} --host={$dbHost} {$dbName} > \"{$sqlPath}\"";
         
         \exec($command, $output, $resultCode);
 
         if ($resultCode !== 0) {
             return redirect()->route('admin.backup.index')
-                ->with('error', 'Gagal membuat backup database. Fungsi `exec` mungkin dinonaktifkan di server Anda.');
+                ->with('error', 'Gagal membuat backup database di lokal. Pastikan path mysqldump sudah benar.');
         }
 
-        // === 2. BUAT FILE ZIP ===
         $zip = new ZipArchive;
         $zipFilename = "backup-db-{$timestamp}.zip";
         $zipPath = $backupFolder . DIRECTORY_SEPARATOR . $zipFilename;
 
         if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
-            // Hanya tambahkan file SQL ke dalam ZIP
             $zip->addFile($sqlPath, $sqlFile);
             $zip->close();
-
-            // Hapus file .sql setelah masuk ke dalam ZIP
-            if (file_exists($sqlPath)) {
-                unlink($sqlPath);
-            }
-
-            return redirect()->route('admin.backup.index')
-                ->with('success', 'Backup database berhasil dibuat: ' . $zipFilename);
+            if (file_exists($sqlPath)) unlink($sqlPath);
+            return redirect()->route('admin.backup.index')->with('success', 'Backup (lokal) berhasil dibuat: ' . $zipFilename);
         } else {
-            return redirect()->route('admin.backup.index')
-                ->with('error', 'Gagal membuat file ZIP.');
+            return redirect()->route('admin.backup.index')->with('error', 'Gagal membuat file ZIP di lokal.');
         }
+    }
+
+    /**
+     * Metode backup untuk lingkungan server menggunakan Artisan::call().
+     */
+    private function createBackupServer()
+    {
+        try {
+            $filesBefore = $this->getBackupFiles();
+
+            Artisan::call('backup:run', ['--only-db' => true]);
+
+            $filesAfter = $this->getBackupFiles();
+            $newFile = $filesAfter->diff($filesBefore)->first();
+
+            if ($newFile) {
+                Log::info("Backup via web (server) berhasil. File baru: " . $newFile);
+                return redirect()->route('admin.backup.index')->with('success', 'Backup database (server) berhasil dibuat!');
+            } else {
+                $output = Artisan::output();
+                Log::error("Proses backup server selesai tetapi tidak ada file baru. Output Artisan: " . $output);
+                throw new \Exception('Tidak ada file backup baru yang dibuat. Pastikan path `mysqldump` sudah benar di `config/database.php` pada server Anda.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Backup Server Gagal: ' . $e->getMessage());
+            return redirect()->route('admin.backup.index')->with('error', 'Gagal membuat backup di server. Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Helper function untuk mendapatkan koleksi nama file backup.
+     */
+    private function getBackupFiles(): Collection
+    {
+        $diskName = 'local';
+        $backupDirectory = 'SIASEK';
+        $disk = Storage::disk($diskName);
+        return collect($disk->allFiles($backupDirectory));
     }
 
     /**
