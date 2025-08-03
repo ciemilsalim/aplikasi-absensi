@@ -5,14 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use RecursiveIteratorIterator;
-use RecursiveDirectoryIterator;
 use ZipArchive;
-
 
 class BackupController extends Controller
 {
@@ -23,8 +17,7 @@ class BackupController extends Controller
     {
         $backups = [];
         try {
-            // PERBAIKAN: Menggunakan path storage yang lebih konsisten
-            $backupDirectory = 'SIASEK'; 
+            $backupDirectory = 'SIASEK'; // Nama folder di storage/app/
             $disk = Storage::disk('local');
 
             if (!$disk->exists($backupDirectory)) {
@@ -48,77 +41,49 @@ class BackupController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Gagal membaca daftar backup: ' . $e->getMessage());
-            session()->flash('error', 'Gagal memuat daftar backup. Pastikan konfigurasi sudah benar.');
+            session()->flash('error', 'Gagal memuat daftar backup.');
         }
 
         return view('admin.backup.index', compact('backups'));
     }
 
     /**
-     * Mengunduh file backup.
+     * Membuat file backup baru menggunakan exec() untuk lingkungan lokal.
      */
-    public function download($filename)
-    {
-        $path = 'SIASEK/' . $filename;
-
-        if (!Storage::disk('local')->exists($path)) {
-            abort(404, 'File backup tidak ditemukan.');
-        }
-        
-        return Storage::disk('local')->download($path);
-    }
-
-    /**
-     * Menghapus file backup.
-     */
-    public function delete($filename)
-    {
-        $path = 'SIASEK/' . $filename;
-
-        if (Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
-            return redirect()->route('admin.backup.index')->with('success', 'Backup berhasil dihapus.');
-        }
-
-        return redirect()->route('admin.backup.index')->with('error', 'File backup tidak ditemukan.');
-    }
-
-   public function create()
+    public function create()
     {
         set_time_limit(300); // Hindari timeout
 
         $dbName = env('DB_DATABASE');
         $dbUser = env('DB_USERNAME');
         $dbPass = env('DB_PASSWORD');
-        $host   = env('DB_HOST', '127.0.0.1');
+        $dbHost = env('DB_HOST', '127.0.0.1');
         
-        // PERBAIKAN: Menghapus path hardcoded dan mengandalkan PATH environment
-        // Ini lebih portabel dan tidak bergantung pada struktur folder lokal (seperti D:\laragon)
-        $pathToMysqldump = 'mysqldump'; 
+        // Ganti dengan path mysqldump di komputer lokal Anda jika perlu
+        $pathToMysqldump = 'D:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysqldump.exe';
 
         $backupFolder = storage_path('app/SIASEK');
         if (!file_exists($backupFolder)) {
             mkdir($backupFolder, 0755, true);
         }
 
-        $timestamp = now()->format('Y-m-d_H-i-s');
+        $timestamp = now()->format('Y-m-d-His');
         $sqlFile = "backup-{$timestamp}.sql";
         $sqlPath = $backupFolder . DIRECTORY_SEPARATOR . $sqlFile;
 
         // === 1. BACKUP DATABASE ===
-        $command = "\"{$pathToMysqldump}\" --user={$dbUser} --password={$dbPass} --host={$host} {$dbName} > \"{$sqlPath}\"";
+        $command = "\"{$pathToMysqldump}\" --user={$dbUser} --password={$dbPass} --host={$dbHost} {$dbName} > \"{$sqlPath}\"";
         
-        // PERBAIKAN: Menambahkan backslash `\` sebelum `exec`
         \exec($command, $output, $resultCode);
 
         if ($resultCode !== 0) {
             return redirect()->route('admin.backup.index')
-                ->with('error', 'Gagal membuat backup database. Pastikan mysqldump ada di PATH environment server Anda.');
+                ->with('error', 'Gagal membuat backup database. Pastikan path mysqldump sudah benar.');
         }
 
         // === 2. BUAT FILE ZIP ===
         $zip = new ZipArchive;
-        $zipFilename = "full-backup-{$timestamp}.zip";
+        $zipFilename = "backup-db-{$timestamp}.zip";
         $zipPath = $backupFolder . DIRECTORY_SEPARATOR . $zipFilename;
 
         if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
@@ -136,5 +101,30 @@ class BackupController extends Controller
             return redirect()->route('admin.backup.index')
                 ->with('error', 'Gagal membuat file ZIP.');
         }
+    }
+
+    /**
+     * Mengunduh file backup.
+     */
+    public function download($filename)
+    {
+        $path = 'SIASEK/' . $filename;
+        if (!Storage::disk('local')->exists($path)) {
+            abort(404, 'File backup tidak ditemukan.');
+        }
+        return Storage::disk('local')->download($path);
+    }
+
+    /**
+     * Menghapus file backup.
+     */
+    public function delete($filename)
+    {
+        $path = 'SIASEK/' . $filename;
+        if (Storage::disk('local')->exists($path)) {
+            Storage::disk('local')->delete($path);
+            return redirect()->route('admin.backup.index')->with('success', 'Backup berhasil dihapus.');
+        }
+        return redirect()->route('admin.backup.index')->with('error', 'File backup tidak ditemukan.');
     }
 }

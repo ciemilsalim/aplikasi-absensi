@@ -62,6 +62,7 @@ return [
             ]) : [],
            'dump' => [
                 'dump_binary_path' => env('DB_DUMP_BINARY_PATH', ''), // ini penting
+                // 'dump_binary_path' => '/usr/bin/',
                 'use_single_transaction' => true,
                 'timeout' => 60,
                 'extra_options' => '--host=127.0.0.1',
