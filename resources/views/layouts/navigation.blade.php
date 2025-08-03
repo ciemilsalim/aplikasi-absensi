@@ -1,4 +1,5 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-slate-800 shadow-sm border-b border-gray-100 dark:border-slate-700">
+{{-- Menambahkan state 'showLogoutConfirm' untuk modal --}}
+<nav x-data="{ open: false, showLogoutConfirm: false }" @keydown.escape.window="showLogoutConfirm = false" class="bg-white dark:bg-slate-800 shadow-sm border-b border-gray-100 dark:border-slate-700">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -7,18 +8,15 @@
                <div class="shrink-0 flex items-center">
                     <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center gap-3">
                         <x-application-logo class="block h-9 w-auto" />
-                        {{-- PERBAIKAN: Menampilkan nama aplikasi di mobile --}}
                         <span class="block font-bold text-xl text-slate-800 dark:text-white tracking-tight">
                             {{ config('app.name', 'AbsensiSiswa') }}
                         </span>
                     </a>
                 </div>
 
-                <!-- Navigation Links (Desktop - tampil di layar besar 'lg') -->
+                <!-- Navigation Links (Desktop) -->
                 <div class="hidden space-x-1 lg:-my-px lg:ml-10 lg:flex">
-                    
                     @auth
-                        {{-- PERBAIKAN: Memberikan akses pemindai ke semua guru --}}
                         @if(in_array(auth()->user()->role, ['admin', 'operator', 'teacher']))
                             <a href="{{ route('scanner') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('scanner') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 0 1 1.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 0 1-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
@@ -48,7 +46,6 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" /></svg>
                                     Pengajuan Izin
                                 </a>
-                                {{-- === TAUTAN BARU UNTUK DESKTOP === --}}
                                 <a href="{{ route('teacher.attendance.history') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('teacher.attendance.history') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18" /></svg>
                                     Riwayat Kehadiran
@@ -59,7 +56,7 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown atau Link Login/Register -->
+            <!-- Settings Dropdown -->
             <div class="hidden lg:flex lg:items-center lg:ml-6">
                 @auth
                     <div x-data="{ dropdownOpen: false }" class="relative">
@@ -76,13 +73,11 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
                                     Profil
                                 </a>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="flex items-center w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
-                                        Log Out
-                                    </a>
-                                </form>
+                                {{-- Mengubah link logout untuk memicu modal --}}
+                                <a href="#" @click.prevent="showLogoutConfirm = true" class="flex items-center w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
+                                    Log Out
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -100,7 +95,7 @@
                 @endauth
             </div>
 
-            <!-- Hamburger (tampil di layar kecil & tablet) -->
+            <!-- Hamburger -->
             <div class="-mr-2 flex items-center lg:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 focus:outline-none transition">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /><path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -109,11 +104,10 @@
         </div>
     </div>
 
-<!-- Responsive Navigation Menu -->
+    <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden" x-show="open" x-transition>
         <div class="pt-2 pb-3 space-y-1">
-            @if(Auth::guest() || (Auth::check() && (Auth::user()->role === 'admin' || (Auth::user()->role === 'teacher' || (Auth::user()->role === 'operator')))))
-                {{-- PERBAIKAN: Memberikan akses pemindai ke semua guru --}}
+            @if(Auth::guest() || (Auth::check() && in_array(auth()->user()->role, ['admin', 'operator', 'teacher'])))
                 <x-responsive-nav-link :href="route('scanner')" :active="request()->routeIs('scanner')">Pemindai</x-responsive-nav-link>
             @endif
             @auth
@@ -136,7 +130,6 @@
                     <x-responsive-nav-link :href="route('teacher.dashboard')" :active="request()->routeIs('teacher.dashboard')">Dasbor</x-responsive-nav-link>
                     @if(Auth::user()->teacher && Auth::user()->teacher->homeroomClass)
                         <x-responsive-nav-link :href="route('teacher.leave_requests.index')" :active="request()->routeIs('teacher.leave_requests.*')">Pengajuan Izin</x-responsive-nav-link>
-                        {{-- === TAUTAN BARU UNTUK MOBILE === --}}
                         <x-responsive-nav-link :href="route('teacher.attendance.history')" :active="request()->routeIs('teacher.attendance.history')">Riwayat Kehadiran</x-responsive-nav-link>
                     @endif
                 @endif
@@ -152,10 +145,7 @@
                 </div>
                 <div class="mt-3 space-y-1">
                     <x-responsive-nav-link :href="route('profile.edit')">Profil</x-responsive-nav-link>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">Log Out</x-responsive-nav-link>
-                    </form>
+                    <x-responsive-nav-link href="#" @click.prevent="showLogoutConfirm = true">Log Out</x-responsive-nav-link>
                 </div>
             @else
                 <div class="space-y-1">
@@ -165,6 +155,36 @@
                     @endif
                 </div>
             @endauth
+        </div>
+    </div>
+
+    {{-- Form Logout Tersembunyi --}}
+    <form method="POST" action="{{ route('logout') }}" x-ref="logoutForm" class="hidden">
+        @csrf
+    </form>
+
+    {{-- Modal Konfirmasi Logout --}}
+    <div x-show="showLogoutConfirm" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" style="display: none;">
+        <div @click.away="showLogoutConfirm = false" x-show="showLogoutConfirm" x-transition class="w-full max-w-md p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <div class="text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
+                </div>
+                <h3 class="mt-5 text-lg font-medium text-gray-900 dark:text-white">Konfirmasi Log Out</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Apakah Anda yakin ingin keluar dari sesi ini?
+                    </p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-center gap-4">
+                <x-secondary-button @click="showLogoutConfirm = false">
+                    Batal
+                </x-secondary-button>
+                <x-danger-button @click="$refs.logoutForm.submit()">
+                    Ya, Log Out
+                </x-danger-button>
+            </div>
         </div>
     </div>
 </nav>

@@ -1,3 +1,4 @@
+{{-- PERBAIKAN: Menambahkan state 'showLogoutConfirm' untuk modal --}}
 <div x-data="{
     darkMode: localStorage.getItem('darkMode') === 'on' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
     toggleDarkMode() {
@@ -9,8 +10,9 @@
             localStorage.setItem('darkMode', 'off');
             document.documentElement.classList.remove('dark');
         }
-    }
-}" class="flex items-center gap-x-4 lg:gap-x-6">
+    },
+    showLogoutConfirm: false
+}" @keydown.escape.window="showLogoutConfirm = false" class="flex items-center gap-x-4 lg:gap-x-6">
     
     {{-- Tombol Notifikasi & Dark Mode --}}
     <div class="flex items-center gap-x-2">
@@ -25,7 +27,6 @@
                 <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">{{ $pendingLeaveRequestsCount }}</span>
                 @endif
             </a>
-            {{-- PERBAIKAN: Menambahkan notifikasi obrolan untuk Admin --}}
             <a href="{{ route('admin.chat.index') }}" class="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" title="Pesan Ortu">
                 <span class="sr-only">Lihat notifikasi obrolan</span>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.397 48.397 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>
@@ -40,7 +41,6 @@
             </button>
         @endif
         
-        {{-- Notifikasi untuk Guru & Orang Tua --}}
         @if(auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass || auth()->user()->role === 'parent')
             <a href="{{ route('chat.index') }}" class="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" title="Obrolan">
                 <span class="sr-only">Lihat notifikasi obrolan</span>
@@ -52,10 +52,8 @@
         @endif
     </div>
     
-    <!-- Separator -->
     <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200 dark:lg:bg-slate-700" aria-hidden="true"></div>
 
-    <!-- Menu Profil Pengguna -->
     @auth
         <div x-data="{ open: false }" class="relative">
             <button @click="open = !open" class="-m-1.5 flex items-center p-1.5">
@@ -69,11 +67,39 @@
             </button>
             <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 z-10 mt-2.5 w-48 origin-top-right rounded-md bg-white dark:bg-slate-700 py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none" style="display: none;">
                 <a href="{{ route('profile.edit') }}" class="block px-3 py-1 text-sm leading-6 text-gray-900 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-600">Profil Anda</a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="block px-3 py-1 text-sm leading-6 text-gray-900 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-600">Log out</a>
-                </form>
+                {{-- PERBAIKAN: Mengubah link logout untuk memicu modal --}}
+                <a href="#" @click.prevent="showLogoutConfirm = true" class="block px-3 py-1 text-sm leading-6 text-gray-900 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-600">Log out</a>
             </div>
         </div>
     @endauth
+
+    {{-- Form Logout Tersembunyi --}}
+    <form method="POST" action="{{ route('logout') }}" x-ref="logoutForm" class="hidden">
+        @csrf
+    </form>
+
+    {{-- Modal Konfirmasi Logout --}}
+    <div x-show="showLogoutConfirm" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" style="display: none;">
+        <div @click.away="showLogoutConfirm = false" x-show="showLogoutConfirm" x-transition class="w-full max-w-md p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
+            <div class="text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
+                </div>
+                <h3 class="mt-5 text-lg font-medium text-gray-900 dark:text-white">Konfirmasi Log Out</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Apakah Anda yakin ingin keluar dari sesi ini?
+                    </p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-center gap-4">
+                <x-secondary-button @click="showLogoutConfirm = false">
+                    Batal
+                </x-secondary-button>
+                <x-danger-button @click="$refs.logoutForm.submit()">
+                    Ya, Log Out
+                </x-danger-button>
+            </div>
+        </div>
+    </div>
 </div>
