@@ -48,7 +48,7 @@ class BackupController extends Controller
     }
 
     /**
-     * Membuat file backup baru menggunakan exec() untuk lingkungan lokal.
+     * Membuat file backup baru menggunakan exec() untuk lingkungan server.
      */
     public function create()
     {
@@ -59,9 +59,8 @@ class BackupController extends Controller
         $dbPass = env('DB_PASSWORD');
         $dbHost = env('DB_HOST', '127.0.0.1');
         
-        // Ganti dengan path mysqldump di komputer lokal Anda jika perlu
-        // $pathToMysqldump = 'D:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysqldump.exe';
-        $pathToMysqldump = '/usr/bin/mysqldump';
+        // PERBAIKAN: Menggunakan path generik untuk mysqldump
+        $pathToMysqldump = 'mysqldump';
 
         $backupFolder = storage_path('app/SIASEK');
         if (!file_exists($backupFolder)) {
@@ -73,13 +72,14 @@ class BackupController extends Controller
         $sqlPath = $backupFolder . DIRECTORY_SEPARATOR . $sqlFile;
 
         // === 1. BACKUP DATABASE ===
-        $command = "\"{$pathToMysqldump}\" --user={$dbUser} --password={$dbPass} --host={$dbHost} {$dbName} > \"{$sqlPath}\"";
+        // PERBAIKAN: Menghapus kutip ganda yang tidak perlu untuk kompatibilitas server
+        $command = "{$pathToMysqldump} --user={$dbUser} --password={$dbPass} --host={$dbHost} {$dbName} > {$sqlPath}";
         
         \exec($command, $output, $resultCode);
 
         if ($resultCode !== 0) {
             return redirect()->route('admin.backup.index')
-                ->with('error', 'Gagal membuat backup database. Pastikan path mysqldump sudah benar.');
+                ->with('error', 'Gagal membuat backup database. Fungsi `exec` mungkin dinonaktifkan di server Anda.');
         }
 
         // === 2. BUAT FILE ZIP ===
@@ -88,6 +88,7 @@ class BackupController extends Controller
         $zipPath = $backupFolder . DIRECTORY_SEPARATOR . $zipFilename;
 
         if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+            // Hanya tambahkan file SQL ke dalam ZIP
             $zip->addFile($sqlPath, $sqlFile);
             $zip->close();
 
