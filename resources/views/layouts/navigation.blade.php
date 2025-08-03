@@ -18,8 +18,8 @@
                 <div class="hidden space-x-1 lg:-my-px lg:ml-10 lg:flex">
                     
                     @auth
-                        {{-- PERBAIKAN: Logika baru untuk menampilkan menu Pemindai --}}
-                        @if(auth()->user()->role === 'admin' || (auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass))
+                        {{-- PERBAIKAN: Memberikan akses pemindai ke semua guru --}}
+                        @if(in_array(auth()->user()->role, ['admin', 'operator', 'teacher']))
                             <a href="{{ route('scanner') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('scanner') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 0 1 1.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 0 1-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
                                 Pemindai
@@ -112,7 +112,8 @@
 <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden" x-show="open" x-transition>
         <div class="pt-2 pb-3 space-y-1">
-            @if(Auth::guest() || (Auth::check() && (Auth::user()->role === 'admin' || (Auth::user()->role === 'teacher' && Auth::user()->teacher?->homeroomClass))))
+            @if(Auth::guest() || (Auth::check() && (Auth::user()->role === 'admin' || (Auth::user()->role === 'teacher' || (Auth::user()->role === 'operator')))))
+                {{-- PERBAIKAN: Memberikan akses pemindai ke semua guru --}}
                 <x-responsive-nav-link :href="route('scanner')" :active="request()->routeIs('scanner')">Pemindai</x-responsive-nav-link>
             @endif
             @auth
