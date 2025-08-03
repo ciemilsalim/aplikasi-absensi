@@ -133,15 +133,15 @@ class DashboardController extends Controller
         $studentIds = $students->pluck('id');
 
         $request->validate([
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'month' => 'nullable|date_format:Y-m',
         ]);
 
-        $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->startOfMonth();
-        $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now();
+        $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
+        $startDate = $selectedDate->copy()->startOfMonth();
+        $endDate = $selectedDate->copy()->endOfMonth();
 
         $attendances = Attendance::whereIn('student_id', $studentIds)
-            ->whereBetween('attendance_time', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->whereBetween('attendance_time', [$startDate, $endDate])
             ->get()
             ->groupBy('student_id')
             ->map(function ($studentAttendances) {
@@ -159,7 +159,8 @@ class DashboardController extends Controller
             'attendances', 
             'period', 
             'startDate', 
-            'endDate'
+            'endDate',
+            'selectedDate'
         ));
     }
 
@@ -205,9 +206,6 @@ class DashboardController extends Controller
         return redirect()->back()->with('success', 'Kehadiran untuk ' . $student->name . ' pada tanggal ' . $attendanceDate->format('d/m/Y') . ' berhasil diperbarui.');
     }
 
-    /**
-     * Menyiapkan data dan menampilkan halaman cetak laporan kehadiran.
-     */
     public function printAttendance(Request $request)
     {
         $teacher = Auth::user()->teacher;
@@ -221,17 +219,32 @@ class DashboardController extends Controller
         $studentIds = $students->pluck('id');
 
         $request->validate([
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'month' => 'nullable|date_format:Y-m',
         ]);
 
-        $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->startOfMonth();
-        $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now();
+        $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
+        $startDate = $selectedDate->copy()->startOfMonth();
+        $endDate = $selectedDate->copy()->endOfMonth();
 
         $attendances = Attendance::whereIn('student_id', $studentIds)
-            ->whereBetween('attendance_time', [$startDate->startOfDay(), $endDate->endOfDay()])
-            ->get()
-            ->groupBy('student_id')
+            ->whereBetween('attendance_time', [$startDate, $endDate])
+            ->get();
+
+        // PERBAIKAN: Menghitung rekapitulasi untuk setiap siswa
+        $attendanceSummary = [];
+        foreach ($students as $student) {
+            $studentAttendances = $attendances->where('student_id', $student->id);
+            $attendanceSummary[$student->id] = [
+                'H' => $studentAttendances->where('status', 'tepat_waktu')->count(),
+                'S' => $studentAttendances->where('status', 'sakit')->count(),
+                'I' => $studentAttendances->where('status', 'izin')->count(),
+                'A' => $studentAttendances->where('status', 'alpa')->count(),
+                'T' => $studentAttendances->where('status', 'terlambat')->count(),
+            ];
+        }
+        
+        // Mengubah format data kehadiran untuk tampilan tabel harian
+        $dailyAttendances = $attendances->groupBy('student_id')
             ->map(function ($studentAttendances) {
                 return $studentAttendances->keyBy(function ($item) {
                     return Carbon::parse($item->attendance_time)->format('Y-m-d');
@@ -239,14 +252,13 @@ class DashboardController extends Controller
             });
 
         $period = CarbonPeriod::create($startDate, $endDate);
-        
-        // PERBAIKAN: Mengambil data identitas sekolah sebagai key-value pair
         $schoolIdentity = Setting::pluck('value', 'key')->toArray();
 
         return view('teacher.reports.attendance-print', compact(
             'class', 
             'students', 
-            'attendances', 
+            'dailyAttendances', 
+            'attendanceSummary',
             'period', 
             'startDate', 
             'endDate',
