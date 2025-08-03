@@ -16,24 +16,14 @@ class ScannerAccessMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Pastikan pengguna sudah login
         if (!Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
 
-        // Izinkan jika peran adalah admin
-        if ($user->role === 'admin') {
-            return $next($request);
-        }
-
-        // Izinkan jika peran adalah guru DAN merupakan wali kelas
-        if ($user->role === 'teacher' && $user->teacher?->homeroomClass) {
-            return $next($request);
-        }
-
-        if ($user->role === 'admin' || $user->role === 'operator' || ($user->role === 'teacher' && $user->teacher?->homeroomClass)) {
+        // PERBAIKAN: Izinkan jika peran adalah admin, operator, atau guru (tanpa syarat wali kelas)
+        if (in_array($user->role, ['admin', 'operator', 'teacher'])) {
             return $next($request);
         }
 
