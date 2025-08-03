@@ -5,18 +5,15 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Models\Student;
 use App\Models\Attendance;
+use App\Models\Setting; // Pastikan model Setting diimpor
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
 class DashboardController extends Controller
 {
-    /**
-     * Menampilkan dasbor untuk guru (wali kelas).
-     */
- public function index()
+    public function index()
     {
         $teacher = Auth::user()->teacher;
         
@@ -36,7 +33,6 @@ class DashboardController extends Controller
                                       ->get()
                                       ->keyBy('student_id');
 
-        // --- Perhitungan Statistik Harian ---
         $totalStudents = $studentsInClass->count();
         $onTimeCount = $attendancesToday->where('status', 'tepat_waktu')->count();
         $lateCount = $attendancesToday->where('status', 'terlambat')->count();
@@ -45,7 +41,6 @@ class DashboardController extends Controller
         $alphaCount = $attendancesToday->where('status', 'alpa')->count();
         $noRecordCount = $totalStudents - $attendancesToday->count();
         
-        // --- PERHITUNGAN DATA UNTUK GRAFIK MINGGUAN (BARU) ---
         $startDate = now()->subDays(6)->startOfDay();
         $endDate = now()->endOfDay();
         $period = CarbonPeriod::create($startDate, $endDate);
@@ -69,7 +64,6 @@ class DashboardController extends Controller
             $chartData[] = $percentage;
         }
 
-        // --- LOGIKA BARU: Mengambil Siswa yang Perlu Perhatian ---
         $studentsForAttention = Student::whereIn('id', $studentIds)
             ->withCount([
                 'attendances as late_count' => function ($query) use ($thirtyDaysAgo) {
@@ -79,24 +73,21 @@ class DashboardController extends Controller
                     $query->where('status', 'alpa')->where('attendance_time', '>=', $thirtyDaysAgo);
                 }
             ])
-            ->having('late_count', '>', 2) // Contoh: lebih dari 2x terlambat
-            ->orHaving('alpha_count', '>', 1) // Contoh: lebih dari 1x alpa
+            ->having('late_count', '>', 2)
+            ->orHaving('alpha_count', '>', 1)
             ->orderByDesc('late_count')
             ->orderByDesc('alpha_count')
-            ->take(5) // Ambil 5 siswa teratas
+            ->take(5)
             ->get();
 
         return view('teacher.dashboard', compact(
             'teacher', 'class', 'studentsInClass', 'attendancesToday',
             'onTimeCount', 'lateCount', 'sickCount', 'permitCount', 'alphaCount', 'noRecordCount',
-            'studentsForAttention', // Kirim data baru ke view
-            'chartLabels', 'chartData' // Kirim data grafik ke view
+            'studentsForAttention',
+            'chartLabels', 'chartData'
         ));
     }
 
-    /**
-     * Menandai status kehadiran siswa (Izin, Sakit, Alpa) oleh wali kelas.
-     */
     public function markAttendance(Request $request)
     {
         $request->validate([
@@ -129,9 +120,6 @@ class DashboardController extends Controller
         return redirect()->back()->with('success', 'Status kehadiran untuk siswa ' . $student->name . ' berhasil diperbarui.');
     }
 
-    /**
-     * [METODE BARU] Menampilkan halaman riwayat kehadiran dengan filter.
-     */
     public function showAttendanceHistory(Request $request)
     {
         $teacher = Auth::user()->teacher;
@@ -144,7 +132,6 @@ class DashboardController extends Controller
         $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
         $studentIds = $students->pluck('id');
 
-        // Validasi dan tentukan rentang tanggal
         $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -153,7 +140,6 @@ class DashboardController extends Controller
         $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->startOfMonth();
         $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now();
 
-        // Ambil data kehadiran
         $attendances = Attendance::whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->get()
@@ -164,7 +150,6 @@ class DashboardController extends Controller
                 });
             });
 
-        // Buat periode tanggal untuk header tabel
         $period = CarbonPeriod::create($startDate, $endDate);
 
         return view('teacher.attendance-history', compact(
@@ -189,28 +174,24 @@ class DashboardController extends Controller
         $teacher = Auth::user()->teacher;
         $student = Student::findOrFail($request->student_id);
 
-        // Pastikan guru adalah wali kelas dari siswa yang bersangkutan
         if (!$teacher || $teacher->homeroomClass?->id !== $student->school_class_id) {
             return redirect()->back()->with('error', 'Anda tidak memiliki hak untuk mengubah data siswa ini.');
         }
 
         $attendanceDate = Carbon::parse($request->date)->startOfDay();
 
-        // Cari data kehadiran
         $attendance = Attendance::where('student_id', $student->id)
                                 ->whereDate('attendance_time', $attendanceDate)
                                 ->first();
         
-        // Jika user memilih "hapus"
         if ($request->status === 'hapus') {
             if ($attendance) {
                 $attendance->delete();
                 return redirect()->back()->with('success', 'Data kehadiran berhasil dihapus.');
             }
-            return redirect()->back(); // Tidak ada yang perlu dihapus
+            return redirect()->back();
         }
 
-        // Gunakan updateOrCreate untuk memperbarui atau membuat data baru
         Attendance::updateOrCreate(
             [
                 'student_id' => $student->id,
@@ -222,5 +203,54 @@ class DashboardController extends Controller
         );
 
         return redirect()->back()->with('success', 'Kehadiran untuk ' . $student->name . ' pada tanggal ' . $attendanceDate->format('d/m/Y') . ' berhasil diperbarui.');
+    }
+
+    /**
+     * Menyiapkan data dan menampilkan halaman cetak laporan kehadiran.
+     */
+    public function printAttendance(Request $request)
+    {
+        $teacher = Auth::user()->teacher;
+        
+        if (!$teacher || !$teacher->homeroomClass) {
+            return "Anda tidak memiliki kelas wali.";
+        }
+
+        $class = $teacher->homeroomClass;
+        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $studentIds = $students->pluck('id');
+
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->startOfMonth();
+        $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now();
+
+        $attendances = Attendance::whereIn('student_id', $studentIds)
+            ->whereBetween('attendance_time', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->get()
+            ->groupBy('student_id')
+            ->map(function ($studentAttendances) {
+                return $studentAttendances->keyBy(function ($item) {
+                    return Carbon::parse($item->attendance_time)->format('Y-m-d');
+                });
+            });
+
+        $period = CarbonPeriod::create($startDate, $endDate);
+        
+        // PERBAIKAN: Mengambil data identitas sekolah sebagai key-value pair
+        $schoolIdentity = Setting::pluck('value', 'key')->toArray();
+
+        return view('teacher.reports.attendance-print', compact(
+            'class', 
+            'students', 
+            'attendances', 
+            'period', 
+            'startDate', 
+            'endDate',
+            'schoolIdentity'
+        ));
     }
 }

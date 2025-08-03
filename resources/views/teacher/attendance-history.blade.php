@@ -5,7 +5,6 @@
         </h2>
     </x-slot>
 
-    {{-- AlpineJS component untuk mengelola modal --}}
     <div 
         x-data="{
             showModal: false,
@@ -17,7 +16,7 @@
                 this.studentId = studentId;
                 this.studentName = studentName;
                 this.date = date;
-                this.currentStatus = status || 'hapus'; // Default ke 'hapus' jika belum ada status
+                this.currentStatus = status || 'hapus';
                 this.showModal = true;
             }
         }"
@@ -27,7 +26,6 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
-                    {{-- Form Filter Tanggal --}}
                     <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <form method="GET" action="{{ route('teacher.attendance.history') }}" class="flex flex-col sm:flex-row sm:items-end sm:space-x-4 space-y-4 sm:space-y-0">
                             <div>
@@ -41,6 +39,10 @@
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:border-blue-700 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                                 Filter
                             </button>
+                            {{-- Tombol Cetak Baru --}}
+                            <a href="{{ route('teacher.attendance.print', ['start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-500 active:bg-gray-700 focus:outline-none focus:border-gray-700 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                Cetak
+                            </a>
                         </form>
                     </div>
 
@@ -110,17 +112,13 @@
         <!-- Modal untuk Edit Kehadiran -->
         <div x-show="showModal" style="display: none;" @keydown.escape.window="showModal = false" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <!-- Latar belakang gelap -->
                 <div x-show="showModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showModal = false" aria-hidden="true"></div>
-
-                <!-- Konten Modal -->
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div x-show="showModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <form :action="'{{ route('teacher.attendance.update') }}'" method="POST">
                         @csrf
                         <input type="hidden" name="student_id" :value="studentId">
                         <input type="hidden" name="date" :value="date">
-                        
                         <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <div class="sm:flex sm:items-start">
                                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
