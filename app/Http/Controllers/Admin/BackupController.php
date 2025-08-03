@@ -60,7 +60,8 @@ class BackupController extends Controller
         $dbHost = env('DB_HOST', '127.0.0.1');
         
         // Ganti dengan path mysqldump di komputer lokal Anda jika perlu
-        $pathToMysqldump = 'D:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysqldump.exe';
+        // $pathToMysqldump = 'D:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysqldump.exe';
+        $pathToMysqldump = '/usr/bin/mysqldump';
 
         $backupFolder = storage_path('app/SIASEK');
         if (!file_exists($backupFolder)) {
