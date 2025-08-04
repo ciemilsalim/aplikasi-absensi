@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-breadcrumb :breadcrumbs="[
             ['title' => 'Dasbor', 'url' => route('admin.dashboard')]
-        ]" class="mb-4" />
+        ]" />
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Dasbor Kehadiran') }}
         </h2>
@@ -11,7 +11,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            {{-- Welcome Section BARU --}}
+            {{-- Welcome Section --}}
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-xl font-semibold">Selamat Datang, {{ Auth::user()->name }}!</h3>
@@ -23,7 +23,7 @@
             
             {{-- KARTU STATISTIK --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                <!-- Kartu Total Kehadiran (BARU) -->
+                <!-- Kartu Total Kehadiran -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center">
                     <div class="flex-shrink-0 bg-teal-100 dark:bg-teal-500/20 rounded-md p-4">
                         <svg class="h-8 w-8 text-teal-500 dark:text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m-7.5-2.928A3 3 0 0 1 7.5 12.5m3 3a3 3 0 0 1-3-3m-3.75 2.928A9.094 9.094 0 0 1 3.75 18.72m0-5.728a3 3 0 0 1 3-3m0 0a3 3 0 0 1 3 3m0 0a3 3 0 0 1-3 3m0 0a3 3 0 0 1-3-3m9.75 0a3 3 0 0 1-3 3m3-3a3 3 0 0 0-3-3m-3.75 2.928A9.094 9.094 0 0 0 3.75 18.72m-3.75-5.728a3 3 0 0 0 3-3m0 0a3 3 0 0 0-3-3m0 0a3 3 0 0 0-3 3m0 0a3 3 0 0 0 3 3m7.5-3a3 3 0 0 0-3-3m3 3a3 3 0 0 1-3 3M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
@@ -33,7 +33,7 @@
                         <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $overallAttendancePercentage }}%</p>
                     </div>
                 </div>
-                <!-- Kartu Total Tidak Hadir (BARU) -->
+                <!-- Kartu Total Tidak Hadir -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center">
                     <div class="flex-shrink-0 bg-orange-100 dark:bg-orange-500/20 rounded-md p-4">
                         <svg class="h-8 w-8 text-orange-500 dark:text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" /></svg>
@@ -100,6 +100,32 @@
                 </div>
             </div>
 
+            <!-- Panel Siswa Izin Keluar -->
+            @if($studentsOnPermit->isNotEmpty())
+            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-medium">Siswa Sedang Izin Keluar</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Daftar siswa yang keluar pada hari ini dan belum kembali.</p>
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($studentsOnPermit as $permit)
+                        <div class="border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                            <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $permit->student->name }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ $permit->student->schoolClass->name ?? 'Tanpa Kelas' }}
+                            </p>
+                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 italic">
+                                "{{ $permit->reason }}"
+                            </p>
+                            <p class="mt-2 text-right text-xs text-gray-500 dark:text-gray-400">
+                                Keluar: <span class="font-medium">{{ $permit->time_out->format('H:i') }}</span>
+                            </p>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
+
              <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
@@ -122,7 +148,7 @@
                         </form>
                     </div>
                     
-                    <!-- Tabel Kehadiran (Diperbarui) -->
+                    <!-- Tabel Kehadiran -->
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">

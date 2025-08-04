@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\SchoolClass;
 use App\Models\Student; // Impor model Student
+use App\Models\StudentPermit; // Impor model StudentPermit
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -30,7 +31,6 @@ class DashboardController extends Controller
         // --- STATISTIK ---
         $allAttendancesToday = (clone $attendancesQuery)->get();
         
-        // Perhitungan Statistik Total (BARU)
         $totalAllStudents = Student::count();
         $totalPresent = $allAttendancesToday->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
         $totalAbsent = $totalAllStudents - $allAttendancesToday->count();
@@ -38,7 +38,6 @@ class DashboardController extends Controller
         $overallAttendancePercentage = ($totalAllStudents > 0) ? round(($totalPresent / $totalAllStudents) * 100) : 0;
         $overallAbsentPercentage = ($totalAllStudents > 0) ? round(($totalAbsent / $totalAllStudents) * 100) : 0;
         
-        // Statistik lainnya
         $totalOnTime = $allAttendancesToday->where('status', 'tepat_waktu')->count();
         $totalLate = $allAttendancesToday->where('status', 'terlambat')->count();
         $totalEffectivelyAttended = $totalOnTime + $totalLate;
@@ -48,7 +47,6 @@ class DashboardController extends Controller
         $totalIzin = $allAttendancesToday->where('status', 'izin')->count();
         $totalSakit = $allAttendancesToday->where('status', 'sakit')->count();
 
-        // Statistik per kelas
         $allClassesWithStudents = SchoolClass::withCount('students')->get();
         $attendancesByClass = $allAttendancesToday->whereIn('status', ['tepat_waktu', 'terlambat'])->groupBy('student.school_class_id');
         $classAttendanceStats = $allClassesWithStudents->map(function ($class) use ($attendancesByClass) {
@@ -69,6 +67,12 @@ class DashboardController extends Controller
             ->latest('attendance_time')
             ->paginate(15);
         
+        // PERBAIKAN: Mengambil data siswa yang sedang izin keluar
+        $studentsOnPermit = StudentPermit::with(['student.schoolClass'])
+            ->whereDate('time_out', $selectedDate)
+            ->whereNull('time_in')
+            ->get();
+        
         return view('admin.dashboard', [
             'attendances' => $attendances,
             'selectedDate' => $selectedDate,
@@ -77,9 +81,10 @@ class DashboardController extends Controller
             'overallAbsentPercentage' => $overallAbsentPercentage,
             'overallOnTimePercentage' => $overallOnTimePercentage,
             'overallLatenessPercentage' => $overallLatenessPercentage,
-            'totalIzin' => $totalIzin, // Kirim jumlah, bukan persen
-            'totalSakit' => $totalSakit, // Kirim jumlah, bukan persen
+            'totalIzin' => $totalIzin,
+            'totalSakit' => $totalSakit,
             'classAttendanceStats' => $classAttendanceStats,
+            'studentsOnPermit' => $studentsOnPermit, // Kirim data ke view
         ]);
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Student;
 use App\Models\Attendance;
 use App\Models\Setting; // Pastikan model Setting diimpor
+use App\Models\StudentPermit; // Impor model StudentPermit
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -41,6 +42,13 @@ class DashboardController extends Controller
         $alphaCount = $attendancesToday->where('status', 'alpa')->count();
         $noRecordCount = $totalStudents - $attendancesToday->count();
         
+        // PERBAIKAN: Mengambil data siswa yang sedang izin keluar
+        $studentsOnPermit = StudentPermit::with('student')
+            ->whereIn('student_id', $studentIds)
+            ->whereDate('time_out', $today)
+            ->whereNull('time_in')
+            ->get();
+
         $startDate = now()->subDays(6)->startOfDay();
         $endDate = now()->endOfDay();
         $period = CarbonPeriod::create($startDate, $endDate);
@@ -84,7 +92,8 @@ class DashboardController extends Controller
             'teacher', 'class', 'studentsInClass', 'attendancesToday',
             'onTimeCount', 'lateCount', 'sickCount', 'permitCount', 'alphaCount', 'noRecordCount',
             'studentsForAttention',
-            'chartLabels', 'chartData'
+            'chartLabels', 'chartData',
+            'studentsOnPermit' // Kirim data siswa yang izin ke view
         ));
     }
 

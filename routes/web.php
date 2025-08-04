@@ -71,6 +71,11 @@ Route::middleware('auth')->group(function () {
 
     // Rute Notifikasi Internal
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+
+    // == RUTE BARU UNTUK IZIN KELUAR/KEMBALI ==
+    Route::get('/permit-scanner', [\App\Http\Controllers\PermitController::class, 'showScanner'])->name('permit.scanner');
+    Route::post('/permit-scanner/store', [\App\Http\Controllers\PermitController::class, 'storePermit'])->name('permit.store');
+    // =========================================
 });
 
 // == GRUP RUTE UNTUK AKSES PEMINDAI ==

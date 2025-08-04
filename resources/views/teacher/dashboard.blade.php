@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-breadcrumb :breadcrumbs="[
             ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard')]
-        ]" class="mb-4" />
+        ]" />
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Dasbor Wali Kelas') }}
         </h2>
@@ -81,12 +81,14 @@
                                                 <td class="px-6 py-4 text-center">
                                                     @php $attendance = $attendancesToday->get($student->id); @endphp
                                                     @if($attendance)
-                                                        @if ($attendance->status === 'tepat_waktu')<span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Hadir</span>
-                                                        @elseif ($attendance->status === 'terlambat')<span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Terlambat</span>
-                                                        @elseif ($attendance->status === 'izin')<span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Izin</span>
-                                                        @elseif ($attendance->status === 'sakit')<span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Sakit</span>
-                                                        @elseif ($attendance->status === 'alpa')<span class="bg-red-200 text-red-900 text-xs font-semibold px-2.5 py-0.5 rounded-full">Alpa</span>@endif
-                                                    @else<span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Belum Hadir</span>@endif
+                                                        @if ($attendance->status === 'tepat_waktu')<span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Hadir</span>
+                                                        @elseif ($attendance->status === 'terlambat')<span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">Terlambat</span>
+                                                        @elseif ($attendance->status === 'izin')<span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-purple-900 dark:text-purple-300">Izin</span>
+                                                        @elseif ($attendance->status === 'sakit')<span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-amber-900 dark:text-amber-300">Sakit</span>
+                                                        @elseif ($attendance->status === 'alpa')<span class="bg-red-200 text-red-900 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-red-800 dark:text-red-200">Alpa</span>
+                                                        @elseif ($attendance->status === 'izin_keluar')<span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">Izin Keluar</span>
+                                                        @endif
+                                                    @else<span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-slate-600 dark:text-slate-300">Belum Hadir</span>@endif
                                                 </td>
                                                 <td class="px-6 py-4 text-center">
                                                     @if(!$attendance)
@@ -108,8 +110,9 @@
                     </div>
                 </div>
 
-                <!-- Kolom Kanan: Siswa Perlu Perhatian -->
-                <div class="lg:col-span-1">
+                <!-- Kolom Kanan: Siswa Perlu Perhatian & Siswa Izin Keluar -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Siswa Perlu Perhatian -->
                     <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Perlu Perhatian</h3>
@@ -133,6 +136,40 @@
                                 @empty
                                 <li class="p-4 text-center text-sm text-gray-500 italic">
                                     Tidak ada siswa yang memerlukan perhatian khusus saat ini. Kerja bagus!
+                                </li>
+                                @endforelse
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Panel Siswa Izin Keluar -->
+                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Sedang Izin Keluar</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Daftar siswa yang keluar pada hari ini dan belum kembali.</p>
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-slate-700">
+                            <ul class="divide-y divide-gray-200 dark:divide-slate-700">
+                                @forelse($studentsOnPermit as $permit)
+                                <li class="p-4 flex items-start gap-4">
+                                    <div class="flex-shrink-0 pt-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-yellow-500">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $permit->student->name }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            Keluar pukul: <span class="font-medium">{{ $permit->time_out->format('H:i') }}</span>
+                                        </p>
+                                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 italic">
+                                            "{{ $permit->reason }}"
+                                        </p>
+                                    </div>
+                                </li>
+                                @empty
+                                <li class="p-4 text-center text-sm text-gray-500 italic">
+                                    Tidak ada siswa yang sedang izin keluar.
                                 </li>
                                 @endforelse
                             </ul>
