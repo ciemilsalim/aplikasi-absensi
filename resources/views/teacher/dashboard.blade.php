@@ -70,6 +70,9 @@
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                         <tr>
                                             <th scope="col" class="px-6 py-3">Nama Siswa</th>
+                                            {{-- PERBAIKAN: Menambahkan kolom Jam Masuk & Pulang --}}
+                                            <th scope="col" class="px-6 py-3 text-center">Jam Masuk</th>
+                                            <th scope="col" class="px-6 py-3 text-center">Jam Pulang</th>
                                             <th scope="col" class="px-6 py-3 text-center">Status</th>
                                             <th scope="col" class="px-6 py-3 text-center">Aksi</th>
                                         </tr>
@@ -78,8 +81,24 @@
                                         @forelse($studentsInClass as $student)
                                             <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600">
                                                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ $student->name }}</th>
+                                                @php $attendance = $attendancesToday->get($student->id); @endphp
+                                                {{-- PERBAIKAN: Menampilkan Jam Masuk --}}
                                                 <td class="px-6 py-4 text-center">
-                                                    @php $attendance = $attendancesToday->get($student->id); @endphp
+                                                    @if($attendance && $attendance->attendance_time && !in_array($attendance->status, ['izin', 'sakit', 'alpa']))
+                                                        <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-slate-600 dark:text-slate-300">{{ $attendance->attendance_time->format('H:i:s') }}</span>
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                                {{-- PERBAIKAN: Menampilkan Jam Pulang --}}
+                                                <td class="px-6 py-4 text-center">
+                                                    @if($attendance && $attendance->checkout_time)
+                                                        <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-slate-600 dark:text-slate-300">{{ $attendance->checkout_time->format('H:i:s') }}</span>
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                                <td class="px-6 py-4 text-center">
                                                     @if($attendance)
                                                         @if ($attendance->status === 'tepat_waktu')<span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Hadir</span>
                                                         @elseif ($attendance->status === 'terlambat')<span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">Terlambat</span>
@@ -101,7 +120,7 @@
                                                 </td>
                                             </tr>
                                         @empty
-                                            <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700"><td colspan="3" class="px-6 py-4 text-center">Tidak ada siswa di kelas ini.</td></tr>
+                                            <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700"><td colspan="5" class="px-6 py-4 text-center">Tidak ada siswa di kelas ini.</td></tr>
                                         @endforelse
                                     </tbody>
                                 </table>
