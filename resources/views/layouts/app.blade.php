@@ -28,7 +28,6 @@
         }
     </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -50,7 +49,6 @@
     
     <style type="text/tailwindcss">
         body { @apply font-sans; }
-        /* PERBAIKAN: Logika baru untuk loader dan transisi halaman */
         .loader-container {
             @apply fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900;
             transition: opacity 0.5s ease-in-out, visibility 0.5s;
@@ -68,7 +66,6 @@
     </style>
 </head>
 <body class="h-full antialiased bg-slate-50 dark:bg-slate-900">
-    <!-- Page Loader BARU -->
     <div id="page-loader" class="loader-container">
         <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -76,10 +73,8 @@
         </svg>
     </div>
 
-    <!-- Wrapper Konten Utama -->
     <div id="page-content">
         <div x-data="{ sidebarOpen: false }" class="relative h-full">
-            <!-- Sidebar untuk Mobile (Off-canvas) -->
             <div x-show="sidebarOpen" class="relative z-40 lg:hidden" @click.away="sidebarOpen = false" x-transition>
                 <div class="fixed inset-0 bg-gray-600/80"></div>
                 <div class="fixed inset-0 flex">
@@ -94,15 +89,11 @@
                 </div>
             </div>
 
-            <!-- Sidebar Statis untuk Desktop -->
             <div class="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-72 lg:flex-col">
                 @include('layouts.sidebar')
             </div>
             
-            <!-- Konten Utama -->
             <div class="lg:pl-72">
-                <!-- Header Sticky di Atas -->
-                {{-- PERBAIKAN: Warna latar header disamakan dengan sidebar dan efek blur dihapus untuk tampilan yang lebih solid --}}
                 <div class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
                     <button type="button" class="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden" @click="sidebarOpen = true">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
@@ -126,9 +117,11 @@
             </div>
 
             <footer class="lg:pl-72">
+                {{-- PERBAIKAN: Menambahkan versi dan nama pengembang --}}
                 <div class="py-4 text-center text-xs text-slate-500 dark:text-slate-400 border-t dark:border-slate-700">
-                    &copy; {{ date('Y') }} {{ $appName ?? config('app.name') }}.
-                    <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a>
+                    &copy; {{ date('Y') }} {{ config('app.name') }} v1.0.0.
+                    Dikembangkan oleh <a href="https://github.com/ciemilsalim," target="_blank" class="font-semibold text-sky-600 hover:underline">zahradev</a>.
+                    <a href="{{ route('about') }}" class="hover:underline ml-2">Tentang Aplikasi</a>
                 </div>
             </footer>
         </div>
@@ -142,7 +135,6 @@
 
     @stack('scripts')
     <script>
-        // Skrip untuk menyembunyikan loader dan menampilkan konten
         window.addEventListener('load', () => {
             const loader = document.getElementById('page-loader');
             const content = document.getElementById('page-content');
@@ -155,7 +147,6 @@
         });
     </script>
 
-    {{-- Skrip untuk mendaftarkan Service Worker --}}
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -169,6 +160,5 @@
             });
         }
     </script>
-    @stack('scripts')
 </body>
 </html>
