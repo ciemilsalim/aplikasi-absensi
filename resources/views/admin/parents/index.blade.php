@@ -24,12 +24,28 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            
+            <!-- Kartu Statistik -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Akun Ortu</p>
+                    <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">{{ $totalParents }}</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Terhubung ke Siswa</p>
+                    <p class="mt-1 text-3xl font-bold text-green-600 dark:text-green-400">{{ $parentsWithStudents }}</p>
+                </div>
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Belum Terhubung</p>
+                    <p class="mt-1 text-3xl font-bold text-red-600 dark:text-red-400">{{ $parentsWithoutStudents }}</p>
+                </div>
+            </div>
+
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
                         <h3 class="text-lg font-medium">Daftar Akun Orang Tua</h3>
                         <div class="flex gap-2">
-                            {{-- Menambahkan ikon yang relevan --}}
                             <a href="{{ route('admin.parents.import.form') }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" /></svg>
                                 Impor

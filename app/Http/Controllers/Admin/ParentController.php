@@ -15,10 +15,15 @@ use Illuminate\Validation\Rules;
 class ParentController extends Controller
 {
     /**
-     * Menampilkan daftar semua orang tua dengan paginasi, sortir, dan filter.
+     * Menampilkan daftar semua orang tua dengan statistik, paginasi, sortir, dan filter.
      */
     public function index(Request $request)
     {
+        // --- STATISTIK ---
+        $totalParents = ParentModel::count();
+        $parentsWithStudents = ParentModel::has('students')->count();
+        $parentsWithoutStudents = $totalParents - $parentsWithStudents;
+
         // Validasi parameter untuk pengurutan
         $sortBy = in_array($request->query('sort_by'), ['name', 'email', 'students_count']) 
             ? $request->query('sort_by') 
@@ -28,14 +33,12 @@ class ParentController extends Controller
             ? $request->query('sort_direction') 
             : 'desc';
 
-        // Validasi parameter untuk jumlah data per halaman
         $perPage = in_array($request->query('per_page'), [10, 25, 50, 100])
             ? $request->query('per_page')
             : 10;
 
         $query = ParentModel::query()->with('user')->withCount('students');
 
-        // Terapkan filter pencarian jika ada
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -46,8 +49,6 @@ class ParentController extends Controller
             });
         }
         
-        // PERBAIKAN: Menggunakan subquery untuk sortir berdasarkan email
-        // Ini memastikan kolom 'students_count' tidak hilang.
         if ($sortBy === 'email') {
             $query->orderBy(
                 User::select('email')
@@ -66,6 +67,9 @@ class ParentController extends Controller
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
             'perPage' => $perPage,
+            'totalParents' => $totalParents,
+            'parentsWithStudents' => $parentsWithStudents,
+            'parentsWithoutStudents' => $parentsWithoutStudents,
         ]);
     }
 
