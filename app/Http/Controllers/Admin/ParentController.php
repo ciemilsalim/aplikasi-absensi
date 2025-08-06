@@ -46,14 +46,16 @@ class ParentController extends Controller
             });
         }
         
-        // Terapkan pengurutan
+        // PERBAIKAN: Menggunakan subquery untuk sortir berdasarkan email
+        // Ini memastikan kolom 'students_count' tidak hilang.
         if ($sortBy === 'email') {
-            // Jika sortir berdasarkan email, kita perlu join tabel users
-            $query->join('users', 'parents.user_id', '=', 'users.id')
-                  ->orderBy('users.email', $sortDirection)
-                  ->select('parents.*'); // Penting: pilih kolom dari tabel parents saja
+            $query->orderBy(
+                User::select('email')
+                    ->whereColumn('users.id', 'parents.user_id')
+                    ->limit(1),
+                $sortDirection
+            );
         } else {
-            // Untuk kolom lain, order by biasa sudah cukup
             $query->orderBy($sortBy, $sortDirection);
         }
 
