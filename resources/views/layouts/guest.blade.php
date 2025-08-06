@@ -29,7 +29,6 @@
         }
     </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
     <script>
         tailwind.config = { 
             darkMode: 'class', 
@@ -51,7 +50,6 @@
     
     <style type="text/tailwindcss">
         body { @apply font-sans; }
-        /* PERBAIKAN: Logika baru untuk loader dan transisi halaman */
         .loader-container {
             @apply fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900;
             transition: opacity 0.5s ease-in-out, visibility 0.5s;
@@ -69,7 +67,6 @@
     </style>
 </head>
 <body class="antialiased font-sans h-full bg-slate-50 dark:bg-slate-900">
-    <!-- Page Loader BARU -->
     <div id="page-loader" class="loader-container">
         <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -77,12 +74,9 @@
         </svg>
     </div>
     @if (isset($slot))
-        {{-- Untuk halaman login/register yang sudah memiliki layout full-page sendiri --}}
         {{ $slot }}
     @else
-    {{-- Untuk halaman welcome/scanner yang memerlukan wrapper layout --}}
     <div class="flex flex-col min-h-screen">
-        {{-- PERBAIKAN: Menyamakan style header sticky dengan layout app --}}
         <header x-data="{ atTop: true }" @scroll.window="atTop = (window.pageYOffset < 50)" 
                 :class="{ 'bg-white dark:bg-slate-800 shadow-md': !atTop }" 
                 class="sticky top-0 z-50 transition-all duration-300">
@@ -93,16 +87,16 @@
             @yield('content')
         </main>
 
-        <footer class="w-full bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm shadow-inner mt-auto">
-            <div class="container mx-auto px-6 py-4 text-center text-slate-500 dark:text-slate-400 text-sm">
-                &copy; {{ date('Y') }} {{ $appName ?? config('app.name') }}. 
-                <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a>
+        <footer class="w-full bg-slate-100 dark:bg-slate-800 mt-4">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                <p>&copy; {{ date('Y') }} {{ $appName }} - {{  config('app.name') }} v1.0.0.</p>
+                <p class="mt-1">Dikembangkan oleh <a href="https://github.com/ciemilsalim" target="_blank" class="font-semibold text-sky-600 hover:underline">zahradev</a>.
+                 - <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a></p>
             </div>
         </footer>
     </div>
     @endif
     
-    {{-- Tombol Kembali ke Atas --}}
     <div x-data="{ show: false }" 
          @scroll.window="show = (window.pageYOffset > 300)"
          class="fixed bottom-5 right-5 z-50">
@@ -120,7 +114,6 @@
 
     @stack('scripts')
     <script>
-        // Skrip untuk menyembunyikan loader dan menampilkan konten
         window.addEventListener('load', () => {
             const loader = document.getElementById('page-loader');
             const content = document.getElementById('page-content');
@@ -133,7 +126,6 @@
         });
     </script>
 
-    {{-- Skrip untuk mendaftarkan Service Worker --}}
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

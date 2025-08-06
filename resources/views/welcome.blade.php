@@ -183,10 +183,11 @@
 
         </main>
         
-        <footer class="w-full bg-slate-100 dark:bg-slate-800">
-            <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400 text-sm">
-                &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. Hak Cipta Dilindungi.
-                 - <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a>
+        <footer class="w-full bg-slate-100 dark:bg-slate-800 mt-4">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                <p>&copy; {{ date('Y') }} {{ $appName }} - {{  config('app.name') }} v1.0.0.</p>
+                <p class="mt-1">Dikembangkan oleh <a href="https://github.com/ciemilsalim" target="_blank" class="font-semibold text-sky-600 hover:underline">zahradev</a>.
+                 - <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a></p>
             </div>
         </footer>
     </div>

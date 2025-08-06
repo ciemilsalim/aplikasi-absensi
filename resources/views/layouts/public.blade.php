@@ -10,7 +10,6 @@
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $appLogoPath) }}">
     @endif
     
-    {{-- Memuat Google Font 'Poppins' --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,7 +29,6 @@
             darkMode: 'class', 
             theme: { 
                 extend: { 
-                    // Mengganti font utama menjadi 'Poppins'
                     fontFamily: { 
                         sans: ['Poppins', 'sans-serif'] 
                     },
@@ -41,7 +39,6 @@
             } 
         }
     </script>
-    {{-- PERBAIKAN: Skrip untuk QR Scanner ditambahkan kembali --}}
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
@@ -49,7 +46,6 @@
     
     <style type="text/tailwindcss">
         body { @apply font-sans; }
-        /* PERBAIKAN: Logika baru untuk loader dan transisi halaman */
         .loader-container {
             @apply fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900;
             transition: opacity 0.5s ease-in-out, visibility 0.5s;
@@ -67,16 +63,13 @@
     </style>
 </head>
 <body class="antialiased font-sans h-full">
-    <!-- Page Loader BARU -->
     <div id="page-loader" class="loader-container">
         <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
     </div>
-    {{-- Layout ini sekarang khusus untuk halaman welcome/scanner --}}
     <div class="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
-        {{-- Navigasi yang lebih stylish dengan backdrop-blur --}}
         <header x-data="{ atTop: true }" @scroll.window="atTop = (window.pageYOffset < 50)" 
                 :class="{ 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg': !atTop }" 
                 class="sticky top-0 z-50 transition-all duration-300">
@@ -86,14 +79,15 @@
             @yield('content')
         </main>
         <footer class="w-full bg-slate-100 dark:bg-slate-800 mt-4">
-            <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400 text-sm">
-                &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. Hak Cipta Dilindungi.
-                 - <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a>
+            {{-- PERBAIKAN: Menambahkan versi dan nama pengembang --}}
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                <p>&copy; {{ date('Y') }} {{ $appName }} - {{ config('app.name') }} v1.0.0.</p>
+                <p class="mt-1">Dikembangkan oleh <a href="https://github.com/ciemilsalim" target="_blank" class="font-semibold text-sky-600 hover:underline">zahradev</a>.
+                 - <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a></p>
             </div>
         </footer>
     </div>
     
-    {{-- Tombol Kembali ke Atas --}}
     <div x-data="{ show: false }" 
          @scroll.window="show = (window.pageYOffset > 300)"
          class="fixed bottom-5 right-5 z-50">
@@ -111,7 +105,6 @@
 
     @stack('scripts')
     <script>
-        // Skrip untuk menyembunyikan loader dan menampilkan konten
         window.addEventListener('load', () => {
             const loader = document.getElementById('page-loader');
             const content = document.getElementById('page-content');
