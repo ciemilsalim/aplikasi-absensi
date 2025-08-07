@@ -14,29 +14,55 @@
 
     <div class="w-full max-w-xl text-center">
         <!-- Jam Digital dan Tanggal -->
-        <div class="mb-6">
+        <div class="mb-6 animate-[fade-in-up_0.8s_ease-out_forwards]">
             <p id="current-date" class="text-lg text-slate-600 dark:text-slate-400"></p>
             <p id="current-time" class="text-5xl font-bold text-sky-600 dark:text-sky-400 tracking-tight"></p>
         </div>
 
-        <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">Pindai QR Code Izin</h1>
-        <p class="text-slate-600 dark:text-slate-400 mb-8">Tekan tombol di bawah untuk memulai pemindaian izin keluar atau kembali.</p>
-
-        <div class="bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-            <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden hidden"></div>
+        <div class="bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 animate-[fade-in-up_0.8s_ease-out_forwards]" style="animation-delay: 0.4s;">
             
-            <div id="scanner-controls">
-                <button id="start-scan-button" class="w-full inline-flex items-center justify-center px-6 py-4 border border-transparent text-base font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-all duration-300">
-                    <svg id="button-icon" class="h-6 w-6 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 0 1 1.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 0 1-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
-                    <span id="button-text">Mulai Pindai Izin</span>
-                </button>
-            </div>
-            
-            <div id="camera-switch-container" class="mt-4 text-center hidden">
-                <button id="camera-switch-button" class="text-sm text-sky-600 dark:text-sky-400 hover:underline">Ganti Kamera</button>
+            <div id="scanner-choice">
+                <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">Pilih Tipe Pemindai Izin</h1>
+                <p class="text-slate-600 dark:text-slate-400 mb-8">Pilih metode yang akan Anda gunakan untuk mencatat izin siswa.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button id="use-camera-button" class="w-full inline-flex flex-col items-center justify-center p-6 border border-transparent text-base font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.776 48.776 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" /></svg>
+                        Pindai dengan Kamera
+                    </button>
+                    <button id="use-manual-button" class="w-full inline-flex flex-col items-center justify-center p-6 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 011.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 01-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
+                        Input Manual / Eksternal
+                    </button>
+                </div>
             </div>
 
-            <div id="reader-error" class="text-red-500 text-sm mt-2 hidden"></div>
+            <div id="camera-scanner" class="hidden">
+                <div id="reader" class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden"></div>
+                <div id="camera-switch-container" class="mt-4 text-center hidden">
+                    <button id="camera-switch-button" class="text-sm text-sky-600 dark:text-sky-400 hover:underline">Ganti Kamera</button>
+                </div>
+            </div>
+
+            <div id="manual-scanner" class="hidden">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">Input ID Manual</h2>
+                <p class="text-slate-600 dark:text-slate-400 mb-6">Arahkan pemindai eksternal ke kolom di bawah atau ketik ID siswa.</p>
+                <form id="manual-form">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-slate-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 011.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 01-.937-.938v-3.375c0-.517.42-.938.938-.938z" />
+                            </svg>
+                        </div>
+                        <x-text-input id="manual_input_id" class="block w-full text-center text-lg pl-10" type="text" name="manual_input_id" placeholder="ID Siswa" required autofocus />
+                    </div>
+                </form>
+            </div>
+
+            <div id="reader-error" class="text-red-500 text-sm mt-4 text-center hidden"></div>
+            <button id="back-to-choice" class="mt-4 text-sm text-slate-500 dark:text-slate-400 hover:underline hidden">
+                &larr; Kembali ke Pilihan
+            </button>
         </div>
     </div>
 </div>
@@ -86,12 +112,17 @@
         const scanCooldown = 4000;
         let currentStudentId = null;
 
+        const scannerChoiceDiv = document.getElementById('scanner-choice');
+        const cameraScannerDiv = document.getElementById('camera-scanner');
+        const manualScannerDiv = document.getElementById('manual-scanner');
+        const useCameraButton = document.getElementById('use-camera-button');
+        const useManualButton = document.getElementById('use-manual-button');
+        const backButton = document.getElementById('back-to-choice');
+        const manualForm = document.getElementById('manual-form');
+        const manualInput = document.getElementById('manual_input_id');
+
         const readerDiv = document.getElementById('reader');
         const readerError = document.getElementById('reader-error');
-        const controlsDiv = document.getElementById('scanner-controls');
-        const startButton = document.getElementById('start-scan-button');
-        const buttonText = document.getElementById('button-text');
-        const buttonIcon = document.getElementById('button-icon');
         const switchContainer = document.getElementById('camera-switch-container');
         const switchButton = document.getElementById('camera-switch-button');
         
@@ -122,45 +153,86 @@
         updateClock(); 
         setInterval(updateClock, 1000);
 
-        startButton.addEventListener('click', () => {
-            startButton.disabled = true;
-            buttonText.textContent = 'Meminta Izin Lokasi...';
-            buttonIcon.innerHTML = `<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>`;
-            buttonIcon.classList.add('animate-spin');
-            readerError.classList.add('hidden');
+        useCameraButton.addEventListener('click', () => {
+            scannerChoiceDiv.classList.add('hidden');
+            cameraScannerDiv.classList.remove('hidden');
+            backButton.classList.remove('hidden');
+            startScanFlow();
+        });
 
+        useManualButton.addEventListener('click', () => {
+            scannerChoiceDiv.classList.add('hidden');
+            manualScannerDiv.classList.remove('hidden');
+            backButton.classList.remove('hidden');
+            manualInput.focus();
+        });
+
+        backButton.addEventListener('click', () => {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop();
+            }
+            cameraScannerDiv.classList.add('hidden');
+            manualScannerDiv.classList.add('hidden');
+            scannerChoiceDiv.classList.remove('hidden');
+            backButton.classList.add('hidden');
+            readerError.classList.add('hidden');
+        });
+
+        let inputTimeout = null;
+        manualInput.addEventListener('input', (e) => {
+            clearTimeout(inputTimeout);
+            const studentId = manualInput.value.trim();
+            if (studentId) {
+                inputTimeout = setTimeout(() => {
+                    if (Date.now() - lastScanTime < scanCooldown) return;
+                    lastScanTime = Date.now();
+                    
+                    readerError.classList.add('hidden');
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            userCoordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+                            processPermit(studentId);
+                        },
+                        (error) => {
+                            showResultModal({ message: 'Gagal mendapatkan lokasi GPS.', student_name: 'Izinkan akses lokasi dan coba lagi.' }, true);
+                        }
+                    );
+                }, 100);
+            }
+        });
+
+        function startScanFlow() {
+            readerError.classList.add('hidden');
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     userCoordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
                     initializeScanner();
                 },
                 (error) => {
-                    readerError.textContent = 'Gagal mendapatkan lokasi. Izinkan akses lokasi dan coba lagi.';
+                    readerError.textContent = 'Gagal mendapatkan lokasi GPS. Izinkan akses lokasi dan coba lagi.';
                     readerError.classList.remove('hidden');
-                    resetButtonState();
-                }, { enableHighAccuracy: true }
+                }
             );
-        });
+        }
 
         function initializeScanner() {
-            controlsDiv.classList.add('hidden');
-            readerDiv.classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
-
             Html5Qrcode.getCameras().then(devices => {
                 if (devices && devices.length) {
                     cameras = devices;
-                    currentCameraIndex = cameras.findIndex(c => c.label.toLowerCase().includes('back')) !== -1 ? cameras.findIndex(c => c.label.toLowerCase().includes('back')) : 0;
+                    let backCameraIndex = cameras.findIndex(camera => camera.label.toLowerCase().includes('back'));
+                    currentCameraIndex = backCameraIndex !== -1 ? backCameraIndex : 0;
                     startScannerWithCamera(cameras[currentCameraIndex].id);
-                    if (cameras.length > 1) switchContainer.classList.remove('hidden');
-                } else { throw new Error("Tidak ada kamera ditemukan."); }
+                    if (cameras.length > 1) {
+                        switchContainer.classList.remove('hidden');
+                    }
+                } else { throw new Error("Tidak ada kamera yang ditemukan."); }
             }).catch(err => {
                 readerError.textContent = "Gagal mengakses kamera: " + err.message;
                 readerError.classList.remove('hidden');
-                resetUI();
             });
         }
-
+        
         function startScannerWithCamera(cameraId) {
             html5QrCode.start(
                 cameraId, 
@@ -168,9 +240,8 @@
                 onScanSuccess,
                 (errorMessage) => {}
             ).catch((err) => {
-                readerError.textContent = "Gagal memulai kamera.";
+                readerError.textContent = "Gagal memulai kamera yang dipilih.";
                 readerError.classList.remove('hidden');
-                resetUI();
             });
         }
 
@@ -187,7 +258,9 @@
             if (Date.now() - lastScanTime < scanCooldown) return;
             lastScanTime = Date.now();
             
-            await html5QrCode.stop();
+            if (html5QrCode && html5QrCode.isScanning) {
+                await html5QrCode.stop();
+            }
             await processPermit(decodedText);
         }
 
@@ -198,7 +271,9 @@
                 formData.append('_token', '{{ csrf_token() }}');
                 formData.append('latitude', userCoordinates.latitude);
                 formData.append('longitude', userCoordinates.longitude);
-                if (reason) formData.append('reason', reason);
+                if (reason) {
+                    formData.append('reason', reason);
+                }
 
                 const response = await fetch('{{ route("permit.store") }}', { method: 'POST', body: formData });
                 const data = await response.json();
@@ -260,7 +335,7 @@
                 resultModal.content.classList.remove('scale-95');
             }, 10);
 
-            setTimeout(hideResultModal, scanCooldown - 500);
+            setTimeout(hideResultModal, scanCooldown);
         }
 
         function hideResultModal() {
@@ -268,30 +343,29 @@
             resultModal.content.classList.add('scale-95');
             setTimeout(() => {
                 resultModal.element.classList.add('hidden');
-                resetUI();
+                if (cameraScannerDiv.classList.contains('hidden')) {
+                    manualInput.value = '';
+                    manualInput.focus();
+                } else {
+                    startScanFlow();
+                }
             }, 300);
-        }
-
-        function resetButtonState() {
-            startButton.disabled = false;
-            buttonText.textContent = 'Mulai Pindai Izin';
-            buttonIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 0 1 1.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 0 1-.937-.938v-3.375c0-.517.42-.938.938-.938z" />`;
-            buttonIcon.classList.remove('animate-spin');
-        }
-        
-        function resetUI() {
-            controlsDiv.classList.remove('hidden');
-            readerDiv.classList.add('hidden');
-            switchContainer.classList.add('hidden');
-            resetButtonState();
         }
 
         function playSound(type) {
             let audioFile;
-            if (type === 'success') { audioFile = '{{ asset('sounds/success.mp3') }}'; } 
-            else if (type === 'warning') { audioFile = '{{ asset('sounds/warning.mp3') }}'; } 
-            else { audioFile = '{{ asset('sounds/error.mp3') }}'; }
+            if (type === 'success') { audioFile = "{{ asset('sounds/success.mp3') }}"; } 
+            else if (type === 'warning') { audioFile = "{{ asset('sounds/warning.mp3') }}"; } 
+            else { audioFile = "{{ asset('sounds/error.mp3') }}"; }
             try { new Audio(audioFile).play(); } catch (e) { console.error("Gagal memainkan suara:", e); }
+        }
+        
+        function resetUI() {
+            cameraScannerDiv.classList.add('hidden');
+            manualScannerDiv.classList.add('hidden');
+            scannerChoiceDiv.classList.remove('hidden');
+            backButton.classList.add('hidden');
+            readerError.classList.add('hidden');
         }
     });
 </script>
