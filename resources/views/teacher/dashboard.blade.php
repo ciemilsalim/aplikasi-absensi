@@ -1,5 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
+        {{-- Breadcrumb untuk navigasi --}}
         <x-breadcrumb :breadcrumbs="[
             ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard')]
         ]" />
@@ -8,20 +9,47 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Welcome Section -->
-            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h3 class="text-xl font-semibold">Selamat Datang, {{ $teacher->name }}!</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mt-1">Anda adalah wali kelas untuk kelas <span class="font-bold text-sky-600 dark:text-sky-400">{{ $class->name }}</span>. Selamat bertugas.</p>
+    <div class="py-6 md:py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+            <!-- Bagian Welcome dan Akses Cepat -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Welcome Section -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 flex items-center gap-6">
+                        <div class="flex-shrink-0">
+                            <span class="inline-block h-16 w-16 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                                {{-- Placeholder untuk foto guru, bisa diganti dengan foto asli --}}
+                                <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Selamat Datang, {{ $teacher->name }}!</h3>
+                            <p class="text-gray-500 dark:text-gray-400 mt-1">Anda adalah wali kelas untuk kelas <span class="font-bold text-sky-600 dark:text-sky-400">{{ $class->name }}</span>. Selamat bertugas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Akses Cepat -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Akses Cepat</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <a href="{{ route('scanner') }}" target="_blank" class="flex flex-col items-center justify-center p-4 bg-sky-50 dark:bg-sky-900/50 hover:bg-sky-100 dark:hover:bg-sky-900 rounded-lg transition-colors duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-600 dark:text-sky-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            <span class="text-sm font-medium text-center text-sky-800 dark:text-sky-300">Scan Absensi</span>
+                        </a>
+                        <a href="{{ route('permit.scanner') }}" target="_blank" class="flex flex-col items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded-lg transition-colors duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600 dark:text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
+                            <span class="text-sm font-medium text-center text-indigo-800 dark:text-indigo-300">Scan Izin</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
             <!-- REKAPITULASI HARIAN -->
-            <div class="mb-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Rekapitulasi Harian - {{ now()->translatedFormat('d F Y') }}</h3>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Rekapitulasi Harian - {{ now()->translatedFormat('d F Y') }}</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
                     <div class="bg-green-100 dark:bg-green-900/50 p-4 rounded-lg text-center">
                         <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ $onTimeCount }}</p>
                         <p class="text-sm font-medium text-green-800 dark:text-green-300">Tepat Waktu</p>
@@ -49,7 +77,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Kolom Kiri: Grafik & Daftar Siswa -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- GRAFIK TREN KEHADIRAN MINGGUAN -->
@@ -70,7 +98,6 @@
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                         <tr>
                                             <th scope="col" class="px-6 py-3">Nama Siswa</th>
-                                            {{-- PERBAIKAN: Menambahkan kolom Jam Masuk & Pulang --}}
                                             <th scope="col" class="px-6 py-3 text-center">Jam Masuk</th>
                                             <th scope="col" class="px-6 py-3 text-center">Jam Pulang</th>
                                             <th scope="col" class="px-6 py-3 text-center">Status</th>
@@ -82,7 +109,6 @@
                                             <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600">
                                                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ $student->name }}</th>
                                                 @php $attendance = $attendancesToday->get($student->id); @endphp
-                                                {{-- PERBAIKAN: Menampilkan Jam Masuk --}}
                                                 <td class="px-6 py-4 text-center">
                                                     @if($attendance && $attendance->attendance_time && !in_array($attendance->status, ['izin', 'sakit', 'alpa']))
                                                         <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-slate-600 dark:text-slate-300">{{ $attendance->attendance_time->format('H:i:s') }}</span>
@@ -90,7 +116,6 @@
                                                         -
                                                     @endif
                                                 </td>
-                                                {{-- PERBAIKAN: Menampilkan Jam Pulang --}}
                                                 <td class="px-6 py-4 text-center">
                                                     @if($attendance && $attendance->checkout_time)
                                                         <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-slate-600 dark:text-slate-300">{{ $attendance->checkout_time->format('H:i:s') }}</span>
