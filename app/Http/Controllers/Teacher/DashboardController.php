@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Student;
 use App\Models\Attendance;
-use App\Models\Setting; // Pastikan model Setting diimpor
-use App\Models\StudentPermit; // Impor model StudentPermit
+use App\Models\Setting;
+use App\Models\StudentPermit;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -42,11 +42,19 @@ class DashboardController extends Controller
         $alphaCount = $attendancesToday->where('status', 'alpa')->count();
         $noRecordCount = $totalStudents - $attendancesToday->count();
         
-        // PERBAIKAN: Mengambil data siswa yang sedang izin keluar
         $studentsOnPermit = StudentPermit::with('student')
             ->whereIn('student_id', $studentIds)
             ->whereDate('time_out', $today)
             ->whereNull('time_in')
+            ->get();
+
+        // BARU: Mengambil data siswa yang belum absen pulang di kelas ini
+        $studentsNotCheckedOut = Attendance::with('student')
+            ->whereIn('student_id', $studentIds)
+            ->whereDate('attendance_time', $today)
+            ->whereNotNull('attendance_time')
+            ->whereNull('checkout_time')
+            ->whereNotIn('status', ['izin', 'sakit', 'alpa', 'izin_keluar'])
             ->get();
 
         $startDate = now()->subDays(6)->startOfDay();
@@ -93,7 +101,8 @@ class DashboardController extends Controller
             'onTimeCount', 'lateCount', 'sickCount', 'permitCount', 'alphaCount', 'noRecordCount',
             'studentsForAttention',
             'chartLabels', 'chartData',
-            'studentsOnPermit' // Kirim data siswa yang izin ke view
+            'studentsOnPermit',
+            'studentsNotCheckedOut' // Kirim data baru ke view
         ));
     }
 
@@ -239,7 +248,6 @@ class DashboardController extends Controller
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->get();
 
-        // PERBAIKAN: Menghitung rekapitulasi untuk setiap siswa
         $attendanceSummary = [];
         foreach ($students as $student) {
             $studentAttendances = $attendances->where('student_id', $student->id);
@@ -252,7 +260,6 @@ class DashboardController extends Controller
             ];
         }
         
-        // Mengubah format data kehadiran untuk tampilan tabel harian
         $dailyAttendances = $attendances->groupBy('student_id')
             ->map(function ($studentAttendances) {
                 return $studentAttendances->keyBy(function ($item) {

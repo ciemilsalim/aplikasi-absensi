@@ -154,7 +154,7 @@
                     </div>
                 </div>
 
-                <!-- Kolom Kanan: Siswa Perlu Perhatian & Siswa Izin Keluar -->
+                <!-- Kolom Kanan: Siswa Perlu Perhatian & Panel Peringatan -->
                 <div class="lg:col-span-1 space-y-6">
                     <!-- Siswa Perlu Perhatian -->
                     <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -192,14 +192,13 @@
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Sedang Izin Keluar</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Daftar siswa yang keluar pada hari ini dan belum kembali.</p>
                         </div>
-                        <div class="border-t border-gray-200 dark:border-slate-700">
+                        <div class="border-t border-gray-200 dark:border-slate-700 @if($studentsOnPermit->isNotEmpty()) max-h-60 overflow-y-auto @endif">
                             <ul class="divide-y divide-gray-200 dark:divide-slate-700">
                                 @forelse($studentsOnPermit as $permit)
                                 <li class="p-4 flex items-start gap-4">
                                     <div class="flex-shrink-0 pt-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-yellow-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                                        </svg>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
                                     </div>
                                     <div>
                                         <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $permit->student->name }}</p>
@@ -219,6 +218,37 @@
                             </ul>
                         </div>
                     </div>
+
+                    <!-- BARU: Panel Siswa Belum Absen Pulang -->
+                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Belum Absen Pulang</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Daftar siswa yang sudah masuk tapi belum absen pulang.</p>
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-slate-700 @if($studentsNotCheckedOut->isNotEmpty()) max-h-60 overflow-y-auto @endif">
+                            <ul class="divide-y divide-gray-200 dark:divide-slate-700">
+                                @forelse($studentsNotCheckedOut as $attendance)
+                                <li class="p-4 flex items-center justify-between gap-4">
+                                    <div class="flex items-center gap-4">
+                                        <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600">
+                                            <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                        </span>
+                                        <div>
+                                            <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $attendance->student->name }}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">Masuk:</span>
+                                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $attendance->attendance_time->format('H:i') }}</span>
+                                    </div>
+                                </li>
+                                @empty
+                                <li class="p-4 text-center text-sm text-gray-500 italic">Semua siswa yang hadir sudah absen pulang.</li>
+                                @endforelse
+                            </ul>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
