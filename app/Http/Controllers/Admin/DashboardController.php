@@ -67,10 +67,18 @@ class DashboardController extends Controller
             ->latest('attendance_time')
             ->paginate(15);
         
-        // PERBAIKAN: Mengambil data siswa yang sedang izin keluar
+        // Mengambil data siswa yang sedang izin keluar
         $studentsOnPermit = StudentPermit::with(['student.schoolClass'])
             ->whereDate('time_out', $selectedDate)
             ->whereNull('time_in')
+            ->get();
+
+        // BARU: Mengambil data siswa yang belum absen pulang
+        $studentsNotCheckedOut = Attendance::with(['student.schoolClass'])
+            ->whereDate('attendance_time', $selectedDate)
+            ->whereNotNull('attendance_time')
+            ->whereNull('checkout_time')
+            ->whereNotIn('status', ['izin', 'sakit', 'alpa', 'izin_keluar'])
             ->get();
         
         return view('admin.dashboard', [
@@ -84,7 +92,8 @@ class DashboardController extends Controller
             'totalIzin' => $totalIzin,
             'totalSakit' => $totalSakit,
             'classAttendanceStats' => $classAttendanceStats,
-            'studentsOnPermit' => $studentsOnPermit, // Kirim data ke view
+            'studentsOnPermit' => $studentsOnPermit,
+            'studentsNotCheckedOut' => $studentsNotCheckedOut, // Kirim data baru ke view
         ]);
     }
 }

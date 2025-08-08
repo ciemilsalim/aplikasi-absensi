@@ -8,16 +8,34 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 md:py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            {{-- Welcome Section --}}
-            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h3 class="text-xl font-semibold">Selamat Datang, {{ Auth::user()->name }}!</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mt-1">
-                        Ini adalah pusat kendali aplikasi Anda. Pantau statistik harian dan kelola semua data dari sini.
-                    </p>
+            <!-- Bagian Welcome dan Akses Cepat -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Welcome Section -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                        <h3 class="text-2xl font-bold">Selamat Datang, {{ Auth::user()->name }}!</h3>
+                        <p class="text-gray-500 dark:text-gray-400 mt-1">
+                            Ini adalah pusat kendali aplikasi Anda. Pantau statistik harian dan kelola semua data dari sini.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Panel Akses Cepat -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Akses Cepat</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <a href="{{ route('scanner') }}" target="_blank" class="flex flex-col items-center justify-center p-4 bg-sky-50 dark:bg-sky-900/50 hover:bg-sky-100 dark:hover:bg-sky-900 rounded-lg transition-colors duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-600 dark:text-sky-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            <span class="text-sm font-medium text-center text-sky-800 dark:text-sky-300">Scan Absensi</span>
+                        </a>
+                        <a href="{{ route('permit.scanner') }}" target="_blank" class="flex flex-col items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded-lg transition-colors duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600 dark:text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
+                            <span class="text-sm font-medium text-center text-indigo-800 dark:text-indigo-300">Scan Izin</span>
+                        </a>
+                    </div>
                 </div>
             </div>
             
@@ -26,7 +44,7 @@
                 <!-- Kartu Total Kehadiran -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center">
                     <div class="flex-shrink-0 bg-teal-100 dark:bg-teal-500/20 rounded-md p-4">
-                        <svg class="h-8 w-8 text-teal-500 dark:text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m-7.5-2.928A3 3 0 0 1 7.5 12.5m3 3a3 3 0 0 1-3-3m-3.75 2.928A9.094 9.094 0 0 1 3.75 18.72m0-5.728a3 3 0 0 1 3-3m0 0a3 3 0 0 1 3 3m0 0a3 3 0 0 1-3 3m0 0a3 3 0 0 1-3-3m9.75 0a3 3 0 0 1-3 3m3-3a3 3 0 0 0-3-3m-3.75 2.928A9.094 9.094 0 0 0 3.75 18.72m-3.75-5.728a3 3 0 0 0 3-3m0 0a3 3 0 0 0-3-3m0 0a3 3 0 0 0-3 3m0 0a3 3 0 0 0 3 3m7.5-3a3 3 0 0 0-3-3m3 3a3 3 0 0 1-3 3M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                        <svg class="h-8 w-8 text-teal-500 dark:text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m-7.5-2.928A3 3 0 0 1 7.5 12.5m3 3a3 3 0 0 1-3-3m-3.75 2.928A9.094 9.094 0 0 1 3.75 18.72m0-5.728a3 3 0 0 1 3-3m0 0a3 3 0 0 1 3 3m0 0a3 3 0 0 1-3-3m0 0a3 3 0 0 1-3-3m9.75 0a3 3 0 0 1-3 3m3-3a3 3 0 0 0-3-3m-3.75 2.928A9.094 9.094 0 0 0 3.75 18.72m-3.75-5.728a3 3 0 0 0 3-3m0 0a3 3 0 0 0-3-3m0 0a3 3 0 0 0-3 3m0 0a3 3 0 0 0 3 3m7.5-3a3 3 0 0 0-3-3m3 3a3 3 0 0 1-3 3M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Kehadiran</p>
@@ -100,32 +118,69 @@
                 </div>
             </div>
 
-            <!-- Panel Siswa Izin Keluar -->
-            @if($studentsOnPermit->isNotEmpty())
-            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h3 class="text-lg font-medium">Siswa Sedang Izin Keluar</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Daftar siswa yang keluar pada hari ini dan belum kembali.</p>
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($studentsOnPermit as $permit)
-                        <div class="border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-                            <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $permit->student->name }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ $permit->student->schoolClass->name ?? 'Tanpa Kelas' }}
-                            </p>
-                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 italic">
-                                "{{ $permit->reason }}"
-                            </p>
-                            <p class="mt-2 text-right text-xs text-gray-500 dark:text-gray-400">
-                                Keluar: <span class="font-medium">{{ $permit->time_out->format('H:i') }}</span>
-                            </p>
-                        </div>
-                        @endforeach
+            <!-- Panel Peringatan (Izin Keluar & Belum Pulang) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Panel Siswa Izin Keluar -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Sedang Izin Keluar</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Daftar siswa yang keluar hari ini dan belum kembali.</p>
+                    </div>
+                    <div class="border-t border-gray-200 dark:border-slate-700 @if($studentsOnPermit->isNotEmpty()) max-h-72 overflow-y-auto @endif">
+                        <ul class="divide-y divide-gray-200 dark:divide-slate-700">
+                            @forelse($studentsOnPermit as $permit)
+                            <li class="p-4 flex items-start gap-4">
+                                <div class="flex-shrink-0 pt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-yellow-500"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $permit->student->name }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $permit->student->schoolClass->name ?? 'Tanpa Kelas' }}</p>
+                                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 italic">"{{ $permit->reason }}"</p>
+                                    <p class="mt-2 text-right text-xs text-gray-500 dark:text-gray-400">Keluar: <span class="font-medium">{{ $permit->time_out->format('H:i') }}</span></p>
+                                </div>
+                            </li>
+                            @empty
+                            <li class="p-4 text-center text-sm text-gray-500 italic">Tidak ada siswa yang sedang izin keluar.</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- BARU: Panel Siswa Belum Absen Pulang -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Belum Absen Pulang</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Daftar siswa yang sudah masuk tapi belum absen pulang.</p>
+                    </div>
+                    <div class="border-t border-gray-200 dark:border-slate-700 @if($studentsNotCheckedOut->isNotEmpty()) max-h-72 overflow-y-auto @endif">
+                        <ul class="divide-y divide-gray-200 dark:divide-slate-700">
+                            @forelse($studentsNotCheckedOut as $attendance)
+                            <li class="p-4 flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-4">
+                                    <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600">
+                                        {{-- Ganti dengan foto siswa jika ada --}}
+                                        <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                    </span>
+                                    <div>
+                                        <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $attendance->student->name }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $attendance->student->schoolClass->name ?? 'Tanpa Kelas' }}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Masuk:</span>
+                                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $attendance->attendance_time->format('H:i') }}</span>
+                                </div>
+                            </li>
+                            @empty
+                            <li class="p-4 text-center text-sm text-gray-500 italic">Semua siswa yang hadir sudah absen pulang.</li>
+                            @endforelse
+                        </ul>
                     </div>
                 </div>
             </div>
-            @endif
 
+            <!-- Tabel Rekap Kehadiran Harian -->
              <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
