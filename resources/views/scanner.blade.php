@@ -30,7 +30,7 @@
                         Pindai dengan Kamera
                     </button>
                     <button id="use-manual-button" class="w-full inline-flex flex-col items-center justify-center p-6 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 011.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 01-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 011.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 01-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
                         Input Manual / Eksternal
                     </button>
                 </div>
@@ -43,15 +43,14 @@
                 </div>
             </div>
 
-            {{-- PERBAIKAN: Tampilan form input manual diperbarui --}}
             <div id="manual-scanner" class="hidden">
                 <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">Input ID Manual</h2>
                 <p class="text-slate-600 dark:text-slate-400 mb-6">Arahkan pemindai eksternal ke kolom di bawah atau ketik ID siswa.</p>
-                <form id="manual-form">
+                <form id="manual-form" onsubmit="return false;">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-slate-400">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 011.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 01-.937-.938v-3.375c0-.517.42-.938.938-.938z" />
                             </svg>
                         </div>
@@ -76,8 +75,9 @@
         </div>
         <h2 id="modal-title" class="text-2xl font-bold text-slate-800 dark:text-white mb-2"></h2>
         <div class="mt-4 mb-4">
-             <span class="inline-block h-24 w-24 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700">
-                <svg class="h-full w-full text-slate-300 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+             <span id="modal-student-image-container" class="inline-block h-24 w-24 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700">
+                <img id="modal-student-image" src="" alt="Foto Siswa" class="h-full w-full object-cover hidden">
+                <svg id="modal-student-placeholder" class="h-full w-full text-slate-300 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               </span>
         </div>
         <p id="modal-student-name" class="text-xl font-semibold text-sky-700 dark:text-sky-400"></p>
@@ -87,11 +87,15 @@
 @endsection
 
 @push('scripts')
+{{-- Library untuk memindai QR Code dari kamera --}}
+<script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // === VARIABEL GLOBAL & ELEMENT DOM ===
         let userCoordinates = null;
         let lastScanTime = 0;
-        const scanCooldown = 3000;
+        const scanCooldown = 3000; // Jeda 3 detik antar scan
         
         const scannerChoiceDiv = document.getElementById('scanner-choice');
         const cameraScannerDiv = document.getElementById('camera-scanner');
@@ -99,7 +103,6 @@
         const useCameraButton = document.getElementById('use-camera-button');
         const useManualButton = document.getElementById('use-manual-button');
         const backButton = document.getElementById('back-to-choice');
-        const manualForm = document.getElementById('manual-form');
         const manualInput = document.getElementById('manual_input_id');
 
         const readerDiv = document.getElementById('reader');
@@ -107,10 +110,12 @@
         const switchContainer = document.getElementById('camera-switch-container');
         const switchButton = document.getElementById('camera-switch-button');
         
+        // Objek untuk library scanner
         let html5QrCode = null;
         let cameras = [];
         let currentCameraIndex = 0;
 
+        // Objek untuk mengelola modal pop-up
         const modal = {
             element: document.getElementById('attendance-modal'),
             content: document.getElementById('modal-content'),
@@ -119,67 +124,61 @@
             title: document.getElementById('modal-title'),
             studentName: document.getElementById('modal-student-name'),
             studentNis: document.getElementById('modal-student-nis'),
+            studentImage: document.getElementById('modal-student-image'),
+            studentPlaceholder: document.getElementById('modal-student-placeholder'),
         };
 
+        // === FUNGSI UTAMA ===
+
+        // Fungsi untuk mengupdate jam digital
         function updateClock() {
             const now = new Date();
             document.getElementById('current-time').textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit'});
             document.getElementById('current-date').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }
-        updateClock(); 
-        setInterval(updateClock, 1000);
 
-        useCameraButton.addEventListener('click', () => {
+        // Fungsi untuk memulai alur pemindaian (kamera atau manual)
+        function showScannerView(type) {
             scannerChoiceDiv.classList.add('hidden');
-            cameraScannerDiv.classList.remove('hidden');
             backButton.classList.remove('hidden');
-            startScanFlow();
-        });
-
-        useManualButton.addEventListener('click', () => {
-            scannerChoiceDiv.classList.add('hidden');
-            manualScannerDiv.classList.remove('hidden');
-            backButton.classList.remove('hidden');
-            manualInput.focus();
-        });
-
-        backButton.addEventListener('click', () => {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop();
+            if (type === 'camera') {
+                cameraScannerDiv.classList.remove('hidden');
+                startScanFlow();
+            } else {
+                manualScannerDiv.classList.remove('hidden');
+                manualInput.focus();
             }
+        }
+
+        // Fungsi untuk kembali ke menu pilihan
+        function resetToChoiceView() {
+            // PERBAIKAN: Pastikan kamera benar-benar berhenti saat kembali ke menu
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    console.log("QR Code scanning stopped.");
+                }).catch(err => {
+                    console.error("Failed to stop QR Code scanning.", err);
+                });
+            }
+            html5QrCode = null; // Reset objek scanner
             cameraScannerDiv.classList.add('hidden');
             manualScannerDiv.classList.add('hidden');
             scannerChoiceDiv.classList.remove('hidden');
             backButton.classList.add('hidden');
             readerError.classList.add('hidden');
-        });
+        }
 
-        let inputTimeout = null;
-        manualInput.addEventListener('input', (e) => {
-            clearTimeout(inputTimeout);
-            const studentId = manualInput.value.trim();
-            if (studentId) {
-                inputTimeout = setTimeout(() => {
-                    if (Date.now() - lastScanTime < scanCooldown) return;
-                    lastScanTime = Date.now();
-                    
-                    readerError.classList.add('hidden');
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            userCoordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
-                            processAttendance(studentId);
-                            manualInput.value = '';
-                        },
-                        (error) => {
-                            showModal({ status: 'location_error', message: 'Gagal mendapatkan lokasi GPS.', student_name: 'Izinkan akses lokasi dan coba lagi.' });
-                        }
-                    );
-                }, 100);
-            }
-        });
-
+        // Fungsi utama untuk memulai kamera
         function startScanFlow() {
             readerError.classList.add('hidden');
+            // Cek jika scanner sudah diinisialisasi sebelumnya
+            if (html5QrCode) {
+                // Jika sudah ada, cukup lanjutkan (resume)
+                html5QrCode.resume();
+                return;
+            }
+            
+            // Jika belum, mulai dari awal (hanya terjadi sekali)
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     userCoordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
@@ -192,11 +191,13 @@
             );
         }
 
+        // Inisialisasi library scanner dan dapatkan kamera
         function initializeScanner() {
             html5QrCode = new Html5Qrcode("reader");
             Html5Qrcode.getCameras().then(devices => {
                 if (devices && devices.length) {
                     cameras = devices;
+                    // Prioritaskan kamera belakang
                     let backCameraIndex = cameras.findIndex(camera => camera.label.toLowerCase().includes('back'));
                     currentCameraIndex = backCameraIndex !== -1 ? backCameraIndex : 0;
                     startScannerWithCamera(cameras[currentCameraIndex].id);
@@ -210,38 +211,37 @@
             });
         }
         
+        // Memulai pemindaian dengan kamera yang dipilih
         function startScannerWithCamera(cameraId) {
             html5QrCode.start(
                 cameraId, 
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 onScanSuccess,
-                (errorMessage) => {}
+                (errorMessage) => {} // Error callback, bisa diabaikan
             ).catch((err) => {
                 readerError.textContent = "Gagal memulai kamera yang dipilih.";
                 readerError.classList.remove('hidden');
             });
         }
 
-        switchButton.addEventListener('click', () => {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-                    startScannerWithCamera(cameras[currentCameraIndex].id);
-                });
-            }
-        });
-
-        async function onScanSuccess(decodedText, decodedResult) {
+        // Fungsi yang dijalankan saat QR code berhasil dipindai
+        function onScanSuccess(decodedText, decodedResult) {
             if (Date.now() - lastScanTime < scanCooldown) return;
             lastScanTime = Date.now();
             
+            // --- PERUBAHAN UTAMA ADA DI SINI ---
+            // Alih-alih .stop(), kita gunakan .pause()
+            // Ini akan menjeda feed video tapi tidak melepaskan kamera.
             if (html5QrCode && html5QrCode.isScanning) {
-                await html5QrCode.stop();
+                html5QrCode.pause();
             }
-            await processAttendance(decodedText);
+            
+            processAttendance(decodedText);
         }
 
-        async function processAttendance(studentId) {
+        // Mengirim data absensi ke server
+        function processAttendance(studentId) {
+            // Tampilkan loading spinner atau sejenisnya jika perlu
             fetch("{{ route('attendance.store') }}", {
                 method: 'POST',
                 headers: { 
@@ -256,19 +256,24 @@
                 })
             }).then(response => response.json().then(data => ({ status: response.status, body: data })))
             .then(({ status, body }) => {
+                 // Normalisasi status error untuk kemudahan
                  if(status === 403) body.status = 'location_error';
                  if(status === 409) body.status = body.status || 'completed';
+                 if(status === 404) body.status = 'not_found';
                  showModal(body);
             }).catch(error => {
                 showModal({ status: 'error', message: 'Tidak dapat terhubung ke server.' });
             });
         }
         
+        // Menampilkan modal pop-up dengan hasil absensi
         function showModal(data) {
+            // Reset tampilan modal
             modal.iconContainer.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5';
             modal.iconSvg.className = 'h-12 w-12';
             modal.iconSvg.innerHTML = '';
-
+            
+            // Atur ikon, warna, dan judul berdasarkan status
             switch (data.status) {
                 case 'clock_in':
                     modal.iconContainer.classList.add('bg-green-100', 'dark:bg-green-900');
@@ -292,6 +297,8 @@
                     modal.title.textContent = 'Peringatan';
                     playSound('warning');
                     break;
+                case 'not_found':
+                    data.message = 'ID Siswa tidak ditemukan di database.';
                 case 'on_leave':
                 case 'location_error':
                 default:
@@ -303,46 +310,110 @@
                     break;
             }
             
+            // Isi data siswa
             modal.studentName.textContent = data.student_name || 'Error';
             modal.studentNis.textContent = data.message || (data.student_nis ? 'NIS: ' + data.student_nis : '');
+
+            // Tampilkan foto siswa jika ada
+            if (data.student_photo_url) {
+                modal.studentImage.src = data.student_photo_url;
+                modal.studentImage.classList.remove('hidden');
+                modal.studentPlaceholder.classList.add('hidden');
+            } else {
+                modal.studentImage.classList.add('hidden');
+                modal.studentPlaceholder.classList.remove('hidden');
+            }
             
+            // Tampilkan modal dengan animasi
             modal.element.classList.remove('hidden');
             setTimeout(() => {
                 modal.element.classList.remove('opacity-0');
                 modal.content.classList.remove('scale-95');
             }, 10);
 
+            // Sembunyikan modal setelah beberapa detik
             setTimeout(hideModal, scanCooldown);
         }
 
+        // Menyembunyikan modal dan melanjutkan pemindaian
         function hideModal() {
             modal.element.classList.add('opacity-0');
             modal.content.classList.add('scale-95');
             setTimeout(() => {
                 modal.element.classList.add('hidden');
+
+                // --- PERUBAHAN UTAMA ADA DI SINI ---
+                // Cek apakah kita sedang dalam mode kamera atau manual
                 if (cameraScannerDiv.classList.contains('hidden')) {
+                    // Jika mode manual, fokus kembali ke input
                     manualInput.focus();
                 } else {
-                    startScanFlow();
+                    // Jika mode kamera, LANJUTKAN (RESUME) pemindaian yang dijeda
+                    // Ini jauh lebih cepat daripada memulai ulang.
+                    if (html5QrCode) {
+                        html5QrCode.resume();
+                    }
                 }
             }, 300);
         }
 
+        // Memainkan suara notifikasi
         function playSound(type) {
+            // Pastikan Anda memiliki file suara di folder public/sounds/
             let audioFile;
             if (type === 'success') { audioFile = "{{ asset('sounds/success.mp3') }}"; } 
             else if (type === 'warning') { audioFile = "{{ asset('sounds/warning.mp3') }}"; } 
             else { audioFile = "{{ asset('sounds/error.mp3') }}"; }
             try { new Audio(audioFile).play(); } catch (e) { console.error("Gagal memainkan suara:", e); }
         }
-        
-        function resetUI() {
-            cameraScannerDiv.classList.add('hidden');
-            manualScannerDiv.classList.add('hidden');
-            scannerChoiceDiv.classList.remove('hidden');
-            backButton.classList.add('hidden');
-            readerError.classList.add('hidden');
-        }
+
+        // === EVENT LISTENERS ===
+
+        // Inisialisasi jam saat halaman dimuat
+        updateClock(); 
+        setInterval(updateClock, 1000);
+
+        // Tombol pilih mode kamera
+        useCameraButton.addEventListener('click', () => showScannerView('camera'));
+        // Tombol pilih mode manual
+        useManualButton.addEventListener('click', () => showScannerView('manual'));
+        // Tombol kembali ke menu
+        backButton.addEventListener('click', resetToChoiceView);
+        // Tombol ganti kamera
+        switchButton.addEventListener('click', () => {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+                    startScannerWithCamera(cameras[currentCameraIndex].id);
+                });
+            }
+        });
+
+        // Event listener untuk input manual (dengan debounce)
+        let inputTimeout = null;
+        manualInput.addEventListener('input', () => {
+            clearTimeout(inputTimeout);
+            const studentId = manualInput.value.trim();
+            if (studentId) {
+                inputTimeout = setTimeout(() => {
+                    if (Date.now() - lastScanTime < scanCooldown) return;
+                    lastScanTime = Date.now();
+                    
+                    readerError.classList.add('hidden');
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            userCoordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+                            processAttendance(studentId);
+                            manualInput.value = ''; // Kosongkan input setelah proses
+                        },
+                        (error) => {
+                            showModal({ status: 'location_error', message: 'Gagal mendapatkan lokasi GPS.', student_name: 'Izinkan akses lokasi dan coba lagi.' });
+                        }
+                    );
+                }, 100); // Penundaan singkat untuk menunggu input selesai
+            }
+        });
+
     });
 </script>
 @endpush
