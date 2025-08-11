@@ -155,21 +155,24 @@ class ReportController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        // Mengambil data absensi yang relevan
         $attendancesQuery = Attendance::with(['student.schoolClass'])
             ->whereIn('status', ['tepat_waktu', 'terlambat'])
             ->whereNull('checkout_time')
             ->whereBetween('attendance_time', [$startDate, $endDate])
+            ->join('students', 'attendances.student_id', '=', 'students.id')
+            ->join('school_classes', 'students.school_class_id', '=', 'school_classes.id')
+            ->orderBy('school_classes.name', 'asc')
+            ->orderBy('students.name', 'asc')
+            ->select('attendances.*') // Pastikan hanya kolom dari tabel attendances yang diambil
             ->get();
 
-        // PERUBAHAN: Mengurutkan hasil berdasarkan nama kelas, lalu nama siswa
-        $attendances = $attendancesQuery->sortBy([
-            fn ($attendance) => $attendance->student->schoolClass->name ?? 'zzz', // Urutkan berdasarkan nama kelas
-            fn ($attendance) => $attendance->student->name ?? 'zzz',             // Lalu urutkan berdasarkan nama siswa
-        ]);
+        // Mengelompokkan berdasarkan nama kelas setelah diurutkan dari database
+        $groupedAttendances = $attendancesQuery->groupBy(function($attendance) {
+            return $attendance->student->schoolClass->name ?? 'Belum Ada Kelas';
+        });
 
         $pdfData = $this->getCommonPdfData();
-        $pdfData['attendances'] = $attendances;
+        $pdfData['groupedAttendances'] = $groupedAttendances; // Mengirim data yang sudah dikelompokkan
         $pdfData['startDate'] = $startDate->translatedFormat('d F Y');
         $pdfData['endDate'] = $endDate->translatedFormat('d F Y');
         

@@ -63,7 +63,6 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            /* PERUBAHAN: Menghapus table-layout: fixed agar lebar kolom otomatis */
         }
         th, td {
             padding: 10px;
@@ -80,12 +79,17 @@
             border-bottom: 2px solid #adb5bd;
             border-top: 1px solid #dee2e6;
         }
-        /* PERUBAHAN: Menambahkan class untuk kontrol kolom */
+        .class-header td {
+            background-color: #d0e3ff;
+            color: #004085;
+            font-weight: bold;
+            font-size: 12px;
+        }
         .text-center {
             text-align: center;
         }
         .no-wrap {
-            white-space: nowrap; /* Mencegah teks pindah baris */
+            white-space: nowrap;
         }
         tbody tr:nth-child(even) {
             background-color: #f8f9fa;
@@ -121,7 +125,7 @@
 
     <footer class="footer">
         <div class="app-info">
-            {{ $appName }} | Dicetak oleh: {{ $userRole }}
+            {{ $appName }} - SIASEK | Dicetak oleh: {{ $userRole }}
         </div>
         <div class="page-info">
             Tanggal Cetak: {{ $printDate }}
@@ -149,7 +153,6 @@
         <table>
             <thead>
                 <tr>
-                    <!-- PERUBAHAN: Menghapus style inline dan menggunakan class -->
                     <th class="text-center no-wrap">No</th>
                     <th>Nama Siswa</th>
                     <th class="no-wrap">NIS</th>
@@ -159,15 +162,20 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($attendances as $attendance)
-                    <tr>
-                        <td class="text-center no-wrap">{{ $loop->iteration }}</td>
-                        <td>{{ $attendance->student->name ?? 'N/A' }}</td>
-                        <td class="no-wrap">{{ $attendance->student->nis ?? '-' }}</td>
-                        <td>{{ $attendance->student->schoolClass->name ?? 'Belum ada kelas' }}</td>
-                        <td class="no-wrap">{{ \Carbon\Carbon::parse($attendance->attendance_time)->translatedFormat('d M Y') }}</td>
-                        <td class="text-center no-wrap">{{ \Carbon\Carbon::parse($attendance->attendance_time)->format('H:i:s') }}</td>
+                @forelse ($groupedAttendances as $className => $attendances)
+                    <tr class="class-header">
+                        <td colspan="6">{{ $className }}</td>
                     </tr>
+                    @foreach ($attendances as $attendance)
+                        <tr>
+                            <td class="text-center no-wrap">{{ $loop->parent->iteration }}.{{ $loop->iteration }}</td>
+                            <td>{{ $attendance->student->name ?? 'N/A' }}</td>
+                            <td class="no-wrap">{{ $attendance->student->nis ?? '-' }}</td>
+                            <td>{{ $attendance->student->schoolClass->name ?? 'Belum ada kelas' }}</td>
+                            <td class="no-wrap">{{ \Carbon\Carbon::parse($attendance->attendance_time)->translatedFormat('d M Y') }}</td>
+                            <td class="text-center no-wrap">{{ \Carbon\Carbon::parse($attendance->attendance_time)->format('H:i:s') }}</td>
+                        </tr>
+                    @endforeach
                 @empty
                     <tr>
                         <td colspan="6" class="no-data">Tidak ada data siswa yang tidak absen pulang pada periode ini.</td>
