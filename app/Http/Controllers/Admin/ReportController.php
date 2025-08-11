@@ -155,14 +155,18 @@ class ReportController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        // PERUBAHAN LOGIKA: Hanya mengambil siswa yang statusnya 'hadir'
-        // (tepat_waktu atau terlambat) tetapi tidak memiliki jam pulang.
-        $attendances = Attendance::with(['student.schoolClass'])
+        // Mengambil data absensi yang relevan
+        $attendancesQuery = Attendance::with(['student.schoolClass'])
             ->whereIn('status', ['tepat_waktu', 'terlambat'])
             ->whereNull('checkout_time')
             ->whereBetween('attendance_time', [$startDate, $endDate])
-            ->orderBy('attendance_time', 'desc')
             ->get();
+
+        // PERUBAHAN: Mengurutkan hasil berdasarkan nama kelas, lalu nama siswa
+        $attendances = $attendancesQuery->sortBy([
+            fn ($attendance) => $attendance->student->schoolClass->name ?? 'zzz', // Urutkan berdasarkan nama kelas
+            fn ($attendance) => $attendance->student->name ?? 'zzz',             // Lalu urutkan berdasarkan nama siswa
+        ]);
 
         $pdfData = $this->getCommonPdfData();
         $pdfData['attendances'] = $attendances;
