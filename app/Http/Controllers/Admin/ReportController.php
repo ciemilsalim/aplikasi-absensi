@@ -155,8 +155,10 @@ class ReportController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
+        // PERUBAHAN LOGIKA: Hanya mengambil siswa yang statusnya 'hadir'
+        // (tepat_waktu atau terlambat) tetapi tidak memiliki jam pulang.
         $attendances = Attendance::with(['student.schoolClass'])
-            ->whereNotNull('attendance_time')
+            ->whereIn('status', ['tepat_waktu', 'terlambat'])
             ->whereNull('checkout_time')
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->orderBy('attendance_time', 'desc')
@@ -184,12 +186,10 @@ class ReportController extends Controller
                 $logoData = Storage::disk('public')->get($logoPath);
                 $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
             } catch (\Exception $e) {
-                // Biarkan logo null jika ada error
                 $logoBase64 = null;
             }
         }
         
-        // Ambil role pengguna yang sedang login dan ubah huruf pertama menjadi kapital
         $userRole = Auth::check() ? ucfirst(Auth::user()->role) : 'Tamu';
 
         return [
