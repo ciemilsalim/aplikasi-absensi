@@ -11,15 +11,18 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+                {{-- Initialize Alpine.js data context --}}
                 <div x-data="{ reportType: 'class_monthly' }">
                     <form action="{{ route('admin.reports.generate') }}" method="POST" target="_blank">
                         @csrf
                         <div class="p-6 space-y-6">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Pilih Jenis Laporan</h3>
+                            {{-- This hidden input will hold the actual value for the form submission --}}
                             <input type="hidden" name="report_type" x-model="reportType">
                             
                             <!-- Pilihan Jenis Laporan -->
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {{-- Updated to a 2x2 grid to accommodate the new option --}}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <label @click="reportType = 'class_monthly'" class="flex items-center p-4 border rounded-lg cursor-pointer transition" :class="reportType === 'class_monthly' ? 'bg-sky-50 border-sky-500 dark:bg-sky-900/50' : 'border-gray-300 dark:border-slate-700'">
                                     <input type="radio" name="report_type_option" value="class_monthly" x-model="reportType" class="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500">
                                     <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">Rekap Kelas Bulanan</span>
@@ -31,6 +34,11 @@
                                 <label @click="reportType = 'school_lateness'" class="flex items-center p-4 border rounded-lg cursor-pointer transition" :class="reportType === 'school_lateness' ? 'bg-sky-50 border-sky-500 dark:bg-sky-900/50' : 'border-gray-300 dark:border-slate-700'">
                                     <input type="radio" name="report_type_option" value="school_lateness" x-model="reportType" class="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500">
                                     <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">Rekap Terlambat</span>
+                                </label>
+                                {{-- NEW REPORT OPTION ADDED HERE --}}
+                                <label @click="reportType = 'school_no_checkout'" class="flex items-center p-4 border rounded-lg cursor-pointer transition" :class="reportType === 'school_no_checkout' ? 'bg-sky-50 border-sky-500 dark:bg-sky-900/50' : 'border-gray-300 dark:border-slate-700'">
+                                    <input type="radio" name="report_type_option" value="school_no_checkout" x-model="reportType" class="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500">
+                                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">Tidak Absen Pulang</span>
                                 </label>
                             </div>
                             
@@ -52,6 +60,7 @@
                                         <x-text-input id="month" type="month" name="month" class="mt-1 block w-full" :value="date('Y-m')" x-bind:required="reportType === 'class_monthly'" x-bind:disabled="reportType !== 'class_monthly'" />
                                     </div>
                                 </div>
+                                
                                 {{-- Filter untuk Detail per Siswa --}}
                                 <div x-show="reportType === 'student_detailed'" x-transition class="space-y-4" style="display: none;">
                                     <div>
@@ -63,15 +72,19 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div><x-input-label for="start_date_student" value="Dari Tanggal" /><x-text-input id="start_date_student" type="date" name="start_date" class="mt-1 block w-full" :value="date('Y-m-d')" x-bind:required="reportType === 'student_detailed'" x-bind:disabled="reportType !== 'student_detailed'" /></div>
-                                        <div><x-input-label for="end_date_student" value="Sampai Tanggal" /><x-text-input id="end_date_student" type="date" name="end_date" class="mt-1 block w-full" :value="date('Y-m-d')" x-bind:required="reportType === 'student_detailed'" x-bind:disabled="reportType !== 'student_detailed'" /></div>
-                                    </div>
                                 </div>
-                                {{-- Filter untuk Rekap Keterlambatan --}}
-                                <div x-show="reportType === 'school_lateness'" x-transition class="grid grid-cols-2 gap-4" style="display: none;">
-                                    <div><x-input-label for="start_date_late" value="Dari Tanggal" /><x-text-input id="start_date_late" type="date" name="start_date" class="mt-1 block w-full" :value="date('Y-m-d')" x-bind:required="reportType === 'school_lateness'" x-bind:disabled="reportType !== 'school_lateness'" /></div>
-                                    <div><x-input-label for="end_date_late" value="Sampai Tanggal" /><x-text-input id="end_date_late" type="date" name="end_date" class="mt-1 block w-full" :value="date('Y-m-d')" x-bind:required="reportType === 'school_lateness'" x-bind:disabled="reportType !== 'school_lateness'" /></div>
+
+                                {{-- REFACTORED: Shared Date Range Picker --}}
+                                {{-- This block will now appear for multiple report types --}}
+                                <div x-show="['student_detailed', 'school_lateness', 'school_no_checkout'].includes(reportType)" x-transition class="grid grid-cols-2 gap-4" style="display: none;">
+                                    <div>
+                                        <x-input-label for="start_date" value="Dari Tanggal" />
+                                        <x-text-input id="start_date" type="date" name="start_date" class="mt-1 block w-full" :value="date('Y-m-d')" x-bind:required="['student_detailed', 'school_lateness', 'school_no_checkout'].includes(reportType)" x-bind:disabled="!['student_detailed', 'school_lateness', 'school_no_checkout'].includes(reportType)" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="end_date" value="Sampai Tanggal" />
+                                        <x-text-input id="end_date" type="date" name="end_date" class="mt-1 block w-full" :value="date('Y-m-d')" x-bind:required="['student_detailed', 'school_lateness', 'school_no_checkout'].includes(reportType)" x-bind:disabled="!['student_detailed', 'school_lateness', 'school_no_checkout'].includes(reportType)" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

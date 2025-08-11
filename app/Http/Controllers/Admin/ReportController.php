@@ -10,8 +10,8 @@ use App\Models\Attendance;
 use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Carbon\CarbonPeriod;
 
 class ReportController extends Controller
 {
@@ -32,12 +32,12 @@ class ReportController extends Controller
     public function generate(Request $request)
     {
         $request->validate([
-            'report_type' => 'required|in:class_monthly,student_detailed,school_lateness',
+            'report_type' => 'required|in:class_monthly,student_detailed,school_lateness,school_no_checkout',
             'month' => 'required_if:report_type,class_monthly|date_format:Y-m',
             'school_class_id' => 'required_if:report_type,class_monthly|exists:school_classes,id',
             'student_id' => 'required_if:report_type,student_detailed|exists:students,id',
-            'start_date' => 'required_if:report_type,student_detailed,school_lateness|date',
-            'end_date' => 'required_if:report_type,student_detailed,school_lateness|date|after_or_equal:start_date',
+            'start_date' => 'required_if:report_type,student_detailed,school_lateness,school_no_checkout|date',
+            'end_date' => 'required_if:report_type,student_detailed,school_lateness,school_no_checkout|date|after_or_equal:start_date',
         ]);
 
         $reportType = $request->report_type;
@@ -48,6 +48,8 @@ class ReportController extends Controller
             return $this->generateStudentDetailedReport($request);
         } elseif ($reportType === 'school_lateness') {
             return $this->generateSchoolLatenessReport($request);
+        } elseif ($reportType === 'school_no_checkout') {
+            return $this->generateNoCheckoutReport($request);
         }
 
         return redirect()->back()->with('error', 'Jenis laporan tidak valid.');
@@ -72,9 +74,7 @@ class ReportController extends Controller
 
         $reportData = $students->map(function ($student) {
             $attendancesInMonth = $student->attendances;
-            $tepatWaktu = $attendancesInMonth->where('status', 'tepat_waktu')->count();
-            $terlambat = $attendancesInMonth->where('status', 'terlambat')->count();
-            $hadir = $tepatWaktu + $terlambat;
+            $hadir = $attendancesInMonth->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
             $sakit = $attendancesInMonth->where('status', 'sakit')->count();
             $izin = $attendancesInMonth->where('status', 'izin')->count();
             $alpa = $attendancesInMonth->where('status', 'alpa')->count();
@@ -146,9 +146,33 @@ class ReportController extends Controller
         $pdf = Pdf::loadView('admin.reports.lateness_pdf', $pdfData);
         return $pdf->stream('laporan-keterlambatan.pdf');
     }
+
+    /**
+     * Membuat laporan siswa yang tidak absen pulang.
+     */
+    private function generateNoCheckoutReport(Request $request)
+    {
+        $startDate = Carbon::parse($request->start_date)->startOfDay();
+        $endDate = Carbon::parse($request->end_date)->endOfDay();
+
+        $attendances = Attendance::with(['student.schoolClass'])
+            ->whereNotNull('attendance_time')
+            ->whereNull('checkout_time')
+            ->whereBetween('attendance_time', [$startDate, $endDate])
+            ->orderBy('attendance_time', 'desc')
+            ->get();
+
+        $pdfData = $this->getCommonPdfData();
+        $pdfData['attendances'] = $attendances;
+        $pdfData['startDate'] = $startDate->translatedFormat('d F Y');
+        $pdfData['endDate'] = $endDate->translatedFormat('d F Y');
+        
+        $pdf = Pdf::loadView('admin.reports.no_checkout_pdf', $pdfData);
+        return $pdf->stream('laporan-tidak-absen-pulang.pdf');
+    }
     
     /**
-     * Mengambil data umum yang diperlukan untuk semua PDF (logo, nama sekolah).
+     * Mengambil data umum yang diperlukan untuk semua PDF.
      */
     private function getCommonPdfData()
     {
@@ -160,14 +184,21 @@ class ReportController extends Controller
                 $logoData = Storage::disk('public')->get($logoPath);
                 $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
             } catch (\Exception $e) {
+                // Biarkan logo null jika ada error
                 $logoBase64 = null;
             }
         }
         
+        // Ambil role pengguna yang sedang login dan ubah huruf pertama menjadi kapital
+        $userRole = Auth::check() ? ucfirst(Auth::user()->role) : 'Tamu';
+
         return [
             'schoolName' => $settings->get('school_name', config('app.name')),
             'schoolAddress' => $settings->get('school_address'),
             'logoBase64' => $logoBase64,
+            'appName' => config('app.name', 'SIASEK'),
+            'printDate' => now()->translatedFormat('d F Y, H:i:s'),
+            'userRole' => $userRole,
         ];
     }
 }
