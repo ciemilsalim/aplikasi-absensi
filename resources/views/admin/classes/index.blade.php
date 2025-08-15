@@ -110,6 +110,7 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                     <td class="px-6 py-4">{{ $class->students_count }}</td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-4">
+                                            <a href="{{ route('admin.classes.assign_teacher', $class) }}" class="font-medium text-green-600 dark:text-green-500 hover:underline">Atur Guru</a>
                                             <a href="{{ route('admin.classes.assign', $class) }}" class="font-medium text-green-600 dark:text-green-500 hover:underline">Atur Siswa</a>
                                             <a href="{{ route('admin.classes.edit', $class) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
                                             <button type="button" 
