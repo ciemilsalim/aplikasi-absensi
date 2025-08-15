@@ -121,6 +121,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
         Route::get('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class, 'index'])->name('classes.assign_teacher');
         Route::post('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class, 'store'])->name('classes.store_teacher_assignment');
+        
+        //jadwal mapel
+        Route::get('schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules.index');
+        Route::get('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class, 'show'])->name('schedules.show');
+        Route::post('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class, 'store'])->name('schedules.store');
+        Route::delete('schedules/{schedule}', [\App\Http\Controllers\Admin\ScheduleController::class, 'destroy'])->name('schedules.destroy');
 
         // Impor Data
         Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\Level; // <-- TAMBAHKAN INI
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -37,8 +38,6 @@ class SchoolClassController extends Controller
             });
         }
 
-        // PERBAIKAN: Menggunakan subquery untuk sortir berdasarkan nama guru.
-        // Metode ini tidak akan menghilangkan kolom 'students_count'.
         if ($sortBy === 'teacher_name') {
             $query->orderBy(
                 Teacher::select('name')
@@ -72,6 +71,7 @@ class SchoolClassController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:school_classes,name',
             'teacher_id' => 'nullable|exists:teachers,id|unique:school_classes,teacher_id',
+            'level_id' => 'required|exists:levels,id', // <-- TAMBAHKAN VALIDASI
         ], [
             'teacher_id.unique' => 'Guru ini sudah menjadi wali di kelas lain.'
         ]);
@@ -82,7 +82,8 @@ class SchoolClassController extends Controller
     public function edit(SchoolClass $class)
     {
         $teachers = Teacher::with('homeroomClass')->orderBy('name')->get();
-        return view('admin.classes.edit', compact('class', 'teachers'));
+        $levels = Level::orderBy('name')->get(); // <-- TAMBAHKAN INI
+        return view('admin.classes.edit', compact('class', 'teachers', 'levels')); // <-- UBAH INI
     }
 
     public function update(Request $request, SchoolClass $class)
@@ -90,6 +91,7 @@ class SchoolClassController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('school_classes')->ignore($class->id)],
             'teacher_id' => ['nullable', 'exists:teachers,id', Rule::unique('school_classes', 'teacher_id')->ignore($class->id)],
+            'level_id' => ['required', 'exists:levels,id'], // <-- TAMBAHKAN VALIDASI
         ], [
             'teacher_id.unique' => 'Guru ini sudah menjadi wali di kelas lain.'
         ]);
@@ -104,15 +106,11 @@ class SchoolClassController extends Controller
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil dihapus.');
     }
 
-    // PERBAIKAN: Mengganti nama variabel agar cocok dengan parameter rute '{school_class}'
     public function showAssignForm(SchoolClass $school_class)
     {
-        // Menggunakan relasi dari model yang sudah di-binding dengan benar
         $studentsInClass = $school_class->students()->orderBy('name')->get();
-        
         $studentsWithoutClass = Student::whereNull('school_class_id')->orderBy('name')->get();
 
-        // Mengirimkan variabel ke view dengan nama 'class' agar view tidak perlu diubah
         return view('admin.classes.assign', [
             'class' => $school_class,
             'studentsInClass' => $studentsInClass,

@@ -5,7 +5,6 @@
             ['title' => 'Data Kelas', 'url' => route('admin.classes.index')],
             ['title' => 'Edit Kelas', 'url' => '#']
         ]" class="mb-4" />
-        {{-- PERBAIKAN: Menggunakan variabel $class --}}
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Edit Kelas: ' . $class->name) }}
         </h2>
@@ -14,7 +13,6 @@
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-                {{-- PERBAIKAN: Menggunakan variabel $class --}}
                 <form action="{{ route('admin.classes.update', ['class' => $class->id]) }}" method="POST">
                     @csrf
                     @method('PUT')
@@ -22,16 +20,30 @@
                         <div class="space-y-6">
                             <div>
                                 <x-input-label for="name" value="Nama Kelas" />
-                                {{-- PERBAIKAN: Menggunakan variabel $class --}}
                                 <x-text-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $class->name)" required />
                                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
                             </div>
+
+                            <!-- TAMBAHKAN BAGIAN INI -->
+                            <div>
+                                <x-input-label for="level_id" value="Tingkat Kelas" />
+                                <select name="level_id" id="level_id" class="block w-full mt-1 border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm" required>
+                                    <option value="">-- Pilih Tingkat --</option>
+                                    @foreach($levels as $level)
+                                        <option value="{{ $level->id }}" {{ old('level_id', $class->level_id) == $level->id ? 'selected' : '' }}>
+                                            {{ $level->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('level_id')" class="mt-2" />
+                            </div>
+                            <!-- AKHIR BAGIAN TAMBAHAN -->
+                            
                             <div>
                                 <x-input-label for="teacher_id" value="Wali Kelas" />
                                 <select name="teacher_id" id="teacher_id" class="block w-full mt-1 border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">
                                     <option value="">-- Tidak ada wali kelas --</option>
                                     @foreach($teachers as $teacher)
-                                        {{-- PERBAIKAN: Menggunakan variabel $class --}}
                                         <option value="{{ $teacher->id }}" 
                                             {{ old('teacher_id', $class->teacher_id) == $teacher->id ? 'selected' : '' }} 
                                             {{ $teacher->homeroomClass && $teacher->homeroomClass->id != $class->id ? 'disabled' : '' }}>
