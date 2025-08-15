@@ -1,7 +1,5 @@
-<!-- File: resources/views/admin/teachers/create.blade.php -->
 <x-app-layout>
     <x-slot name="header">
-        {{-- Breadcrumb dipindahkan ke sini --}}
         <x-breadcrumb :breadcrumbs="[
             ['title' => 'Data', 'url' => '#'],
             ['title' => 'Data Guru', 'url' => route('admin.teachers.index')],
@@ -11,7 +9,6 @@
     </x-slot>
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            {{-- Breadcrumb dihapus dari sini --}}
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <form action="{{ route('admin.teachers.store') }}" method="POST">
                     @csrf
@@ -31,6 +28,22 @@
                             <x-text-input id="phone_number" class="block mt-1 w-full" type="text" name="phone_number" :value="old('phone_number')" />
                             <x-input-error class="mt-2" :messages="$errors->get('phone_number')" />
                         </div>
+
+                        <!-- TAMBAHKAN BAGIAN INI -->
+                        <div>
+                            <x-input-label for="subjects" :value="__('Mata Pelajaran yang Diampu')" />
+                            <select name="subjects[]" id="subjects" multiple class="block mt-1 w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm">
+                                @foreach ($subjects as $subject)
+                                    <option value="{{ $subject->id }}" {{ (collect(old('subjects'))->contains($subject->id)) ? 'selected' : '' }}>
+                                        {{ $subject->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Tahan tombol Ctrl (atau Cmd di Mac) untuk memilih lebih dari satu.</p>
+                            <x-input-error class="mt-2" :messages="$errors->get('subjects')" />
+                        </div>
+                        <!-- AKHIR BAGIAN TAMBAHAN -->
+
                         <div class="border-t border-gray-200 dark:border-slate-700 pt-6">
                             <p class="text-base font-medium text-gray-900 dark:text-gray-100">Informasi Akun Login</p>
                         </div>

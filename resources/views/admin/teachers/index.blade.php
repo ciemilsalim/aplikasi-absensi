@@ -78,6 +78,7 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                     <th scope="col" class="px-6 py-3">{!! sortable_link('Nama Guru', 'name', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3">{!! sortable_link('NIP', 'nip', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3">{!! sortable_link('Email Login', 'email', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3">Mata Pelajaran</th> <!-- UBAH INI -->
                                     <th scope="col" class="px-6 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -92,6 +93,19 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                     </td>
                                     <td class="px-6 py-4">{{ $teacher->nip ?? '-' }}</td>
                                     <td class="px-6 py-4">{{ $teacher->user->email }}</td>
+                                    <!-- TAMBAHKAN BAGIAN INI -->
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-wrap gap-1">
+                                            @forelse($teacher->subjects as $subject)
+                                                <span class="px-2 py-1 text-xs font-medium text-sky-800 bg-sky-100 dark:bg-sky-900 dark:text-sky-300 rounded-full">
+                                                    {{ $subject->name }}
+                                                </span>
+                                            @empty
+                                                <span class="text-xs text-gray-500">-</span>
+                                            @endforelse
+                                        </div>
+                                    </td>
+                                    <!-- AKHIR BAGIAN TAMBAHAN -->
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-4">
                                             <a href="{{ route('admin.teachers.edit', $teacher) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
@@ -104,7 +118,7 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="4" class="px-6 py-4 text-center">Tidak ada data guru.</td></tr>
+                                <tr><td colspan="5" class="px-6 py-4 text-center">Tidak ada data guru.</td></tr> <!-- UBAH colspan -->
                                 @endforelse
                             </tbody>
                         </table>

@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Teacher;
 use App\Models\User;
-use App\Imports\TeachersImport; // Impor kelas baru
-use Maatwebsite\Excel\Facades\Excel; // Impor facade Excel
+use App\Models\Subject; // <-- TAMBAHKAN INI
+use App\Imports\TeachersImport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -15,7 +16,6 @@ class TeacherController extends Controller
 {
     public function index(Request $request)
     {
-        // Validasi parameter untuk pengurutan
         $sortBy = in_array($request->query('sort_by'), ['name', 'nip', 'email']) 
             ? $request->query('sort_by') 
             : 'created_at';
@@ -24,14 +24,13 @@ class TeacherController extends Controller
             ? $request->query('sort_direction') 
             : 'desc';
 
-        // Validasi parameter untuk jumlah data per halaman
         $perPage = in_array($request->query('per_page'), [10, 25, 50, 100])
             ? $request->query('per_page')
             : 10;
+        
+        // Eager load relasi 'user' dan 'subjects' untuk efisiensi query
+        $query = Teacher::query()->with(['user', 'subjects']); // <-- UBAH INI
 
-        $query = Teacher::query()->with('user');
-
-        // Terapkan filter pencarian jika ada
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -42,7 +41,6 @@ class TeacherController extends Controller
             });
         }
 
-        // Terapkan pengurutan
         if ($sortBy === 'email') {
             $query->join('users', 'teachers.user_id', '=', 'users.id')
                   ->orderBy('users.email', $sortDirection)
@@ -63,7 +61,9 @@ class TeacherController extends Controller
 
     public function create()
     {
-        return view('admin.teachers.create');
+        // Ambil semua data mata pelajaran untuk ditampilkan di form
+        $subjects = Subject::orderBy('name')->get(); // <-- TAMBAHKAN INI
+        return view('admin.teachers.create', compact('subjects')); // <-- UBAH INI
     }
 
     public function store(Request $request)
@@ -74,6 +74,8 @@ class TeacherController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'nip' => ['nullable', 'string', 'max:255', 'unique:teachers'],
             'phone_number' => ['nullable', 'string', 'max:20'],
+            'subjects' => ['nullable', 'array'], // <-- TAMBAHKAN VALIDASI
+            'subjects.*' => ['exists:subjects,id'], // <-- TAMBAHKAN VALIDASI
         ]);
 
         $user = User::create([
@@ -83,14 +85,19 @@ class TeacherController extends Controller
             'role' => 'teacher',
         ]);
 
-        $user->teacher()->create($request->only('name', 'nip', 'phone_number'));
+        $teacher = $user->teacher()->create($request->only('name', 'nip', 'phone_number'));
+
+        // Simpan relasi mata pelajaran yang dipilih
+        $teacher->subjects()->sync($request->subjects); // <-- TAMBAHKAN INI
 
         return redirect()->route('admin.teachers.index')->with('success', 'Akun guru berhasil dibuat.');
     }
 
     public function edit(Teacher $teacher)
     {
-        return view('admin.teachers.edit', compact('teacher'));
+        // Ambil semua data mata pelajaran
+        $subjects = Subject::orderBy('name')->get(); // <-- TAMBAHKAN INI
+        return view('admin.teachers.edit', compact('teacher', 'subjects')); // <-- UBAH INI
     }
 
     public function update(Request $request, Teacher $teacher)
@@ -101,6 +108,8 @@ class TeacherController extends Controller
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'nip' => ['nullable', 'string', 'max:255', 'unique:teachers,nip,'.$teacher->id],
             'phone_number' => ['nullable', 'string', 'max:20'],
+            'subjects' => ['nullable', 'array'], // <-- TAMBAHKAN VALIDASI
+            'subjects.*' => ['exists:subjects,id'], // <-- TAMBAHKAN VALIDASI
         ]);
 
         $user = $teacher->user;
@@ -113,20 +122,17 @@ class TeacherController extends Controller
 
         $teacher->update($request->only('name', 'nip', 'phone_number'));
 
+        // Perbarui relasi mata pelajaran dengan data yang baru
+        $teacher->subjects()->sync($request->subjects); // <-- TAMBAHKAN INI
+
         return redirect()->route('admin.teachers.index')->with('success', 'Data guru berhasil diperbarui.');
     }
-
-     /**
-     * Menampilkan form untuk impor data guru dari Excel.
-     */
+    
     public function showImportForm()
     {
         return view('admin.teachers.import');
     }
 
-    /**
-     * Menangani proses impor dari file Excel.
-     */
     public function import(Request $request)
     {
         $request->validate([
@@ -149,7 +155,6 @@ class TeacherController extends Controller
 
     public function getOnlineStatus()
     {
-        // Guru dianggap online jika aktivitas terakhirnya dalam 5 menit terakhir
         $onlineTeacherUserIds = User::where('role', 'teacher')
                                ->where('last_seen_at', '>', now()->subMinutes(5))
                                ->pluck('id');
@@ -157,13 +162,8 @@ class TeacherController extends Controller
         return response()->json($onlineTeacherUserIds);
     }
     
-    /**
-     * Menghapus data guru dari database.
-     */
     public function destroy(Teacher $teacher)
     {
-        // Karena relasi di database diatur dengan onDelete('cascade'),
-        // menghapus data user akan otomatis menghapus data guru yang terhubung.
         $teacher->user()->delete();
         
         return redirect()->route('admin.teachers.index')->with('success', 'Akun guru berhasil dihapus.');
