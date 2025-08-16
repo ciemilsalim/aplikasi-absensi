@@ -10,9 +10,12 @@
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $appLogoPath) }}">
     @endif
 
+    <!-- 1. HAPUS ATAU KOMENTARI BAGIAN INI -->
+    <!-- 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    -->
 
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="{{ asset('/manifest.json') }}">
@@ -33,8 +36,10 @@
             darkMode: 'class',
             theme: { 
                 extend: { 
+                    // 2. UBAH BAGIAN FONTFAMILY DI BAWAH INI
                     fontFamily: { 
-                        sans: ['Poppins', 'sans-serif'] 
+                        // Mengganti 'Poppins' dengan 'Helvetica'
+                        sans: ['Helvetica', 'Arial', 'sans-serif'] 
                     },
                     colors: {
                         sky: { 50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1',800:'#075985',900:'#0c4a6e',950:'#082f49' }
@@ -48,7 +53,8 @@
     @stack('styles')
     
     <style type="text/tailwindcss">
-        body { @apply font-sans; }
+        /* Baris ini tidak perlu diubah karena sudah mengambil dari konfigurasi di atas */
+        body { @apply font-sans; } 
         .loader-container {
             @apply fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900;
             transition: opacity 0.5s ease-in-out, visibility 0.5s;
@@ -66,6 +72,7 @@
     </style>
 </head>
 <body class="h-full antialiased bg-slate-50 dark:bg-slate-900">
+    {{-- Sisa dari file tidak perlu diubah --}}
     <div id="page-loader" class="loader-container">
         <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -117,7 +124,6 @@
             </div>
 
             <footer class="lg:pl-72">
-                {{-- PERBAIKAN: Menambahkan versi dan nama pengembang --}}
                 <div class="py-4 text-center text-xs text-slate-500 dark:text-slate-400 border-t dark:border-slate-700">
                     &copy; {{ date('Y') }} {{ config('app.name') }} v1.0.0.
                     Dikembangkan oleh <a href="https://github.com/ciemilsalim," target="_blank" class="font-semibold text-sky-600 hover:underline">zahradev</a>.
