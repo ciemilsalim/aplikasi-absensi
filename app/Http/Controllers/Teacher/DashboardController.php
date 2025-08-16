@@ -10,6 +10,7 @@ use App\Models\Attendance;
 use App\Models\Setting;
 use App\Models\StudentPermit;
 use App\Models\Schedule;
+use App\Models\SubjectAttendance;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -20,11 +21,9 @@ class DashboardController extends Controller
         $teacher = Auth::user()->teacher;
         $viewData = ['teacher' => $teacher];
 
-        // Cek peran guru
         $isHomeroomTeacher = $teacher->homeroomClass()->exists();
         $isSubjectTeacher = $teacher->teachingAssignments()->exists(); 
 
-        // Tentukan view yang aktif
         $defaultView = $isHomeroomTeacher ? 'wali_kelas' : 'guru_mapel';
         $currentView = $request->input('view', $defaultView);
 
@@ -32,17 +31,14 @@ class DashboardController extends Controller
         $viewData['isSubjectTeacher'] = $isSubjectTeacher;
         $viewData['currentView'] = $currentView;
 
-        // Jika view adalah 'wali_kelas' dan dia adalah wali kelas
         if ($currentView === 'wali_kelas' && $isHomeroomTeacher) {
             $viewData = array_merge($viewData, $this->getHomeroomData($teacher));
         }
 
-        // Jika view adalah 'guru_mapel' dan dia adalah guru mapel
         if ($currentView === 'guru_mapel' && $isSubjectTeacher) {
             $viewData = array_merge($viewData, $this->getSubjectTeacherData($teacher));
         }
 
-        // Jika tidak punya peran sama sekali
         if (!$isHomeroomTeacher && !$isSubjectTeacher) {
             return view('teacher.dashboard-no-role', $viewData);
         }
@@ -50,9 +46,6 @@ class DashboardController extends Controller
         return view('teacher.dashboard', $viewData);
     }
     
-    /**
-     * Mengambil data untuk dasbor wali kelas.
-     */
     private function getHomeroomData($teacher)
     {
         $class = $teacher->homeroomClass;
@@ -83,7 +76,6 @@ class DashboardController extends Controller
             ->whereNotIn('status', ['izin', 'sakit', 'alpa', 'izin_keluar'])
             ->get();
 
-        // Data Grafik
         $startDate = now()->subDays(6)->startOfDay();
         $endDate = now()->endOfDay();
         $period = CarbonPeriod::create($startDate, $endDate);
@@ -134,20 +126,14 @@ class DashboardController extends Controller
         ];
     }
 
-    /**
-     * Mengambil data untuk dasbor guru mata pelajaran.
-     */
     private function getSubjectTeacherData($teacher)
     {
-        // === PERBAIKAN FINAL ===
-        // Mengambil nomor hari ini (Minggu=0, Senin=1, ..., Sabtu=6)
         $dayOfWeekNumber = now()->dayOfWeek;
 
         $schedulesToday = Schedule::with([
                 'teachingAssignment.schoolClass', 
                 'teachingAssignment.subject'
             ])
-            // Mencocokkan dengan nomor hari, bukan nama hari
             ->where('day_of_week', $dayOfWeekNumber)
             ->whereHas('teachingAssignment', function ($query) use ($teacher) {
                 $query->where('teacher_id', $teacher->id);
@@ -160,7 +146,6 @@ class DashboardController extends Controller
         ];
     }
 
-    // ... (method lainnya seperti markAttendance, showAttendanceHistory, dll tetap sama) ...
     public function markAttendance(Request $request)
     {
         $request->validate([
@@ -189,6 +174,34 @@ class DashboardController extends Controller
             'attendance_time' => $today->startOfDay(),
             'status' => $request->status,
         ]);
+
+        // --- LOGIKA BARU UNTUK SINKRONISASI ---
+        if (in_array($request->status, ['sakit', 'izin', 'alpa'])) {
+            $dayOfWeekNumber = $today->dayOfWeek;
+            
+            // Cari semua jadwal pelajaran untuk kelas siswa tersebut pada hari ini
+            $schedules = Schedule::whereHas('teachingAssignment', function ($query) use ($student) {
+                $query->where('school_class_id', $student->school_class_id);
+            })->where('day_of_week', $dayOfWeekNumber)->get();
+
+            foreach ($schedules as $schedule) {
+                // Buat catatan absensi mata pelajaran jika belum ada
+                $exists = SubjectAttendance::where('schedule_id', $schedule->id)
+                                        ->where('student_id', $student->id)
+                                        ->whereDate('created_at', $today)
+                                        ->exists();
+
+                if (!$exists) {
+                    SubjectAttendance::create([
+                        'schedule_id' => $schedule->id,
+                        'student_id' => $student->id,
+                        'teacher_id' => $schedule->teachingAssignment->teacher_id,
+                        'status' => $request->status,
+                    ]);
+                }
+            }
+        }
+        // --- AKHIR LOGIKA BARU ---
 
         return redirect()->back()->with('success', 'Status kehadiran untuk siswa ' . $student->name . ' berhasil diperbarui.');
     }

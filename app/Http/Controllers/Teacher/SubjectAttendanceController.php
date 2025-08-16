@@ -8,40 +8,47 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Schedule;
 use App\Models\Student;
 use App\Models\SubjectAttendance;
+use App\Models\Attendance; // <-- Tambahkan model Attendance
 use Carbon\Carbon;
 
 class SubjectAttendanceController extends Controller
 {
     /**
      * Menampilkan halaman pemindai QR untuk absensi mata pelajaran.
-     *
-     * @param  \App\Models\Schedule  $schedule
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function showScanner(Schedule $schedule)
     {
         $teacher = Auth::user()->teacher;
 
-        // Otorisasi: Pastikan guru yang login adalah guru yang mengajar di jadwal ini
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
             return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak berhak mengakses halaman ini.');
         }
 
-        // Ambil daftar siswa yang sudah diabsen untuk jadwal ini hari ini
         $today = Carbon::today();
+        
+        // Ambil siswa yang sudah diabsen 'hadir' untuk mapel ini
         $attendedStudents = SubjectAttendance::where('schedule_id', $schedule->id)
+            ->where('status', 'hadir') // Hanya yang hadir
             ->whereDate('created_at', $today)
             ->with('student')
             ->get();
 
-        return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents'));
+        // --- LOGIKA BARU UNTUK MENGAMBIL SISWA IZIN/SAKIT ---
+        $classId = $schedule->teachingAssignment->school_class_id;
+        $studentsOnLeave = Attendance::with('student')
+            ->whereHas('student', function($q) use ($classId) {
+                $q->where('school_class_id', $classId);
+            })
+            ->whereIn('status', ['sakit', 'izin'])
+            ->whereDate('attendance_time', $today)
+            ->get();
+        // --- AKHIR LOGIKA BARU ---
+
+        return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave'));
     }
 
     /**
      * Menyimpan data absensi mata pelajaran dari hasil pemindaian.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -55,47 +62,52 @@ class SubjectAttendanceController extends Controller
         $student = Student::where('unique_id', $request->student_unique_id)->first();
         $today = Carbon::today();
 
-        // Otorisasi: Pastikan guru yang mengajar yang melakukan scan
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
         }
         
-        // Cek apakah siswa berada di kelas yang benar sesuai jadwal
         if ($student->school_class_id !== $schedule->teachingAssignment->school_class_id) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'Siswa tidak terdaftar di kelas ini.'
-            ], 422);
+            return response()->json(['success' => false, 'message' => 'Siswa tidak terdaftar di kelas ini.'], 422);
         }
 
-        // Cek duplikasi: Pastikan siswa belum diabsen untuk jadwal ini hari ini
         $existingAttendance = SubjectAttendance::where('schedule_id', $schedule->id)
             ->where('student_id', $student->id)
             ->whereDate('created_at', $today)
             ->first();
 
         if ($existingAttendance) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'Siswa sudah diabsen sebelumnya.'
-            ], 409);
+            return response()->json(['success' => false, 'message' => 'Siswa sudah diabsen sebelumnya.'], 409);
         }
 
-        // Simpan data absensi
         $attendance = SubjectAttendance::create([
             'schedule_id' => $schedule->id,
             'student_id' => $student->id,
             'teacher_id' => $teacher->id,
-            'status' => 'hadir', // Default status saat scan adalah 'hadir'
+            'status' => 'hadir',
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Kehadiran ' . $student->name . ' berhasil dicatat.',
-            'student' => [
-                'name' => $student->name,
-                'time' => $attendance->created_at->format('H:i:s')
-            ]
+            'student' => ['name' => $student->name, 'time' => $attendance->created_at->format('H:i:s')]
         ]);
+    }
+
+    /**
+     * Menampilkan halaman riwayat absensi mata pelajaran.
+     */
+    public function showHistory(Request $request)
+    {
+        $teacher = Auth::user()->teacher;
+        
+        $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+
+        $attendances = SubjectAttendance::with(['student', 'schedule.teachingAssignment.subject', 'schedule.teachingAssignment.schoolClass'])
+            ->where('teacher_id', $teacher->id)
+            ->whereDate('created_at', $selectedDate)
+            ->get()
+            ->groupBy('schedule_id'); // Kelompokkan berdasarkan jadwal
+
+        return view('teacher.subject_attendance_history', compact('attendances', 'selectedDate'));
     }
 }

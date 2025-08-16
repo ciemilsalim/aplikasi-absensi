@@ -12,7 +12,6 @@
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Kolom Kiri: Informasi & Pemindai -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Informasi Jadwal -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg p-6">
@@ -43,8 +42,8 @@
                 </div>
             </div>
 
-            <!-- Kolom Kanan: Daftar Hadir -->
-            <div class="lg:col-span-1">
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Daftar Hadir -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Sudah Hadir (<span id="attended-count">{{ $attendedStudents->count() }}</span>)</h3>
@@ -59,6 +58,30 @@
                             @empty
                                 <li id="no-students-yet" class="p-4 text-center text-sm text-gray-500 italic">
                                     Belum ada siswa yang diabsen.
+                                </li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Panel Siswa Izin/Sakit -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Izin/Sakit (Harian)</h3>
+                    </div>
+                    <div class="border-t border-gray-200 dark:border-slate-700">
+                        <ul id="leave-list" class="divide-y divide-gray-200 dark:divide-slate-700 max-h-[30vh] overflow-y-auto">
+                            @forelse($studentsOnLeave as $dailyAttendance)
+                                <li class="p-4 flex items-center justify-between">
+                                    <span class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $dailyAttendance->student->name }}</span>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                        @if($dailyAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 @endif
+                                        @if($dailyAttendance->status == 'izin') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @endif
+                                    ">{{ ucfirst($dailyAttendance->status) }}</span>
+                                </li>
+                            @empty
+                                <li class="p-4 text-center text-sm text-gray-500 italic">
+                                    Tidak ada siswa yang izin/sakit hari ini.
                                 </li>
                             @endforelse
                         </ul>
@@ -109,9 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let cameras = [];
     let currentCameraIndex = 0;
 
-    // --- PERBAIKAN PADA NAMA FILE AUDIO ---
     function playSound(isSuccess) {
-        // Menggunakan nama file yang konsisten dengan scanner.blade.php
         const soundFile = isSuccess 
             ? "{{ asset('sounds/success.mp3') }}" 
             : "{{ asset('sounds/error.mp3') }}";
@@ -166,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showModal(isSuccess, data) {
-        playSound(isSuccess); // Panggil fungsi suara
+        playSound(isSuccess);
         modal.iconContainer.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5';
         modal.iconSvg.innerHTML = '';
         

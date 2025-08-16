@@ -24,7 +24,6 @@
                     @forelse($schedulesToday as $schedule)
                         <div class="border-l-4 {{ now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time)) ? 'border-green-500' : 'border-sky-500' }} bg-gray-50 dark:bg-slate-900/50 p-4 rounded-r-lg flex items-center justify-between">
                             <div>
-                                {{-- PERBAIKAN: Mengakses relasi melalui teachingAssignment --}}
                                 <p class="font-bold text-gray-800 dark:text-gray-200">{{ $schedule->teachingAssignment->subject->name }} - <span class="text-sky-600 dark:text-sky-400">{{ $schedule->teachingAssignment->schoolClass->name }}</span></p>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
                                     <i class="far fa-clock mr-1"></i>
@@ -32,7 +31,6 @@
                                 </p>
                             </div>
                             <div>
-                                {{-- PERBAIKAN: Mengarahkan tombol ke rute pemindai --}}
                                 <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" class="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-sm">
                                     <i class="fas fa-qrcode mr-2"></i>
                                     Ambil Absensi
@@ -57,9 +55,10 @@
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Akses Cepat</h3>
             <div class="grid grid-cols-2 gap-4">
-                <a href="{{ route('scanner') }}" target="_blank" class="flex flex-col items-center justify-center p-4 bg-sky-50 dark:bg-sky-900/50 hover:bg-sky-100 dark:hover:bg-sky-900 rounded-lg transition-colors duration-200">
-                    <i class="fas fa-id-card h-8 w-8 text-sky-600 dark:text-sky-400 mb-2"></i>
-                    <span class="text-sm font-medium text-center text-sky-800 dark:text-sky-300">Absen Harian</span>
+                {{-- PERBARUAN: Menambahkan tombol Riwayat Absen Mapel --}}
+                <a href="{{ route('teacher.subject.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-teal-50 dark:bg-teal-900/50 hover:bg-teal-100 dark:hover:bg-teal-900 rounded-lg transition-colors duration-200">
+                    <i class="fas fa-history h-8 w-8 text-teal-600 dark:text-teal-400 mb-2"></i>
+                    <span class="text-sm font-medium text-center text-teal-800 dark:text-teal-300">Riwayat Absen Mapel</span>
                 </a>
                 <a href="{{ route('teacher.leave_requests.index') }}" class="flex flex-col items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded-lg transition-colors duration-200">
                     <i class="fas fa-file-alt h-8 w-8 text-indigo-600 dark:text-indigo-400 mb-2"></i>
