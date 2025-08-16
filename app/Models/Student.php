@@ -35,6 +35,15 @@ class Student extends Model
         return $this->hasMany(Attendance::class);
     }
 
+    /**
+     * Relasi baru untuk absensi per mata pelajaran.
+     * Seorang siswa dapat memiliki banyak catatan absensi mata pelajaran.
+     */
+    public function subjectAttendances()
+    {
+        return $this->hasMany(SubjectAttendance::class);
+    }
+
     public function schoolClass()
     {
         return $this->belongsTo(SchoolClass::class);
@@ -52,18 +61,4 @@ class Student extends Model
     {
         return $this->hasMany(LeaveRequest::class);
     }
-
-    /**
-     * Otomatis membuat unique_id saat siswa baru dibuat.
-     * PERBAIKAN: Memastikan hanya ada satu metode boot() di dalam kelas.
-     */
-    // protected static function boot()
-    // {
-    //     parent::boot();
-    //     static::creating(function ($model) {
-    //         if (empty($model->unique_id)) {
-    //             $model->unique_id = (string) Str::uuid();
-    //         }
-    //     });
-    // }
 }

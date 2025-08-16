@@ -10,13 +10,6 @@
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $appLogoPath) }}">
     @endif
 
-    <!-- 1. HAPUS ATAU KOMENTARI BAGIAN INI -->
-    <!-- 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    -->
-
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="{{ asset('/manifest.json') }}">
     <meta name="theme-color" content="#0284c7"/>
@@ -36,9 +29,7 @@
             darkMode: 'class',
             theme: { 
                 extend: { 
-                    // 2. UBAH BAGIAN FONTFAMILY DI BAWAH INI
                     fontFamily: { 
-                        // Mengganti 'Poppins' dengan 'Helvetica'
                         sans: ['Helvetica', 'Arial', 'sans-serif'] 
                     },
                     colors: {
@@ -53,7 +44,6 @@
     @stack('styles')
     
     <style type="text/tailwindcss">
-        /* Baris ini tidak perlu diubah karena sudah mengambil dari konfigurasi di atas */
         body { @apply font-sans; } 
         .loader-container {
             @apply fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900;
@@ -72,7 +62,6 @@
     </style>
 </head>
 <body class="h-full antialiased bg-slate-50 dark:bg-slate-900">
-    {{-- Sisa dari file tidak perlu diubah --}}
     <div id="page-loader" class="loader-container">
         <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

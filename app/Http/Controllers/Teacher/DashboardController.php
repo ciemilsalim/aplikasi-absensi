@@ -9,19 +9,52 @@ use App\Models\Student;
 use App\Models\Attendance;
 use App\Models\Setting;
 use App\Models\StudentPermit;
+use App\Models\Schedule;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $teacher = Auth::user()->teacher;
-        
-        if (!$teacher || !$teacher->homeroomClass) {
-            return view('teacher.dashboard-no-class', compact('teacher'));
+        $viewData = ['teacher' => $teacher];
+
+        // Cek peran guru
+        $isHomeroomTeacher = $teacher->homeroomClass()->exists();
+        $isSubjectTeacher = $teacher->teachingAssignments()->exists(); 
+
+        // Tentukan view yang aktif
+        $defaultView = $isHomeroomTeacher ? 'wali_kelas' : 'guru_mapel';
+        $currentView = $request->input('view', $defaultView);
+
+        $viewData['isHomeroomTeacher'] = $isHomeroomTeacher;
+        $viewData['isSubjectTeacher'] = $isSubjectTeacher;
+        $viewData['currentView'] = $currentView;
+
+        // Jika view adalah 'wali_kelas' dan dia adalah wali kelas
+        if ($currentView === 'wali_kelas' && $isHomeroomTeacher) {
+            $viewData = array_merge($viewData, $this->getHomeroomData($teacher));
         }
 
+        // Jika view adalah 'guru_mapel' dan dia adalah guru mapel
+        if ($currentView === 'guru_mapel' && $isSubjectTeacher) {
+            $viewData = array_merge($viewData, $this->getSubjectTeacherData($teacher));
+        }
+
+        // Jika tidak punya peran sama sekali
+        if (!$isHomeroomTeacher && !$isSubjectTeacher) {
+            return view('teacher.dashboard-no-role', $viewData);
+        }
+
+        return view('teacher.dashboard', $viewData);
+    }
+    
+    /**
+     * Mengambil data untuk dasbor wali kelas.
+     */
+    private function getHomeroomData($teacher)
+    {
         $class = $teacher->homeroomClass;
         $today = Carbon::today();
         $thirtyDaysAgo = now()->subDays(30);
@@ -35,12 +68,6 @@ class DashboardController extends Controller
                                       ->keyBy('student_id');
 
         $totalStudents = $studentsInClass->count();
-        $onTimeCount = $attendancesToday->where('status', 'tepat_waktu')->count();
-        $lateCount = $attendancesToday->where('status', 'terlambat')->count();
-        $sickCount = $attendancesToday->where('status', 'sakit')->count();
-        $permitCount = $attendancesToday->where('status', 'izin')->count();
-        $alphaCount = $attendancesToday->where('status', 'alpa')->count();
-        $noRecordCount = $totalStudents - $attendancesToday->count();
         
         $studentsOnPermit = StudentPermit::with('student')
             ->whereIn('student_id', $studentIds)
@@ -48,7 +75,6 @@ class DashboardController extends Controller
             ->whereNull('time_in')
             ->get();
 
-        // BARU: Mengambil data siswa yang belum absen pulang di kelas ini
         $studentsNotCheckedOut = Attendance::with('student')
             ->whereIn('student_id', $studentIds)
             ->whereDate('attendance_time', $today)
@@ -57,6 +83,7 @@ class DashboardController extends Controller
             ->whereNotIn('status', ['izin', 'sakit', 'alpa', 'izin_keluar'])
             ->get();
 
+        // Data Grafik
         $startDate = now()->subDays(6)->startOfDay();
         $endDate = now()->endOfDay();
         $period = CarbonPeriod::create($startDate, $endDate);
@@ -65,13 +92,10 @@ class DashboardController extends Controller
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->whereIn('status', ['tepat_waktu', 'terlambat'])
             ->get()
-            ->groupBy(function($date) {
-                return Carbon::parse($date->attendance_time)->format('Y-m-d');
-            });
+            ->groupBy(fn($date) => Carbon::parse($date->attendance_time)->format('Y-m-d'));
 
         $chartLabels = [];
         $chartData = [];
-
         foreach ($period as $date) {
             $chartLabels[] = $date->translatedFormat('D, d M');
             $dateString = $date->format('Y-m-d');
@@ -82,12 +106,8 @@ class DashboardController extends Controller
 
         $studentsForAttention = Student::whereIn('id', $studentIds)
             ->withCount([
-                'attendances as late_count' => function ($query) use ($thirtyDaysAgo) {
-                    $query->where('status', 'terlambat')->where('attendance_time', '>=', $thirtyDaysAgo);
-                },
-                'attendances as alpha_count' => function ($query) use ($thirtyDaysAgo) {
-                    $query->where('status', 'alpa')->where('attendance_time', '>=', $thirtyDaysAgo);
-                }
+                'attendances as late_count' => fn ($query) => $query->where('status', 'terlambat')->where('attendance_time', '>=', $thirtyDaysAgo),
+                'attendances as alpha_count' => fn ($query) => $query->where('status', 'alpa')->where('attendance_time', '>=', $thirtyDaysAgo)
             ])
             ->having('late_count', '>', 2)
             ->orHaving('alpha_count', '>', 1)
@@ -96,16 +116,51 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        return view('teacher.dashboard', compact(
-            'teacher', 'class', 'studentsInClass', 'attendancesToday',
-            'onTimeCount', 'lateCount', 'sickCount', 'permitCount', 'alphaCount', 'noRecordCount',
-            'studentsForAttention',
-            'chartLabels', 'chartData',
-            'studentsOnPermit',
-            'studentsNotCheckedOut' // Kirim data baru ke view
-        ));
+        return [
+            'class' => $class,
+            'studentsInClass' => $studentsInClass,
+            'attendancesToday' => $attendancesToday,
+            'onTimeCount' => $attendancesToday->where('status', 'tepat_waktu')->count(),
+            'lateCount' => $attendancesToday->where('status', 'terlambat')->count(),
+            'sickCount' => $attendancesToday->where('status', 'sakit')->count(),
+            'permitCount' => $attendancesToday->where('status', 'izin')->count(),
+            'alphaCount' => $attendancesToday->where('status', 'alpa')->count(),
+            'noRecordCount' => $totalStudents - $attendancesToday->count(),
+            'studentsForAttention' => $studentsForAttention,
+            'chartLabels' => $chartLabels,
+            'chartData' => $chartData,
+            'studentsOnPermit' => $studentsOnPermit,
+            'studentsNotCheckedOut' => $studentsNotCheckedOut
+        ];
     }
 
+    /**
+     * Mengambil data untuk dasbor guru mata pelajaran.
+     */
+    private function getSubjectTeacherData($teacher)
+    {
+        // === PERBAIKAN FINAL ===
+        // Mengambil nomor hari ini (Minggu=0, Senin=1, ..., Sabtu=6)
+        $dayOfWeekNumber = now()->dayOfWeek;
+
+        $schedulesToday = Schedule::with([
+                'teachingAssignment.schoolClass', 
+                'teachingAssignment.subject'
+            ])
+            // Mencocokkan dengan nomor hari, bukan nama hari
+            ->where('day_of_week', $dayOfWeekNumber)
+            ->whereHas('teachingAssignment', function ($query) use ($teacher) {
+                $query->where('teacher_id', $teacher->id);
+            })
+            ->orderBy('start_time', 'asc')
+            ->get();
+
+        return [
+            'schedulesToday' => $schedulesToday,
+        ];
+    }
+
+    // ... (method lainnya seperti markAttendance, showAttendanceHistory, dll tetap sama) ...
     public function markAttendance(Request $request)
     {
         $request->validate([

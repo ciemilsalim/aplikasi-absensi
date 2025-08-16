@@ -24,4 +24,13 @@ class Schedule extends Model
     {
         return $this->belongsTo(TeachingAssignment::class);
     }
+
+    /**
+     * Relasi baru untuk absensi per mata pelajaran.
+     * Satu jadwal pelajaran dapat memiliki banyak catatan absensi siswa.
+     */
+    public function subjectAttendances()
+    {
+        return $this->hasMany(SubjectAttendance::class);
+    }
 }

@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\AdminChatController;
 use App\Http\Controllers\Admin\UserController; // Controller baru
 
+
 // Parent Controller
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
 use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestController;
@@ -35,6 +36,7 @@ use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestCont
 // Teacher Controller
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestController;
+use App\Http\Controllers\Teacher\SubjectAttendanceController; // <-- TAMBAHKAN INI
 
 /*
 |--------------------------------------------------------------------------
@@ -171,6 +173,11 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::get('/leave-requests', [TeacherLeaveRequestController::class, 'index'])->name('leave_requests.index');
     Route::post('/leave-requests/{leaveRequest}/approve', [TeacherLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
     Route::post('/leave-requests/{leaveRequest}/reject', [TeacherLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
+
+    // == RUTE BARU UNTUK ABSENSI MATA PELAJARAN ==
+    Route::get('/subject-attendance/scanner/{schedule}', [SubjectAttendanceController::class, 'showScanner'])->name('subject.attendance.scanner');
+    Route::post('/subject-attendance/store', [SubjectAttendanceController::class, 'store'])->name('subject.attendance.store');
+    // ============================================
 });
 
 require __DIR__.'/auth.php';
