@@ -4,7 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Level; // <-- Jangan lupa import model Level
+use App\Models\Level;
+use Illuminate\Support\Facades\Schema; // <-- TAMBAHKAN INI
 
 class LevelSeeder extends Seeder
 {
@@ -13,8 +14,14 @@ class LevelSeeder extends Seeder
      */
     public function run(): void
     {
-        // Hapus data lama untuk menghindari duplikasi saat seeding ulang
+        // Nonaktifkan pengecekan foreign key sementara
+        Schema::disableForeignKeyConstraints();
+
+        // Hapus data lama dengan aman
         Level::truncate();
+
+        // Aktifkan kembali pengecekan foreign key
+        Schema::enableForeignKeyConstraints();
 
         // Data tingkat kelas yang akan dimasukkan
         $levels = [
