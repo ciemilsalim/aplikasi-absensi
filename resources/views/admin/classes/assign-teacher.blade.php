@@ -36,6 +36,12 @@
                                                 <option value="{{ $teacher->id }}" 
                                                     {{ (isset($assignments[$subject->id]) && $assignments[$subject->id] == $teacher->id) ? 'selected' : '' }}>
                                                     {{ $teacher->name }}
+                                                    {{-- TAMBAHKAN BAGIAN INI UNTUK MENAMPILKAN MAPEL --}}
+                                                    @if ($teacher->subjects->isNotEmpty())
+                                                        <span class="text-gray-400">
+                                                            (Mengampu: {{ $teacher->subjects->pluck('name')->join(', ') }})
+                                                        </span>
+                                                    @endif
                                                 </option>
                                             @endforeach
                                         </select>

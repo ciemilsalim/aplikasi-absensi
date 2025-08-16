@@ -19,8 +19,8 @@ class TeachingAssignmentController extends Controller
         // Ambil semua mata pelajaran, diurutkan berdasarkan nama
         $subjects = Subject::orderBy('name')->get();
 
-        // Ambil semua guru, diurutkan berdasarkan nama
-        $teachers = Teacher::orderBy('name')->get();
+        // UBAH BARIS INI: Muat relasi 'subjects' untuk setiap guru
+        $teachers = Teacher::with('subjects')->orderBy('name')->get();
 
         // Ambil data penugasan yang sudah ada untuk kelas ini untuk ditampilkan di form
         $assignments = TeachingAssignment::where('school_class_id', $schoolClass->id)
