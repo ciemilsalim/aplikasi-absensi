@@ -55,7 +55,6 @@
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Akses Cepat</h3>
             <div class="grid grid-cols-2 gap-4">
-                {{-- PERBARUAN: Menambahkan tombol Riwayat Absen Mapel --}}
                 <a href="{{ route('teacher.subject.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-teal-50 dark:bg-teal-900/50 hover:bg-teal-100 dark:hover:bg-teal-900 rounded-lg transition-colors duration-200">
                     <i class="fas fa-history h-8 w-8 text-teal-600 dark:text-teal-400 mb-2"></i>
                     <span class="text-sm font-medium text-center text-teal-800 dark:text-teal-300">Riwayat Absen Mapel</span>
@@ -64,6 +63,45 @@
                     <i class="fas fa-file-alt h-8 w-8 text-indigo-600 dark:text-indigo-400 mb-2"></i>
                     <span class="text-sm font-medium text-center text-indigo-800 dark:text-indigo-300">Persetujuan Izin</span>
                 </a>
+            </div>
+        </div>
+        
+        <!-- Panel Siswa Butuh Perhatian -->
+        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Siswa Butuh Perhatian</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Berdasarkan absensi mapel semester ini.</p>
+            </div>
+            <div class="p-6">
+                <ul class="divide-y divide-gray-200 dark:divide-slate-700">
+                    @forelse($studentsForAttention as $data)
+                        @if($data->student) {{-- Pastikan relasi student ada --}}
+                        <li class="py-3 flex justify-between items-center">
+                            <div>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200">{{ $data->student->name }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $data->student->schoolClass->name ?? 'Kelas tidak diketahui' }}</p>
+                            </div>
+                            <div class="text-right flex-shrink-0">
+                                @if($data->alpa_count > 0)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                    Alpa: {{ $data->alpa_count }}
+                                </span>
+                                @endif
+                                @if($data->bolos_count > 0)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 ml-2">
+                                    Bolos: {{ $data->bolos_count }}
+                                </span>
+                                @endif
+                            </div>
+                        </li>
+                        @endif
+                    @empty
+                        <li class="py-10 text-center text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-user-check text-3xl text-gray-300 dark:text-gray-600"></i>
+                            <p class="mt-3">Tidak ada siswa dengan catatan alpa/bolos yang signifikan.</p>
+                        </li>
+                    @endforelse
+                </ul>
             </div>
         </div>
         

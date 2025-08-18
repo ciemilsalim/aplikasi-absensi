@@ -13,6 +13,7 @@ use App\Models\Schedule;
 use App\Models\SubjectAttendance;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\DB; // Pastikan DB facade di-import
 
 class DashboardController extends Controller
 {
@@ -141,11 +142,46 @@ class DashboardController extends Controller
             ->orderBy('start_time', 'asc')
             ->get();
 
+        // --- LOGIKA BARU UNTUK SISWA BUTUH PERHATIAN ---
+
+        // 1. Tentukan rentang tanggal semester saat ini.
+        $currentMonth = now()->month;
+        if ($currentMonth >= 7 && $currentMonth <= 12) {
+            // Semester Ganjil (Juli - Desember)
+            $semesterStart = now()->setMonth(7)->startOfMonth();
+            $semesterEnd = now()->setMonth(12)->endOfMonth();
+        } else {
+            // Semester Genap (Januari - Juni)
+            $semesterStart = now()->setMonth(1)->startOfMonth();
+            $semesterEnd = now()->setMonth(6)->endOfMonth();
+        }
+
+        // 2. Dapatkan semua ID siswa yang diajar oleh guru ini.
+        $taughtStudentIds = Student::whereIn(
+            'school_class_id',
+            $teacher->teachingAssignments->pluck('school_class_id')->unique()
+        )->pluck('id');
+
+        // 3. Query untuk mengambil 5 siswa teratas berdasarkan jumlah alpa/bolos.
+        $studentsForAttention = SubjectAttendance::whereIn('student_id', $taughtStudentIds)
+            ->whereIn('status', ['alpa', 'bolos'])
+            ->whereBetween('created_at', [$semesterStart, $semesterEnd])
+            ->with('student.schoolClass') // Eager load data siswa dan kelasnya
+            ->select('student_id', 
+                DB::raw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) as alpa_count'),
+                DB::raw('SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) as bolos_count')
+            )
+            ->groupBy('student_id')
+            ->orderByRaw('alpa_count + bolos_count DESC')
+            ->take(5)
+            ->get();
+
         return [
             'schedulesToday' => $schedulesToday,
+            'studentsForAttention' => $studentsForAttention, // Kirim data ke view
         ];
     }
-
+    
     public function markAttendance(Request $request)
     {
         $request->validate([
