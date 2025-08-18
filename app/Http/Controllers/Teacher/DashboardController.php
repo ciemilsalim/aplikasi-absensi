@@ -12,20 +12,31 @@ use App\Models\StudentPermit;
 use App\Models\Schedule;
 use App\Models\SubjectAttendance;
 use App\Models\TeachingAssignment;
-use App\Models\TeacherNote; // <-- Tambahkan model ini
+use App\Models\TeacherNote;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    /**
+     * Menampilkan dasbor guru berdasarkan peran yang dimiliki.
+     */
     public function index(Request $request)
     {
         $teacher = Auth::user()->teacher;
+        if (!$teacher) {
+            abort(403, 'Akses ditolak. Anda bukan seorang guru.');
+        }
+
         $viewData = ['teacher' => $teacher];
 
         $isHomeroomTeacher = $teacher->homeroomClass()->exists();
-        $isSubjectTeacher = $teacher->teachingAssignments()->exists(); 
+        $isSubjectTeacher = $teacher->teachingAssignments()->exists();
+
+        if (!$isHomeroomTeacher && !$isSubjectTeacher) {
+            return view('teacher.dashboard-no-role', $viewData);
+        }
 
         $defaultView = $isHomeroomTeacher ? 'wali_kelas' : 'guru_mapel';
         $currentView = $request->input('view', $defaultView);
@@ -41,10 +52,17 @@ class DashboardController extends Controller
         if ($currentView === 'guru_mapel' && $isSubjectTeacher) {
             $viewData = array_merge($viewData, $this->getSubjectTeacherData($teacher));
         }
-
-        if (!$isHomeroomTeacher && !$isSubjectTeacher) {
-            return view('teacher.dashboard-no-role', $viewData);
+        
+        if (!isset($viewData['schedulesToday'])) {
+            $viewData['schedulesToday'] = collect();
         }
+        if (!isset($viewData['chartLabels'])) {
+            $viewData['chartLabels'] = [];
+        }
+        if (!isset($viewData['classPerformanceData'])) {
+            $viewData['classPerformanceData'] = [];
+        }
+
 
         return view('teacher.dashboard', $viewData);
     }
@@ -121,7 +139,7 @@ class DashboardController extends Controller
             'permitCount' => $attendancesToday->where('status', 'izin')->count(),
             'alphaCount' => $attendancesToday->where('status', 'alpa')->count(),
             'noRecordCount' => $totalStudents - $attendancesToday->count(),
-            'studentsForAttention' => $studentsForAttention,
+            'studentsForAttentionWali' => $studentsForAttention,
             'chartLabels' => $chartLabels,
             'chartData' => $chartData,
             'studentsOnPermit' => $studentsOnPermit,
@@ -209,91 +227,20 @@ class DashboardController extends Controller
             ];
         }
 
-        // --- LOGIKA BARU UNTUK CATATAN PRIBADI ---
         $teacherNote = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
 
         return [
             'schedulesToday' => $schedulesToday,
-            'studentsForAttention' => $studentsForAttention,
+            'studentsForAttentionMapel' => $studentsForAttention,
             'lastAttendanceSummary' => $lastAttendanceSummary,
             'classPerformanceData' => $classPerformanceData,
-            'teacherNote' => $teacherNote, // <-- Kirim catatan ke view
+            'teacherNote' => $teacherNote,
         ];
     }
 
     /**
-     * Menyimpan atau memperbarui catatan pribadi guru.
+     * PERBAIKAN: Menambahkan kembali method yang hilang untuk menampilkan riwayat absensi.
      */
-    public function updateNote(Request $request)
-    {
-        $request->validate(['content' => 'nullable|string']);
-
-        $teacher = Auth::user()->teacher;
-
-        TeacherNote::updateOrCreate(
-            ['teacher_id' => $teacher->id],
-            ['content' => $request->content]
-        );
-
-        return response()->json(['success' => true, 'message' => 'Catatan berhasil disimpan.']);
-    }
-
-    public function markAttendance(Request $request)
-    {
-        $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'status' => 'required|in:izin,sakit,alpa',
-        ]);
-
-        $teacher = Auth::user()->teacher;
-        $student = Student::findOrFail($request->student_id);
-
-        if (!$teacher || $teacher->homeroomClass?->id !== $student->school_class_id) {
-            return redirect()->back()->with('error', 'Anda tidak berhak mengubah status siswa ini.');
-        }
-
-        $today = Carbon::today();
-        $existingAttendance = Attendance::where('student_id', $student->id)
-                                        ->whereDate('attendance_time', $today)
-                                        ->first();
-
-        if ($existingAttendance) {
-            return redirect()->back()->with('error', 'Siswa ini sudah memiliki catatan kehadiran hari ini.');
-        }
-        
-        Attendance::create([
-            'student_id' => $student->id,
-            'attendance_time' => $today->startOfDay(),
-            'status' => $request->status,
-        ]);
-
-        if (in_array($request->status, ['sakit', 'izin', 'alpa'])) {
-            $dayOfWeekNumber = $today->dayOfWeek;
-            
-            $schedules = Schedule::whereHas('teachingAssignment', function ($query) use ($student) {
-                $query->where('school_class_id', $student->school_class_id);
-            })->where('day_of_week', $dayOfWeekNumber)->get();
-
-            foreach ($schedules as $schedule) {
-                $exists = SubjectAttendance::where('schedule_id', $schedule->id)
-                                        ->where('student_id', $student->id)
-                                        ->whereDate('created_at', $today)
-                                        ->exists();
-
-                if (!$exists) {
-                    SubjectAttendance::create([
-                        'schedule_id' => $schedule->id,
-                        'student_id' => $student->id,
-                        'teacher_id' => $schedule->teachingAssignment->teacher_id,
-                        'status' => $request->status,
-                    ]);
-                }
-            }
-        }
-
-        return redirect()->back()->with('success', 'Status kehadiran untuk siswa ' . $student->name . ' berhasil diperbarui.');
-    }
-
     public function showAttendanceHistory(Request $request)
     {
         $teacher = Auth::user()->teacher;
@@ -335,106 +282,6 @@ class DashboardController extends Controller
             'startDate', 
             'endDate',
             'selectedDate'
-        ));
-    }
-
-    public function updateAttendance(Request $request)
-    {
-        $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'date' => 'required|date_format:Y-m-d',
-            'status' => 'required|in:tepat_waktu,terlambat,izin,sakit,alpa,hapus',
-        ]);
-
-        $teacher = Auth::user()->teacher;
-        $student = Student::findOrFail($request->student_id);
-
-        if (!$teacher || $teacher->homeroomClass?->id !== $student->school_class_id) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki hak untuk mengubah data siswa ini.');
-        }
-
-        $attendanceDate = Carbon::parse($request->date)->startOfDay();
-
-        $attendance = Attendance::where('student_id', $student->id)
-                                ->whereDate('attendance_time', $attendanceDate)
-                                ->first();
-        
-        if ($request->status === 'hapus') {
-            if ($attendance) {
-                $attendance->delete();
-                return redirect()->back()->with('success', 'Data kehadiran berhasil dihapus.');
-            }
-            return redirect()->back();
-        }
-
-        Attendance::updateOrCreate(
-            [
-                'student_id' => $student->id,
-                'attendance_time' => $attendanceDate,
-            ],
-            [
-                'status' => $request->status,
-            ]
-        );
-
-        return redirect()->back()->with('success', 'Kehadiran untuk ' . $student->name . ' pada tanggal ' . $attendanceDate->format('d/m/Y') . ' berhasil diperbarui.');
-    }
-
-    public function printAttendance(Request $request)
-    {
-        $teacher = Auth::user()->teacher;
-        
-        if (!$teacher || !$teacher->homeroomClass) {
-            return "Anda tidak memiliki kelas wali.";
-        }
-
-        $class = $teacher->homeroomClass;
-        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
-        $studentIds = $students->pluck('id');
-
-        $request->validate([
-            'month' => 'nullable|date_format:Y-m',
-        ]);
-
-        $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
-        $startDate = $selectedDate->copy()->startOfMonth();
-        $endDate = $selectedDate->copy()->endOfMonth();
-
-        $attendances = Attendance::whereIn('student_id', $studentIds)
-            ->whereBetween('attendance_time', [$startDate, $endDate])
-            ->get();
-
-        $attendanceSummary = [];
-        foreach ($students as $student) {
-            $studentAttendances = $attendances->where('student_id', $student->id);
-            $attendanceSummary[$student->id] = [
-                'H' => $studentAttendances->where('status', 'tepat_waktu')->count(),
-                'S' => $studentAttendances->where('status', 'sakit')->count(),
-                'I' => $studentAttendances->where('status', 'izin')->count(),
-                'A' => $studentAttendances->where('status', 'alpa')->count(),
-                'T' => $studentAttendances->where('status', 'terlambat')->count(),
-            ];
-        }
-        
-        $dailyAttendances = $attendances->groupBy('student_id')
-            ->map(function ($studentAttendances) {
-                return $studentAttendances->keyBy(function ($item) {
-                    return Carbon::parse($item->attendance_time)->format('Y-m-d');
-                });
-            });
-
-        $period = CarbonPeriod::create($startDate, $endDate);
-        $schoolIdentity = Setting::pluck('value', 'key')->toArray();
-
-        return view('teacher.reports.attendance-print', compact(
-            'class', 
-            'students', 
-            'dailyAttendances', 
-            'attendanceSummary',
-            'period', 
-            'startDate', 
-            'endDate',
-            'schoolIdentity'
         ));
     }
 }

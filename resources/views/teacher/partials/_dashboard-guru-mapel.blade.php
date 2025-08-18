@@ -114,7 +114,8 @@
             </div>
             <div class="p-6">
                 <ul class="divide-y divide-gray-200 dark:divide-slate-700">
-                    @forelse($studentsForAttention as $data)
+                    {{-- PERBAIKAN: Menggunakan variabel $studentsForAttentionMapel --}}
+                    @forelse($studentsForAttentionMapel as $data)
                         @if($data->student)
                         <li class="py-3 flex justify-between items-center">
                             <div>

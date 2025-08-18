@@ -7,7 +7,6 @@
         <div class="p-6 flex items-center gap-6">
             <div class="flex-shrink-0">
                 <span class="inline-block h-16 w-16 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                    {{-- Placeholder untuk foto guru, bisa diganti dengan foto asli --}}
                     <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                 </span>
             </div>
@@ -18,17 +17,17 @@
         </div>
     </div>
 
-    <!-- Panel Akses Cepat -->
+    <!-- PERBAIKAN: Panel Akses Cepat diubah -->
     <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Akses Cepat</h3>
         <div class="grid grid-cols-2 gap-4">
-            <a href="{{ route('teacher.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-sky-50 dark:bg-sky-900/50 hover:bg-sky-100 dark:hover:bg-sky-900 rounded-lg transition-colors duration-200">
-                <i class="fas fa-history h-8 w-8 text-sky-600 dark:text-sky-400 mb-2"></i>
-                <span class="text-sm font-medium text-center text-sky-800 dark:text-sky-300">Riwayat Absen</span>
+            <a href="{{ route('scanner') }}" class="flex flex-col items-center justify-center p-4 bg-sky-50 dark:bg-sky-900/50 hover:bg-sky-100 dark:hover:bg-sky-900 rounded-lg transition-colors duration-200">
+                <span class="material-icons text-3xl text-sky-600 dark:text-sky-400 mb-1">qr_code_scanner</span>
+                <span class="text-sm font-medium text-center text-sky-800 dark:text-sky-300">Scan Hadir</span>
             </a>
-            <a href="{{ route('teacher.attendance.print') }}" target="_blank" class="flex flex-col items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded-lg transition-colors duration-200">
-                <i class="fas fa-print h-8 w-8 text-indigo-600 dark:text-indigo-400 mb-2"></i>
-                <span class="text-sm font-medium text-center text-indigo-800 dark:text-indigo-300">Cetak Laporan</span>
+            <a href="{{ route('permit.scanner') }}" class="flex flex-col items-center justify-center p-4 bg-amber-50 dark:bg-amber-900/50 hover:bg-amber-100 dark:hover:bg-amber-900 rounded-lg transition-colors duration-200">
+                <span class="material-icons text-3xl text-amber-600 dark:text-amber-400 mb-1">logout</span>
+                <span class="text-sm font-medium text-center text-amber-800 dark:text-amber-300">Scan Izin</span>
             </a>
         </div>
     </div>
@@ -152,7 +151,7 @@
             </div>
             <div class="border-t border-gray-200 dark:border-slate-700">
                 <ul class="divide-y divide-gray-200 dark:divide-slate-700">
-                    @forelse($studentsForAttention as $student)
+                    @forelse($studentsForAttentionWali as $student)
                     <li class="p-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-slate-700/50">
                         <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600">
                             <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>

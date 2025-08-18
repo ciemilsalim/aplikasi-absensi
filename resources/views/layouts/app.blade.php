@@ -40,6 +40,7 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     @stack('styles')
     
@@ -61,7 +62,8 @@
         }
     </style>
 </head>
-<body class="h-full antialiased bg-slate-50 dark:bg-slate-900">
+{{-- PERBAIKAN: Menambahkan padding bawah untuk mengakomodasi bottom nav di mobile --}}
+<body class="h-full antialiased bg-slate-50 dark:bg-slate-900 pb-16 lg:pb-0">
     <div id="page-loader" class="loader-container">
         <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -128,6 +130,32 @@
         </button>
     </div>
 
+    {{-- PERBAIKAN: Bottom Navigation Bar dipindahkan ke sini --}}
+    @auth
+        @if(auth()->user()->role === 'teacher')
+            <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 z-50 px-2 lg:hidden">
+                <div class="flex justify-around max-w-7xl mx-auto">
+                    <a href="{{ route('teacher.dashboard') }}" class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">home</span>
+                        <span class="text-xs mt-1">Beranda</span>
+                    </a>
+                    <a href="{{ route('teacher.subject.attendance.history') }}" class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">history_edu</span>
+                        <span class="text-xs mt-1">Riwayat Mapel</span>
+                    </a>
+                    <a href="{{ route('teacher.subject.attendance.report') }}" class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">assessment</span>
+                        <span class="text-xs mt-1">Rekap Mapel</span>
+                    </a>
+                    <a href="{{ route('profile.edit') }}" class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">account_circle</span>
+                        <span class="text-xs mt-1">Profil</span>
+                    </a>
+                </div>
+            </nav>
+        @endif
+    @endauth
+
     @stack('scripts')
     <script>
         window.addEventListener('load', () => {
@@ -155,5 +183,27 @@
             });
         }
     </script>
+
+    {{-- PERBAIKAN: Skrip untuk navigasi aktif dipindahkan ke sini --}}
+    @auth
+        @if(auth()->user()->role === 'teacher')
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const navItems = document.querySelectorAll('.nav-item');
+                    const currentPath = window.location.pathname;
+                    navItems.forEach(item => {
+                        const itemPath = new URL(item.getAttribute('href')).pathname;
+                        if (currentPath.startsWith(itemPath)) {
+                            item.classList.add('text-sky-500', 'dark:text-sky-400');
+                            item.classList.remove('text-gray-500', 'dark:text-gray-400');
+                        } else {
+                            item.classList.add('text-gray-500', 'dark:text-gray-400');
+                            item.classList.remove('text-sky-500', 'dark:text-sky-400');
+                        }
+                    });
+                });
+            </script>
+        @endif
+    @endauth
 </body>
 </html>
