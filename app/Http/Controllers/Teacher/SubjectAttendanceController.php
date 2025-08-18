@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Schedule;
 use App\Models\Student;
 use App\Models\SubjectAttendance;
-use App\Models\Attendance; // <-- Tambahkan model Attendance
+use App\Models\Attendance;
 use Carbon\Carbon;
 
 class SubjectAttendanceController extends Controller
@@ -25,26 +25,31 @@ class SubjectAttendanceController extends Controller
         }
 
         $today = Carbon::today();
+        $classId = $schedule->teachingAssignment->school_class_id;
         
-        // Ambil siswa yang sudah diabsen 'hadir' untuk mapel ini
-        $attendedStudents = SubjectAttendance::where('schedule_id', $schedule->id)
-            ->where('status', 'hadir') // Hanya yang hadir
+        // 1. Ambil SEMUA catatan absensi untuk JADWAL INI pada HARI INI
+        $subjectAttendancesToday = SubjectAttendance::where('schedule_id', $schedule->id)
             ->whereDate('created_at', $today)
             ->with('student')
             ->get();
 
-        // --- LOGIKA BARU UNTUK MENGAMBIL SISWA IZIN/SAKIT ---
-        $classId = $schedule->teachingAssignment->school_class_id;
-        $studentsOnLeave = Attendance::with('student')
-            ->whereHas('student', function($q) use ($classId) {
-                $q->where('school_class_id', $classId);
-            })
-            ->whereIn('status', ['sakit', 'izin'])
-            ->whereDate('attendance_time', $today)
-            ->get();
-        // --- AKHIR LOGIKA BARU ---
+        // 2. Pisahkan siswa berdasarkan status mereka untuk mata pelajaran ini
+        $attendedStudents = $subjectAttendancesToday->where('status', 'hadir');
+        $studentsOnLeave = $subjectAttendancesToday->whereIn('status', ['sakit', 'izin', 'bolos', 'alpa']);
+        
+        // 3. Ambil semua siswa di kelas
+        $allStudentIdsInClass = Student::where('school_class_id', $classId)->pluck('id');
+        
+        // 4. Ambil ID siswa yang sudah punya catatan di absensi mapel ini
+        $studentIdsWithRecord = $subjectAttendancesToday->pluck('student_id');
 
-        return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave'));
+        // 5. Siswa tanpa kabar adalah siswa di kelas yang ID-nya tidak ada di daftar yang sudah punya catatan
+        $studentsWithoutNotice = Student::whereIn('id', $allStudentIdsInClass)
+            ->whereNotIn('id', $studentIdsWithRecord)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave', 'studentsWithoutNotice'));
     }
 
     /**
@@ -109,5 +114,55 @@ class SubjectAttendanceController extends Controller
             ->groupBy('schedule_id'); // Kelompokkan berdasarkan jadwal
 
         return view('teacher.subject_attendance_history', compact('attendances', 'selectedDate'));
+    }
+
+    /**
+     * Menandai status siswa secara manual oleh guru mapel.
+     */
+    public function markManualAttendance(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'schedule_id' => 'required|exists:schedules,id',
+            'status' => 'required|in:sakit,izin,alpa,bolos',
+        ]);
+
+        $teacher = Auth::user()->teacher;
+        $student = Student::find($request->student_id);
+        $schedule = Schedule::find($request->schedule_id);
+        $today = Carbon::today();
+
+        // Otorisasi: Pastikan guru yang mengajar yang melakukan aksi
+        if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
+            return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
+        }
+
+        // --- PERBAIKAN LOGIKA PENYIMPANAN ---
+        // Cari data absensi untuk siswa dan jadwal ini pada hari ini.
+        $attendance = SubjectAttendance::where('schedule_id', $schedule->id)
+            ->where('student_id', $student->id)
+            ->whereDate('created_at', $today)
+            ->first();
+
+        if ($attendance) {
+            // Jika sudah ada, perbarui statusnya.
+            $attendance->update([
+                'status' => $request->status,
+                'teacher_id' => $teacher->id,
+            ]);
+        } else {
+            // Jika belum ada, buat catatan baru.
+            SubjectAttendance::create([
+                'schedule_id' => $schedule->id,
+                'student_id' => $student->id,
+                'teacher_id' => $teacher->id,
+                'status' => $request->status,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status ' . $student->name . ' berhasil diubah menjadi ' . $request->status,
+        ]);
     }
 }

@@ -46,7 +46,7 @@
                 <!-- Daftar Hadir -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Sudah Hadir (<span id="attended-count">{{ $attendedStudents->count() }}</span>)</h3>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Hadir (<span id="attended-count">{{ $attendedStudents->count() }}</span>)</h3>
                     </div>
                     <div class="border-t border-gray-200 dark:border-slate-700">
                         <ul id="attended-list" class="divide-y divide-gray-200 dark:divide-slate-700 max-h-[60vh] overflow-y-auto">
@@ -57,7 +57,7 @@
                                 </li>
                             @empty
                                 <li id="no-students-yet" class="p-4 text-center text-sm text-gray-500 italic">
-                                    Belum ada siswa yang diabsen.
+                                    Belum ada siswa yang diabsen hadir.
                                 </li>
                             @endforelse
                         </ul>
@@ -82,6 +82,32 @@
                             @empty
                                 <li class="p-4 text-center text-sm text-gray-500 italic">
                                     Tidak ada siswa yang izin/sakit hari ini.
+                                </li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Panel Siswa Tanpa Kabar -->
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Tanpa Kabar</h3>
+                    </div>
+                    <div class="border-t border-gray-200 dark:border-slate-700">
+                        <ul id="no-notice-list" class="divide-y divide-gray-200 dark:divide-slate-700 max-h-[30vh] overflow-y-auto">
+                            @forelse($studentsWithoutNotice as $student)
+                                <li class="p-4 flex items-center justify-between" id="student-row-{{$student->id}}">
+                                    <span class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $student->name }}</span>
+                                    <div class="flex items-center gap-1">
+                                        <button data-student-id="{{ $student->id }}" data-status="sakit" class="manual-mark-btn px-2 py-1 text-xs font-medium text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-full">S</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="izin" class="manual-mark-btn px-2 py-1 text-xs font-medium text-purple-800 bg-purple-100 hover:bg-purple-200 rounded-full">I</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="alpa" class="manual-mark-btn px-2 py-1 text-xs font-medium text-red-800 bg-red-100 hover:bg-red-200 rounded-full">A</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="bolos" class="manual-mark-btn px-2 py-1 text-xs font-medium text-gray-800 bg-gray-200 hover:bg-gray-300 rounded-full">B</button>
+                                    </div>
+                                </li>
+                            @empty
+                                <li id="no-missing-students" class="p-4 text-center text-sm text-gray-500 italic">
+                                    Semua siswa telah memiliki keterangan.
                                 </li>
                             @endforelse
                         </ul>
@@ -118,6 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const attendedList = document.getElementById('attended-list');
     const attendedCount = document.getElementById('attended-count');
     const noStudentsYet = document.getElementById('no-students-yet');
+    const noNoticeList = document.getElementById('no-notice-list');
 
     const modal = {
         element: document.getElementById('attendance-modal'),
@@ -196,7 +223,9 @@ document.addEventListener('DOMContentLoaded', function () {
             modal.iconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />`;
             modal.iconSvg.classList.add('text-green-600', 'dark:text-green-400');
             modal.title.textContent = 'Berhasil';
-            addStudentToList(data.student.name, data.student.time);
+            if(data.student) { // Hanya jika dari scan
+                addStudentToList(data.student.name, data.student.time);
+            }
         } else {
             modal.iconContainer.classList.add('bg-red-100', 'dark:bg-red-900');
             modal.iconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />`;
@@ -237,6 +266,52 @@ document.addEventListener('DOMContentLoaded', function () {
             readerError.classList.remove('hidden');
         });
     }
+
+    // --- FUNGSI BARU UNTUK MENANGANI KLIK TOMBOL MANUAL ---
+    function handleManualMark(event) {
+        const button = event.target;
+        const studentId = button.dataset.studentId;
+        const status = button.dataset.status;
+
+        fetch("{{ route('teacher.subject.attendance.mark_manual') }}", {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ 
+                student_id: studentId,
+                schedule_id: scheduleId,
+                status: status
+            })
+        }).then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(({ status, body }) => {
+            showModal(body.success, body);
+            if (body.success) {
+                // Hapus baris siswa dari daftar "Tanpa Kabar"
+                const studentRow = document.getElementById(`student-row-${studentId}`);
+                if (studentRow) {
+                    studentRow.style.transition = 'opacity 0.5s';
+                    studentRow.style.opacity = '0';
+                    setTimeout(() => {
+                        studentRow.remove();
+                        // Cek jika daftar menjadi kosong
+                        if (noNoticeList.children.length <= 1) { // 1 karena ada item "empty"
+                            document.getElementById('no-missing-students').classList.remove('hidden');
+                        }
+                    }, 500);
+                }
+            }
+        }).catch(error => {
+            showModal(false, { message: 'Tidak dapat terhubung ke server.' });
+        });
+    }
+
+    // Tambahkan event listener ke semua tombol manual
+    document.querySelectorAll('.manual-mark-btn').forEach(button => {
+        button.addEventListener('click', handleManualMark);
+    });
 
     Html5Qrcode.getCameras().then(devices => {
         if (devices && devices.length) {

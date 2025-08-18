@@ -36,7 +36,7 @@ use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestCont
 // Teacher Controller
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestController;
-use App\Http\Controllers\Teacher\SubjectAttendanceController; // <-- TAMBAHKAN INI
+use App\Http\Controllers\Teacher\SubjectAttendanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -174,12 +174,12 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::post('/leave-requests/{leaveRequest}/approve', [TeacherLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
     Route::post('/leave-requests/{leaveRequest}/reject', [TeacherLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
 
-    // == RUTE BARU UNTUK ABSENSI MATA PELAJARAN ==
+    // == RUTE UNTUK ABSENSI MATA PELAJARAN ==
     Route::get('/subject-attendance/scanner/{schedule}', [SubjectAttendanceController::class, 'showScanner'])->name('subject.attendance.scanner');
     Route::post('/subject-attendance/store', [SubjectAttendanceController::class, 'store'])->name('subject.attendance.store');
-    // ============================================
-    // RUTE BARU UNTUK RIWAYAT ABSENSI MAPEL
     Route::get('/subject-attendance/history', [SubjectAttendanceController::class, 'showHistory'])->name('subject.attendance.history');
+    // RUTE BARU UNTUK MENANDAI STATUS SECARA MANUAL
+    Route::post('/subject-attendance/mark-manual', [SubjectAttendanceController::class, 'markManualAttendance'])->name('subject.attendance.mark_manual');
 });
 
 require __DIR__.'/auth.php';
