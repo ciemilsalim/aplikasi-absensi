@@ -9,7 +9,9 @@ use App\Models\Schedule;
 use App\Models\Student;
 use App\Models\SubjectAttendance;
 use App\Models\Attendance;
+use App\Models\TeachingAssignment; // Tambahkan ini
 use Carbon\Carbon;
+use Carbon\CarbonPeriod; // Tambahkan ini
 
 class SubjectAttendanceController extends Controller
 {
@@ -164,5 +166,84 @@ class SubjectAttendanceController extends Controller
             'success' => true,
             'message' => 'Status ' . $student->name . ' berhasil diubah menjadi ' . $request->status,
         ]);
+    }
+
+    /**
+     * Menampilkan halaman formulir untuk filter rekap absensi.
+     */
+    public function showReportForm()
+    {
+        $teacher = Auth::user()->teacher;
+
+        // Ambil semua tugas mengajar unik (kelas dan mapel) untuk guru ini
+        $assignments = TeachingAssignment::with(['schoolClass', 'subject'])
+            ->where('teacher_id', $teacher->id)
+            ->get();
+
+        // Buat daftar kelas dan mapel yang diajar oleh guru
+        $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->unique();
+        $subjects = $assignments->pluck('subject.name', 'subject.id')->unique();
+
+        return view('teacher.report_form', compact('classes', 'subjects'));
+    }
+
+    /**
+     * Menghasilkan dan menampilkan halaman cetak rekap absensi.
+     */
+    public function printReport(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'school_class_id' => 'required|exists:school_classes,id',
+            'subject_id' => 'required|exists:subjects,id',
+        ]);
+
+        $teacher = Auth::user()->teacher;
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+        $schoolClassId = $request->school_class_id;
+        $subjectId = $request->subject_id;
+
+        // Ambil semua siswa di kelas yang dipilih
+        $students = Student::where('school_class_id', $schoolClassId)->orderBy('name')->get();
+
+        // Ambil data absensi sesuai filter
+        $attendances = SubjectAttendance::with('student')
+            ->where('teacher_id', $teacher->id)
+            ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
+                $query->where('school_class_id', $schoolClassId)
+                      ->where('subject_id', $subjectId);
+            })
+            ->get();
+
+        // Buat rentang tanggal untuk header tabel
+        $period = CarbonPeriod::create($startDate, $endDate);
+        $dates = [];
+        foreach ($period as $date) {
+            $dates[] = $date->format('Y-m-d');
+        }
+
+        // Olah data absensi menjadi format pivot [student_id][date] => status
+        $attendanceData = [];
+        foreach ($attendances as $attendance) {
+            $date = Carbon::parse($attendance->created_at)->format('Y-m-d');
+            $attendanceData[$attendance->student_id][$date] = $attendance->status;
+        }
+
+        // Ambil informasi detail untuk judul laporan
+        $classInfo = \App\Models\SchoolClass::find($schoolClassId);
+        $subjectInfo = \App\Models\Subject::find($subjectId);
+
+        return view('teacher.report_print', compact(
+            'students', 
+            'dates', 
+            'attendanceData', 
+            'classInfo', 
+            'subjectInfo', 
+            'startDate', 
+            'endDate'
+        ));
     }
 }

@@ -180,6 +180,9 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::get('/subject-attendance/history', [SubjectAttendanceController::class, 'showHistory'])->name('subject.attendance.history');
     // RUTE BARU UNTUK MENANDAI STATUS SECARA MANUAL
     Route::post('/subject-attendance/mark-manual', [SubjectAttendanceController::class, 'markManualAttendance'])->name('subject.attendance.mark_manual');
+    // == RUTE BARU UNTUK REKAP DAN CETAK ABSENSI MAPEL ==
+    Route::get('/subject-attendance/report', [SubjectAttendanceController::class, 'showReportForm'])->name('subject.attendance.report');
+    Route::get('/subject-attendance/report/print', [SubjectAttendanceController::class, 'printReport'])->name('subject.attendance.print');
 });
 
 require __DIR__.'/auth.php';
