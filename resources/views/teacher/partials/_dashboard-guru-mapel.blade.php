@@ -16,32 +16,45 @@
             </div>
         </div>
 
-        <!-- Jadwal Mengajar Hari Ini -->
+        <!-- Jadwal Mengajar Hari Ini (Timeline View) -->
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Jadwal Mengajar Hari Ini</h3>
-                <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Jadwal Mengajar Hari Ini</h3>
+                <div class="relative border-l border-gray-200 dark:border-slate-700 ml-4">
                     @forelse($schedulesToday as $schedule)
-                        <div class="border-l-4 {{ now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time)) ? 'border-green-500' : 'border-sky-500' }} bg-gray-50 dark:bg-slate-900/50 p-4 rounded-r-lg flex items-center justify-between">
-                            <div>
-                                <p class="font-bold text-gray-800 dark:text-gray-200">{{ $schedule->teachingAssignment->subject->name }} - <span class="text-sky-600 dark:text-sky-400">{{ $schedule->teachingAssignment->schoolClass->name }}</span></p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    <i class="far fa-clock mr-1"></i>
+                        <div class="mb-10 ml-8">
+                            <!-- Timeline Dot -->
+                            <span class="absolute flex items-center justify-center w-8 h-8 {{ now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time)) ? 'bg-green-100 dark:bg-green-900' : 'bg-sky-100 dark:bg-sky-900' }} rounded-full -left-4 ring-8 ring-white dark:ring-slate-800">
+                                <i class="fas fa-chalkboard-teacher {{ now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time)) ? 'text-green-600 dark:text-green-400' : 'text-sky-600 dark:text-sky-400' }}"></i>
+                            </span>
+
+                            <!-- Content Card -->
+                            <div class="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
+                                 <!-- Time -->
+                                <time class="mb-1 text-sm font-normal leading-none text-gray-500 dark:text-gray-400">
                                     {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
+                                </time>
+                                <!-- Subject and Class -->
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {{ $schedule->teachingAssignment->subject->name }}
+                                </h4>
+                                <p class="text-base font-normal text-gray-600 dark:text-gray-300">
+                                    Kelas: {{ $schedule->teachingAssignment->schoolClass->name }}
                                 </p>
-                            </div>
-                            <div>
-                                <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" class="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-sm">
+                                <!-- Action Button -->
+                                <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" class="inline-flex items-center px-4 py-2 mt-4 text-sm font-medium text-white bg-sky-600 rounded-lg hover:bg-sky-700 focus:ring-4 focus:outline-none focus:ring-sky-300 dark:focus:ring-sky-800">
                                     <i class="fas fa-qrcode mr-2"></i>
                                     Ambil Absensi
                                 </a>
                             </div>
                         </div>
                     @empty
-                        <div class="text-center py-10 px-6 bg-gray-50 dark:bg-slate-900/50 rounded-lg">
-                            <i class="fas fa-calendar-check fa-3x text-gray-400"></i>
-                            <p class="mt-4 text-gray-600 dark:text-gray-300">Tidak ada jadwal mengajar untuk Anda hari ini.</p>
-                            <p class="text-sm text-gray-400">Saatnya bersantai atau mempersiapkan materi untuk esok hari.</p>
+                        <div class="ml-4">
+                             <div class="text-center py-10 px-6">
+                                <i class="fas fa-calendar-check fa-3x text-gray-400 dark:text-gray-500"></i>
+                                <p class="mt-4 text-gray-600 dark:text-gray-300">Tidak ada jadwal mengajar untuk Anda hari ini.</p>
+                                <p class="text-sm text-gray-400">Saatnya bersantai atau mempersiapkan materi untuk esok hari.</p>
+                            </div>
                         </div>
                     @endforelse
                 </div>
