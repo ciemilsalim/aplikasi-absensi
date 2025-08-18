@@ -11,6 +11,7 @@ use App\Models\Setting;
 use App\Models\StudentPermit;
 use App\Models\Schedule;
 use App\Models\SubjectAttendance;
+use App\Models\TeachingAssignment;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB; // Pastikan DB facade di-import
@@ -129,7 +130,8 @@ class DashboardController extends Controller
 
     private function getSubjectTeacherData($teacher)
     {
-        $dayOfWeekNumber = now()->dayOfWeek;
+        $now = now();
+        $dayOfWeekNumber = $now->dayOfWeek;
 
         $schedulesToday = Schedule::with([
                 'teachingAssignment.schoolClass', 
@@ -142,26 +144,20 @@ class DashboardController extends Controller
             ->orderBy('start_time', 'asc')
             ->get();
 
-        // --- PERBAIKAN LOGIKA UNTUK SISWA BUTUH PERHATIAN ---
-
-        // 1. Tentukan rentang tanggal semester saat ini.
-        $currentMonth = now()->month;
+        // --- LOGIKA UNTUK SISWA BUTUH PERHATIAN ---
+        $currentMonth = $now->month;
         if ($currentMonth >= 7 && $currentMonth <= 12) {
-            // Semester Ganjil (Juli - Desember)
-            $semesterStart = now()->setMonth(7)->startOfMonth();
-            $semesterEnd = now()->setMonth(12)->endOfMonth();
+            $semesterStart = $now->copy()->setMonth(7)->startOfMonth();
+            $semesterEnd = $now->copy()->setMonth(12)->endOfMonth();
         } else {
-            // Semester Genap (Januari - Juni)
-            $semesterStart = now()->setMonth(1)->startOfMonth();
-            $semesterEnd = now()->setMonth(6)->endOfMonth();
+            $semesterStart = $now->copy()->setMonth(1)->startOfMonth();
+            $semesterEnd = $now->copy()->setMonth(6)->endOfMonth();
         }
 
-        // 2. Query untuk mengambil 5 siswa teratas berdasarkan jumlah alpa/bolos
-        //    HANYA untuk absensi yang dicatat oleh guru ini.
-        $studentsForAttention = SubjectAttendance::where('teacher_id', $teacher->id) // <-- INI PERBAIKANNYA
+        $studentsForAttention = SubjectAttendance::where('teacher_id', $teacher->id)
             ->whereIn('status', ['alpa', 'bolos'])
             ->whereBetween('created_at', [$semesterStart, $semesterEnd])
-            ->with('student.schoolClass') // Eager load data siswa dan kelasnya
+            ->with('student.schoolClass')
             ->select('student_id', 
                 DB::raw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) as alpa_count'),
                 DB::raw('SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) as bolos_count')
@@ -171,10 +167,80 @@ class DashboardController extends Controller
             ->orderByRaw('alpa_count + bolos_count DESC')
             ->take(5)
             ->get();
+            
+        // --- LOGIKA UNTUK RINGKASAN ABSENSI TERAKHIR ---
+        $lastAttendanceSummary = null;
+
+        $lastAttendanceRecord = SubjectAttendance::where('teacher_id', $teacher->id)
+            ->latest() 
+            ->first();
+
+        if ($lastAttendanceRecord) {
+            $attendances = SubjectAttendance::where('schedule_id', $lastAttendanceRecord->schedule_id)
+                ->whereDate('created_at', $lastAttendanceRecord->created_at->toDateString())
+                ->get();
+
+            $summary = $attendances->countBy('status');
+            $lastAttendanceSummary = [
+                'schedule' => $lastAttendanceRecord->schedule,
+                'hadir' => $summary->get('hadir', 0),
+                'sakit' => $summary->get('sakit', 0),
+                'izin' => $summary->get('izin', 0),
+                'alpa' => $summary->get('alpa', 0),
+                'bolos' => $summary->get('bolos', 0),
+            ];
+        }
+        
+        // --- LOGIKA BARU UNTUK GRAFIK PERFORMA KEHADIRAN ---
+        $classPerformanceData = [];
+        $thirtyDaysAgo = now()->subDays(30);
+
+        // Ambil semua tugas mengajar guru (kelas & mapel)
+        $assignments = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->with('schoolClass', 'subject')
+            ->get();
+
+        foreach ($assignments as $assignment) {
+            // Dapatkan semua jadwal untuk tugas mengajar ini
+            $scheduleIds = Schedule::where('teaching_assignment_id', $assignment->id)->pluck('id');
+
+            if ($scheduleIds->isEmpty()) {
+                continue;
+            }
+
+            // Hitung total sesi yang seharusnya terjadi dalam 30 hari terakhir
+            $totalSessions = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->distinct(DB::raw('DATE(created_at)'))
+                ->count();
+
+            // Hitung total kehadiran 'hadir'
+            $totalHadir = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
+                ->where('status', 'hadir')
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->count();
+            
+            // Hitung jumlah siswa di kelas
+            $totalStudentsInClass = Student::where('school_class_id', $assignment->school_class_id)->count();
+            
+            // Hitung total potensi kehadiran (jumlah siswa * jumlah sesi)
+            $potentialAttendance = $totalStudentsInClass * $totalSessions;
+
+            // Hitung persentase
+            $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
+
+            // Kumpulkan data untuk grafik
+            $classPerformanceData[] = [
+                'label' => $assignment->schoolClass->name . ' - ' . $assignment->subject->name,
+                'percentage' => $percentage,
+            ];
+        }
 
         return [
             'schedulesToday' => $schedulesToday,
             'studentsForAttention' => $studentsForAttention,
+            'lastAttendanceSummary' => $lastAttendanceSummary,
+            'classPerformanceData' => $classPerformanceData, // Kirim data grafik ke view
         ];
     }
     
@@ -207,17 +273,14 @@ class DashboardController extends Controller
             'status' => $request->status,
         ]);
 
-        // --- LOGIKA BARU UNTUK SINKRONISASI ---
         if (in_array($request->status, ['sakit', 'izin', 'alpa'])) {
             $dayOfWeekNumber = $today->dayOfWeek;
             
-            // Cari semua jadwal pelajaran untuk kelas siswa tersebut pada hari ini
             $schedules = Schedule::whereHas('teachingAssignment', function ($query) use ($student) {
                 $query->where('school_class_id', $student->school_class_id);
             })->where('day_of_week', $dayOfWeekNumber)->get();
 
             foreach ($schedules as $schedule) {
-                // Buat catatan absensi mata pelajaran jika belum ada
                 $exists = SubjectAttendance::where('schedule_id', $schedule->id)
                                         ->where('student_id', $student->id)
                                         ->whereDate('created_at', $today)
@@ -233,7 +296,6 @@ class DashboardController extends Controller
                 }
             }
         }
-        // --- AKHIR LOGIKA BARU ---
 
         return redirect()->back()->with('success', 'Status kehadiran untuk siswa ' . $student->name . ' berhasil diperbarui.');
     }

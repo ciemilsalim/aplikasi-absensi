@@ -52,10 +52,14 @@
         </div>
     </div>
 
-    {{-- Script Chart.js hanya di-load jika di view wali kelas --}}
-    @if($currentView === 'wali_kelas')
+    {{-- PERBAIKAN: Muat skrip Chart.js jika salah satu dasbor (wali kelas atau guru mapel) aktif --}}
+    @if($currentView === 'wali_kelas' || $currentView === 'guru_mapel')
         @push('scripts')
+        {{-- Muat library Chart.js. Skrip spesifik grafik akan di-push dari file partial masing-masing. --}}
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        
+        {{-- Skrip untuk grafik wali kelas (hanya jika view wali kelas aktif) --}}
+        @if($currentView === 'wali_kelas')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const isDarkMode = document.documentElement.classList.contains('dark');
@@ -96,6 +100,7 @@
                 });
             });
         </script>
+        @endif
         @endpush
     @endif
 </x-app-layout>

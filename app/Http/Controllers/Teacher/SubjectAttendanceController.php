@@ -9,9 +9,9 @@ use App\Models\Schedule;
 use App\Models\Student;
 use App\Models\SubjectAttendance;
 use App\Models\Attendance;
-use App\Models\TeachingAssignment; // Tambahkan ini
+use App\Models\TeachingAssignment;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod; // Tambahkan ini
+use Carbon\CarbonPeriod;
 
 class SubjectAttendanceController extends Controller
 {
@@ -29,24 +29,24 @@ class SubjectAttendanceController extends Controller
         $today = Carbon::today();
         $classId = $schedule->teachingAssignment->school_class_id;
         
-        // 1. Ambil SEMUA catatan absensi untuk JADWAL INI pada HARI INI
         $subjectAttendancesToday = SubjectAttendance::where('schedule_id', $schedule->id)
             ->whereDate('created_at', $today)
             ->with('student')
             ->get();
 
-        // 2. Pisahkan siswa berdasarkan status mereka untuk mata pelajaran ini
         $attendedStudents = $subjectAttendancesToday->where('status', 'hadir');
-        $studentsOnLeave = $subjectAttendancesToday->whereIn('status', ['sakit', 'izin', 'bolos', 'alpa']);
         
-        // 3. Ambil semua siswa di kelas
-        $allStudentIdsInClass = Student::where('school_class_id', $classId)->pluck('id');
-        
-        // 4. Ambil ID siswa yang sudah punya catatan di absensi mapel ini
-        $studentIdsWithRecord = $subjectAttendancesToday->pluck('student_id');
+        // Ambil siswa yang izin/sakit dari absensi harian
+        $studentIdsInClass = Student::where('school_class_id', $classId)->pluck('id');
+        $studentsOnLeave = Attendance::whereIn('student_id', $studentIdsInClass)
+            ->whereDate('attendance_time', $today)
+            ->whereIn('status', ['sakit', 'izin'])
+            ->with('student')
+            ->get();
 
-        // 5. Siswa tanpa kabar adalah siswa di kelas yang ID-nya tidak ada di daftar yang sudah punya catatan
-        $studentsWithoutNotice = Student::whereIn('id', $allStudentIdsInClass)
+        $studentIdsWithRecord = $subjectAttendancesToday->pluck('student_id')->merge($studentsOnLeave->pluck('student_id'))->unique();
+
+        $studentsWithoutNotice = Student::where('school_class_id', $classId)
             ->whereNotIn('id', $studentIdsWithRecord)
             ->orderBy('name', 'asc')
             ->get();
@@ -93,10 +93,15 @@ class SubjectAttendanceController extends Controller
             'status' => 'hadir',
         ]);
 
+        // --- PERUBAHAN DI SINI ---
         return response()->json([
             'success' => true,
             'message' => 'Kehadiran ' . $student->name . ' berhasil dicatat.',
-            'student' => ['name' => $student->name, 'time' => $attendance->created_at->format('H:i:s')]
+            'student' => [
+                'id' => $student->id, // ID siswa ditambahkan ke respons
+                'name' => $student->name, 
+                'time' => $attendance->created_at->format('H:i:s')
+            ]
         ]);
     }
 
@@ -113,7 +118,7 @@ class SubjectAttendanceController extends Controller
             ->where('teacher_id', $teacher->id)
             ->whereDate('created_at', $selectedDate)
             ->get()
-            ->groupBy('schedule_id'); // Kelompokkan berdasarkan jadwal
+            ->groupBy('schedule_id');
 
         return view('teacher.subject_attendance_history', compact('attendances', 'selectedDate'));
     }
@@ -134,26 +139,21 @@ class SubjectAttendanceController extends Controller
         $schedule = Schedule::find($request->schedule_id);
         $today = Carbon::today();
 
-        // Otorisasi: Pastikan guru yang mengajar yang melakukan aksi
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
         }
 
-        // --- PERBAIKAN LOGIKA PENYIMPANAN ---
-        // Cari data absensi untuk siswa dan jadwal ini pada hari ini.
         $attendance = SubjectAttendance::where('schedule_id', $schedule->id)
             ->where('student_id', $student->id)
             ->whereDate('created_at', $today)
             ->first();
 
         if ($attendance) {
-            // Jika sudah ada, perbarui statusnya.
             $attendance->update([
                 'status' => $request->status,
                 'teacher_id' => $teacher->id,
             ]);
         } else {
-            // Jika belum ada, buat catatan baru.
             SubjectAttendance::create([
                 'schedule_id' => $schedule->id,
                 'student_id' => $student->id,
@@ -175,12 +175,10 @@ class SubjectAttendanceController extends Controller
     {
         $teacher = Auth::user()->teacher;
 
-        // Ambil semua tugas mengajar unik (kelas dan mapel) untuk guru ini
         $assignments = TeachingAssignment::with(['schoolClass', 'subject'])
             ->where('teacher_id', $teacher->id)
             ->get();
 
-        // Buat daftar kelas dan mapel yang diajar oleh guru
         $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->unique();
         $subjects = $assignments->pluck('subject.name', 'subject.id')->unique();
 
@@ -205,10 +203,8 @@ class SubjectAttendanceController extends Controller
         $schoolClassId = $request->school_class_id;
         $subjectId = $request->subject_id;
 
-        // Ambil semua siswa di kelas yang dipilih
         $students = Student::where('school_class_id', $schoolClassId)->orderBy('name')->get();
 
-        // Ambil data absensi sesuai filter
         $attendances = SubjectAttendance::with('student')
             ->where('teacher_id', $teacher->id)
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
@@ -218,21 +214,18 @@ class SubjectAttendanceController extends Controller
             })
             ->get();
 
-        // Buat rentang tanggal untuk header tabel
         $period = CarbonPeriod::create($startDate, $endDate);
         $dates = [];
         foreach ($period as $date) {
             $dates[] = $date->format('Y-m-d');
         }
 
-        // Olah data absensi menjadi format pivot [student_id][date] => status
         $attendanceData = [];
         foreach ($attendances as $attendance) {
             $date = Carbon::parse($attendance->created_at)->format('Y-m-d');
             $attendanceData[$attendance->student_id][$date] = $attendance->status;
         }
 
-        // Ambil informasi detail untuk judul laporan
         $classInfo = \App\Models\SchoolClass::find($schoolClassId);
         $subjectInfo = \App\Models\Subject::find($subjectId);
 

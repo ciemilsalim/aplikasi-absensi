@@ -1,5 +1,5 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Kolom Utama: Jadwal Mengajar -->
+    <!-- Kolom Utama: Jadwal Mengajar & Grafik -->
     <div class="lg:col-span-2 space-y-6">
         <!-- Welcome Section -->
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -16,6 +16,17 @@
             </div>
         </div>
 
+        <!-- GRAFIK BARU: Performa Kehadiran per Kelas -->
+        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Performa Kehadiran per Kelas</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Rata-rata kehadiran dalam 30 hari terakhir.</p>
+                <div class="h-64">
+                    <canvas id="classPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
         <!-- Jadwal Mengajar Hari Ini (Timeline View) -->
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
@@ -23,25 +34,19 @@
                 <div class="relative border-l border-gray-200 dark:border-slate-700 ml-4">
                     @forelse($schedulesToday as $schedule)
                         <div class="mb-10 ml-8">
-                            <!-- Timeline Dot -->
                             <span class="absolute flex items-center justify-center w-8 h-8 {{ now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time)) ? 'bg-green-100 dark:bg-green-900' : 'bg-sky-100 dark:bg-sky-900' }} rounded-full -left-4 ring-8 ring-white dark:ring-slate-800">
                                 <i class="fas fa-chalkboard-teacher {{ now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time)) ? 'text-green-600 dark:text-green-400' : 'text-sky-600 dark:text-sky-400' }}"></i>
                             </span>
-
-                            <!-- Content Card -->
                             <div class="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
-                                 <!-- Time -->
                                 <time class="mb-1 text-sm font-normal leading-none text-gray-500 dark:text-gray-400">
                                     {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
                                 </time>
-                                <!-- Subject and Class -->
                                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
                                     {{ $schedule->teachingAssignment->subject->name }}
                                 </h4>
                                 <p class="text-base font-normal text-gray-600 dark:text-gray-300">
                                     Kelas: {{ $schedule->teachingAssignment->schoolClass->name }}
                                 </p>
-                                <!-- Action Button -->
                                 <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" class="inline-flex items-center px-4 py-2 mt-4 text-sm font-medium text-white bg-sky-600 rounded-lg hover:bg-sky-700 focus:ring-4 focus:outline-none focus:ring-sky-300 dark:focus:ring-sky-800">
                                     <i class="fas fa-qrcode mr-2"></i>
                                     Ambil Absensi
@@ -53,7 +58,6 @@
                              <div class="text-center py-10 px-6">
                                 <i class="fas fa-calendar-check fa-3x text-gray-400 dark:text-gray-500"></i>
                                 <p class="mt-4 text-gray-600 dark:text-gray-300">Tidak ada jadwal mengajar untuk Anda hari ini.</p>
-                                <p class="text-sm text-gray-400">Saatnya bersantai atau mempersiapkan materi untuk esok hari.</p>
                             </div>
                         </div>
                     @endforelse
@@ -62,67 +66,114 @@
         </div>
     </div>
 
-    <!-- Kolom Samping: Akses Cepat & Notifikasi -->
+    <!-- Kolom Samping -->
     <div class="lg:col-span-1 space-y-6">
-        <!-- Panel Akses Cepat -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Akses Cepat</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <a href="{{ route('teacher.subject.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-teal-50 dark:bg-teal-900/50 hover:bg-teal-100 dark:hover:bg-teal-900 rounded-lg transition-colors duration-200">
-                    <i class="fas fa-history h-8 w-8 text-teal-600 dark:text-teal-400 mb-2"></i>
-                    <span class="text-sm font-medium text-center text-teal-800 dark:text-teal-300">Riwayat Absen Mapel</span>
-                </a>
-                <a href="{{ route('teacher.leave_requests.index') }}" class="flex flex-col items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded-lg transition-colors duration-200">
-                    <i class="fas fa-file-alt h-8 w-8 text-indigo-600 dark:text-indigo-400 mb-2"></i>
-                    <span class="text-sm font-medium text-center text-indigo-800 dark:text-indigo-300">Persetujuan Izin</span>
-                </a>
+        @if($lastAttendanceSummary)
+        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Absensi Terakhir</h3>
+            </div>
+            <div class="p-6 space-y-3">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Sesi terakhir Anda:</p>
+                    <p class="font-bold text-lg text-sky-600 dark:text-sky-400">
+                        {{ $lastAttendanceSummary['schedule']->teachingAssignment->subject->name }}
+                    </p>
+                    <p class="text-gray-700 dark:text-gray-300">
+                        Kelas {{ $lastAttendanceSummary['schedule']->teachingAssignment->schoolClass->name }}
+                    </p>
+                </div>
+                <div class="border-t border-gray-200 dark:border-slate-700 pt-3">
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-green-50 dark:bg-green-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-green-700 dark:text-green-400">{{ $lastAttendanceSummary['hadir'] }}</span><p class="text-xs text-green-600 dark:text-green-500">Hadir</p></div>
+                        <div class="bg-yellow-50 dark:bg-yellow-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-yellow-700 dark:text-yellow-400">{{ $lastAttendanceSummary['sakit'] }}</span><p class="text-xs text-yellow-600 dark:text-yellow-500">Sakit</p></div>
+                        <div class="bg-blue-50 dark:bg-blue-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-blue-700 dark:text-blue-400">{{ $lastAttendanceSummary['izin'] }}</span><p class="text-xs text-blue-600 dark:text-blue-500">Izin</p></div>
+                        <div class="bg-red-50 dark:bg-red-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-red-700 dark:text-red-400">{{ $lastAttendanceSummary['alpa'] }}</span><p class="text-xs text-red-600 dark:text-red-500">Alpa</p></div>
+                        <div class="bg-orange-50 dark:bg-orange-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-orange-700 dark:text-orange-400">{{ $lastAttendanceSummary['bolos'] }}</span><p class="text-xs text-orange-600 dark:text-orange-500">Bolos</p></div>
+                    </div>
+                </div>
             </div>
         </div>
+        @endif
         
-        <!-- Panel Siswa Butuh Perhatian -->
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 border-b border-gray-200 dark:border-slate-700">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Siswa Butuh Perhatian</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Berdasarkan absensi mapel semester ini.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Berdasarkan absensi semester ini.</p>
             </div>
             <div class="p-6">
                 <ul class="divide-y divide-gray-200 dark:divide-slate-700">
                     @forelse($studentsForAttention as $data)
-                        @if($data->student) {{-- Pastikan relasi student ada --}}
+                        @if($data->student)
                         <li class="py-3 flex justify-between items-center">
                             <div>
                                 <p class="font-semibold text-gray-800 dark:text-gray-200">{{ $data->student->name }}</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $data->student->schoolClass->name ?? 'Kelas tidak diketahui' }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $data->student->schoolClass->name ?? '' }}</p>
                             </div>
                             <div class="text-right flex-shrink-0">
-                                @if($data->alpa_count > 0)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                    Alpa: {{ $data->alpa_count }}
-                                </span>
-                                @endif
-                                @if($data->bolos_count > 0)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 ml-2">
-                                    Bolos: {{ $data->bolos_count }}
-                                </span>
-                                @endif
+                                @if($data->alpa_count > 0)<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Alpa: {{ $data->alpa_count }}</span>@endif
+                                @if($data->bolos_count > 0)<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 ml-2">Bolos: {{ $data->bolos_count }}</span>@endif
                             </div>
                         </li>
                         @endif
                     @empty
-                        <li class="py-10 text-center text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-user-check text-3xl text-gray-300 dark:text-gray-600"></i>
-                            <p class="mt-3">Tidak ada siswa dengan catatan alpa/bolos yang signifikan.</p>
-                        </li>
+                        <li class="py-10 text-center text-gray-500 dark:text-gray-400"><i class="fas fa-user-check text-3xl text-gray-300 dark:text-gray-600"></i><p class="mt-3">Tidak ada siswa yang perlu perhatian khusus.</p></li>
                     @endforelse
                 </ul>
             </div>
         </div>
-        
-        <!-- Panel Pengumuman (jika ada) -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Pengumuman Sekolah</h3>
-            {{-- Loop pengumuman di sini --}}
-            <p class="text-sm text-center text-gray-400 italic py-4">Belum ada pengumuman baru.</p>
-        </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const ctx = document.getElementById('classPerformanceChart').getContext('2d');
+        
+        const performanceData = @json($classPerformanceData ?? []);
+        const labels = performanceData.map(d => d.label);
+        const data = performanceData.map(d => d.percentage);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Kehadiran Rata-rata (%)',
+                    data: data,
+                    backgroundColor: 'rgba(14, 165, 233, 0.5)',
+                    borderColor: 'rgba(14, 165, 233, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' },
+                        grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
+                    },
+                    y: {
+                         ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' },
+                         grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => ' Kehadiran: ' + context.parsed.x + '%'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+@endpush
