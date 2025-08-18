@@ -142,7 +142,7 @@ class DashboardController extends Controller
             ->orderBy('start_time', 'asc')
             ->get();
 
-        // --- LOGIKA BARU UNTUK SISWA BUTUH PERHATIAN ---
+        // --- PERBAIKAN LOGIKA UNTUK SISWA BUTUH PERHATIAN ---
 
         // 1. Tentukan rentang tanggal semester saat ini.
         $currentMonth = now()->month;
@@ -156,14 +156,9 @@ class DashboardController extends Controller
             $semesterEnd = now()->setMonth(6)->endOfMonth();
         }
 
-        // 2. Dapatkan semua ID siswa yang diajar oleh guru ini.
-        $taughtStudentIds = Student::whereIn(
-            'school_class_id',
-            $teacher->teachingAssignments->pluck('school_class_id')->unique()
-        )->pluck('id');
-
-        // 3. Query untuk mengambil 5 siswa teratas berdasarkan jumlah alpa/bolos.
-        $studentsForAttention = SubjectAttendance::whereIn('student_id', $taughtStudentIds)
+        // 2. Query untuk mengambil 5 siswa teratas berdasarkan jumlah alpa/bolos
+        //    HANYA untuk absensi yang dicatat oleh guru ini.
+        $studentsForAttention = SubjectAttendance::where('teacher_id', $teacher->id) // <-- INI PERBAIKANNYA
             ->whereIn('status', ['alpa', 'bolos'])
             ->whereBetween('created_at', [$semesterStart, $semesterEnd])
             ->with('student.schoolClass') // Eager load data siswa dan kelasnya
@@ -172,13 +167,14 @@ class DashboardController extends Controller
                 DB::raw('SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) as bolos_count')
             )
             ->groupBy('student_id')
+            ->havingRaw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) + SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) > 0')
             ->orderByRaw('alpa_count + bolos_count DESC')
             ->take(5)
             ->get();
 
         return [
             'schedulesToday' => $schedulesToday,
-            'studentsForAttention' => $studentsForAttention, // Kirim data ke view
+            'studentsForAttention' => $studentsForAttention,
         ];
     }
     
