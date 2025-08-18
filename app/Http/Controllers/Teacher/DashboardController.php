@@ -12,9 +12,10 @@ use App\Models\StudentPermit;
 use App\Models\Schedule;
 use App\Models\SubjectAttendance;
 use App\Models\TeachingAssignment;
+use App\Models\TeacherNote; // <-- Tambahkan model ini
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-use Illuminate\Support\Facades\DB; // Pastikan DB facade di-import
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -144,7 +145,6 @@ class DashboardController extends Controller
             ->orderBy('start_time', 'asc')
             ->get();
 
-        // --- LOGIKA UNTUK SISWA BUTUH PERHATIAN ---
         $currentMonth = $now->month;
         if ($currentMonth >= 7 && $currentMonth <= 12) {
             $semesterStart = $now->copy()->setMonth(7)->startOfMonth();
@@ -168,9 +168,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
             
-        // --- LOGIKA UNTUK RINGKASAN ABSENSI TERAKHIR ---
         $lastAttendanceSummary = null;
-
         $lastAttendanceRecord = SubjectAttendance::where('teacher_id', $teacher->id)
             ->latest() 
             ->first();
@@ -191,59 +189,55 @@ class DashboardController extends Controller
             ];
         }
         
-        // --- LOGIKA BARU UNTUK GRAFIK PERFORMA KEHADIRAN ---
         $classPerformanceData = [];
         $thirtyDaysAgo = now()->subDays(30);
-
-        // Ambil semua tugas mengajar guru (kelas & mapel)
         $assignments = TeachingAssignment::where('teacher_id', $teacher->id)
             ->with('schoolClass', 'subject')
             ->get();
 
         foreach ($assignments as $assignment) {
-            // Dapatkan semua jadwal untuk tugas mengajar ini
             $scheduleIds = Schedule::where('teaching_assignment_id', $assignment->id)->pluck('id');
-
-            if ($scheduleIds->isEmpty()) {
-                continue;
-            }
-
-            // Hitung total sesi yang seharusnya terjadi dalam 30 hari terakhir
-            $totalSessions = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
-                ->where('created_at', '>=', $thirtyDaysAgo)
-                ->distinct(DB::raw('DATE(created_at)'))
-                ->count();
-
-            // Hitung total kehadiran 'hadir'
-            $totalHadir = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
-                ->where('status', 'hadir')
-                ->where('created_at', '>=', $thirtyDaysAgo)
-                ->count();
-            
-            // Hitung jumlah siswa di kelas
+            if ($scheduleIds->isEmpty()) continue;
+            $totalSessions = SubjectAttendance::whereIn('schedule_id', $scheduleIds)->where('created_at', '>=', $thirtyDaysAgo)->distinct(DB::raw('DATE(created_at)'))->count();
+            $totalHadir = SubjectAttendance::whereIn('schedule_id', $scheduleIds)->where('status', 'hadir')->where('created_at', '>=', $thirtyDaysAgo)->count();
             $totalStudentsInClass = Student::where('school_class_id', $assignment->school_class_id)->count();
-            
-            // Hitung total potensi kehadiran (jumlah siswa * jumlah sesi)
             $potentialAttendance = $totalStudentsInClass * $totalSessions;
-
-            // Hitung persentase
             $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
-
-            // Kumpulkan data untuk grafik
             $classPerformanceData[] = [
                 'label' => $assignment->schoolClass->name . ' - ' . $assignment->subject->name,
                 'percentage' => $percentage,
             ];
         }
 
+        // --- LOGIKA BARU UNTUK CATATAN PRIBADI ---
+        $teacherNote = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
+
         return [
             'schedulesToday' => $schedulesToday,
             'studentsForAttention' => $studentsForAttention,
             'lastAttendanceSummary' => $lastAttendanceSummary,
-            'classPerformanceData' => $classPerformanceData, // Kirim data grafik ke view
+            'classPerformanceData' => $classPerformanceData,
+            'teacherNote' => $teacherNote, // <-- Kirim catatan ke view
         ];
     }
-    
+
+    /**
+     * Menyimpan atau memperbarui catatan pribadi guru.
+     */
+    public function updateNote(Request $request)
+    {
+        $request->validate(['content' => 'nullable|string']);
+
+        $teacher = Auth::user()->teacher;
+
+        TeacherNote::updateOrCreate(
+            ['teacher_id' => $teacher->id],
+            ['content' => $request->content]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Catatan berhasil disimpan.']);
+    }
+
     public function markAttendance(Request $request)
     {
         $request->validate([

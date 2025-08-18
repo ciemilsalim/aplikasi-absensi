@@ -16,7 +16,7 @@
             </div>
         </div>
 
-        <!-- GRAFIK BARU: Performa Kehadiran per Kelas -->
+        <!-- Performa Kehadiran per Kelas -->
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Performa Kehadiran per Kelas</h3>
@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <!-- Jadwal Mengajar Hari Ini (Timeline View) -->
+        <!-- Jadwal Mengajar Hari Ini -->
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Jadwal Mengajar Hari Ini</h3>
@@ -68,6 +68,21 @@
 
     <!-- Kolom Samping -->
     <div class="lg:col-span-1 space-y-6">
+        <!-- PANEL BARU: Catatan Pribadi -->
+        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <form id="note-form" action="{{ route('teacher.notes.update') }}" method="POST">
+                @csrf
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Catatan Pribadi</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Catatan ini hanya terlihat oleh Anda.</p>
+                    <textarea id="teacher-note-content" name="content" rows="6" class="w-full border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 focus:border-sky-500 focus:ring-sky-500 rounded-md shadow-sm" placeholder="Tulis pengingat atau catatan penting di sini...">{{ $teacherNote->content ?? '' }}</textarea>
+                    <div id="note-status" class="text-xs text-green-600 dark:text-green-400 mt-2 h-4 opacity-0 transition-opacity duration-300">
+                        Catatan disimpan!
+                    </div>
+                </div>
+            </form>
+        </div>
+
         @if($lastAttendanceSummary)
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 border-b border-gray-200 dark:border-slate-700">
@@ -76,12 +91,8 @@
             <div class="p-6 space-y-3">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Sesi terakhir Anda:</p>
-                    <p class="font-bold text-lg text-sky-600 dark:text-sky-400">
-                        {{ $lastAttendanceSummary['schedule']->teachingAssignment->subject->name }}
-                    </p>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        Kelas {{ $lastAttendanceSummary['schedule']->teachingAssignment->schoolClass->name }}
-                    </p>
+                    <p class="font-bold text-lg text-sky-600 dark:text-sky-400">{{ $lastAttendanceSummary['schedule']->teachingAssignment->subject->name }}</p>
+                    <p class="text-gray-700 dark:text-gray-300">Kelas {{ $lastAttendanceSummary['schedule']->teachingAssignment->schoolClass->name }}</p>
                 </div>
                 <div class="border-t border-gray-200 dark:border-slate-700 pt-3">
                     <div class="grid grid-cols-3 gap-2 text-center">
@@ -126,12 +137,10 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const isDarkMode = document.documentElement.classList.contains('dark');
         const ctx = document.getElementById('classPerformanceChart').getContext('2d');
-        
         const performanceData = @json($classPerformanceData ?? []);
         const labels = performanceData.map(d => d.label);
         const data = performanceData.map(d => d.percentage);
@@ -174,6 +183,56 @@
                 }
             }
         });
+
+        // --- JAVASCRIPT BARU UNTUK CATATAN PRIBADI ---
+        const noteForm = document.getElementById('note-form');
+        const noteContent = document.getElementById('teacher-note-content');
+        const noteStatus = document.getElementById('note-status');
+        let saveTimeout;
+
+        noteContent.addEventListener('input', () => {
+            // Hapus timeout yang ada jika pengguna mengetik lagi
+            clearTimeout(saveTimeout);
+            
+            // Atur timeout baru untuk menyimpan setelah 1.5 detik tidak ada ketikan
+            saveTimeout = setTimeout(() => {
+                saveNote();
+            }, 1500);
+        });
+
+        function saveNote() {
+            const formData = new FormData(noteForm);
+
+            fetch(noteForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': formData.get('_token'),
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Tampilkan pesan "Tersimpan"
+                    noteStatus.textContent = 'Catatan disimpan!';
+                    noteStatus.classList.remove('text-red-600');
+                    noteStatus.classList.add('text-green-600');
+                    noteStatus.style.opacity = '1';
+                    // Sembunyikan lagi setelah 2 detik
+                    setTimeout(() => {
+                        noteStatus.style.opacity = '0';
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                noteStatus.textContent = 'Gagal menyimpan.';
+                noteStatus.classList.remove('text-green-600');
+                noteStatus.classList.add('text-red-600');
+                noteStatus.style.opacity = '1';
+            });
+        }
     });
 </script>
 @endpush
