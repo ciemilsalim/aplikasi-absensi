@@ -239,39 +239,28 @@ class DashboardController extends Controller
     }
 
     /**
-     * PERBAIKAN: Menambahkan fungsi markAttendance yang hilang untuk menyimpan absensi manual.
+     * PERBAIKAN: Mengubah fungsi untuk menangani update absensi per siswa,
+     * sesuai dengan data yang dikirim oleh tombol di view.
      */
     public function markAttendance(Request $request)
     {
         $request->validate([
-            'students' => 'required|array',
-            'students.*.status' => 'required|string|in:tepat_waktu,sakit,izin,alpa',
+            'student_id' => 'required|exists:students,id',
+            'status' => 'required|string|in:sakit,izin,alpa',
         ]);
 
         $today = Carbon::today();
+        $studentId = $request->input('student_id');
+        $status = $request->input('status');
 
-        foreach ($request->students as $studentId => $data) {
-            $status = $data['status'];
-
-            // Cari absensi yang ada untuk siswa ini pada hari ini
-            $attendance = Attendance::where('student_id', $studentId)
-                                    ->whereDate('attendance_time', $today)
-                                    ->first();
-
-            if ($attendance) {
-                // Jika ada, perbarui statusnya
-                $attendance->status = $status;
-                $attendance->save();
-            } else {
-                // Jika tidak ada, buat record baru
-                Attendance::create([
-                    'student_id' => $studentId,
-                    'status' => $status,
-                    // Set waktu ke awal hari untuk entri manual (sakit, izin, alpa)
-                    'attendance_time' => $today->startOfDay(),
-                ]);
-            }
-        }
+        // Logika di view (_dashboard-wali-kelas.blade.php) hanya menampilkan tombol
+        // jika siswa BELUM memiliki data absensi hari ini.
+        // Oleh karena itu, kita hanya perlu membuat record baru.
+        Attendance::create([
+            'student_id' => $studentId,
+            'status' => $status,
+            'attendance_time' => $today->startOfDay(), // Set waktu ke 00:00:00 hari ini
+        ]);
 
         return back()->with('success', 'Absensi berhasil diperbarui.');
     }
