@@ -182,7 +182,9 @@ class DashboardController extends Controller
             )
             ->groupBy('student_id')
             ->havingRaw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) + SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) > 0')
-            ->orderByRaw('alpa_count + bolos_count DESC')
+            // PERBAIKAN: Mengganti alias 'alpa_count' dan 'bolos_count' dengan ekspresi SUM lengkap
+            // agar kompatibel dengan konfigurasi MySQL/MariaDB yang lebih ketat di server hosting.
+            ->orderByRaw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) + SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) DESC')
             ->take(5)
             ->get();
             
