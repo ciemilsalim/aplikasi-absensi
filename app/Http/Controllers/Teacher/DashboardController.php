@@ -182,8 +182,6 @@ class DashboardController extends Controller
             )
             ->groupBy('student_id')
             ->havingRaw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) + SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) > 0')
-            // PERBAIKAN: Mengganti alias 'alpa_count' dan 'bolos_count' dengan ekspresi SUM lengkap
-            // agar kompatibel dengan konfigurasi MySQL/MariaDB yang lebih ketat di server hosting.
             ->orderByRaw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) + SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) DESC')
             ->take(5)
             ->get();
@@ -241,7 +239,45 @@ class DashboardController extends Controller
     }
 
     /**
-     * PERBAIKAN: Menambahkan kembali method yang hilang untuk menampilkan riwayat absensi.
+     * PERBAIKAN: Menambahkan fungsi markAttendance yang hilang untuk menyimpan absensi manual.
+     */
+    public function markAttendance(Request $request)
+    {
+        $request->validate([
+            'students' => 'required|array',
+            'students.*.status' => 'required|string|in:tepat_waktu,sakit,izin,alpa',
+        ]);
+
+        $today = Carbon::today();
+
+        foreach ($request->students as $studentId => $data) {
+            $status = $data['status'];
+
+            // Cari absensi yang ada untuk siswa ini pada hari ini
+            $attendance = Attendance::where('student_id', $studentId)
+                                    ->whereDate('attendance_time', $today)
+                                    ->first();
+
+            if ($attendance) {
+                // Jika ada, perbarui statusnya
+                $attendance->status = $status;
+                $attendance->save();
+            } else {
+                // Jika tidak ada, buat record baru
+                Attendance::create([
+                    'student_id' => $studentId,
+                    'status' => $status,
+                    // Set waktu ke awal hari untuk entri manual (sakit, izin, alpa)
+                    'attendance_time' => $today->startOfDay(),
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Absensi berhasil diperbarui.');
+    }
+
+    /**
+     * Menampilkan riwayat absensi.
      */
     public function showAttendanceHistory(Request $request)
     {
@@ -287,3 +323,4 @@ class DashboardController extends Controller
         ));
     }
 }
+
