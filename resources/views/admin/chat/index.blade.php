@@ -17,7 +17,10 @@
                         <div id="contact-list" class="flex-grow overflow-y-auto">
                             @forelse($parents as $parent)
                                 <a href="{{ route('admin.chat.index', ['selectedParent' => $parent->id]) }}" class="contact-button w-full text-left p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition {{ ($selectedParent && $selectedParent->id === $parent->id) ? 'bg-sky-100 dark:bg-sky-900/50' : '' }}">
-                                    <div class="relative"><span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span></div>
+                                    {{-- PERBARUAN: Menampilkan foto profil --}}
+                                    <div class="relative">
+                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ $parent->user && $parent->user->profile_photo_path ? asset('storage/' . $parent->user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($parent->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ $parent->name }}">
+                                    </div>
                                     <div class="flex-grow">
                                         <div class="flex justify-between items-start">
                                             <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $parent->name }}</p>
@@ -46,9 +49,8 @@
                                     <a href="{{ route('admin.chat.index') }}" class="lg:hidden text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
                                     </a>
-                                    <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600">
-                                        <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                                    </span>
+                                    {{-- PERBARUAN: Menampilkan foto profil di header --}}
+                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ $selectedParent->user && $selectedParent->user->profile_photo_path ? asset('storage/' . $selectedParent->user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($selectedParent->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ $selectedParent->name }}">
                                     <div>
                                         <p class="font-semibold text-gray-900 dark:text-white">{{ $selectedParent->name }}</p>
                                         <p class="text-xs text-gray-500 dark:text-gray-400">Orang Tua / Wali Siswa</p>
@@ -129,3 +131,4 @@
     </script>
     @endpush
 </x-app-layout>
+

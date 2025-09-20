@@ -29,4 +29,11 @@ class ParentModel extends Model
     {
         return $this->hasMany(LeaveRequest::class);
     }
+
+    public function adminConversation()
+    {
+        // Asumsi admin_id adalah 1, atau Anda bisa mengambilnya dari Auth::id() jika konteksnya memungkinkan.
+        // Namun, untuk relasi murni, lebih baik definisikan seperti ini.
+        return $this->hasOne(AdminConversation::class, 'parent_id');
+    }
 }

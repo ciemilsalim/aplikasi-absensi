@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage; // Tambahkan ini
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -26,13 +27,33 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        // --- LOGIKA UPLOAD FOTO PROFIL DITAMBAHKAN DI SINI ---
+        if ($request->hasFile('photo')) {
+            // Validasi file foto
+            $request->validate([
+                'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            ]);
+
+            // Hapus foto lama jika ada
+            if ($user->profile_photo_path) {
+                Storage::disk('public')->delete($user->profile_photo_path);
+            }
+
+            // Simpan foto baru dan dapatkan path-nya
+            $path = $request->file('photo')->store('profile-photos', 'public');
+            $user->profile_photo_path = $path;
+        }
+        // --- AKHIR LOGIKA UPLOAD FOTO ---
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -48,6 +69,11 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // Hapus foto profil saat akun dihapus
+        if ($user->profile_photo_path) {
+            Storage::disk('public')->delete($user->profile_photo_path);
+        }
+
         Auth::logout();
 
         $user->delete();
@@ -58,3 +84,4 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 }
+

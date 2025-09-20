@@ -25,12 +25,14 @@ class ChatController extends Controller
         $messages = collect();
         $activeConversation = null;
         $adminConversation = null;
+        $adminUser = null; // Inisialisasi variabel adminUser
 
         if ($user->role === 'parent') {
-            $admin = User::where('role', 'admin')->first();
-            if ($admin) {
+            // PERBARUAN: Mengambil data admin untuk diteruskan ke view
+            $adminUser = User::where('role', 'admin')->first();
+            if ($adminUser) {
                 $adminConversation = AdminConversation::firstOrCreate(
-                    ['parent_id' => $user->parent->id, 'admin_id' => $admin->id]
+                    ['parent_id' => $user->parent->id, 'admin_id' => $adminUser->id]
                 );
                 
                 $adminConversation->unread_messages_count = $adminConversation->messages()
@@ -42,7 +44,6 @@ class ChatController extends Controller
 
         if ($conversation && $conversation->exists) {
             $this->authorizeConversationAccess($conversation);
-            // PERBARUAN: Mengelompokkan pesan berdasarkan tanggal
             $messages = $conversation->messages()->with('user')->get()->groupBy(function($message) {
                 return $message->created_at->format('Y-m-d');
             });
@@ -55,6 +56,7 @@ class ChatController extends Controller
             'adminConversation' => $adminConversation,
             'activeConversation' => $activeConversation,
             'messages' => $messages,
+            'adminUser' => $adminUser, // <-- Kirim data admin ke view
         ]);
     }
 
@@ -81,16 +83,15 @@ class ChatController extends Controller
         if ($user->role !== 'parent') abort(403);
         
         $parent = $user->parent;
-        $admin = User::where('role', 'admin')->first();
-        if (!$admin) return redirect()->route('chat.index')->with('error', 'Tidak ada admin.');
+        $adminUser = User::where('role', 'admin')->first();
+        if (!$adminUser) return redirect()->route('chat.index')->with('error', 'Tidak ada admin.');
 
         $adminConversation = AdminConversation::firstOrCreate(
-            ['parent_id' => $parent->id, 'admin_id' => $admin->id]
+            ['parent_id' => $parent->id, 'admin_id' => $adminUser->id]
         );
         
         $teacherConversations = $this->getConversationsForUser($user);
         
-        // PERBARUAN: Mengelompokkan pesan admin berdasarkan tanggal
         $messages = $adminConversation->messages()->with('user')->get()->groupBy(function($message) {
             return $message->created_at->format('Y-m-d');
         });
@@ -100,8 +101,9 @@ class ChatController extends Controller
         return view('chat.index', [
             'conversations' => $teacherConversations,
             'adminConversation' => $adminConversation,
-            'activeConversation' => $adminConversation, // Set admin chat as active
+            'activeConversation' => $adminConversation,
             'messages' => $messages,
+            'adminUser' => $adminUser,
         ]);
     }
 
@@ -148,7 +150,6 @@ class ChatController extends Controller
             return collect();
         }
 
-        // PERBARUAN: Menambahkan subquery untuk waktu pesan terakhir dan mengurutkan berdasarkan itu
         return Conversation::whereIn('id', $conversationIds)
             ->with(['student', 'teacher.user', 'parent.user'])
             ->addSelect(['*', 'last_message_at' => Message::select('created_at')
@@ -170,3 +171,4 @@ class ChatController extends Controller
         if ($user->role === 'teacher' && $conversation->teacher_id !== $user->teacher?->id) abort(403);
     }
 }
+

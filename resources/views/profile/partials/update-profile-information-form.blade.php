@@ -13,9 +13,44 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <!-- PENTING: Tambahkan enctype untuk upload file -->
+    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
         @csrf
         @method('patch')
+
+        <!-- Bagian Foto Profil -->
+        <div x-data="{photoName: null, photoPreview: null}" class="col-span-6 sm:col-span-4">
+            <!-- Input File Foto -->
+            <input type="file" class="hidden"
+                   name="photo"
+                   x-ref="photo"
+                   x-on:change="
+                       photoName = $refs.photo.files[0].name;
+                       const reader = new FileReader();
+                       reader.onload = (e) => {
+                           photoPreview = e.target.result;
+                       };
+                       reader.readAsDataURL($refs.photo.files[0]);
+                   " />
+
+            <x-input-label for="photo" :value="__('Photo')" />
+
+            <!-- Foto Profil Saat Ini -->
+            <div class="mt-2">
+                <img x-show="!photoPreview" src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ Auth::user()->name }}" class="rounded-full h-20 w-20 object-cover">
+                <!-- Pratinjau Foto Baru -->
+                <span x-show="photoPreview" class="block rounded-full w-20 h-20 bg-cover bg-no-repeat bg-center"
+                      x-bind:style="'background-image: url(\'' + photoPreview + '\');'">
+                </span>
+            </div>
+
+            <x-secondary-button class="mt-2 mr-2" type="button" x-on:click.prevent="$refs.photo.click()">
+                {{ __('Pilih Foto Baru') }}
+            </x-secondary-button>
+
+            <x-input-error :messages="$errors->get('photo')" class="mt-2" />
+        </div>
+
 
         <div>
             <x-input-label for="name" :value="__('Nama')" />
@@ -62,3 +97,4 @@
         </div>
     </form>
 </section>
+

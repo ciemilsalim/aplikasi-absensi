@@ -6,9 +6,7 @@
     <div class="lg:col-span-2 bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 flex items-center gap-6">
             <div class="flex-shrink-0">
-                <span class="inline-block h-16 w-16 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                    <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                </span>
+                <img class="h-16 w-16 rounded-full object-cover" src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ Auth::user()->name }}">
             </div>
             <div>
                 <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Selamat Datang, {{ $teacher->name }}!</h3>
@@ -238,3 +236,4 @@
 
     </div>
 </div>
+

@@ -17,9 +17,16 @@
                         <div class="flex-grow overflow-y-auto">
                             @if(Auth::user()->role === 'parent' && isset($adminConversation))
                                 <a href="{{ route('chat.admin') }}" class="w-full text-left p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition {{ request()->routeIs('chat.admin') ? 'bg-sky-100 dark:bg-sky-900/50' : '' }}">
-                                    <div class="relative"><span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span></div>
+                                    <div class="relative">
+                                        {{-- PERBARUAN: Menampilkan foto profil admin jika tersedia --}}
+                                        @if(isset($adminUser))
+                                            <img class="h-10 w-10 rounded-full object-cover" src="{{ $adminUser->profile_photo_path ? asset('storage/' . $adminUser->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($adminUser->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ $adminUser->name }}">
+                                        @else
+                                            <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span>
+                                        @endif
+                                    </div>
                                     <div class="flex-grow">
-                                        <p class="font-semibold text-sm text-slate-800 dark:text-white">Admin Sekolah</p>
+                                        <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ isset($adminUser) ? $adminUser->name : 'Admin Sekolah' }}</p>
                                         <p class="text-xs text-slate-500 dark:text-slate-400">Hubungi administrasi</p>
                                     </div>
                                     @if(isset($adminConversation->unread_messages_count) && $adminConversation->unread_messages_count > 0)
@@ -29,15 +36,20 @@
                             @endif
                             
                             @forelse($conversations as $conv)
+                                @php
+                                    // Menentukan pengguna lain dalam percakapan
+                                    $otherUser = Auth::user()->role === 'parent' ? $conv->teacher->user : $conv->parent->user;
+                                @endphp
                                 <a href="{{ route('chat.index', $conv) }}" class="w-full text-left p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition {{ $activeConversation && get_class($activeConversation) === 'App\Models\Conversation' && $activeConversation->id === $conv->id ? 'bg-sky-100 dark:bg-sky-900/50' : '' }}">
-                                    <div class="relative"><span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span></div>
+                                    <div class="relative">
+                                        {{-- PERBARUAN: Menampilkan foto profil user lain (guru/ortu) --}}
+                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ $otherUser->profile_photo_path ? asset('storage/' . $otherUser->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($otherUser->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ $otherUser->name }}">
+                                    </div>
                                     <div class="flex-grow">
-                                        {{-- PERBARUAN: Menambahkan flex-box untuk nama dan waktu --}}
                                         <div class="flex justify-between items-start">
                                             <p class="font-semibold text-sm text-slate-800 dark:text-white">
-                                                @if(Auth::user()->role === 'parent') {{ $conv->teacher->user->name ?? 'Guru Dihapus' }} @else {{ $conv->parent->user->name ?? 'Orang Tua Dihapus' }} @endif
+                                                {{ $otherUser->name ?? (Auth::user()->role === 'parent' ? 'Guru Dihapus' : 'Orang Tua Dihapus') }}
                                             </p>
-                                            {{-- PERBARUAN: Menampilkan waktu pesan terakhir --}}
                                             @if($conv->last_message_at)
                                                 <p class="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0">{{ \Carbon\Carbon::parse($conv->last_message_at)->diffForHumans() }}</p>
                                             @endif
@@ -64,10 +76,32 @@
                                 <!-- Header Obrolan -->
                                 <div class="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center gap-3 flex-shrink-0">
                                     <a href="{{ route('chat.index') }}" class="lg:hidden text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></a>
-                                    <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span>
+                                    
+                                    @php
+                                        // Menentukan pengguna lain untuk header obrolan aktif
+                                        if (request()->routeIs('chat.admin')) {
+                                            $activeOtherUser = $adminUser ?? null;
+                                        } else {
+                                            $activeOtherUser = Auth::user()->role === 'parent' ? $activeConversation->teacher->user : $activeConversation->parent->user;
+                                        }
+                                    @endphp
+
+                                    @if(isset($activeOtherUser))
+                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ $activeOtherUser->profile_photo_path ? asset('storage/' . $activeOtherUser->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($activeOtherUser->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ $activeOtherUser->name }}">
+                                    @else
+                                        <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600"><svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg></span>
+                                    @endif
+
                                     <div>
                                         <p class="font-semibold text-gray-900 dark:text-white">
-                                            @if(request()->routeIs('chat.admin')) Admin Sekolah @elseif(Auth::user()->role === 'parent') {{ $activeConversation->teacher->user->name ?? 'Guru Dihapus' }} @else {{ $activeConversation->parent->user->name ?? 'Orang Tua Dihapus' }} @endif
+                                            @if(isset($activeOtherUser))
+                                                {{ $activeOtherUser->name }}
+                                            @else
+                                                @if(request()->routeIs('chat.admin')) Admin Sekolah 
+                                                @elseif(Auth::user()->role === 'parent') {{ 'Guru Dihapus' }} 
+                                                @else {{ 'Orang Tua Dihapus' }} 
+                                                @endif
+                                            @endif
                                         </p>
                                         <p class="text-xs text-gray-500 dark:text-gray-400">
                                             @if(!request()->routeIs('chat.admin')) Percakapan mengenai {{ $activeConversation->student->name }} @else Hubungan Administrasi @endif
@@ -75,10 +109,8 @@
                                     </div>
                                 </div>
                                 <div id="messages-container" class="flex-grow p-6 overflow-y-auto bg-slate-50 dark:bg-slate-800/50">
-                                    {{-- PERBARUAN: Menggunakan loop bersarang untuk pesan yang dikelompokkan --}}
                                     <div class="space-y-2">
                                         @forelse($messages as $date => $dailyMessages)
-                                            {{-- Pemisah Tanggal --}}
                                             <div class="flex justify-center my-4">
                                                 <div class="px-3 py-1 text-xs font-semibold text-gray-500 bg-gray-200 dark:bg-slate-700 dark:text-gray-300 rounded-full">
                                                     @php
@@ -93,8 +125,6 @@
                                                     @endif
                                                 </div>
                                             </div>
-
-                                            {{-- Loop untuk pesan harian --}}
                                             @foreach($dailyMessages as $message)
                                                 <div class="flex {{ $message->user_id === Auth::id() ? 'justify-end' : 'justify-start' }}">
                                                     <div class="max-w-xs lg:max-w-md p-3 rounded-lg {{ $message->user_id === Auth::id() ? 'bg-sky-600 text-white' : 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200' }}">
@@ -141,3 +171,4 @@
     </script>
     @endpush
 </x-app-layout>
+
