@@ -239,34 +239,55 @@ class DashboardController extends Controller
     }
 
     /**
-     * PERBAIKAN: Mengganti nama fungsi dari markAttendance menjadi updateAttendance
-     * agar sesuai dengan definisi di file routes/web.php.
+     * Memperbarui atau membuat data absensi siswa.
      */
     public function updateAttendance(Request $request)
     {
         $request->validate([
-            // Validasi diperbarui untuk menerima id absensi
-            'attendance_id' => 'required|exists:attendances,id',
-            'status' => 'required|string|in:tepat_waktu,terlambat,sakit,izin,alpa',
+            'student_id' => 'required|exists:students,id',
+            'date' => 'required|date_format:Y-m-d',
+            'status' => 'required|string|in:tepat_waktu,terlambat,sakit,izin,alpa,hapus',
         ]);
-    
-        $attendance = Attendance::findOrFail($request->input('attendance_id'));
-        
-        // Otorisasi: Pastikan guru yang mengubah adalah wali kelas dari siswa tersebut
+
         $teacher = Auth::user()->teacher;
-        $studentClassId = $attendance->student->school_class_id;
-        
-        if (!$teacher->homeroomClass || $teacher->homeroomClass->id !== $studentClassId) {
+        $student = Student::find($request->student_id);
+
+        // Otorisasi: Pastikan guru yang mengubah adalah wali kelas dari siswa tersebut
+        if (!$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
             return back()->with('error', 'Anda tidak berwenang mengubah absensi siswa ini.');
         }
 
-        $attendance->status = $request->input('status');
-        // Jika status diubah menjadi hadir/terlambat, pastikan ada jam masuk.
-        // Jika tidak, set ke awal hari untuk menandakan data diubah manual.
-        if (in_array($attendance->status, ['tepat_waktu', 'terlambat']) && !$attendance->attendance_time) {
-            $attendance->attendance_time = $attendance->created_at->startOfDay();
+        $status = $request->input('status');
+        $date = Carbon::parse($request->input('date'))->startOfDay();
+
+        // Cari record yang mungkin sudah ada untuk siswa pada tanggal tersebut
+        $attendance = Attendance::where('student_id', $request->student_id)
+                                ->whereDate('attendance_time', $date)
+                                ->first();
+
+        // Kasus 1: Hapus data absensi
+        if ($status === 'hapus') {
+            if ($attendance) {
+                $attendance->delete();
+                return back()->with('success', 'Riwayat absensi berhasil dihapus.');
+            }
+            // Jika tidak ada data, tidak ada yang perlu dihapus.
+            return back()->with('success', 'Tidak ada perubahan dilakukan.');
         }
-        $attendance->save();
+
+        // Kasus 2: Update atau Buat data absensi baru
+        if ($attendance) {
+            // Jika data sudah ada, perbarui statusnya
+            $attendance->status = $status;
+            $attendance->save();
+        } else {
+            // Jika data belum ada, buat record baru
+            Attendance::create([
+                'student_id' => $request->student_id,
+                'status' => $status,
+                'attendance_time' => $date, // Simpan tanggal yang dipilih dari modal
+            ]);
+        }
 
         return back()->with('success', 'Riwayat absensi berhasil diperbarui.');
     }
@@ -337,3 +358,4 @@ class DashboardController extends Controller
         return response()->json(['success' => true, 'message' => 'Catatan berhasil disimpan.']);
     }
 }
+
