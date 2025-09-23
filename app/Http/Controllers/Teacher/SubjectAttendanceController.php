@@ -36,20 +36,18 @@ class SubjectAttendanceController extends Controller
 
         $attendedStudents = $subjectAttendancesToday->where('status', 'hadir');
         
-        // Ambil siswa yang izin/sakit dari absensi harian
-        $studentIdsInClass = Student::where('school_class_id', $classId)->pluck('id');
-        $studentsOnLeave = Attendance::whereIn('student_id', $studentIdsInClass)
-            ->whereDate('attendance_time', $today)
-            ->whereIn('status', ['sakit', 'izin'])
-            ->with('student')
-            ->get();
+        // ======================= PERUBAHAN LOGIKA =======================
+        // Mengambil data siswa yang diabsen SAKIT atau IZIN oleh guru mapel untuk sesi ini.
+        $studentsOnLeave = $subjectAttendancesToday->whereIn('status', ['sakit', 'izin']);
 
-        $studentIdsWithRecord = $subjectAttendancesToday->pluck('student_id')->merge($studentsOnLeave->pluck('student_id'))->unique();
+        // Siswa yang belum tercatat di absensi mapel hari ini akan dianggap "Tanpa Keterangan".
+        $studentIdsWithRecord = $subjectAttendancesToday->pluck('student_id');
 
         $studentsWithoutNotice = Student::where('school_class_id', $classId)
             ->whereNotIn('id', $studentIdsWithRecord)
             ->orderBy('name', 'asc')
             ->get();
+        // ===================== AKHIR PERUBAHAN LOGIKA =====================
 
         return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave', 'studentsWithoutNotice'));
     }
@@ -93,12 +91,11 @@ class SubjectAttendanceController extends Controller
             'status' => 'hadir',
         ]);
 
-        // --- PERUBAHAN DI SINI ---
         return response()->json([
             'success' => true,
             'message' => 'Kehadiran ' . $student->name . ' berhasil dicatat.',
             'student' => [
-                'id' => $student->id, // ID siswa ditambahkan ke respons
+                'id' => $student->id,
                 'name' => $student->name, 
                 'time' => $attendance->created_at->format('H:i:s')
             ]
@@ -154,7 +151,7 @@ class SubjectAttendanceController extends Controller
                 'teacher_id' => $teacher->id,
             ]);
         } else {
-            SubjectAttendance::create([
+           $attendance = SubjectAttendance::create([
                 'schedule_id' => $schedule->id,
                 'student_id' => $student->id,
                 'teacher_id' => $teacher->id,
@@ -164,7 +161,13 @@ class SubjectAttendanceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Status ' . $student->name . ' berhasil diubah menjadi ' . $request->status,
+            'message' => 'Status ' . $student->name . ' berhasil diubah menjadi ' . ucfirst($request->status),
+            // Mengirim data siswa kembali untuk pembaruan UI
+            'student' => [
+                'id' => $student->id,
+                'name' => $student->name,
+                'status' => $request->status
+            ]
         ]);
     }
 
@@ -240,3 +243,4 @@ class SubjectAttendanceController extends Controller
         ));
     }
 }
+

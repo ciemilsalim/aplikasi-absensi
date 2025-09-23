@@ -67,31 +67,31 @@
                 <!-- Panel Siswa Izin/Sakit -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Izin/Sakit (Harian)</h3>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Izin/Sakit</h3>
                     </div>
                     <div class="border-t border-gray-200 dark:border-slate-700">
                         <ul id="leave-list" class="divide-y divide-gray-200 dark:divide-slate-700 max-h-[30vh] overflow-y-auto">
-                            @forelse($studentsOnLeave as $dailyAttendance)
+                            @forelse($studentsOnLeave as $subjectAttendance)
                                 <li class="p-4 flex items-center justify-between">
-                                    <span class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $dailyAttendance->student->name }}</span>
+                                    <span class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $subjectAttendance->student->name }}</span>
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                        @if($dailyAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 @endif
-                                        @if($dailyAttendance->status == 'izin') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @endif
-                                    ">{{ ucfirst($dailyAttendance->status) }}</span>
+                                        @if($subjectAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 @endif
+                                        @if($subjectAttendance->status == 'izin') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @endif
+                                    ">{{ ucfirst($subjectAttendance->status) }}</span>
                                 </li>
                             @empty
-                                <li class="p-4 text-center text-sm text-gray-500 italic">
-                                    Tidak ada siswa yang izin/sakit hari ini.
+                                <li id="no-students-on-leave" class="p-4 text-center text-sm text-gray-500 italic">
+                                    Tidak ada siswa yang izin/sakit.
                                 </li>
                             @endforelse
                         </ul>
                     </div>
                 </div>
 
-                <!-- Panel Siswa Tanpa Kabar -->
+                <!-- Panel Siswa Tanpa Keterangan -->
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Tanpa Kabar (<span id="no-notice-count">{{ $studentsWithoutNotice->count() }}</span>)</h3>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Tanpa Keterangan (<span id="no-notice-count">{{ $studentsWithoutNotice->count() }}</span>)</h3>
                     </div>
                     <div class="border-t border-gray-200 dark:border-slate-700">
                         <ul id="no-notice-list" class="divide-y divide-gray-200 dark:divide-slate-700 max-h-[30vh] overflow-y-auto">
@@ -147,6 +147,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const noNoticeList = document.getElementById('no-notice-list');
     const noNoticeCount = document.getElementById('no-notice-count');
     const noMissingStudents = document.getElementById('no-missing-students');
+    const leaveList = document.getElementById('leave-list');
+    const noStudentsOnLeave = document.getElementById('no-students-on-leave');
 
     const modal = {
         element: document.getElementById('attendance-modal'),
@@ -230,6 +232,22 @@ document.addEventListener('DOMContentLoaded', function () {
         attendedCount.textContent = parseInt(attendedCount.textContent) + 1;
     }
 
+    function addStudentToLeaveList(name, status) {
+        if(noStudentsOnLeave) noStudentsOnLeave.classList.add('hidden');
+        
+        const statusClass = status === 'sakit' 
+            ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300' 
+            : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+        
+        const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+
+        const listItem = document.createElement('li');
+        listItem.className = 'p-4 flex items-center justify-between animate-[fade-in_0.5s]';
+        listItem.innerHTML = `<span class="font-medium text-sm text-gray-800 dark:text-gray-200">${name}</span>
+                              <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span>`;
+        leaveList.prepend(listItem);
+    }
+
     function showModal(isSuccess, data) {
         playSound(isSuccess);
         modal.iconContainer.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5';
@@ -241,8 +259,16 @@ document.addEventListener('DOMContentLoaded', function () {
             modal.iconSvg.classList.add('text-green-600', 'dark:text-green-400');
             modal.title.textContent = 'Berhasil';
             if(data.student) {
-                addStudentToList(data.student.name, data.student.time);
-                removeStudentFromNoNoticeList(data.student.id); 
+                // Logika untuk memindahkan siswa ke daftar yang sesuai
+                if (data.student.status === 'sakit' || data.student.status === 'izin') {
+                    addStudentToLeaveList(data.student.name, data.student.status);
+                    removeStudentFromNoNoticeList(data.student.id);
+                } else if (data.student.time) { // Jika ada 'time', berarti dari scan (hadir)
+                    addStudentToList(data.student.name, data.student.time);
+                    removeStudentFromNoNoticeList(data.student.id); 
+                } else { // Jika status lain (alpa/bolos) dari manual mark
+                    removeStudentFromNoNoticeList(data.student.id);
+                }
             }
         } else {
             modal.iconContainer.classList.add('bg-red-100', 'dark:bg-red-900');
@@ -305,9 +331,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }).then(response => response.json().then(data => ({ status: response.status, body: data })))
         .then(({ status, body }) => {
             showModal(body.success, body);
-            if (body.success) {
-                removeStudentFromNoNoticeList(studentId);
-            }
         }).catch(error => {
             showModal(false, { message: 'Tidak dapat terhubung ke server.' });
         });
@@ -343,3 +366,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endpush
+
