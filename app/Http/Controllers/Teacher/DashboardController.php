@@ -239,31 +239,38 @@ class DashboardController extends Controller
     }
 
     /**
-     * PERBAIKAN: Mengubah fungsi untuk menangani update absensi per siswa,
-     * sesuai dengan data yang dikirim oleh tombol di view.
+     * PERBAIKAN: Mengganti nama fungsi dari markAttendance menjadi updateAttendance
+     * agar sesuai dengan definisi di file routes/web.php.
      */
-    public function markAttendance(Request $request)
+    public function updateAttendance(Request $request)
     {
         $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'status' => 'required|string|in:sakit,izin,alpa',
+            // Validasi diperbarui untuk menerima id absensi
+            'attendance_id' => 'required|exists:attendances,id',
+            'status' => 'required|string|in:tepat_waktu,terlambat,sakit,izin,alpa',
         ]);
+    
+        $attendance = Attendance::findOrFail($request->input('attendance_id'));
+        
+        // Otorisasi: Pastikan guru yang mengubah adalah wali kelas dari siswa tersebut
+        $teacher = Auth::user()->teacher;
+        $studentClassId = $attendance->student->school_class_id;
+        
+        if (!$teacher->homeroomClass || $teacher->homeroomClass->id !== $studentClassId) {
+            return back()->with('error', 'Anda tidak berwenang mengubah absensi siswa ini.');
+        }
 
-        $today = Carbon::today();
-        $studentId = $request->input('student_id');
-        $status = $request->input('status');
+        $attendance->status = $request->input('status');
+        // Jika status diubah menjadi hadir/terlambat, pastikan ada jam masuk.
+        // Jika tidak, set ke awal hari untuk menandakan data diubah manual.
+        if (in_array($attendance->status, ['tepat_waktu', 'terlambat']) && !$attendance->attendance_time) {
+            $attendance->attendance_time = $attendance->created_at->startOfDay();
+        }
+        $attendance->save();
 
-        // Logika di view (_dashboard-wali-kelas.blade.php) hanya menampilkan tombol
-        // jika siswa BELUM memiliki data absensi hari ini.
-        // Oleh karena itu, kita hanya perlu membuat record baru.
-        Attendance::create([
-            'student_id' => $studentId,
-            'status' => $status,
-            'attendance_time' => $today->startOfDay(), // Set waktu ke 00:00:00 hari ini
-        ]);
-
-        return back()->with('success', 'Absensi berhasil diperbarui.');
+        return back()->with('success', 'Riwayat absensi berhasil diperbarui.');
     }
+
 
     /**
      * Menampilkan riwayat absensi.
@@ -311,5 +318,22 @@ class DashboardController extends Controller
             'selectedDate'
         ));
     }
-}
 
+    // Fungsi updateNote yang mungkin sudah ada
+    public function updateNote(Request $request)
+    {
+        $request->validate(['content' => 'nullable|string']);
+        $teacher = Auth::user()->teacher;
+        
+        if (!$teacher) {
+            return response()->json(['success' => false, 'message' => 'Guru tidak ditemukan.'], 404);
+        }
+
+        $note = TeacherNote::updateOrCreate(
+            ['teacher_id' => $teacher->id],
+            ['content' => $request->input('content', '')]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Catatan berhasil disimpan.']);
+    }
+}
