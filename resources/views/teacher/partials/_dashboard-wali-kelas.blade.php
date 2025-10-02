@@ -122,9 +122,10 @@
                                     <td class="px-6 py-4 text-center">
                                         @if(!$attendance)
                                             <div class="flex items-center justify-center gap-2">
-                                                <form action="{{ route('teacher.mark.attendance') }}" method="POST">@csrf<input type="hidden" name="student_id" value="{{ $student->id }}"><input type="hidden" name="status" value="sakit"><button type="submit" class="px-3 py-1 text-xs font-medium text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-full">S</button></form>
-                                                <form action="{{ route('teacher.mark.attendance') }}" method="POST">@csrf<input type="hidden" name="student_id" value="{{ $student->id }}"><input type="hidden" name="status" value="izin"><button type="submit" class="px-3 py-1 text-xs font-medium text-purple-800 bg-purple-100 hover:bg-purple-200 rounded-full">I</button></form>
-                                                <form action="{{ route('teacher.mark.attendance') }}" method="POST">@csrf<input type="hidden" name="student_id" value="{{ $student->id }}"><input type="hidden" name="status" value="alpa"><button type="submit" class="px-3 py-1 text-xs font-medium text-red-800 bg-red-100 hover:bg-red-200 rounded-full">A</button></form>
+                                                {{-- PERBAIKAN: Menambahkan input 'date' agar sesuai dengan validasi di controller --}}
+                                                <form action="{{ route('teacher.mark.attendance') }}" method="POST">@csrf<input type="hidden" name="student_id" value="{{ $student->id }}"><input type="hidden" name="status" value="sakit"><input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}"><button type="submit" class="px-3 py-1 text-xs font-medium text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-full">S</button></form>
+                                                <form action="{{ route('teacher.mark.attendance') }}" method="POST">@csrf<input type="hidden" name="student_id" value="{{ $student->id }}"><input type="hidden" name="status" value="izin"><input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}"><button type="submit" class="px-3 py-1 text-xs font-medium text-purple-800 bg-purple-100 hover:bg-purple-200 rounded-full">I</button></form>
+                                                <form action="{{ route('teacher.mark.attendance') }}" method="POST">@csrf<input type="hidden" name="student_id" value="{{ $student->id }}"><input type="hidden" name="status" value="alpa"><input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}"><button type="submit" class="px-3 py-1 text-xs font-medium text-red-800 bg-red-100 hover:bg-red-200 rounded-full">A</button></form>
                                             </div>
                                         @else<span class="text-xs text-gray-400">-</span>@endif
                                     </td>
@@ -236,4 +237,3 @@
 
     </div>
 </div>
-

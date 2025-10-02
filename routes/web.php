@@ -102,12 +102,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
         Route::get('/settings/attendance', [SettingController::class, 'attendance'])->name('settings.attendance');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
-    
+
         // Pengajuan Izin
         Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
         Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
         Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
-    
+
         // Manajemen Data (CRUD)
         Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
         Route::post('classes/assign-students', [SchoolClassController::class, 'assignStudents'])->name('classes.assign.students');
@@ -123,7 +123,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
         Route::get('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class, 'index'])->name('classes.assign_teacher');
         Route::post('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class, 'store'])->name('classes.store_teacher_assignment');
-        
+
         //jadwal mapel
         Route::get('schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules.index');
         Route::get('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class, 'show'])->name('schedules.show');
@@ -137,20 +137,20 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
         Route::get('/teachers/import', [TeacherController::class, 'showImportForm'])->name('teachers.import.form');
         Route::post('/teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
-    
+
         // Status Online
         Route::get('/parents/online-status', [ParentController::class, 'getOnlineStatus'])->name('parents.online_status');
         Route::get('/teachers/online-status', [TeacherController::class, 'getOnlineStatus'])->name('teachers.online_status');
-    
+
         // Cetak QR
         Route::get('/students/qr', [StudentController::class, 'qr'])->name('students.qr');
-    
+
         // Backup
         Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
         Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
         Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
         Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
-        
+
         // Obrolan Admin
         Route::get('/chat/{selectedParent?}', [AdminChatController::class, 'index'])->name('chat.index');
         Route::post('/chat/conversations/{conversation}', [AdminChatController::class, 'storeMessage'])->name('chat.store_message');
@@ -166,7 +166,14 @@ Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(
 // == GRUP RUTE GURU ==
 Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
-    Route::post('/mark-attendance', [TeacherDashboardController::class, 'markAttendance'])->name('mark.attendance');
+    
+    // PERBAIKAN: Mengganti 'markAttendance' menjadi 'updateAttendance' agar sesuai dengan controller
+    // Namun, method 'updateAttendance' sepertinya dirancang untuk halaman history. 
+    // Untuk fitur ini, lebih baik membuat method baru yang lebih sederhana.
+    // Untuk sementara, kita bisa arahkan ke 'updateAttendance' dan menyesuaikan form.
+    // Route::post('/mark-attendance', [TeacherDashboardController::class, 'markAttendance'])->name('mark.attendance'); <-- Kode Lama
+    Route::post('/mark-attendance', [TeacherDashboardController::class, 'updateAttendance'])->name('mark.attendance'); // <-- Kode Baru (Sementara)
+    
     Route::get('/attendance-history', [TeacherDashboardController::class, 'showAttendanceHistory'])->name('attendance.history');
     Route::post('/attendance-history/update', [TeacherDashboardController::class, 'updateAttendance'])->name('attendance.update');
     Route::get('/attendance/print', [TeacherDashboardController::class, 'printAttendance'])->name('attendance.print');
