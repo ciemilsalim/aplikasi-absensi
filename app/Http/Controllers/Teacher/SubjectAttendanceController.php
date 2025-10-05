@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Schedule;
 use App\Models\Student;
 use App\Models\SubjectAttendance;
-use App\Models\Attendance;
 use App\Models\TeachingAssignment;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -214,7 +214,24 @@ class SubjectAttendanceController extends Controller
             })
             ->get();
 
-        $period = CarbonPeriod::create($startDate, $endDate);
+        $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('school_class_id', $schoolClassId)
+            ->where('subject_id', $subjectId)
+            ->first();
+
+        if (!$assignment) {
+            return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
+        }
+
+        $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
+            ->pluck('day_of_week')
+            ->unique()
+            ->toArray();
+
+        $period = CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays) {
+            // dayOfWeekIso returns 1 for Monday and 7 for Sunday
+            return in_array($date->dayOfWeekIso, $scheduleDays);
+        });
         
         $attendanceData = [];
         foreach ($attendances as $attendance) {
@@ -225,7 +242,6 @@ class SubjectAttendanceController extends Controller
         $classInfo = SchoolClass::find($schoolClassId);
         $subjectInfo = Subject::find($subjectId);
 
-        // Mengirimkan kembali input request ke view untuk link "Cetak"
         $requestInputs = $request->only(['start_date', 'end_date', 'school_class_id', 'subject_id']);
 
         return view('teacher.report_preview', compact(
@@ -255,7 +271,7 @@ class SubjectAttendanceController extends Controller
         
         $teacher = Auth::user()->teacher;
         $date = Carbon::parse($request->date);
-        $dayOfWeek = $date->dayOfWeek;
+        $dayOfWeek = $date->dayOfWeekIso; // Gunakan dayOfWeekIso (Senin=1, Minggu=7)
 
         $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('school_class_id', $request->school_class_id)
@@ -336,7 +352,23 @@ class SubjectAttendanceController extends Controller
             })
             ->get();
 
-        $period = CarbonPeriod::create($startDate, $endDate);
+        $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('school_class_id', $schoolClassId)
+            ->where('subject_id', $subjectId)
+            ->first();
+
+        if (!$assignment) {
+            return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
+        }
+        
+        $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
+            ->pluck('day_of_week')
+            ->unique()
+            ->toArray();
+
+        $period = CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays) {
+            return in_array($date->dayOfWeekIso, $scheduleDays);
+        });
         
         $attendanceData = [];
         foreach ($attendances as $attendance) {
@@ -347,6 +379,16 @@ class SubjectAttendanceController extends Controller
         $classInfo = SchoolClass::find($schoolClassId);
         $subjectInfo = Subject::find($subjectId);
 
+        // PERBAIKAN: Mengambil data identitas sekolah dengan kunci yang benar
+        $settings = Setting::whereIn('key', ['app_logo', 'school_name', 'school_address', 'school_phone', 'school_email'])->get();
+        $schoolIdentity = [
+            'logo' => $settings->firstWhere('key', 'app_logo')->value ?? null,
+            'name' => $settings->firstWhere('key', 'school_name')->value ?? null,
+            'address' => $settings->firstWhere('key', 'school_address')->value ?? null,
+            'phone' => $settings->firstWhere('key', 'school_phone')->value ?? null,
+            'email' => $settings->firstWhere('key', 'school_email')->value ?? null,
+        ];
+
         return view('teacher.report_print', compact(
             'students', 
             'period', 
@@ -354,7 +396,9 @@ class SubjectAttendanceController extends Controller
             'classInfo', 
             'subjectInfo', 
             'startDate', 
-            'endDate'
+            'endDate',
+            'schoolIdentity'
         ));
     }
 }
+

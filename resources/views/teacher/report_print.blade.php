@@ -37,6 +37,16 @@
                 padding: 2px 3px;
                 overflow-wrap: break-word; /* Memecah teks jika terlalu panjang */
             }
+            .print-hidden {
+                display: none;
+            }
+            .print-block {
+                display: block;
+            }
+            .kop-surat {
+                border-bottom: 3px solid #000;
+                padding-bottom: 1rem;
+            }
         }
 
         .rotate-text {
@@ -49,25 +59,69 @@
         .status-sakit { background-color: #fef3c7 !important; }
         .status-izin { background-color: #dbeafe !important; }
         .status-alpa { background-color: #fee2e2 !important; }
-        .status-bolos { background-color: #fef9c3 !important; }
+        .status-bolos { background-color: #fff2b2 !important; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
     <div class="container mx-auto p-4 md:p-8 bg-white">
         
-        <div class="print:hidden mb-6 flex justify-between items-center">
+        <div class="print-hidden mb-6 flex justify-between items-center">
             <h1 class="text-2xl font-bold">Pratinjau Cetak Rekap Kehadiran</h1>
             <button onclick="window.print()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 Cetak Halaman Ini
             </button>
         </div>
 
-        <div class="text-center mb-6 print-header">
-            <h2 class="text-xl font-bold uppercase">REKAPITULASI KEHADIRAN SISWA</h2>
-            <h3 class="text-lg font-semibold">Mata Pelajaran: {{ $subjectInfo->name }}</h3>
-            <h4 class="text-md">Kelas: {{ $classInfo->name }}</h4>
-            <p class="text-sm">Periode: {{ $startDate->isoFormat('D MMMM Y') }} s/d {{ $endDate->isoFormat('D MMMM Y') }}</p>
+        <header class="print-header">
+            <div class="kop-surat flex items-center gap-4">
+                @if(isset($schoolIdentity['logo']) && $schoolIdentity['logo'])
+                    {{-- Path logo harus tersimpan di database sebagai 'logos/namafile.png' --}}
+                    <img src="{{ asset('storage/' . $schoolIdentity['logo']) }}" alt="Logo Sekolah" class="h-20" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    {{-- Fallback ini akan muncul jika path gambar di atas gagal dimuat --}}
+                    <div class="h-20 w-20 bg-gray-200 items-center justify-center text-center p-1" style="display: none;">
+                        <span class="text-xs text-gray-500">Logo Gagal Dimuat. Path: {{ 'storage/' . $schoolIdentity['logo'] }}</span>
+                    </div>
+                @else
+                    <!-- Fallback jika tidak ada logo di database -->
+                    <div class="h-20 w-20 bg-gray-200 flex items-center justify-center">
+                        <span class="text-xs text-gray-500">Logo Tidak Ada</span>
+                    </div>
+                @endif
+                <div class="text-center flex-grow">
+                    <h1 class="text-xl font-bold uppercase">{{ $schoolIdentity['name'] ?? 'NAMA SEKOLAH' }}</h1>
+                    <p class="text-sm">{{ $schoolIdentity['address'] ?? 'Alamat Sekolah, Kota, Kode Pos' }}</p>
+                    <p class="text-sm">
+                        @if(isset($schoolIdentity['phone']) && $schoolIdentity['phone']) Telp: {{ $schoolIdentity['phone'] }} @endif
+                        @if(isset($schoolIdentity['email']) && $schoolIdentity['email']) | Email: {{ $schoolIdentity['email'] }} @endif
+                    </p>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <h2 class="text-lg font-bold uppercase underline">REKAPITULASI KEHADIRAN SISWA</h2>
+                <p class="text-sm">Tahun Pelajaran: {{ date('Y') }}/{{ date('Y') + 1 }}</p>
+            </div>
+        </header>
+        
+        <div class="text-sm mb-4">
+            <table class="w-auto">
+                <tbody>
+                    <tr>
+                        <td class="font-semibold pr-4">Mata Pelajaran</td>
+                        <td>: {{ $subjectInfo->name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-semibold pr-4">Kelas</td>
+                        <td>: {{ $classInfo->name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-semibold pr-4">Periode</td>
+                        <td>: {{ $startDate->isoFormat('D MMMM YYYY') }} s/d {{ $endDate->isoFormat('D MMMM YYYY') }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
+
 
         <div class="overflow-x-auto print-overflow-container">
             <table class="min-w-full border border-collapse border-gray-400">
@@ -102,11 +156,11 @@
                                 </th>
                             @endforeach
                         @endif
-                        <th class="border border-gray-400 p-1 bg-green-200"><div class="rotate-text">Hadir</div></th>
-                        <th class="border border-gray-400 p-1 bg-yellow-200"><div class="rotate-text">Sakit</div></th>
-                        <th class="border border-gray-400 p-1 bg-blue-200"><div class="rotate-text">Izin</div></th>
-                        <th class="border border-gray-400 p-1 bg-red-200"><div class="rotate-text">Alpa</div></th>
-                        <th class="border border-gray-400 p-1 bg-yellow-300"><div class="rotate-text">Bolos</div></th>
+                        <th class="border border-gray-400 p-1 bg-green-400"><div class="rotate-text">Hadir</div></th>
+                        <th class="border border-gray-400 p-1 bg-yellow-400"><div class="rotate-text">Sakit</div></th>
+                        <th class="border border-gray-400 p-1 bg-blue-400"><div class="rotate-text">Izin</div></th>
+                        <th class="border border-gray-400 p-1 bg-red-400"><div class="rotate-text">Alpa</div></th>
+                        <th class="border border-gray-400 p-1 bg-orange-400"><div class="rotate-text">Bolos</div></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,7 +207,16 @@
             </table>
         </div>
         
-        <div class="mt-8 text-xs print:hidden">
+        <div class="mt-8 flex justify-end">
+            <div class="text-center text-sm">
+                <p>Guru Mata Pelajaran,</p>
+                <br><br><br>
+                <p class="font-bold underline">{{ Auth::user()->name }}</p>
+                <p>NIP. ............................</p>
+            </div>
+        </div>
+
+        <div class="mt-8 text-xs print-hidden">
             <p class="font-bold">Keterangan:</p>
             <ul class="list-disc list-inside">
                 <li>H: Hadir</li>
@@ -165,7 +228,7 @@
             </ul>
         </div>
 
-        <div class="hidden print:block mt-12 text-xs text-gray-600">
+        <div class="hidden print-block mt-12 text-xs text-gray-600">
             <div class="flex justify-between">
                 <div>
                     Cetak Tanggal: {{ now()->isoFormat('D MMMM YYYY, HH:mm') }}
