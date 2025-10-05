@@ -167,12 +167,7 @@ Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(
 Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
     
-    // PERBAIKAN: Mengganti 'markAttendance' menjadi 'updateAttendance' agar sesuai dengan controller
-    // Namun, method 'updateAttendance' sepertinya dirancang untuk halaman history. 
-    // Untuk fitur ini, lebih baik membuat method baru yang lebih sederhana.
-    // Untuk sementara, kita bisa arahkan ke 'updateAttendance' dan menyesuaikan form.
-    // Route::post('/mark-attendance', [TeacherDashboardController::class, 'markAttendance'])->name('mark.attendance'); <-- Kode Lama
-    Route::post('/mark-attendance', [TeacherDashboardController::class, 'updateAttendance'])->name('mark.attendance'); // <-- Kode Baru (Sementara)
+    Route::post('/mark-attendance', [TeacherDashboardController::class, 'updateAttendance'])->name('mark.attendance');
     
     Route::get('/attendance-history', [TeacherDashboardController::class, 'showAttendanceHistory'])->name('attendance.history');
     Route::post('/attendance-history/update', [TeacherDashboardController::class, 'updateAttendance'])->name('attendance.update');
@@ -181,17 +176,22 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::post('/leave-requests/{leaveRequest}/approve', [TeacherLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
     Route::post('/leave-requests/{leaveRequest}/reject', [TeacherLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
 
-    // == RUTE BARU UNTUK CATATAN PRIBADI GURU ==
     Route::post('/notes/update', [TeacherDashboardController::class, 'updateNote'])->name('notes.update');
 
     // == RUTE UNTUK ABSENSI MATA PELAJARAN ==
     Route::get('/subject-attendance/scanner/{schedule}', [SubjectAttendanceController::class, 'showScanner'])->name('subject.attendance.scanner');
     Route::post('/subject-attendance/store', [SubjectAttendanceController::class, 'store'])->name('subject.attendance.store');
     Route::get('/subject-attendance/history', [SubjectAttendanceController::class, 'showHistory'])->name('subject.attendance.history');
-    // RUTE BARU UNTUK MENANDAI STATUS SECARA MANUAL
     Route::post('/subject-attendance/mark-manual', [SubjectAttendanceController::class, 'markManualAttendance'])->name('subject.attendance.mark_manual');
-    // == RUTE BARU UNTUK REKAP DAN CETAK ABSENSI MAPEL ==
+    
+    // == RUTE BARU UNTUK REKAP DAN CETAK ABSENSI MAPEL (ALUR DIPERBARUI) ==
+    // 1. Tampilkan form filter
     Route::get('/subject-attendance/report', [SubjectAttendanceController::class, 'showReportForm'])->name('subject.attendance.report');
+    // 2. Tampilkan halaman preview (hasil dari form)
+    Route::get('/subject-attendance/report/preview', [SubjectAttendanceController::class, 'showReportPreview'])->name('subject.attendance.preview');
+    // 3. Proses update data dari halaman preview
+    Route::post('/subject-attendance/report/update', [SubjectAttendanceController::class, 'updateReportAttendance'])->name('subject.attendance.update_report');
+    // 4. Tampilkan halaman cetak (diakses dari halaman preview)
     Route::get('/subject-attendance/report/print', [SubjectAttendanceController::class, 'printReport'])->name('subject.attendance.print');
 });
 
