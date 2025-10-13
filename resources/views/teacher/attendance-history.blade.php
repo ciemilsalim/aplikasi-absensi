@@ -29,7 +29,8 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
                     <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <form method="GET" action="{{ route('teacher.attendance.history') }}" class="flex flex-col sm:flex-row sm:items-end sm:space-x-4 space-y-4 sm:space-y-0">
+                        {{-- Ubah form ini menjadi satu baris agar lebih rapi --}}
+                        <form method="GET" action="{{ route('teacher.attendance.history') }}" class="flex flex-wrap items-end gap-4">
                             <div>
                                 <label for="month" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih Bulan & Tahun</label>
                                 <input type="month" name="month" id="month" value="{{ $selectedDate->format('Y-m') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-600 dark:border-gray-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
@@ -45,6 +46,13 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
                                 </svg>
                                 Cetak
+                            </a>
+                            {{-- TOMBOL BARU UNTUK EXPORT EXCEL --}}
+                            <a href="{{ route('teacher.attendance.export.excel', ['month' => $selectedDate->format('Y-m')]) }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 active:bg-green-700 focus:outline-none focus:border-green-700 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                                </svg>
+                                Export Excel
                             </a>
                         </form>
                     </div>

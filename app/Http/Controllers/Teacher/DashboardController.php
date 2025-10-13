@@ -16,9 +16,14 @@ use App\Models\TeacherNote;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
+// Impor class yang dibutuhkan untuk export
+use App\Exports\AttendanceReportExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
+    // ... (method index, getHomeroomData, getSubjectTeacherData, updateAttendance tetap sama) ...
+    
     /**
      * Menampilkan dasbor guru berdasarkan peran yang dimiliki.
      */
@@ -328,6 +333,11 @@ class DashboardController extends Controller
 
         $period = CarbonPeriod::create($startDate, $endDate);
 
+        // Filter untuk mengecualikan akhir pekan (Sabtu & Minggu) agar konsisten dengan halaman cetak
+        $period = collect($period)->filter(function ($date) {
+            return !$date->isWeekend();
+        });
+
         return view('teacher.attendance-history', compact(
             'teacher', 
             'class', 
@@ -340,7 +350,83 @@ class DashboardController extends Controller
         ));
     }
 
-    // Fungsi updateNote yang mungkin sudah ada
+    /**
+     * METHOD BARU: Menyiapkan data untuk halaman cetak.
+     */
+    public function printAttendance(Request $request)
+    {
+        $teacher = Auth::user()->teacher;
+        
+        if (!$teacher || !$teacher->homeroomClass) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak memiliki kelas untuk dicetak.');
+        }
+
+        // Mengambil data pengaturan sekolah
+        $settings = Setting::all()->pluck('value', 'key');
+        
+        $class = $teacher->homeroomClass;
+        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $studentIds = $students->pluck('id');
+
+        $request->validate([
+            'month' => 'nullable|date_format:Y-m',
+        ]);
+
+        $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
+        $startDate = $selectedDate->copy()->startOfMonth();
+        $endDate = $selectedDate->copy()->endOfMonth();
+
+        $attendances = Attendance::whereIn('student_id', $studentIds)
+            ->whereBetween('attendance_time', [$startDate, $endDate])
+            ->get()
+            ->groupBy('student_id')
+            ->map(function ($studentAttendances) {
+                return $studentAttendances->keyBy(function ($item) {
+                    return Carbon::parse($item->attendance_time)->format('Y-m-d');
+                });
+            });
+
+        $period = CarbonPeriod::create($startDate, $endDate);
+        // Filter untuk mengecualikan akhir pekan (Sabtu & Minggu)
+        $workdays = collect($period)->filter(function ($date) {
+            return !$date->isWeekend();
+        });
+
+
+        // Mengirim data ke view khusus untuk print
+        // CARA PENULISAN DIPERBAIKI: Menggunakan array asosiatif standar, bukan compact()
+        return view('teacher.print.attendance-report', [
+            'settings' => $settings,
+            'class' => $class,
+            'students' => $students,
+            'attendances' => $attendances,
+            'period' => $workdays, // Mengirim data hari kerja yang sudah difilter
+            'selectedDate' => $selectedDate
+        ]);
+    }
+
+    /**
+     * Menangani permintaan ekspor ke Excel.
+     */
+    public function exportAttendanceExcel(Request $request)
+    {
+        $teacher = Auth::user()->teacher;
+        if (!$teacher || !$teacher->homeroomClass) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak memiliki kelas untuk diekspor.');
+        }
+
+        $request->validate([
+            'month' => 'nullable|date_format:Y-m',
+        ]);
+
+        $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
+        
+        $fileName = 'Laporan Kehadiran ' . $teacher->homeroomClass->name . ' - ' . $selectedDate->translatedFormat('F Y') . '.xlsx';
+        
+        return Excel::download(new AttendanceReportExport($selectedDate), $fileName);
+    }
+
+    // Fungsi updateNote
     public function updateNote(Request $request)
     {
         $request->validate(['content' => 'nullable|string']);
