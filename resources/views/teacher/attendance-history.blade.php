@@ -29,7 +29,6 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
                     <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        {{-- Ubah form ini menjadi satu baris agar lebih rapi --}}
                         <form method="GET" action="{{ route('teacher.attendance.history') }}" class="flex flex-wrap items-end gap-4">
                             <div>
                                 <label for="month" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih Bulan & Tahun</label>
@@ -59,25 +58,33 @@
 
                     {{-- Tabel Riwayat Kehadiran --}}
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border-collapse">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th scope="col" class="sticky left-0 bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider z-10">
+                                    <th scope="col" class="sticky left-0 bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider z-10" style="width: 192px; min-width: 192px; max-width: 192px;">
                                         Nama Siswa
                                     </th>
+                                    
                                     @foreach ($period as $date)
                                         <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             {{ $date->format('d/m') }}
                                         </th>
                                     @endforeach
+
+                                    {{-- Kolom Rekapitulasi --}}
+                                    <th scope="col" class="bg-green-100 dark:bg-green-800 px-2 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider" title="Hadir">H</th>
+                                    <th scope="col" class="bg-purple-100 dark:bg-purple-800 px-2 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider" title="Sakit">S</th>
+                                    <th scope="col" class="bg-blue-100 dark:bg-blue-800 px-2 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider" title="Izin">I</th>
+                                    <th scope="col" class="bg-red-100 dark:bg-red-800 px-2 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider" title="Alpa">A</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse ($students as $student)
                                     <tr>
-                                        <td class="sticky left-0 bg-white dark:bg-gray-800 px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 z-10">
+                                        <td class="sticky left-0 bg-white dark:bg-gray-800 px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 z-10 truncate" style="width: 192px; min-width: 192px; max-width: 192px;">
                                             {{ $student->name }}
                                         </td>
+
                                         @foreach ($period as $date)
                                             @php
                                                 $dateString = $date->format('Y-m-d');
@@ -105,10 +112,19 @@
                                                 </button>
                                             </td>
                                         @endforeach
+                                        
+                                        {{-- Sel Rekapitulasi --}}
+                                        @php
+                                            $summary = $attendanceSummary[$student->id];
+                                        @endphp
+                                        <td class="bg-green-50 dark:bg-green-900/50 px-2 py-4 whitespace-nowrap text-sm text-center font-semibold text-gray-700 dark:text-gray-300">{{ $summary['hadir'] }}</td>
+                                        <td class="bg-purple-50 dark:bg-purple-900/50 px-2 py-4 whitespace-nowrap text-sm text-center font-semibold text-gray-700 dark:text-gray-300">{{ $summary['sakit'] }}</td>
+                                        <td class="bg-blue-50 dark:bg-blue-900/50 px-2 py-4 whitespace-nowrap text-sm text-center font-semibold text-gray-700 dark:text-gray-300">{{ $summary['izin'] }}</td>
+                                        <td class="bg-red-50 dark:bg-red-900/50 px-2 py-4 whitespace-nowrap text-sm text-center font-semibold text-gray-700 dark:text-gray-300">{{ $summary['alpa'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ $period->count() + 1 }}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                        <td colspan="{{ $period->count() + 5 }}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             Tidak ada data siswa di kelas ini.
                                         </td>
                                     </tr>
@@ -171,3 +187,4 @@
         </div>
     </div>
 </x-app-layout>
+

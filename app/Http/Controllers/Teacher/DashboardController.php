@@ -22,8 +22,9 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
-    // ... (method index, getHomeroomData, getSubjectTeacherData, updateAttendance tetap sama) ...
-    
+    // ... (method lainnya tetap sama) ...
+    // index, getHomeroomData, getSubjectTeacherData, updateAttendance, showAttendanceHistory, printAttendance
+
     /**
      * Menampilkan dasbor guru berdasarkan peran yang dimiliki.
      */
@@ -243,9 +244,6 @@ class DashboardController extends Controller
         ];
     }
 
-    /**
-     * Memperbarui atau membuat data absensi siswa.
-     */
     public function updateAttendance(Request $request)
     {
         $request->validate([
@@ -257,7 +255,6 @@ class DashboardController extends Controller
         $teacher = Auth::user()->teacher;
         $student = Student::find($request->student_id);
 
-        // Otorisasi: Pastikan guru yang mengubah adalah wali kelas dari siswa tersebut
         if (!$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
             return back()->with('error', 'Anda tidak berwenang mengubah absensi siswa ini.');
         }
@@ -265,42 +262,35 @@ class DashboardController extends Controller
         $status = $request->input('status');
         $date = Carbon::parse($request->input('date'))->startOfDay();
 
-        // Cari record yang mungkin sudah ada untuk siswa pada tanggal tersebut
         $attendance = Attendance::where('student_id', $request->student_id)
                                 ->whereDate('attendance_time', $date)
                                 ->first();
 
-        // Kasus 1: Hapus data absensi
         if ($status === 'hapus') {
             if ($attendance) {
                 $attendance->delete();
                 return back()->with('success', 'Riwayat absensi berhasil dihapus.');
             }
-            // Jika tidak ada data, tidak ada yang perlu dihapus.
             return back()->with('success', 'Tidak ada perubahan dilakukan.');
         }
 
-        // Kasus 2: Update atau Buat data absensi baru
         if ($attendance) {
-            // Jika data sudah ada, perbarui statusnya
             $attendance->status = $status;
+            if (is_null($attendance->attendance_time)) {
+                $attendance->attendance_time = $date;
+            }
             $attendance->save();
         } else {
-            // Jika data belum ada, buat record baru
             Attendance::create([
                 'student_id' => $request->student_id,
                 'status' => $status,
-                'attendance_time' => $date, // Simpan tanggal yang dipilih dari modal
+                'attendance_time' => $date,
             ]);
         }
 
         return back()->with('success', 'Riwayat absensi berhasil diperbarui.');
     }
 
-
-    /**
-     * Menampilkan riwayat absensi.
-     */
     public function showAttendanceHistory(Request $request)
     {
         $teacher = Auth::user()->teacher;
@@ -321,9 +311,11 @@ class DashboardController extends Controller
         $startDate = $selectedDate->copy()->startOfMonth();
         $endDate = $selectedDate->copy()->endOfMonth();
 
-        $attendances = Attendance::whereIn('student_id', $studentIds)
+        $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
-            ->get()
+            ->get();
+        
+        $attendances = $allAttendancesInMonth
             ->groupBy('student_id')
             ->map(function ($studentAttendances) {
                 return $studentAttendances->keyBy(function ($item) {
@@ -331,9 +323,20 @@ class DashboardController extends Controller
                 });
             });
 
+        $attendanceSummary = [];
+        foreach ($students as $student) {
+            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
+            $summary = [
+                'hadir' => $studentAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
+                'sakit' => $studentAttendances->where('status', 'sakit')->count(),
+                'izin'  => $studentAttendances->where('status', 'izin')->count(),
+                'alpa'  => $studentAttendances->where('status', 'alpa')->count(),
+            ];
+            $attendanceSummary[$student->id] = $summary;
+        }
+
         $period = CarbonPeriod::create($startDate, $endDate);
 
-        // Filter untuk mengecualikan akhir pekan (Sabtu & Minggu) agar konsisten dengan halaman cetak
         $period = collect($period)->filter(function ($date) {
             return !$date->isWeekend();
         });
@@ -344,15 +347,11 @@ class DashboardController extends Controller
             'students', 
             'attendances', 
             'period', 
-            'startDate', 
-            'endDate',
-            'selectedDate'
+            'selectedDate',
+            'attendanceSummary'
         ));
     }
 
-    /**
-     * METHOD BARU: Menyiapkan data untuk halaman cetak.
-     */
     public function printAttendance(Request $request)
     {
         $teacher = Auth::user()->teacher;
@@ -361,7 +360,6 @@ class DashboardController extends Controller
             return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak memiliki kelas untuk dicetak.');
         }
 
-        // Mengambil data pengaturan sekolah
         $settings = Setting::all()->pluck('value', 'key');
         
         $class = $teacher->homeroomClass;
@@ -375,10 +373,12 @@ class DashboardController extends Controller
         $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
         $startDate = $selectedDate->copy()->startOfMonth();
         $endDate = $selectedDate->copy()->endOfMonth();
-
-        $attendances = Attendance::whereIn('student_id', $studentIds)
+        
+        $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
-            ->get()
+            ->get();
+
+        $attendances = $allAttendancesInMonth
             ->groupBy('student_id')
             ->map(function ($studentAttendances) {
                 return $studentAttendances->keyBy(function ($item) {
@@ -386,27 +386,38 @@ class DashboardController extends Controller
                 });
             });
 
+        $attendanceSummary = [];
+        foreach ($students as $student) {
+            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
+            $summary = [
+                'hadir' => $studentAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
+                'sakit' => $studentAttendances->where('status', 'sakit')->count(),
+                'izin'  => $studentAttendances->where('status', 'izin')->count(),
+                'alpa'  => $studentAttendances->where('status', 'alpa')->count(),
+            ];
+            $attendanceSummary[$student->id] = $summary;
+        }
+
         $period = CarbonPeriod::create($startDate, $endDate);
-        // Filter untuk mengecualikan akhir pekan (Sabtu & Minggu)
+        
         $workdays = collect($period)->filter(function ($date) {
             return !$date->isWeekend();
         });
 
-
-        // Mengirim data ke view khusus untuk print
-        // CARA PENULISAN DIPERBAIKI: Menggunakan array asosiatif standar, bukan compact()
         return view('teacher.print.attendance-report', [
             'settings' => $settings,
             'class' => $class,
             'students' => $students,
             'attendances' => $attendances,
-            'period' => $workdays, // Mengirim data hari kerja yang sudah difilter
-            'selectedDate' => $selectedDate
+            'period' => $workdays,
+            'selectedDate' => $selectedDate,
+            'attendanceSummary' => $attendanceSummary
         ]);
     }
 
     /**
      * Menangani permintaan ekspor ke Excel.
+     * Logika ini disamakan dengan printAttendance untuk mengambil semua data yang dibutuhkan.
      */
     public function exportAttendanceExcel(Request $request)
     {
@@ -421,12 +432,58 @@ class DashboardController extends Controller
 
         $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
         
-        $fileName = 'Laporan Kehadiran ' . $teacher->homeroomClass->name . ' - ' . $selectedDate->translatedFormat('F Y') . '.xlsx';
+        // --- MULAI LOGIKA PENGAMBILAN DATA ---
+        $class = $teacher->homeroomClass;
+        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $studentIds = $students->pluck('id');
+
+        $startDate = $selectedDate->copy()->startOfMonth();
+        $endDate = $selectedDate->copy()->endOfMonth();
         
-        return Excel::download(new AttendanceReportExport($selectedDate), $fileName);
+        $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
+            ->whereBetween('attendance_time', [$startDate, $endDate])
+            ->get();
+
+        $attendances = $allAttendancesInMonth
+            ->groupBy('student_id')
+            ->map(function ($studentAttendances) {
+                return $studentAttendances->keyBy(function ($item) {
+                    return Carbon::parse($item->attendance_time)->format('Y-m-d');
+                });
+            });
+
+        $attendanceSummary = [];
+        foreach ($students as $student) {
+            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
+            $summary = [
+                'hadir' => $studentAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
+                'sakit' => $studentAttendances->where('status', 'sakit')->count(),
+                'izin'  => $studentAttendances->where('status', 'izin')->count(),
+                'alpa'  => $studentAttendances->where('status', 'alpa')->count(),
+            ];
+            $attendanceSummary[$student->id] = $summary;
+        }
+
+        $period = CarbonPeriod::create($startDate, $endDate);
+        
+        $workdays = collect($period)->filter(function ($date) {
+            return !$date->isWeekend();
+        });
+        // --- SELESAI LOGIKA PENGAMBILAN DATA ---
+
+        $fileName = 'Laporan Kehadiran ' . $class->name . ' - ' . $selectedDate->translatedFormat('F Y') . '.xlsx';
+        
+        // Kirim semua data yang dibutuhkan ke class Export
+        return Excel::download(new AttendanceReportExport(
+            $class, 
+            $students, 
+            $workdays, 
+            $attendances, 
+            $attendanceSummary, 
+            $selectedDate
+        ), $fileName);
     }
 
-    // Fungsi updateNote
     public function updateNote(Request $request)
     {
         $request->validate(['content' => 'nullable|string']);
@@ -444,4 +501,3 @@ class DashboardController extends Controller
         return response()->json(['success' => true, 'message' => 'Catatan berhasil disimpan.']);
     }
 }
-
