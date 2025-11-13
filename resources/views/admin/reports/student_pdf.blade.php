@@ -22,6 +22,30 @@
         .data-table th { background-color: #f2f2f2; font-weight: bold; }
         .text-center { text-align: center; }
         .footer { text-align: right; font-size: 9px; margin-top: 30px; color: #777; position: fixed; bottom: 0; right: 0; }
+        
+        /* MODIFIKASI: CSS untuk blok tanda tangan */
+        .signature-block {
+            width: 100%;
+            margin-top: 40px;
+            page-break-inside: avoid; /* Mencegah terpotong di halaman baru */
+        }
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .signature-table td {
+            width: 50%;
+            text-align: center;
+            vertical-align: top;
+            padding: 10px;
+        }
+        .signature-space {
+            height: 60px; /* Ruang untuk tanda tangan */
+        }
+        .signature-name {
+            font-weight: bold;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -91,6 +115,35 @@
             @endforelse
         </tbody>
     </table>
+
+    <!-- MODIFIKASI: Blok Tanda Tangan -->
+    <div class="signature-block">
+        <table class="signature-table">
+            <tr>
+                <td>
+                    Mengetahui,<br>
+                    Kepala Sekolah
+                    <div class="signature-space"></div>
+                    <div class="signature-name">{{ $headmasterName }}</div>
+                    {{-- MODIFIKASI: Tampilkan NIP Kepala Sekolah --}}
+                    <div>NIP. {{ $headmasterNip }}</div>
+                </td>
+                <td>
+                    {{-- Ganti 'Kota' dengan kota sekolah Anda & format tanggal --}}
+                    Buol, {{ now()->translatedFormat('d F Y') }}<br> 
+                    Wali Kelas
+                    <div class="signature-space"></div>
+                    <div class="signature-name">{{ $homeroomTeacherName }}</div>
+                    {{-- MODIFIKASI: Tampilkan NIP Wali Kelas jika ada --}}
+                    @if ($homeroomTeacherNip)
+                        <div>NIP. {{ $homeroomTeacherNip }}</div>
+                    @endif
+                </td>
+            </tr>
+        </table>
+    </div>
+    <!-- Akhir Blok Tanda Tangan -->
+
 
     <div class="footer">
         Dicetak pada: {{ now()->translatedFormat('d F Y, H:i') }}

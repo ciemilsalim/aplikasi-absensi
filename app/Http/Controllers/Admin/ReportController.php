@@ -60,6 +60,7 @@ class ReportController extends Controller
      */
     private function generateClassMonthlyReport(Request $request)
     {
+        // ... (Fungsi ini tidak berubah) ...
         $class = SchoolClass::findOrFail($request->school_class_id);
         $date = Carbon::createFromFormat('Y-m', $request->month);
         $monthName = $date->translatedFormat('F Y');
@@ -99,7 +100,8 @@ class ReportController extends Controller
      */
     private function generateStudentDetailedReport(Request $request)
     {
-        $student = Student::with('schoolClass')->findOrFail($request->student_id);
+        // MODIFIKASI: Tambahkan 'schoolClass.homeroomTeacher' untuk mengambil data wali kelas
+        $student = Student::with('schoolClass.homeroomTeacher')->findOrFail($request->student_id);
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
 
@@ -114,6 +116,13 @@ class ReportController extends Controller
         $pdfData['startDate'] = $startDate->translatedFormat('d F Y');
         $pdfData['endDate'] = $endDate->translatedFormat('d F Y');
 
+        // MODIFIKASI: Kirim nama WALI KELAS ke view PDF
+        // Asumsi relasi di model SchoolClass bernama 'homeroomTeacher'
+        // MODIFIKASI: Ambil nama DAN NIP wali kelas
+        $homeroomTeacher = $student->schoolClass->homeroomTeacher;
+        $pdfData['homeroomTeacherName'] = $homeroomTeacher->name ?? '-';
+        $pdfData['homeroomTeacherNip'] = $homeroomTeacher->nip ?? null; // Ambil NIP
+
         $pdf = Pdf::loadView('admin.reports.student_pdf', $pdfData);
         return $pdf->stream('laporan-detail-' . $student->name . '.pdf');
     }
@@ -123,6 +132,7 @@ class ReportController extends Controller
      */
     private function generateSchoolLatenessReport(Request $request)
     {
+        // ... (Fungsi ini tidak berubah) ...
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
 
@@ -152,6 +162,7 @@ class ReportController extends Controller
      */
     private function generateNoCheckoutReport(Request $request)
     {
+        // ... (Fungsi ini tidak berubah) ...
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
@@ -163,16 +174,15 @@ class ReportController extends Controller
             ->join('school_classes', 'students.school_class_id', '=', 'school_classes.id')
             ->orderBy('school_classes.name', 'asc')
             ->orderBy('students.name', 'asc')
-            ->select('attendances.*') // Pastikan hanya kolom dari tabel attendances yang diambil
+            ->select('attendances.*') 
             ->get();
 
-        // Mengelompokkan berdasarkan nama kelas setelah diurutkan dari database
         $groupedAttendances = $attendancesQuery->groupBy(function($attendance) {
             return $attendance->student->schoolClass->name ?? 'Belum Ada Kelas';
         });
 
         $pdfData = $this->getCommonPdfData();
-        $pdfData['groupedAttendances'] = $groupedAttendances; // Mengirim data yang sudah dikelompokkan
+        $pdfData['groupedAttendances'] = $groupedAttendances; 
         $pdfData['startDate'] = $startDate->translatedFormat('d F Y');
         $pdfData['endDate'] = $endDate->translatedFormat('d F Y');
         
@@ -206,6 +216,9 @@ class ReportController extends Controller
             'appName' => config('app.name', 'SIASEK'),
             'printDate' => now()->translatedFormat('d F Y, H:i:s'),
             'userRole' => $userRole,
+            // MODIFIKASI: Hardcode nama dan NIP Kepala Sekolah
+            'headmasterName' => 'Marlinda, S.Pd.',
+            'headmasterNip' => '197911162006042016',
         ];
     }
 }
