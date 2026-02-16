@@ -84,7 +84,7 @@
     </table>
 
     <div class="footer">
-        <p>Badung, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+        <p>Buol, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
         <p>Kepala Sekolah,</p>
         <br><br><br><br>
         <p style="font-weight: bold; text-decoration: underline;">{{ $headmasterName }}</p>
