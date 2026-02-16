@@ -16,7 +16,18 @@ class PermitController extends Controller
      */
     public function showScanner()
     {
-        return view('permit-scanner');
+        $students = Student::select('id', 'unique_id', 'name', 'photo')
+            ->whereNotNull('photo')
+            ->get()
+            ->map(function ($student) {
+            return [
+            'unique_id' => $student->unique_id,
+            'name' => $student->name,
+            'photo_url' => asset('storage/' . $student->photo),
+            ];
+        });
+
+        return view('permit-scanner', compact('students'));
     }
 
     /**
@@ -78,7 +89,7 @@ class PermitController extends Controller
                 'time' => now()->format('H:i:s'),
             ]);
         }
-        
+
         // KASUS 2: Siswa akan izin keluar
         if (in_array($attendance->status, ['tepat_waktu', 'terlambat'])) {
             if (!$request->filled('reason')) {
@@ -116,7 +127,8 @@ class PermitController extends Controller
     /**
      * Menghitung jarak antara dua titik koordinat GPS.
      */
-    private function haversineDistance($lat1, $lon1, $lat2, $lon2) {
+    private function haversineDistance($lat1, $lon1, $lat2, $lon2)
+    {
         $earthRadius = 6371000;
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
