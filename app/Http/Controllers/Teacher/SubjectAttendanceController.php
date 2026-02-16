@@ -30,14 +30,14 @@ class SubjectAttendanceController extends Controller
 
         $today = Carbon::today();
         $classId = $schedule->teachingAssignment->school_class_id;
-        
+
         $subjectAttendancesToday = SubjectAttendance::where('schedule_id', $schedule->id)
             ->whereDate('created_at', $today)
             ->with('student')
             ->get();
 
         $attendedStudents = $subjectAttendancesToday->where('status', 'hadir');
-        
+
         $studentsOnLeave = $subjectAttendancesToday->whereIn('status', ['sakit', 'izin']);
 
         $studentIdsWithRecord = $subjectAttendancesToday->pluck('student_id');
@@ -47,7 +47,19 @@ class SubjectAttendanceController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave', 'studentsWithoutNotice'));
+        $studentsForFaceRecognition = Student::where('school_class_id', $classId)
+            ->whereNotNull('photo')
+            ->select('id', 'unique_id', 'name', 'photo')
+            ->get()
+            ->map(function ($student) {
+            return [
+            'unique_id' => $student->unique_id,
+            'name' => $student->name,
+            'photo_url' => asset('storage/' . $student->photo),
+            ];
+        });
+
+        return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave', 'studentsWithoutNotice', 'studentsForFaceRecognition'));
     }
 
     /**
@@ -68,7 +80,7 @@ class SubjectAttendanceController extends Controller
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
         }
-        
+
         if ($student->school_class_id !== $schedule->teachingAssignment->school_class_id) {
             return response()->json(['success' => false, 'message' => 'Siswa tidak terdaftar di kelas ini.'], 422);
         }
@@ -94,7 +106,7 @@ class SubjectAttendanceController extends Controller
             'message' => 'Kehadiran ' . $student->name . ' berhasil dicatat.',
             'student' => [
                 'id' => $student->id,
-                'name' => $student->name, 
+                'name' => $student->name,
                 'time' => $attendance->created_at->format('H:i:s')
             ]
         ]);
@@ -106,8 +118,8 @@ class SubjectAttendanceController extends Controller
     public function showHistory(Request $request)
     {
         $teacher = Auth::user()->teacher;
-        
-        $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+
+        $selectedDate = $request->input('date') ?Carbon::parse($request->input('date')) : Carbon::today();
 
         $attendances = SubjectAttendance::with(['student', 'schedule.teachingAssignment.subject', 'schedule.teachingAssignment.schoolClass'])
             ->where('teacher_id', $teacher->id)
@@ -148,8 +160,9 @@ class SubjectAttendanceController extends Controller
                 'status' => $request->status,
                 'teacher_id' => $teacher->id,
             ]);
-        } else {
-           $attendance = SubjectAttendance::create([
+        }
+        else {
+            $attendance = SubjectAttendance::create([
                 'schedule_id' => $schedule->id,
                 'student_id' => $student->id,
                 'teacher_id' => $teacher->id,
@@ -209,9 +222,9 @@ class SubjectAttendanceController extends Controller
             ->where('teacher_id', $teacher->id)
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
-                $query->where('school_class_id', $schoolClassId)
-                      ->where('subject_id', $subjectId);
-            })
+            $query->where('school_class_id', $schoolClassId)
+                ->where('subject_id', $subjectId);
+        })
             ->get();
 
         $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
@@ -232,7 +245,7 @@ class SubjectAttendanceController extends Controller
             // dayOfWeekIso returns 1 for Monday and 7 for Sunday
             return in_array($date->dayOfWeekIso, $scheduleDays);
         });
-        
+
         $attendanceData = [];
         foreach ($attendances as $attendance) {
             $date = Carbon::parse($attendance->created_at)->format('Y-m-d');
@@ -245,12 +258,12 @@ class SubjectAttendanceController extends Controller
         $requestInputs = $request->only(['start_date', 'end_date', 'school_class_id', 'subject_id']);
 
         return view('teacher.report_preview', compact(
-            'students', 
-            'period', 
-            'attendanceData', 
-            'classInfo', 
-            'subjectInfo', 
-            'startDate', 
+            'students',
+            'period',
+            'attendanceData',
+            'classInfo',
+            'subjectInfo',
+            'startDate',
             'endDate',
             'requestInputs'
         ));
@@ -268,7 +281,7 @@ class SubjectAttendanceController extends Controller
             'school_class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
         ]);
-        
+
         $teacher = Auth::user()->teacher;
         $date = Carbon::parse($request->date);
         $dayOfWeek = $date->dayOfWeekIso; // Gunakan dayOfWeekIso (Senin=1, Minggu=7)
@@ -308,7 +321,8 @@ class SubjectAttendanceController extends Controller
                 'status' => $request->status,
                 'teacher_id' => $teacher->id,
             ]);
-        } else {
+        }
+        else {
             SubjectAttendance::create([
                 'student_id' => $request->student_id,
                 'schedule_id' => $schedule->id,
@@ -347,9 +361,9 @@ class SubjectAttendanceController extends Controller
             ->where('teacher_id', $teacher->id)
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
-                $query->where('school_class_id', $schoolClassId)
-                      ->where('subject_id', $subjectId);
-            })
+            $query->where('school_class_id', $schoolClassId)
+                ->where('subject_id', $subjectId);
+        })
             ->get();
 
         $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
@@ -360,7 +374,7 @@ class SubjectAttendanceController extends Controller
         if (!$assignment) {
             return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
         }
-        
+
         $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
             ->pluck('day_of_week')
             ->unique()
@@ -369,7 +383,7 @@ class SubjectAttendanceController extends Controller
         $period = CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays) {
             return in_array($date->dayOfWeekIso, $scheduleDays);
         });
-        
+
         $attendanceData = [];
         foreach ($attendances as $attendance) {
             $date = Carbon::parse($attendance->created_at)->format('Y-m-d');
@@ -390,15 +404,14 @@ class SubjectAttendanceController extends Controller
         ];
 
         return view('teacher.report_print', compact(
-            'students', 
-            'period', 
-            'attendanceData', 
-            'classInfo', 
-            'subjectInfo', 
-            'startDate', 
+            'students',
+            'period',
+            'attendanceData',
+            'classInfo',
+            'subjectInfo',
+            'startDate',
             'endDate',
             'schoolIdentity'
         ));
     }
 }
-
