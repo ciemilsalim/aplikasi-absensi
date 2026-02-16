@@ -43,6 +43,33 @@ class AttendanceController extends Controller
             // PERBAIKAN: Mengambil semua pengaturan dari database
             $settings = Setting::pluck('value', 'key');
 
+            // == CEK HARI LIBUR & AKHIR PEKAN ==
+            // 1. Cek Akhir Pekan (Sabtu & Minggu)
+            if ($now->isWeekend()) {
+                return response()->json([
+                    'status' => 'holiday_error',
+                    'message' => 'Absensi tidak dapat dilakukan pada akhir pekan (Sabtu/Minggu).',
+                    'student_name' => $student->name
+                ], 403);
+            }
+
+            // 2. Cek Kalender Pendidikan (Hari Libur)
+            $holiday = \App\Models\Calendar::where('is_holiday', true)
+                ->whereDate('start_date', '<=', $today)
+                ->where(function ($query) use ($today) {
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $today);
+            })->first();
+
+            if ($holiday) {
+                return response()->json([
+                    'status' => 'holiday_error',
+                    'message' => 'Hari ini libur: ' . $holiday->title,
+                    'student_name' => $student->name
+                ], 403);
+            }
+            // ==================================
+
             // Validasi Jarak GPS
             $schoolLat = $settings->get('school_latitude');
             $schoolLng = $settings->get('school_longitude');

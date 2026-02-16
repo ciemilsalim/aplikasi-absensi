@@ -41,6 +41,27 @@ class TeacherAttendanceController extends Controller
 
         $teacher = Auth::user()->teacher;
 
+        // == CEK HARI LIBUR & AKHIR PEKAN ==
+        $today = Carbon::today();
+
+        // 1. Cek Akhir Pekan (Sabtu & Minggu)
+        if ($today->isWeekend()) {
+            return response()->json(['success' => false, 'message' => 'Absensi tidak dapat dilakukan pada akhir pekan (Sabtu/Minggu).'], 422);
+        }
+
+        // 2. Cek Kalender Pendidikan (Hari Libur)
+        $holiday = \App\Models\Calendar::where('is_holiday', true)
+            ->whereDate('start_date', '<=', $today)
+            ->where(function ($query) use ($today) {
+            $query->whereNull('end_date')
+                ->orWhereDate('end_date', '>=', $today);
+        })->first();
+
+        if ($holiday) {
+            return response()->json(['success' => false, 'message' => 'Hari ini libur: ' . $holiday->title], 422);
+        }
+        // ==================================
+
         // 1. Verify Location (Server-side check as backup/validation)
         $schoolLat = Setting::where('key', 'school_latitude')->value('value');
         $schoolLng = Setting::where('key', 'school_longitude')->value('value');

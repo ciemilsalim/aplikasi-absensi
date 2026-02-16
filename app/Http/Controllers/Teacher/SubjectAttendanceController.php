@@ -85,6 +85,25 @@ class SubjectAttendanceController extends Controller
             return response()->json(['success' => false, 'message' => 'Siswa tidak terdaftar di kelas ini.'], 422);
         }
 
+        // == CEK HARI LIBUR & AKHIR PEKAN ==
+        // 1. Cek Akhir Pekan (Sabtu & Minggu)
+        if ($today->isWeekend()) {
+            return response()->json(['success' => false, 'message' => 'Absensi tidak dapat dilakukan pada akhir pekan.'], 422);
+        }
+
+        // 2. Cek Kalender Pendidikan (Hari Libur)
+        $holiday = \App\Models\Calendar::where('is_holiday', true)
+            ->whereDate('start_date', '<=', $today)
+            ->where(function ($query) use ($today) {
+            $query->whereNull('end_date')
+                ->orWhereDate('end_date', '>=', $today);
+        })->first();
+
+        if ($holiday) {
+            return response()->json(['success' => false, 'message' => 'Hari ini libur: ' . $holiday->title], 422);
+        }
+        // ==================================
+
         $existingAttendance = SubjectAttendance::where('schedule_id', $schedule->id)
             ->where('student_id', $student->id)
             ->whereDate('created_at', $today)

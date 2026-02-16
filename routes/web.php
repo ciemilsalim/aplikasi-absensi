@@ -127,7 +127,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class , 'index'])->name('classes.assign_teacher');
             Route::post('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class , 'store'])->name('classes.store_teacher_assignment');
 
-            //jadwal mapel
+            // Kurikulum
+            Route::post('calendars/import', [\App\Http\Controllers\Admin\CalendarController::class , 'import'])->name('calendars.import');
+            Route::resource('calendars', \App\Http\Controllers\Admin\CalendarController::class)->except(['show', 'edit', 'update', 'create']);
+
+            // Jadwal Pelajaran (Dipindahkan ke Kurikulum)
             Route::get('schedules', [\App\Http\Controllers\Admin\ScheduleController::class , 'index'])->name('schedules.index');
             Route::get('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class , 'show'])->name('schedules.show');
             Route::post('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class , 'store'])->name('schedules.store');
@@ -158,7 +162,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('/chat/{selectedParent?}', [AdminChatController::class , 'index'])->name('chat.index');
             Route::post('/chat/conversations/{conversation}', [AdminChatController::class , 'storeMessage'])->name('chat.store_message');
         }
-        );    });
+        );
+    });
 
 // == GRUP RUTE ORANG TUA ==
 Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(function () {
