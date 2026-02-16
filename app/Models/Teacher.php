@@ -14,6 +14,7 @@ class Teacher extends Model
         'name',
         'nip',
         'phone_number',
+        'photo',
     ];
 
     // Relasi ke model User (satu guru memiliki satu akun login)
@@ -25,16 +26,21 @@ class Teacher extends Model
     // Relasi untuk mengecek apakah guru ini adalah wali kelas
     public function homeroomClass()
     {
-        return $this->hasOne(SchoolClass::class, 'teacher_id');
+        return $this->hasOne(SchoolClass::class , 'teacher_id');
     }
 
     public function subjects()
     {
-        return $this->belongsToMany(Subject::class, 'subject_teacher');
+        return $this->belongsToMany(Subject::class , 'subject_teacher');
     }
 
     public function teachingAssignments()
     {
         return $this->hasMany(TeachingAssignment::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(TeacherAttendance::class);
     }
 }

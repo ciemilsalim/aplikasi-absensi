@@ -10,7 +10,7 @@
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <form action="{{ route('admin.teachers.store') }}" method="POST">
+                <form action="{{ route('admin.teachers.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="p-6 space-y-6">
                         <div>
@@ -23,10 +23,17 @@
                             <x-text-input id="nip" class="block mt-1 w-full" type="text" name="nip" :value="old('nip')" />
                             <x-input-error class="mt-2" :messages="$errors->get('nip')" />
                         </div>
-                         <div>
+                        <div>
                             <x-input-label for="phone_number" :value="__('Nomor HP (Opsional)')" />
                             <x-text-input id="phone_number" class="block mt-1 w-full" type="text" name="phone_number" :value="old('phone_number')" />
                             <x-input-error class="mt-2" :messages="$errors->get('phone_number')" />
+                        </div>
+                        
+                        <div>
+                            <x-input-label for="photo" :value="__('Foto Wajah (Untuk Absensi)')" />
+                            <input id="photo" class="block mt-1 w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-slate-700 dark:border-gray-600 dark:placeholder-gray-400" type="file" name="photo" accept="image/*">
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Unggah foto wajah jelas untuk keperluan absensi.</p>
+                            <x-input-error class="mt-2" :messages="$errors->get('photo')" />
                         </div>
 
                         <!-- TAMBAHKAN BAGIAN INI -->
