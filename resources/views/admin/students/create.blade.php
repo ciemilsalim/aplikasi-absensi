@@ -19,7 +19,7 @@ $breadcrumbs = [
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
             
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <form action="{{ route('admin.students.store') }}" method="POST">
+                <form action="{{ route('admin.students.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="p-6 space-y-6">
                         
@@ -47,6 +47,14 @@ $breadcrumbs = [
                                 @endforeach
                             </select>
                             <x-input-error class="mt-2" :messages="$errors->get('school_class_id')" />
+                        </div>
+
+                        {{-- Added Photo Input --}}
+                        <div>
+                            <x-input-label for="photo" :value="__('Foto Siswa')" />
+                            <input id="photo" name="photo" type="file" class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400" accept="image/*">
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">Format: JPG, PNG, GIF. Maks: 2MB.</p>
+                            <x-input-error :messages="$errors->get('photo')" class="mt-2" />
                         </div>
 
                     </div>

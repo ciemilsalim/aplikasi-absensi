@@ -16,7 +16,8 @@ class Student extends Model
         'name',
         'nis',
         'school_class_id',
-        'unique_id'
+        'unique_id',
+        'photo'
     ];
 
     // Otomatis membuat unique_id saat siswa baru dibuat
@@ -25,7 +26,7 @@ class Student extends Model
         parent::boot();
         static::creating(function ($model) {
             if (empty($model->unique_id)) {
-                $model->unique_id = (string) Str::uuid();
+                $model->unique_id = (string)Str::uuid();
             }
         });
     }
@@ -54,10 +55,10 @@ class Student extends Model
      */
     public function parents()
     {
-        return $this->belongsToMany(ParentModel::class, 'parent_student', 'student_id', 'parent_id');
+        return $this->belongsToMany(ParentModel::class , 'parent_student', 'student_id', 'parent_id');
     }
 
-    public function leaveRequests() 
+    public function leaveRequests()
     {
         return $this->hasMany(LeaveRequest::class);
     }

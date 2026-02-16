@@ -22,7 +22,7 @@ class ReportController extends Controller
     {
         $classes = SchoolClass::orderBy('name')->get();
         $students = Student::with('schoolClass')->orderBy('name')->get();
-        
+
         return view('admin.reports.create', compact('classes', 'students'));
     }
 
@@ -44,11 +44,14 @@ class ReportController extends Controller
 
         if ($reportType === 'class_monthly') {
             return $this->generateClassMonthlyReport($request);
-        } elseif ($reportType === 'student_detailed') {
+        }
+        elseif ($reportType === 'student_detailed') {
             return $this->generateStudentDetailedReport($request);
-        } elseif ($reportType === 'school_lateness') {
+        }
+        elseif ($reportType === 'school_lateness') {
             return $this->generateSchoolLatenessReport($request);
-        } elseif ($reportType === 'school_no_checkout') {
+        }
+        elseif ($reportType === 'school_no_checkout') {
             return $this->generateNoCheckoutReport($request);
         }
 
@@ -64,14 +67,14 @@ class ReportController extends Controller
         $class = SchoolClass::findOrFail($request->school_class_id);
         $date = Carbon::createFromFormat('Y-m', $request->month);
         $monthName = $date->translatedFormat('F Y');
-        
+
         $students = Student::where('school_class_id', $class->id)
-                            ->with(['attendances' => function ($query) use ($date) {
-                                $query->whereYear('attendance_time', $date->year)
-                                      ->whereMonth('attendance_time', $date->month);
-                            }])
-                            ->orderBy('name')
-                            ->get();
+            ->with(['attendances' => function ($query) use ($date) {
+            $query->whereYear('attendance_time', $date->year)
+                ->whereMonth('attendance_time', $date->month);
+        }])
+            ->orderBy('name')
+            ->get();
 
         $reportData = $students->map(function ($student) {
             $attendancesInMonth = $student->attendances;
@@ -81,8 +84,8 @@ class ReportController extends Controller
             $alpa = $attendancesInMonth->where('status', 'alpa')->count();
 
             return (object)[
-                'name' => $student->name, 'nis' => $student->nis,
-                'hadir' => $hadir, 'sakit' => $sakit, 'izin' => $izin, 'alpa' => $alpa,
+            'name' => $student->name, 'nis' => $student->nis,
+            'hadir' => $hadir, 'sakit' => $sakit, 'izin' => $izin, 'alpa' => $alpa,
             ];
         });
 
@@ -138,13 +141,13 @@ class ReportController extends Controller
 
         $latenessData = Student::with('schoolClass')
             ->whereHas('attendances', function ($query) use ($startDate, $endDate) {
-                $query->where('status', 'terlambat')
-                      ->whereBetween('attendance_time', [$startDate, $endDate]);
-            })
+            $query->where('status', 'terlambat')
+                ->whereBetween('attendance_time', [$startDate, $endDate]);
+        })
             ->withCount(['attendances as late_count' => function ($query) use ($startDate, $endDate) {
-                $query->where('status', 'terlambat')
-                      ->whereBetween('attendance_time', [$startDate, $endDate]);
-            }])
+            $query->where('status', 'terlambat')
+                ->whereBetween('attendance_time', [$startDate, $endDate]);
+        }])
             ->orderByDesc('late_count')
             ->get();
 
@@ -152,7 +155,7 @@ class ReportController extends Controller
         $pdfData['latenessData'] = $latenessData;
         $pdfData['startDate'] = $startDate->translatedFormat('d F Y');
         $pdfData['endDate'] = $endDate->translatedFormat('d F Y');
-        
+
         $pdf = Pdf::loadView('admin.reports.lateness_pdf', $pdfData);
         return $pdf->stream('laporan-keterlambatan.pdf');
     }
@@ -174,22 +177,22 @@ class ReportController extends Controller
             ->join('school_classes', 'students.school_class_id', '=', 'school_classes.id')
             ->orderBy('school_classes.name', 'asc')
             ->orderBy('students.name', 'asc')
-            ->select('attendances.*') 
+            ->select('attendances.*')
             ->get();
 
-        $groupedAttendances = $attendancesQuery->groupBy(function($attendance) {
+        $groupedAttendances = $attendancesQuery->groupBy(function ($attendance) {
             return $attendance->student->schoolClass->name ?? 'Belum Ada Kelas';
         });
 
         $pdfData = $this->getCommonPdfData();
-        $pdfData['groupedAttendances'] = $groupedAttendances; 
+        $pdfData['groupedAttendances'] = $groupedAttendances;
         $pdfData['startDate'] = $startDate->translatedFormat('d F Y');
         $pdfData['endDate'] = $endDate->translatedFormat('d F Y');
-        
+
         $pdf = Pdf::loadView('admin.reports.no_checkout_pdf', $pdfData);
         return $pdf->stream('laporan-tidak-absen-pulang.pdf');
     }
-    
+
     /**
      * Mengambil data umum yang diperlukan untuk semua PDF.
      */
@@ -202,11 +205,12 @@ class ReportController extends Controller
             try {
                 $logoData = Storage::disk('public')->get($logoPath);
                 $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
-            } catch (\Exception $e) {
+            }
+            catch (\Exception $e) {
                 $logoBase64 = null;
             }
         }
-        
+
         $userRole = Auth::check() ? ucfirst(Auth::user()->role) : 'Tamu';
 
         return [
@@ -216,9 +220,9 @@ class ReportController extends Controller
             'appName' => config('app.name', 'SIASEK'),
             'printDate' => now()->translatedFormat('d F Y, H:i:s'),
             'userRole' => $userRole,
-            // MODIFIKASI: Hardcode nama dan NIP Kepala Sekolah
-            'headmasterName' => 'Marlinda, S.Pd.',
-            'headmasterNip' => '197911162006042016',
+            // MODIFIKASI: Ambil nama dan NIP Kepala Sekolah dari pengaturan
+            'headmasterName' => $settings->get('school_headmaster_name', '-'),
+            'headmasterNip' => $settings->get('school_headmaster_nip', '-'),
         ];
     }
 }

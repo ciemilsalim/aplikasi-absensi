@@ -13,7 +13,18 @@ class AttendanceController extends Controller
 {
     public function showScanner()
     {
-        return view('scanner');
+        $students = Student::select('id', 'unique_id', 'name', 'photo')
+            ->whereNotNull('photo')
+            ->get()
+            ->map(function ($student) {
+            return [
+            'unique_id' => $student->unique_id,
+            'name' => $student->name,
+            'photo_url' => asset('storage/' . $student->photo),
+            ];
+        });
+
+        return view('scanner', compact('students'));
     }
 
     public function storeAttendance(Request $request)
@@ -28,7 +39,7 @@ class AttendanceController extends Controller
             $student = Student::where('unique_id', $request->student_unique_id)->firstOrFail();
             $now = now();
             $today = $now->copy()->startOfDay();
-            
+
             // PERBAIKAN: Mengambil semua pengaturan dari database
             $settings = Setting::pluck('value', 'key');
 
@@ -53,9 +64,9 @@ class AttendanceController extends Controller
             // Cek jika siswa sudah tercatat izin atau sakit
             if ($attendance && in_array($attendance->status, ['izin', 'sakit', 'alpa'])) {
                 return response()->json([
-                    'status'        => 'on_leave',
-                    'message'       => 'Anda sudah tercatat ' . $attendance->status . ' hari ini dan tidak dapat melakukan absensi.',
-                    'student_name'  => $student->name,
+                    'status' => 'on_leave',
+                    'message' => 'Anda sudah tercatat ' . $attendance->status . ' hari ini dan tidak dapat melakukan absensi.',
+                    'student_name' => $student->name,
                 ], 409);
             }
 
@@ -63,9 +74,9 @@ class AttendanceController extends Controller
             if ($attendance) {
                 if (!is_null($attendance->checkout_time)) {
                     return response()->json([
-                        'status'        => 'completed',
-                        'message'       => 'Anda sudah menyelesaikan absensi hari ini.',
-                        'student_name'  => $student->name,
+                        'status' => 'completed',
+                        'message' => 'Anda sudah menyelesaikan absensi hari ini.',
+                        'student_name' => $student->name,
                     ], 409);
                 }
 
@@ -75,18 +86,18 @@ class AttendanceController extends Controller
 
                 if ($now->lt($waktuPulang)) {
                     return response()->json([
-                        'status'        => 'already_clocked_in',
-                        'message'       => 'Anda sudah absen masuk. Absen pulang baru bisa dilakukan setelah pukul ' . $waktuPulang->format('H:i') . '.',
-                        'student_name'  => $student->name,
+                        'status' => 'already_clocked_in',
+                        'message' => 'Anda sudah absen masuk. Absen pulang baru bisa dilakukan setelah pukul ' . $waktuPulang->format('H:i') . '.',
+                        'student_name' => $student->name,
                     ], 409);
                 }
 
                 $attendance->update(['checkout_time' => $now]);
                 return response()->json([
-                    'status'        => 'clock_out',
-                    'student_name'  => $student->name,
-                    'student_nis'   => $student->nis,
-                    'time'          => $now->format('H:i:s'),
+                    'status' => 'clock_out',
+                    'student_name' => $student->name,
+                    'student_nis' => $student->nis,
+                    'time' => $now->format('H:i:s'),
                 ]);
             }
 
@@ -97,25 +108,27 @@ class AttendanceController extends Controller
             $status = ($now->gt($lateTime)) ? 'terlambat' : 'tepat_waktu';
 
             $newAttendance = Attendance::create([
-                'student_id'      => $student->id,
+                'student_id' => $student->id,
                 'attendance_time' => $now,
-                'status'          => $status,
+                'status' => $status,
             ]);
 
             return response()->json([
-                'status'            => 'clock_in',
+                'status' => 'clock_in',
                 'attendance_status' => $status,
-                'student_name'      => $student->name,
-                'student_nis'       => $student->nis,
-                'time'              => $newAttendance->attendance_time->format('H:i:s'),
+                'student_name' => $student->name,
+                'student_nis' => $student->nis,
+                'time' => $newAttendance->attendance_time->format('H:i:s'),
             ]);
 
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => 'Terjadi kesalahan pada server.'], 500);
         }
     }
-    
-    private function haversineDistance($lat1, $lon1, $lat2, $lon2) {
+
+    private function haversineDistance($lat1, $lon1, $lat2, $lon2)
+    {
         $earthRadius = 6371000;
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);

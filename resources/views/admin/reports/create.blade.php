@@ -62,15 +62,79 @@
                                 </div>
                                 
                                 {{-- Filter untuk Detail per Siswa --}}
-                                <div x-show="reportType === 'student_detailed'" x-transition class="space-y-4" style="display: none;">
-                                    <div>
-                                        <x-input-label for="student_id" value="Pilih Siswa" />
-                                        <select name="student_id" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm" x-bind:required="reportType === 'student_detailed'" x-bind:disabled="reportType !== 'student_detailed'">
-                                            <option value="">-- Pilih Siswa --</option>
-                                            @foreach($students as $student)
-                                                <option value="{{ $student->id }}">{{ $student->name }} ({{ $student->schoolClass->name ?? 'Tanpa Kelas' }})</option>
-                                            @endforeach
-                                        </select>
+                                <div x-show="reportType === 'student_detailed'" x-transition class="space-y-4" style="display: none;"
+                                     x-data="{
+                                         search: '',
+                                         open: false,
+                                         selected: null,
+                                         students: {{ \Illuminate\Support\Js::from($students) }},
+                                         get filteredStudents() {
+                                             if (this.search === '') {
+                                                 return this.students;
+                                             }
+                                             return this.students.filter(student => {
+                                                 return student.name.toLowerCase().includes(this.search.toLowerCase()) ||
+                                                        (student.school_class && student.school_class.name.toLowerCase().includes(this.search.toLowerCase()));
+                                             });
+                                         },
+                                         selectStudent(student) {
+                                             this.selected = student;
+                                             this.search = student.name + ' (' + (student.school_class ? student.school_class.name : 'Tanpa Kelas') + ')';
+                                             this.open = false;
+                                         }
+                                     }"
+                                >
+                                    <div class="relative">
+                                        <x-input-label for="student_search" value="Cari Siswa" />
+                                        
+                                        {{-- Hidden input to store the actual ID --}}
+                                        <input type="hidden" name="student_id" x-bind:value="selected ? selected.id : ''" x-bind:required="reportType === 'student_detailed'" x-bind:disabled="reportType !== 'student_detailed'">
+                                        
+                                        {{-- Visual Search Input --}}
+                                        <div class="relative">
+                                            <input 
+                                                type="text" 
+                                                x-model="search"
+                                                @focus="open = true"
+                                                @click.away="open = false"
+                                                @keydown.escape="open = false"
+                                                class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm"
+                                                placeholder="Ketik nama siswa atau kelas..."
+                                            >
+                                            
+                                            {{-- Clear Button --}}
+                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3" x-show="search.length > 0">
+                                                <button type="button" @click="search = ''; selected = null; open = true" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {{-- Dropdown Results --}}
+                                        <div x-show="open && filteredStudents.length > 0" 
+                                             class="absolute z-10 mt-1 w-full bg-white dark:bg-slate-800 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+                                             style="display: none;">
+                                            <ul class="divide-y divide-gray-200 dark:divide-slate-700">
+                                                <template x-for="student in filteredStudents" :key="student.id">
+                                                    <li @click="selectStudent(student)" 
+                                                        class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-sky-50 dark:hover:bg-slate-700 text-gray-900 dark:text-gray-300">
+                                                        <div class="flex items-center">
+                                                            <span class="font-normal block truncate" x-text="student.name"></span>
+                                                            <span class="ml-2 text-gray-500 dark:text-gray-400 text-xs" x-text="student.school_class ? student.school_class.name : 'Tanpa Kelas'"></span>
+                                                        </div>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                        
+                                        {{-- No Results Message --}}
+                                        <div x-show="open && filteredStudents.length === 0" 
+                                             class="absolute z-10 mt-1 w-full bg-white dark:bg-slate-800 shadow-lg rounded-md py-2 px-3 text-sm text-gray-500 dark:text-gray-400"
+                                             style="display: none;">
+                                            Tidak ada siswa ditemukan.
+                                        </div>
                                     </div>
                                 </div>
 

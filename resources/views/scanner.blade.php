@@ -33,6 +33,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 15.75h4.5a1.875 1.875 0 011.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 01-.937-.938v-3.375c0-.517.42-.938.938-.938z" /></svg>
                         Input Manual / Eksternal
                     </button>
+                    <button id="use-face-button" class="w-full inline-flex flex-col items-center justify-center p-6 border border-transparent text-base font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 transition-all duration-300 md:col-span-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" /></svg>
+                        Pindai dengan Wajah
+                    </button>
                 </div>
             </div>
 
@@ -57,6 +61,14 @@
                         <x-text-input id="manual_input_id" class="block w-full text-center text-lg pl-10" type="text" name="manual_input_id" placeholder="ID Siswa" required autofocus />
                     </div>
                 </form>
+            </div>
+
+            <div id="face-scanner" class="hidden">
+                 <div class="relative w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden">
+                    <video id="face-video" class="w-full h-full object-cover" autoplay muted playsinline></video>
+                    <canvas id="face-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                 </div>
+                 <p id="face-status" class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">Menyiapkan kamera...</p>
             </div>
 
             <div id="reader-error" class="text-red-500 text-sm mt-4 text-center hidden"></div>
@@ -87,6 +99,8 @@
 @endsection
 
 @push('scripts')
+{{-- Library untuk Face Recognition --}}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 {{-- Library untuk memindai QR Code dari kamera --}}
 <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
 
@@ -97,11 +111,20 @@
         let lastScanTime = 0;
         const scanCooldown = 3000; // Jeda 3 detik antar scan
         
+        // Data Siswa untuk Face Recognition
+        const studentsWithPhotos = @json($students);
+        let faceMatcher = null;
+        let isModelsLoaded = false;
+        let faceScanInterval = null;
+
         const scannerChoiceDiv = document.getElementById('scanner-choice');
         const cameraScannerDiv = document.getElementById('camera-scanner');
         const manualScannerDiv = document.getElementById('manual-scanner');
+        const faceScannerDiv = document.getElementById('face-scanner'); // NEW
+
         const useCameraButton = document.getElementById('use-camera-button');
         const useManualButton = document.getElementById('use-manual-button');
+        const useFaceButton = document.getElementById('use-face-button'); // NEW
         const backButton = document.getElementById('back-to-choice');
         const manualInput = document.getElementById('manual_input_id');
 
@@ -109,6 +132,10 @@
         const readerError = document.getElementById('reader-error');
         const switchContainer = document.getElementById('camera-switch-container');
         const switchButton = document.getElementById('camera-switch-button');
+        
+        const faceVideo = document.getElementById('face-video'); // NEW
+        const faceCanvas = document.getElementById('face-canvas'); // NEW
+        const faceStatus = document.getElementById('face-status'); // NEW
         
         // Objek untuk library scanner
         let html5QrCode = null;
@@ -144,6 +171,9 @@
             if (type === 'camera') {
                 cameraScannerDiv.classList.remove('hidden');
                 startScanFlow();
+            } else if (type === 'face') {
+                faceScannerDiv.classList.remove('hidden');
+                startFaceScanFlow();
             } else {
                 manualScannerDiv.classList.remove('hidden');
                 manualInput.focus();
@@ -152,17 +182,25 @@
 
         // Fungsi untuk kembali ke menu pilihan
         function resetToChoiceView() {
-            // PERBAIKAN: Pastikan kamera benar-benar berhenti saat kembali ke menu
+            // Stop QR Scanner
             if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    console.log("QR Code scanning stopped.");
-                }).catch(err => {
-                    console.error("Failed to stop QR Code scanning.", err);
-                });
+                html5QrCode.stop().catch(err => console.error("Failed to stop QR", err));
             }
-            html5QrCode = null; // Reset objek scanner
+            html5QrCode = null;
+
+            // Stop Face Scanner
+            if (faceVideo.srcObject) {
+                faceVideo.srcObject.getTracks().forEach(track => track.stop());
+                faceVideo.srcObject = null;
+            }
+            if (faceScanInterval) {
+                clearInterval(faceScanInterval);
+                faceScanInterval = null;
+            }
+
             cameraScannerDiv.classList.add('hidden');
             manualScannerDiv.classList.add('hidden');
+            faceScannerDiv.classList.add('hidden'); // NEW
             scannerChoiceDiv.classList.remove('hidden');
             backButton.classList.add('hidden');
             readerError.classList.add('hidden');
@@ -343,16 +381,14 @@
                 modal.element.classList.add('hidden');
 
                 // --- PERUBAHAN UTAMA ADA DI SINI ---
-                // Cek apakah kita sedang dalam mode kamera atau manual
-                if (cameraScannerDiv.classList.contains('hidden')) {
-                    // Jika mode manual, fokus kembali ke input
-                    manualInput.focus();
-                } else {
-                    // Jika mode kamera, LANJUTKAN (RESUME) pemindaian yang dijeda
-                    // Ini jauh lebih cepat daripada memulai ulang.
-                    if (html5QrCode) {
-                        html5QrCode.resume();
-                    }
+                // Cek apakah kita sedang dalam mode kamera, manual, atau wajah
+                if (!manualScannerDiv.classList.contains('hidden')) {
+                     manualInput.focus();
+                } else if (!cameraScannerDiv.classList.contains('hidden')) {
+                    if (html5QrCode) html5QrCode.resume();
+                } else if (!faceScannerDiv.classList.contains('hidden')) {
+                    // Resume logic handled by interval automatically if video is playing
+                    // Buffer cooldown handled by lastScanTime
                 }
             }, 300);
         }
@@ -387,6 +423,123 @@
                     startScannerWithCamera(cameras[currentCameraIndex].id);
                 });
             }
+        });
+
+        // === FACE RECOGNITION LOGIC ===
+        useFaceButton.addEventListener('click', () => showScannerView('face'));
+
+        async function loadFaceModels() {
+            if (isModelsLoaded) return true;
+            faceStatus.textContent = 'Memuat model wajah (ini mungkin memakan waktu)...';
+            try {
+                // Memuat model dari CDN publik
+                const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+                await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                isModelsLoaded = true;
+                return true;
+            } catch (error) {
+                console.error('Error loading face models:', error);
+                faceStatus.textContent = 'Gagal memuat model wajah. Periksa koneksi internet.';
+                return false;
+            }
+        }
+
+        async function startFaceScanFlow() {
+            readerError.classList.add('hidden');
+            
+            // 1. Load Models
+            if (!await loadFaceModels()) return;
+
+            // 2. Load Student Photos & Create Matcher
+            if (!faceMatcher) {
+                faceStatus.textContent = 'Memproses data wajah siswa...';
+                const labeledDescriptors = await loadLabeledImages();
+                if (labeledDescriptors.length === 0) {
+                    faceStatus.textContent = 'Tidak ada data wajah siswa yang ditemukan.';
+                    return;
+                }
+                faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+            }
+
+            // 3. Start Video
+            faceStatus.textContent = 'Menyalakan kamera...';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userCoordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+                    startFaceVideo();
+                },
+                (error) => {
+                    readerError.textContent = 'Gagal mendapatkan lokasi GPS.';
+                    readerError.classList.remove('hidden');
+                }
+            );
+        }
+
+        function loadLabeledImages() {
+            return Promise.all(
+                studentsWithPhotos.map(async student => {
+                    try {
+                        const img = await faceapi.fetchImage(student.photo_url);
+                        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                        if (!detections) {
+                            console.warn(`No face detected for ${student.name}`);
+                            return null;
+                        }
+                        return new faceapi.LabeledFaceDescriptors(student.unique_id, [detections.descriptor]);
+                    } catch (err) {
+                        console.error(`Error processing image for ${student.name}:`, err);
+                        return null;
+                    }
+                })
+            ).then(results => results.filter(res => res !== null));
+        }
+
+        function startFaceVideo() {
+            navigator.mediaDevices.getUserMedia({ video: {} })
+                .then(stream => {
+                    faceVideo.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("Gagal akses kamera:", err);
+                    readerError.textContent = "Gagal mengakses kamera.";
+                    readerError.classList.remove('hidden');
+                });
+        }
+
+        faceVideo.addEventListener('play', () => {
+             const displaySize = { width: faceVideo.offsetWidth, height: faceVideo.offsetHeight }; // Use dynamic size
+             // Check if dimensions are valid
+             if (displaySize.width === 0 || displaySize.height === 0) return;
+
+             faceapi.matchDimensions(faceCanvas, displaySize);
+             faceStatus.textContent = 'Arahkan wajah ke kamera...';
+
+             faceScanInterval = setInterval(async () => {
+                if (faceVideo.paused || faceVideo.ended) return;
+
+                const detections = await faceapi.detectAllFaces(faceVideo, new faceapi.SsdMobilenetv1Options())
+                    .withFaceLandmarks()
+                    .withFaceDescriptors();
+                
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                faceCanvas.getContext('2d').clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                // faceapi.draw.drawDetections(faceCanvas, resizedDetections); // Optional: Draw box
+
+                if (detections.length > 0) {
+                     const bestMatch = faceMatcher.findBestMatch(detections[0].descriptor);
+                     if (bestMatch.label !== 'unknown') {
+                         faceStatus.textContent = `Wajah dikenali! Memproses...`;
+                         
+                         // Check Cooldown
+                         if (Date.now() - lastScanTime > scanCooldown) {
+                            lastScanTime = Date.now();
+                            processAttendance(bestMatch.label); // label is unique_id
+                         }
+                     }
+                }
+             }, 500); // Check every 500ms
         });
 
         // Event listener untuk input manual (dengan debounce)

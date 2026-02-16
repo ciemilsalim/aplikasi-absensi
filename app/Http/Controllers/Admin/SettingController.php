@@ -53,10 +53,14 @@ class SettingController extends Controller
                 'school_latitude' => 'required|numeric',
                 'school_longitude' => 'required|numeric',
                 'attendance_radius' => 'required|integer|min:10',
+                // Added validation for Headmaster
+                'school_headmaster_name' => 'nullable|string|max:255',
+                'school_headmaster_nip' => 'nullable|string|max:50',
             ];
+            // Included new fields in the update list
             $settingsToUpdate = $request->only(array_keys($rules));
         }
-        
+
         // Validasi untuk form Tampilan & Logo
         if ($request->hasFile('app_logo') || $request->has('dark_mode_checkbox')) {
             $rules['app_logo'] = 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:2048';
@@ -64,10 +68,10 @@ class SettingController extends Controller
                 $settingsToUpdate['dark_mode'] = $request->has('dark_mode') ? 'on' : 'off';
             }
         }
-        
+
         // Validasi untuk form Waktu Absensi
         if ($request->has('jam_masuk')) {
-             $rules = array_merge($rules, [
+            $rules = array_merge($rules, [
                 'jam_masuk' => 'required|date_format:H:i',
                 'jam_pulang' => 'required|date_format:H:i|after:jam_masuk',
             ]);
@@ -75,10 +79,10 @@ class SettingController extends Controller
             // PERBAIKAN: Logika untuk menangani checkbox notifikasi alpa
             $settingsToUpdate['send_absent_notification'] = $request->has('send_absent_notification') ? 'on' : 'off';
         }
-        
+
         // Jalankan validasi
         $request->validate($rules);
-        
+
         // Simpan pengaturan ke database
         foreach ($settingsToUpdate as $key => $value) {
             Setting::updateOrCreate(['key' => $key], ['value' => $value ?? '']);
@@ -87,7 +91,9 @@ class SettingController extends Controller
         // Handle unggah logo jika ada
         if ($request->hasFile('app_logo')) {
             $oldLogoSetting = Setting::where('key', 'app_logo')->first();
-            if ($oldLogoSetting && $oldLogoSetting->value) { Storage::disk('public')->delete($oldLogoSetting->value); }
+            if ($oldLogoSetting && $oldLogoSetting->value) {
+                Storage::disk('public')->delete($oldLogoSetting->value);
+            }
             $path = $request->file('app_logo')->store('logos', 'public');
             Setting::updateOrCreate(['key' => 'app_logo'], ['value' => $path]);
         }

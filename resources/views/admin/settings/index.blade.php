@@ -42,6 +42,17 @@
                                     <x-input-label for="school_address" :value="__('Alamat Sekolah')" />
                                     <textarea id="school_address" name="school_address" rows="3" class="block w-full mt-1 border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">{{ old('school_address', $settings['school_address'] ?? '') }}</textarea>
                                 </div>
+                                {{-- Added Headmaster Info Fields --}}
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <x-input-label for="school_headmaster_name" :value="__('Nama Kepala Sekolah')" />
+                                        <x-text-input id="school_headmaster_name" class="block mt-1 w-full" type="text" name="school_headmaster_name" :value="old('school_headmaster_name', $settings['school_headmaster_name'] ?? '')" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="school_headmaster_nip" :value="__('NIP Kepala Sekolah')" />
+                                        <x-text-input id="school_headmaster_nip" class="block mt-1 w-full" type="text" name="school_headmaster_nip" :value="old('school_headmaster_nip', $settings['school_headmaster_nip'] ?? '')" />
+                                    </div>
+                                </div>
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-slate-700">
                                     <div><x-input-label for="school_latitude" value="Latitude" /><x-text-input id="school_latitude" type="text" name="school_latitude" x-model="latitude" /></div>
                                     <div><x-input-label for="school_longitude" value="Longitude" /><x-text-input id="school_longitude" type="text" name="school_longitude" x-model="longitude" /></div>
