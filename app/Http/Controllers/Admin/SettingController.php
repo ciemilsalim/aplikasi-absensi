@@ -74,8 +74,11 @@ class SettingController extends Controller
             $rules = array_merge($rules, [
                 'jam_masuk' => 'required|date_format:H:i',
                 'jam_pulang' => 'required|date_format:H:i|after:jam_masuk',
+                // Validation for Teacher Attendance Times
+                'jam_masuk_guru' => 'required|date_format:H:i',
+                'jam_pulang_guru' => 'required|date_format:H:i|after:jam_masuk_guru',
             ]);
-            $settingsToUpdate = array_merge($settingsToUpdate, $request->only(['jam_masuk', 'jam_pulang']));
+            $settingsToUpdate = array_merge($settingsToUpdate, $request->only(['jam_masuk', 'jam_pulang', 'jam_masuk_guru', 'jam_pulang_guru']));
             // PERBAIKAN: Logika untuk menangani checkbox notifikasi alpa
             $settingsToUpdate['send_absent_notification'] = $request->has('send_absent_notification') ? 'on' : 'off';
         }
