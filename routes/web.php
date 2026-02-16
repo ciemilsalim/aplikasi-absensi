@@ -137,7 +137,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::post('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class , 'store'])->name('schedules.store');
             Route::delete('schedules/{schedule}', [\App\Http\Controllers\Admin\ScheduleController::class , 'destroy'])->name('schedules.destroy');
 
-            // Impor Data
+            // Impor Data (Contoh, jika ada)
+            // ...
+    
+            // Laporan Guru
+            Route::get('reports/teacher', [\App\Http\Controllers\Admin\TeacherReportController::class , 'index'])->name('reports.teacher.index');
+            Route::get('reports/teacher/print', [\App\Http\Controllers\Admin\TeacherReportController::class , 'print'])->name('reports.teacher.print');
             Route::get('/students/import', [StudentController::class , 'showImportForm'])->name('students.import.form');
             Route::post('/students/import', [StudentController::class , 'import'])->name('students.import');
             Route::get('/parents/import', [ParentController::class , 'showImportForm'])->name('parents.import.form');

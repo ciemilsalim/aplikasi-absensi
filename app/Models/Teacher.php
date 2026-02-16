@@ -23,6 +23,11 @@ class Teacher extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function attendances()
+    {
+        return $this->hasMany(TeacherAttendance::class);
+    }
+
     // Relasi untuk mengecek apakah guru ini adalah wali kelas
     public function homeroomClass()
     {
@@ -37,10 +42,5 @@ class Teacher extends Model
     public function teachingAssignments()
     {
         return $this->hasMany(TeachingAssignment::class);
-    }
-
-    public function attendances()
-    {
-        return $this->hasMany(TeacherAttendance::class);
     }
 }
