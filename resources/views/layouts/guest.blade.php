@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full scroll-smooth">
+
 <head>
     <meta charset="utf-t">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name', 'Laravel'))</title>
-    
+
     @if (isset($appLogoPath) && $appLogoPath)
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $appLogoPath) }}">
     @endif
-    
-    {{-- <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    {{--
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"> --}}
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    --}}
+
 
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="{{ asset('/manifest.json') }}">
-    <meta name="theme-color" content="#0284c7"/>
+    <meta name="theme-color" content="#0284c7" />
     <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192x192.png') }}">
 
     <script>
@@ -30,25 +33,25 @@
     </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <script>
-        tailwind.config = { 
-            darkMode: 'class', 
-            theme: { 
-                extend: { 
-                    fontFamily: { 
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
                         // sans: ['Poppins', 'sans-serif'] 
-                        sans: ['Helvetica', 'Arial', 'sans-serif'] 
+                        sans: ['Helvetica', 'Arial', 'sans-serif']
                     },
                     colors: {
-                        sky: { 50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1',800:'#075985',900:'#0c4a6e',950:'#082f49' }
+                        sky: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49' }
                     }
-                } 
-            } 
+                }
+            }
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-     @stack('styles')
-    
+
+    @stack('styles')
+
     <style type="text/tailwindcss">
         body { @apply font-sans; }
         .loader-container {
@@ -67,47 +70,52 @@
         }
     </style>
 </head>
+
 <body class="antialiased font-sans h-full bg-slate-50 dark:bg-slate-900">
     <div id="page-loader" class="loader-container">
-        <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
         </svg>
     </div>
     @if (isset($slot))
         {{ $slot }}
     @else
-    <div class="flex flex-col min-h-screen">
-        <header x-data="{ atTop: true }" @scroll.window="atTop = (window.pageYOffset < 50)" 
-                :class="{ 'bg-white dark:bg-slate-800 shadow-md': !atTop }" 
+        <div class="flex flex-col min-h-screen">
+            <header x-data="{ atTop: true }" @scroll.window="atTop = (window.pageYOffset < 50)"
+                :class="{ 'bg-white dark:bg-slate-800 shadow-md': !atTop }"
                 class="sticky top-0 z-50 transition-all duration-300">
-            @include('layouts.navigation')
-        </header>
+                @include('layouts.navigation')
+            </header>
 
-        <main class="flex-grow">
-            @yield('content')
-        </main>
+            <main class="flex-grow">
+                @yield('content')
+            </main>
 
-        <footer class="w-full bg-slate-100 dark:bg-slate-800 mt-4">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400 text-sm">
-                <p>&copy; {{ date('Y') }} {{ $appName }} - {{  config('app.name') }} v1.0.0.</p>
-                <p class="mt-1">Dikembangkan oleh <a href="https://github.com/ciemilsalim" target="_blank" class="font-semibold text-sky-600 hover:underline">zahradev</a>.
-                 - <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a></p>
-            </div>
-        </footer>
-    </div>
+            <footer class="w-full bg-slate-100 dark:bg-slate-800 mt-4">
+                <div
+                    class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                    <p>&copy; {{ date('Y') }} {{ $appName }} - {{  config('app.name') }} v2.0.</p>
+                    <p class="mt-1">Dikembangkan oleh <a href="https://www.zahradev.online" target="_blank"
+                            class="font-semibold text-sky-600 hover:underline">ZahraDev</a>.
+                        - <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a></p>
+                    <p class="mt-1">Kontak Pengembang: <a href="mailto:emilsalimramadhan@gmail.com"
+                            class="font-semibold text-sky-600 hover:underline">emilsalimramadhan@gmail.com</a></p>
+                </div>
+            </footer>
+        </div>
     @endif
-    
-    <div x-data="{ show: false }" 
-         @scroll.window="show = (window.pageYOffset > 300)"
-         class="fixed bottom-5 right-5 z-50">
-        <button x-show="show" 
-                @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
-                x-transition
-                class="p-3 rounded-full bg-sky-600 text-white shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
-                aria-label="Kembali ke atas"
-                style="display: none;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+
+    <div x-data="{ show: false }" @scroll.window="show = (window.pageYOffset > 300)"
+        class="fixed bottom-5 right-5 z-50">
+        <button x-show="show" @click="window.scrollTo({ top: 0, behavior: 'smooth' })" x-transition
+            class="p-3 rounded-full bg-sky-600 text-white shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+            aria-label="Kembali ke atas" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
             </svg>
         </button>
@@ -141,4 +149,5 @@
         }
     </script>
 </body>
+
 </html>
