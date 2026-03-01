@@ -2,6 +2,35 @@
 
 @section('title', 'Pemindai QR Absensi')
 
+@push('styles')
+    <style>
+        /* Mengatasi UI bawaan html5-qrcode agar lebih rapi */
+        #reader {
+            border: none !important;
+            background: transparent !important;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        #reader video {
+            object-fit: cover !important;
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 0.75rem !important;
+        }
+
+        /* Sembunyikan tulisan text bawaan qr scanner */
+        #reader__dashboard_section_csr span,
+        #reader__dashboard_section_swaplink {
+            display: none !important;
+        }
+
+        #reader__scan_region {
+            background: transparent !important;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="relative min-h-[calc(100vh-128px)] flex items-center justify-center overflow-hidden px-4">
         <!-- Latar Belakang Abstrak -->
@@ -148,6 +177,17 @@
                     </div>
                     <p id="face-status" class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">Menyiapkan
                         kamera...</p>
+                    <div id="face-camera-switch-container" class="mt-4 text-center">
+                        <button id="face-camera-switch-button"
+                            class="text-sm text-sky-600 dark:text-sky-400 hover:underline flex items-center justify-center mx-auto gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                            </svg>
+                            Ganti Kamera
+                        </button>
+                    </div>
                 </div>
 
                 <div id="reader-error" class="text-red-500 text-sm mt-4 text-center hidden"></div>
@@ -204,6 +244,7 @@
             let isModelsLoaded = false;
             let faceScanInterval = null;
             let consecutiveMatches = 0;
+            let currentFacingMode = 'user'; // 'user' (depan) atau 'environment' (belakang)
 
             const scannerChoiceDiv = document.getElementById('scanner-choice');
             const cameraScannerDiv = document.getElementById('camera-scanner');
@@ -224,6 +265,7 @@
             const faceVideo = document.getElementById('face-video'); // NEW
             const faceCanvas = document.getElementById('face-canvas'); // NEW
             const faceStatus = document.getElementById('face-status'); // NEW
+            const faceSwitchButton = document.getElementById('face-camera-switch-button');
 
             // Objek untuk library scanner
             let html5QrCode = null;
@@ -636,15 +678,40 @@
                 ).then(results => results.filter(res => res !== null));
             }
 
+            faceSwitchButton.addEventListener('click', () => {
+                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+                // Hentikan stream yang ada
+                if (faceVideo.srcObject) {
+                    faceVideo.srcObject.getTracks().forEach(track => track.stop());
+                }
+
+                // Hapus canvas sisa
+                if (faceCanvas.getContext) {
+                    faceCanvas.getContext('2d').clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                }
+
+                faceStatus.textContent = 'Menukar kamera...';
+                startFaceVideo();
+            });
+
             function startFaceVideo() {
-                navigator.mediaDevices.getUserMedia({ video: {} })
+                navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentFacingMode }
+                })
                     .then(stream => {
                         faceVideo.srcObject = stream;
                     })
                     .catch(err => {
                         console.error("Gagal akses kamera:", err);
-                        readerError.textContent = "Gagal mengakses kamera.";
+                        readerError.textContent = "Gagal mengakses kamera. Pastikan browser memiliki izin.";
                         readerError.classList.remove('hidden');
+
+                        // Fallback ke kamera default jika environment/user gagal
+                        if (currentFacingMode !== 'user') {
+                            currentFacingMode = 'user';
+                            startFaceVideo();
+                        }
                     });
             }
 

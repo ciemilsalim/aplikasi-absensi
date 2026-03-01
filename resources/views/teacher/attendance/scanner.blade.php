@@ -66,6 +66,18 @@
                     </div>
                 </div>
 
+                <div id="face-camera-switch-container" class="mb-6 text-center">
+                    <button id="face-camera-switch-button"
+                        class="text-sm text-sky-600 dark:text-sky-400 hover:underline flex items-center justify-center mx-auto gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                        Ganti Kamera
+                    </button>
+                </div>
+
                 <!-- Controls -->
                 <div class="space-y-4">
                     @if(!$hasPhoto)
@@ -113,12 +125,14 @@
             const btnAbsent = document.getElementById('btn-absent');
             const locationStatus = document.getElementById('location-status');
             const distanceDebug = document.getElementById('distance-debug');
+            const faceSwitchButton = document.getElementById('face-camera-switch-button');
 
             let currentStream;
             let faceMatcher;
             let currentLocation = null;
             let isLocationValid = false;
             let consecutiveMatches = 0;
+            let currentFacingMode = 'user';
 
             // --- 1. Initialization ---
             document.addEventListener('DOMContentLoaded', async () => {
@@ -184,14 +198,38 @@
                 }, 500);
             }
 
+            faceSwitchButton.addEventListener('click', () => {
+                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+
+                const canvasContext = overlay.getContext('2d');
+                if (canvasContext) {
+                    canvasContext.clearRect(0, 0, overlay.width, overlay.height);
+                }
+
+                startVideo();
+            });
+
             // --- 3. Camera Setup ---
             function startVideo() {
-                navigator.mediaDevices.getUserMedia({ video: {} })
+                navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentFacingMode }
+                })
                     .then(stream => {
                         currentStream = stream;
                         video.srcObject = stream;
                     })
-                    .catch(err => showError("Gagal mengakses kamera. Izinkan akses kamera."));
+                    .catch(err => {
+                        showError("Gagal mengakses kamera. Berikan perizinan kamera pada browser.");
+
+                        if (currentFacingMode !== 'user') {
+                            currentFacingMode = 'user';
+                            startVideo();
+                        }
+                    });
             }
 
             // --- 4. Face Processing (Registration) ---

@@ -2,6 +2,35 @@
 
 @section('title', 'Pemindai Kehadiran Mapel')
 
+@push('styles')
+    <style>
+        /* Mengatasi UI bawaan html5-qrcode agar lebih rapi */
+        #reader {
+            border: none !important;
+            background: transparent !important;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        #reader video {
+            object-fit: cover !important;
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 0.75rem !important;
+        }
+
+        /* Sembunyikan tulisan text bawaan qr scanner */
+        #reader__dashboard_section_csr span,
+        #reader__dashboard_section_swaplink {
+            display: none !important;
+        }
+
+        #reader__scan_region {
+            background: transparent !important;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="relative min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 py-12">
         <div class="w-full max-w-7xl mx-auto">
@@ -116,6 +145,17 @@
                             </div>
                             <p id="face-status" class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
                                 Menyiapkan kamera...</p>
+                            <div id="face-camera-switch-container" class="mt-4 text-center">
+                                <button id="face-camera-switch-button"
+                                    class="text-sm text-sky-600 dark:text-sky-400 hover:underline flex items-center justify-center mx-auto gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    Ganti Kamera
+                                </button>
+                            </div>
                         </div>
 
                         <div id="reader-error" class="text-red-500 text-sm mt-4 text-center hidden"></div>
@@ -160,10 +200,11 @@
                                     <li class="p-4 flex items-center justify-between">
                                         <span
                                             class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $subjectAttendance->student->name }}</span>
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                                                                @if($subjectAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 @endif
-                                                                                @if($subjectAttendance->status == 'izin') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @endif
-                                                                            ">{{ ucfirst($subjectAttendance->status) }}</span>
+                                        <span
+                                            class="px-2 py-1 text-xs font-semibold rounded-full 
+                                                                                                @if($subjectAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 @endif
+                                                                                                @if($subjectAttendance->status == 'izin') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @endif
+                                                                                            ">{{ ucfirst($subjectAttendance->status) }}</span>
                                     </li>
                                 @empty
                                     <li id="no-students-on-leave" class="p-4 text-center text-sm text-gray-500 italic">
@@ -243,6 +284,7 @@
             let faceScanInterval = null;
             let currentMode = 'qr'; // 'qr' or 'face'
             let consecutiveMatches = 0;
+            let currentFacingMode = 'user';
 
             // DOM Elements
             const readerError = document.getElementById('reader-error');
@@ -264,6 +306,7 @@
             const faceVideo = document.getElementById('face-video');
             const faceCanvas = document.getElementById('face-canvas');
             const faceStatus = document.getElementById('face-status');
+            const faceSwitchButton = document.getElementById('face-camera-switch-button');
 
             const modal = {
                 element: document.getElementById('attendance-modal'),
@@ -383,16 +426,37 @@
                 }
 
                 faceStatus.textContent = 'Menyalakan kamera...';
-                navigator.mediaDevices.getUserMedia({ video: {} })
+                navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentFacingMode }
+                })
                     .then(stream => {
                         faceVideo.srcObject = stream;
                     })
                     .catch(err => {
                         console.error("Gagal akses kamera:", err);
-                        readerError.textContent = "Gagal mengakses kamera.";
+                        readerError.textContent = "Gagal mengakses kamera. Cek izin browser.";
                         readerError.classList.remove('hidden');
+
+                        if (currentFacingMode !== 'user') {
+                            currentFacingMode = 'user';
+                            startFaceScanner();
+                        }
                     });
             }
+
+            faceSwitchButton.addEventListener('click', () => {
+                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+                if (faceVideo.srcObject) {
+                    faceVideo.srcObject.getTracks().forEach(track => track.stop());
+                }
+                if (faceCanvas.getContext) {
+                    faceCanvas.getContext('2d').clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                }
+
+                faceStatus.textContent = 'Menukar kamera...';
+                startFaceScanner();
+            });
 
             function stopFaceScanner() {
                 if (faceVideo.srcObject) {
@@ -573,7 +637,7 @@
                 const listItem = document.createElement('li');
                 listItem.className = 'p-4 flex items-center justify-between animate-[fade-in_0.5s]';
                 listItem.innerHTML = `<span class="font-medium text-sm text-gray-800 dark:text-gray-200">${name}</span>
-                                                  <span class="text-xs text-gray-500 dark:text-gray-400">${time}</span>`;
+                                                          <span class="text-xs text-gray-500 dark:text-gray-400">${time}</span>`;
                 attendedList.prepend(listItem);
                 attendedCount.textContent = parseInt(attendedCount.textContent) + 1;
             }
@@ -590,7 +654,7 @@
                 const listItem = document.createElement('li');
                 listItem.className = 'p-4 flex items-center justify-between animate-[fade-in_0.5s]';
                 listItem.innerHTML = `<span class="font-medium text-sm text-gray-800 dark:text-gray-200">${name}</span>
-                                                  <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span>`;
+                                                          <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span>`;
                 leaveList.prepend(listItem);
             }
 
