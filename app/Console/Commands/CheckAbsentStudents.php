@@ -17,9 +17,30 @@ class CheckAbsentStudents extends Command
     public function handle()
     {
         $settings = Setting::pluck('value', 'key');
-        
+
         if ($settings->get('send_absent_notification', 'off') !== 'on') {
             $this->info('Fitur notifikasi siswa alpa tidak aktif.');
+            return 0;
+        }
+
+        $today = Carbon::today();
+
+        // 1. Cek Akhir Pekan (Sabtu & Minggu)
+        if ($today->isWeekend()) {
+            $this->info('Hari ini akhir pekan (Sabtu/Minggu). Pengecekan alpa dilewati.');
+            return 0;
+        }
+
+        // 2. Cek Kalender Pendidikan (Hari Libur)
+        $holiday = \App\Models\Calendar::where('is_holiday', true)
+            ->whereDate('start_date', '<=', $today)
+            ->where(function ($query) use ($today) {
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $today);
+            })->first();
+
+        if ($holiday) {
+            $this->info('Hari ini libur: ' . $holiday->title . '. Pengecekan alpa dilewati.');
             return 0;
         }
 

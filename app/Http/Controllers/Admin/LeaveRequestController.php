@@ -17,16 +17,16 @@ class LeaveRequestController extends Controller
     {
         // 1. Ambil pengajuan yang masih 'pending'
         $pendingRequests = LeaveRequest::where('status', 'pending')
-                                     ->with(['student.schoolClass', 'parent'])
-                                     ->oldest() // Proses yang paling lama masuk lebih dulu
-                                     ->get();
+            ->with(['student.schoolClass', 'parent'])
+            ->oldest() // Proses yang paling lama masuk lebih dulu
+            ->get();
 
         // 2. Ambil pengajuan yang sudah diproses (disetujui/ditolak) sebagai riwayat
         $processedRequests = LeaveRequest::whereIn('status', ['approved', 'rejected'])
-                                     ->with(['student.schoolClass', 'parent', 'approver'])
-                                     ->latest('updated_at') // Tampilkan yang terbaru diproses
-                                     ->paginate(10);
-                                     
+            ->with(['student.schoolClass', 'parent', 'approver'])
+            ->latest('updated_at') // Tampilkan yang terbaru diproses
+            ->paginate(10);
+
         return view('admin.leave_requests.index', compact('pendingRequests', 'processedRequests'));
     }
 
@@ -43,14 +43,18 @@ class LeaveRequestController extends Controller
         $leaveRequest->approved_by = Auth::id();
         $leaveRequest->save();
 
+        $holidays = \App\Models\Calendar::getHolidaysInRange($leaveRequest->start_date, $leaveRequest->end_date);
         $period = CarbonPeriod::create($leaveRequest->start_date, $leaveRequest->end_date);
         foreach ($period as $date) {
+            if ($date->isWeekend() || \App\Models\Calendar::isDateInHolidays($date, $holidays)) {
+                continue; // Jangan catat izin/sakit pada hari libur atau akhir pekan
+            }
             Attendance::updateOrCreate(
                 [
                     'student_id' => $leaveRequest->student_id,
                     'attendance_time' => $date->startOfDay(),
                 ],
-                [ 'status' => $leaveRequest->type, 'checkout_time' => null ]
+                ['status' => $leaveRequest->type, 'checkout_time' => null]
             );
         }
 

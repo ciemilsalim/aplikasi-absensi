@@ -52,12 +52,12 @@ class SubjectAttendanceController extends Controller
             ->select('id', 'unique_id', 'name', 'photo')
             ->get()
             ->map(function ($student) {
-            return [
-            'unique_id' => $student->unique_id,
-            'name' => $student->name,
-            'photo_url' => asset('storage/' . $student->photo),
-            ];
-        });
+                return [
+                    'unique_id' => $student->unique_id,
+                    'name' => $student->name,
+                    'photo_url' => asset('storage/' . $student->photo),
+                ];
+            });
 
         return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave', 'studentsWithoutNotice', 'studentsForFaceRecognition'));
     }
@@ -95,9 +95,9 @@ class SubjectAttendanceController extends Controller
         $holiday = \App\Models\Calendar::where('is_holiday', true)
             ->whereDate('start_date', '<=', $today)
             ->where(function ($query) use ($today) {
-            $query->whereNull('end_date')
-                ->orWhereDate('end_date', '>=', $today);
-        })->first();
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $today);
+            })->first();
 
         if ($holiday) {
             return response()->json(['success' => false, 'message' => 'Hari ini libur: ' . $holiday->title], 422);
@@ -138,7 +138,7 @@ class SubjectAttendanceController extends Controller
     {
         $teacher = Auth::user()->teacher;
 
-        $selectedDate = $request->input('date') ?Carbon::parse($request->input('date')) : Carbon::today();
+        $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
         $attendances = SubjectAttendance::with(['student', 'schedule.teachingAssignment.subject', 'schedule.teachingAssignment.schoolClass'])
             ->where('teacher_id', $teacher->id)
@@ -179,8 +179,7 @@ class SubjectAttendanceController extends Controller
                 'status' => $request->status,
                 'teacher_id' => $teacher->id,
             ]);
-        }
-        else {
+        } else {
             $attendance = SubjectAttendance::create([
                 'schedule_id' => $schedule->id,
                 'student_id' => $student->id,
@@ -241,9 +240,9 @@ class SubjectAttendanceController extends Controller
             ->where('teacher_id', $teacher->id)
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
-            $query->where('school_class_id', $schoolClassId)
-                ->where('subject_id', $subjectId);
-        })
+                $query->where('school_class_id', $schoolClassId)
+                    ->where('subject_id', $subjectId);
+            })
             ->get();
 
         $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
@@ -260,9 +259,11 @@ class SubjectAttendanceController extends Controller
             ->unique()
             ->toArray();
 
-        $period = CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays) {
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+
+        $period = CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays, $holidays) {
             // dayOfWeekIso returns 1 for Monday and 7 for Sunday
-            return in_array($date->dayOfWeekIso, $scheduleDays);
+            return in_array($date->dayOfWeekIso, $scheduleDays) && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
 
         $attendanceData = [];
@@ -340,8 +341,7 @@ class SubjectAttendanceController extends Controller
                 'status' => $request->status,
                 'teacher_id' => $teacher->id,
             ]);
-        }
-        else {
+        } else {
             SubjectAttendance::create([
                 'student_id' => $request->student_id,
                 'schedule_id' => $schedule->id,
@@ -380,9 +380,9 @@ class SubjectAttendanceController extends Controller
             ->where('teacher_id', $teacher->id)
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
-            $query->where('school_class_id', $schoolClassId)
-                ->where('subject_id', $subjectId);
-        })
+                $query->where('school_class_id', $schoolClassId)
+                    ->where('subject_id', $subjectId);
+            })
             ->get();
 
         $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
@@ -399,8 +399,10 @@ class SubjectAttendanceController extends Controller
             ->unique()
             ->toArray();
 
-        $period = CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays) {
-            return in_array($date->dayOfWeekIso, $scheduleDays);
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+
+        $period = CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays, $holidays) {
+            return in_array($date->dayOfWeekIso, $scheduleDays) && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
 
         $attendanceData = [];

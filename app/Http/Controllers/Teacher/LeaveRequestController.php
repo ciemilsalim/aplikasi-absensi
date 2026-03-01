@@ -17,7 +17,7 @@ class LeaveRequestController extends Controller
     public function index()
     {
         $teacher = Auth::user()->teacher;
-        
+
         // Pastikan guru ini adalah wali kelas
         if (!$teacher || !$teacher->homeroomClass) {
             return redirect()->route('teacher.dashboard')->with('error', 'Halaman ini hanya untuk wali kelas.');
@@ -28,18 +28,18 @@ class LeaveRequestController extends Controller
 
         // 1. Ambil pengajuan yang masih 'pending' untuk siswa perwalian
         $pendingRequests = LeaveRequest::whereIn('student_id', $studentIds)
-                                     ->where('status', 'pending')
-                                     ->with(['student', 'parent'])
-                                     ->oldest()
-                                     ->get();
+            ->where('status', 'pending')
+            ->with(['student', 'parent'])
+            ->oldest()
+            ->get();
 
         // 2. Ambil pengajuan yang sudah diproses sebagai riwayat
         $processedRequests = LeaveRequest::whereIn('student_id', $studentIds)
-                                     ->whereIn('status', ['approved', 'rejected'])
-                                     ->with(['student', 'parent', 'approver'])
-                                     ->latest('updated_at')
-                                     ->paginate(10);
-                                     
+            ->whereIn('status', ['approved', 'rejected'])
+            ->with(['student', 'parent', 'approver'])
+            ->latest('updated_at')
+            ->paginate(10);
+
         return view('teacher.leave_requests.index', compact('pendingRequests', 'processedRequests'));
     }
 
@@ -59,8 +59,12 @@ class LeaveRequestController extends Controller
             'approved_by' => Auth::id(),
         ]);
 
+        $holidays = \App\Models\Calendar::getHolidaysInRange($leaveRequest->start_date, $leaveRequest->end_date);
         $period = CarbonPeriod::create($leaveRequest->start_date, $leaveRequest->end_date);
         foreach ($period as $date) {
+            if ($date->isWeekend() || \App\Models\Calendar::isDateInHolidays($date, $holidays)) {
+                continue; // Jangan catat izin/sakit pada hari libur atau akhir pekan
+            }
             Attendance::updateOrCreate(
                 ['student_id' => $leaveRequest->student_id, 'attendance_time' => $date->startOfDay()],
                 ['status' => $leaveRequest->type, 'checkout_time' => null]

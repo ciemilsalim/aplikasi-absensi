@@ -22,7 +22,7 @@ class CalendarController extends Controller
      */
     public function create()
     {
-    //
+        //
     }
 
     /**
@@ -35,7 +35,6 @@ class CalendarController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'description' => 'nullable|string',
-            'is_holiday' => 'boolean',
         ]);
 
         Calendar::create([
@@ -54,7 +53,7 @@ class CalendarController extends Controller
      */
     public function show(Calendar $calendar)
     {
-    //
+        //
     }
 
     /**
@@ -62,7 +61,7 @@ class CalendarController extends Controller
      */
     public function edit(Calendar $calendar)
     {
-    //
+        //
     }
 
     /**
@@ -70,7 +69,7 @@ class CalendarController extends Controller
      */
     public function update(Request $request, Calendar $calendar)
     {
-    //
+        //
     }
 
     /**
@@ -92,8 +91,7 @@ class CalendarController extends Controller
         try {
             \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\CalendarImport, $request->file('file'));
             return redirect()->route('admin.calendars.index')->with('success', 'Data agenda berhasil diimpor.');
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
         }
     }

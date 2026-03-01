@@ -58,7 +58,7 @@ class DashboardController extends Controller
         if ($currentView === 'guru_mapel' && $isSubjectTeacher) {
             $viewData = array_merge($viewData, $this->getSubjectTeacherData($teacher));
         }
-        
+
         if (!isset($viewData['schedulesToday'])) {
             $viewData['schedulesToday'] = collect();
         }
@@ -72,7 +72,7 @@ class DashboardController extends Controller
 
         return view('teacher.dashboard', $viewData);
     }
-    
+
     private function getHomeroomData($teacher)
     {
         $class = $teacher->homeroomClass;
@@ -81,14 +81,14 @@ class DashboardController extends Controller
 
         $studentsInClass = Student::where('school_class_id', $class->id)->orderBy('name')->get();
         $studentIds = $studentsInClass->pluck('id');
-        
+
         $attendancesToday = Attendance::whereIn('student_id', $studentIds)
-                                      ->whereDate('attendance_time', $today)
-                                      ->get()
-                                      ->keyBy('student_id');
+            ->whereDate('attendance_time', $today)
+            ->get()
+            ->keyBy('student_id');
 
         $totalStudents = $studentsInClass->count();
-        
+
         $studentsOnPermit = StudentPermit::with('student')
             ->whereIn('student_id', $studentIds)
             ->whereDate('time_out', $today)
@@ -106,7 +106,7 @@ class DashboardController extends Controller
         $startDate = now()->subDays(6)->startOfDay();
         $endDate = now()->endOfDay();
         $period = CarbonPeriod::create($startDate, $endDate);
-        
+
         $weeklyAttendances = Attendance::whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->whereIn('status', ['tepat_waktu', 'terlambat'])
@@ -125,8 +125,8 @@ class DashboardController extends Controller
 
         $studentsForAttention = Student::whereIn('id', $studentIds)
             ->withCount([
-                'attendances as late_count' => fn ($query) => $query->where('status', 'terlambat')->where('attendance_time', '>=', $thirtyDaysAgo),
-                'attendances as alpha_count' => fn ($query) => $query->where('status', 'alpa')->where('attendance_time', '>=', $thirtyDaysAgo)
+                'attendances as late_count' => fn($query) => $query->where('status', 'terlambat')->where('attendance_time', '>=', $thirtyDaysAgo),
+                'attendances as alpha_count' => fn($query) => $query->where('status', 'alpa')->where('attendance_time', '>=', $thirtyDaysAgo)
             ])
             ->having('late_count', '>', 2)
             ->orHaving('alpha_count', '>', 1)
@@ -159,9 +159,9 @@ class DashboardController extends Controller
         $dayOfWeekNumber = $now->dayOfWeek;
 
         $schedulesToday = Schedule::with([
-                'teachingAssignment.schoolClass', 
-                'teachingAssignment.subject'
-            ])
+            'teachingAssignment.schoolClass',
+            'teachingAssignment.subject'
+        ])
             ->where('day_of_week', $dayOfWeekNumber)
             ->whereHas('teachingAssignment', function ($query) use ($teacher) {
                 $query->where('teacher_id', $teacher->id);
@@ -182,7 +182,8 @@ class DashboardController extends Controller
             ->whereIn('status', ['alpa', 'bolos'])
             ->whereBetween('created_at', [$semesterStart, $semesterEnd])
             ->with('student.schoolClass')
-            ->select('student_id', 
+            ->select(
+                'student_id',
                 DB::raw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) as alpa_count'),
                 DB::raw('SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) as bolos_count')
             )
@@ -191,10 +192,10 @@ class DashboardController extends Controller
             ->orderByRaw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) + SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) DESC')
             ->take(5)
             ->get();
-            
+
         $lastAttendanceSummary = null;
         $lastAttendanceRecord = SubjectAttendance::where('teacher_id', $teacher->id)
-            ->latest() 
+            ->latest()
             ->first();
 
         if ($lastAttendanceRecord) {
@@ -212,7 +213,7 @@ class DashboardController extends Controller
                 'bolos' => $summary->get('bolos', 0),
             ];
         }
-        
+
         $classPerformanceData = [];
         $thirtyDaysAgo = now()->subDays(30);
         $assignments = TeachingAssignment::where('teacher_id', $teacher->id)
@@ -221,7 +222,8 @@ class DashboardController extends Controller
 
         foreach ($assignments as $assignment) {
             $scheduleIds = Schedule::where('teaching_assignment_id', $assignment->id)->pluck('id');
-            if ($scheduleIds->isEmpty()) continue;
+            if ($scheduleIds->isEmpty())
+                continue;
             $totalSessions = SubjectAttendance::whereIn('schedule_id', $scheduleIds)->where('created_at', '>=', $thirtyDaysAgo)->distinct(DB::raw('DATE(created_at)'))->count();
             $totalHadir = SubjectAttendance::whereIn('schedule_id', $scheduleIds)->where('status', 'hadir')->where('created_at', '>=', $thirtyDaysAgo)->count();
             $totalStudentsInClass = Student::where('school_class_id', $assignment->school_class_id)->count();
@@ -263,8 +265,8 @@ class DashboardController extends Controller
         $date = Carbon::parse($request->input('date'))->startOfDay();
 
         $attendance = Attendance::where('student_id', $request->student_id)
-                                ->whereDate('attendance_time', $date)
-                                ->first();
+            ->whereDate('attendance_time', $date)
+            ->first();
 
         if ($status === 'hapus') {
             if ($attendance) {
@@ -294,7 +296,7 @@ class DashboardController extends Controller
     public function showAttendanceHistory(Request $request)
     {
         $teacher = Auth::user()->teacher;
-        
+
         if (!$teacher || !$teacher->homeroomClass) {
             return view('teacher.dashboard-no-class', compact('teacher'));
         }
@@ -314,7 +316,7 @@ class DashboardController extends Controller
         $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->get();
-        
+
         $attendances = $allAttendancesInMonth
             ->groupBy('student_id')
             ->map(function ($studentAttendances) {
@@ -329,24 +331,25 @@ class DashboardController extends Controller
             $summary = [
                 'hadir' => $studentAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
                 'sakit' => $studentAttendances->where('status', 'sakit')->count(),
-                'izin'  => $studentAttendances->where('status', 'izin')->count(),
-                'alpa'  => $studentAttendances->where('status', 'alpa')->count(),
+                'izin' => $studentAttendances->where('status', 'izin')->count(),
+                'alpa' => $studentAttendances->where('status', 'alpa')->count(),
             ];
             $attendanceSummary[$student->id] = $summary;
         }
 
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
         $period = CarbonPeriod::create($startDate, $endDate);
 
-        $period = collect($period)->filter(function ($date) {
-            return !$date->isWeekend();
+        $period = collect($period)->filter(function ($date) use ($holidays) {
+            return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
 
         return view('teacher.attendance-history', compact(
-            'teacher', 
-            'class', 
-            'students', 
-            'attendances', 
-            'period', 
+            'teacher',
+            'class',
+            'students',
+            'attendances',
+            'period',
             'selectedDate',
             'attendanceSummary'
         ));
@@ -355,13 +358,13 @@ class DashboardController extends Controller
     public function printAttendance(Request $request)
     {
         $teacher = Auth::user()->teacher;
-        
+
         if (!$teacher || !$teacher->homeroomClass) {
             return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak memiliki kelas untuk dicetak.');
         }
 
         $settings = Setting::all()->pluck('value', 'key');
-        
+
         $class = $teacher->homeroomClass;
         $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
         $studentIds = $students->pluck('id');
@@ -373,7 +376,7 @@ class DashboardController extends Controller
         $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
         $startDate = $selectedDate->copy()->startOfMonth();
         $endDate = $selectedDate->copy()->endOfMonth();
-        
+
         $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->get();
@@ -392,16 +395,17 @@ class DashboardController extends Controller
             $summary = [
                 'hadir' => $studentAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
                 'sakit' => $studentAttendances->where('status', 'sakit')->count(),
-                'izin'  => $studentAttendances->where('status', 'izin')->count(),
-                'alpa'  => $studentAttendances->where('status', 'alpa')->count(),
+                'izin' => $studentAttendances->where('status', 'izin')->count(),
+                'alpa' => $studentAttendances->where('status', 'alpa')->count(),
             ];
             $attendanceSummary[$student->id] = $summary;
         }
 
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
         $period = CarbonPeriod::create($startDate, $endDate);
-        
-        $workdays = collect($period)->filter(function ($date) {
-            return !$date->isWeekend();
+
+        $workdays = collect($period)->filter(function ($date) use ($holidays) {
+            return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
 
         return view('teacher.print.attendance-report', [
@@ -431,7 +435,7 @@ class DashboardController extends Controller
         ]);
 
         $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
-        
+
         // --- MULAI LOGIKA PENGAMBILAN DATA ---
         $class = $teacher->homeroomClass;
         $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
@@ -439,7 +443,7 @@ class DashboardController extends Controller
 
         $startDate = $selectedDate->copy()->startOfMonth();
         $endDate = $selectedDate->copy()->endOfMonth();
-        
+
         $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->get();
@@ -458,28 +462,29 @@ class DashboardController extends Controller
             $summary = [
                 'hadir' => $studentAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
                 'sakit' => $studentAttendances->where('status', 'sakit')->count(),
-                'izin'  => $studentAttendances->where('status', 'izin')->count(),
-                'alpa'  => $studentAttendances->where('status', 'alpa')->count(),
+                'izin' => $studentAttendances->where('status', 'izin')->count(),
+                'alpa' => $studentAttendances->where('status', 'alpa')->count(),
             ];
             $attendanceSummary[$student->id] = $summary;
         }
 
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
         $period = CarbonPeriod::create($startDate, $endDate);
-        
-        $workdays = collect($period)->filter(function ($date) {
-            return !$date->isWeekend();
+
+        $workdays = collect($period)->filter(function ($date) use ($holidays) {
+            return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
         // --- SELESAI LOGIKA PENGAMBILAN DATA ---
 
         $fileName = 'Laporan Kehadiran ' . $class->name . ' - ' . $selectedDate->translatedFormat('F Y') . '.xlsx';
-        
+
         // Kirim semua data yang dibutuhkan ke class Export
         return Excel::download(new AttendanceReportExport(
-            $class, 
-            $students, 
-            $workdays, 
-            $attendances, 
-            $attendanceSummary, 
+            $class,
+            $students,
+            $workdays,
+            $attendances,
+            $attendanceSummary,
             $selectedDate
         ), $fileName);
     }
@@ -488,7 +493,7 @@ class DashboardController extends Controller
     {
         $request->validate(['content' => 'nullable|string']);
         $teacher = Auth::user()->teacher;
-        
+
         if (!$teacher) {
             return response()->json(['success' => false, 'message' => 'Guru tidak ditemukan.'], 404);
         }
