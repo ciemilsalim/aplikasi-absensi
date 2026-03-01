@@ -126,20 +126,34 @@
                     await loadModels();
                     if (hasPhoto) {
                         loadingText.textContent = "Memproses data wajah Anda...";
-                        await loadLabeledImages();
+                        try {
+                            const labeledDescriptor = await loadLabeledImages();
+                            if (labeledDescriptor) {
+                                faceMatcher = new faceapi.FaceMatcher([labeledDescriptor], 0.5);
+                            } else {
+                                showError("Tidak ada data wajah valid untuk akun Anda. Pastikan foto profil Anda jelas (wajah terlihat).");
+                                return;
+                            }
+                        } catch (error) {
+                            showError("Terjadi kesalahan sistem saat memproses wajah.");
+                            console.error(error);
+                            return;
+                        }
                     }
                     startVideo();
                     if (hasPhoto) startLocationTracking();
                 } catch (error) {
-                    console.error(error);
+                    if (typeof interval !== 'undefined') clearInterval(interval);
+                    console.error('Error loading face models:', error);
                     showError("Gagal memuat sistem: " + error.message);
                 }
             });
 
             // --- 2. Load Models ---
-            async function loadModels() {
-                const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+            // Memuat model dari penyimpanan lokal (menghindari lambat/diblokir oleh CDN)
+            const MODEL_URL = '{{ asset('models') }}';
 
+            async function loadModels() {
                 const barContainer = document.getElementById('loading-bar-container');
                 const bar = document.getElementById('loading-bar');
 
@@ -239,21 +253,33 @@
 
             // --- 5. Face Processing (Attendance) ---
             async function loadLabeledImages() {
-                if (!teacherPhotoUrl) return;
-                try {
-                    const img = await faceapi.fetchImage(teacherPhotoUrl);
-                    const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-                    if (detections) {
-                        faceMatcher = new faceapi.FaceMatcher([
-                            new faceapi.LabeledFaceDescriptors('me', [detections.descriptor])
-                        ], 0.5);
-                    } else {
-                        showError("Foto profil Anda tidak valid untuk pengenalan wajah. Silakan hubungi admin atau daftar ulang.");
-                    }
-                } catch (e) {
-                    console.error(e);
-                    showError("Gagal memuat data wajah tersimpan.");
-                }
+                if (!teacherPhotoUrl) return null;
+
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.src = teacherPhotoUrl;
+
+                    img.onload = async () => {
+                        try {
+                            const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                            if (detections) {
+                                resolve(new faceapi.LabeledFaceDescriptors('me', [detections.descriptor]));
+                            } else {
+                                console.warn("Wajah tidak terdeteksi pada foto profil Anda.");
+                                resolve(null);
+                            }
+                        } catch (e) {
+                            console.error("Gagal deteksi AI foto:", e);
+                            reject(new Error("Gagal memuat data wajah tersimpan."));
+                        }
+                    };
+
+                    img.onerror = () => {
+                        console.error("Gagal memuat image profil guru (CORS/URL Invalid).");
+                        reject(new Error("Gagal mengunduh foto profil."));
+                    };
+                });
             }
 
             if (btnAbsent) {

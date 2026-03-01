@@ -343,8 +343,8 @@
 
                 faceStatus.textContent = 'Memuat model wajah (ini mungkin memakan waktu)...';
                 try {
-                    // Memuat model dari CDN publik
-                    const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+                    // Memuat model dari penyimpanan lokal (menghindari lambat/diblokir oleh CDN)
+                    const MODEL_URL = '{{ asset('models') }}';
 
                     let progress = 0;
                     const interval = setInterval(() => {
@@ -371,6 +371,7 @@
                     isModelsLoaded = true;
                     return true;
                 } catch (error) {
+                    if (typeof interval !== 'undefined') clearInterval(interval);
                     console.error('Error loading face models:', error);
                     faceStatus.textContent = 'Gagal memuat model wajah. Periksa koneksi internet.';
                     if (overlay) overlay.classList.add('hidden');
@@ -386,13 +387,19 @@
 
                 // 2. Load Student Photos & Create Matcher
                 if (!faceMatcher) {
-                    faceStatus.textContent = 'Memproses data wajah siswa...';
-                    const labeledDescriptors = await loadLabeledImages();
-                    if (labeledDescriptors.length === 0) {
-                        faceStatus.textContent = 'Tidak ada data wajah siswa yang ditemukan.';
+                    faceStatus.textContent = 'Memproses data wajah siswa... (Mohon tunggu)';
+                    try {
+                        const labeledDescriptors = await loadLabeledImages();
+                        if (labeledDescriptors.length === 0) {
+                            faceStatus.textContent = 'Tidak ada data wajah valid yang dapat dimuat. Pastikan foto jelas dan berwajah tunggal.';
+                            return;
+                        }
+                        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
+                    } catch (error) {
+                        faceStatus.textContent = 'Terjadi kesalahan sistem saat memproses wajah.';
+                        console.error(error);
                         return;
                     }
-                    faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
                 }
 
                 // 3. Start Video
@@ -412,18 +419,36 @@
             function loadLabeledImages() {
                 return Promise.all(
                     studentsWithPhotos.map(async student => {
-                        try {
-                            const img = await faceapi.fetchImage(student.photo_url);
-                            const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-                            if (!detections) {
-                                console.warn(`No face detected for ${student.name}`);
-                                return null;
+                        return new Promise((resolve) => {
+                            try {
+                                const img = new Image();
+                                img.crossOrigin = 'anonymous';
+                                img.src = student.photo_url;
+
+                                img.onload = async () => {
+                                    try {
+                                        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                                        if (!detections) {
+                                            console.warn(`Wajah tidak terdeteksi pada foto profil: ${student.name}`);
+                                            resolve(null);
+                                            return;
+                                        }
+                                        resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [detections.descriptor]));
+                                    } catch (e) {
+                                        console.error(`Gagal deteksi AI foto ${student.name}:`, e);
+                                        resolve(null);
+                                    }
+                                };
+
+                                img.onerror = () => {
+                                    console.error(`Gagal memuat URL foto untuk ${student.name} (CORS/URL Invalid)`);
+                                    resolve(null);
+                                };
+                            } catch (err) {
+                                console.error(`Error kritis proses foto ${student.name}:`, err);
+                                resolve(null);
                             }
-                            return new faceapi.LabeledFaceDescriptors(student.unique_id, [detections.descriptor]);
-                        } catch (err) {
-                            console.error(`Error processing image for ${student.name}:`, err);
-                            return null;
-                        }
+                        });
                     })
                 ).then(results => results.filter(res => res !== null));
             }

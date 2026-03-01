@@ -161,9 +161,9 @@
                                         <span
                                             class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $subjectAttendance->student->name }}</span>
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                                        @if($subjectAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 @endif
-                                                        @if($subjectAttendance->status == 'izin') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @endif
-                                                    ">{{ ucfirst($subjectAttendance->status) }}</span>
+                                                                                @if($subjectAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 @endif
+                                                                                @if($subjectAttendance->status == 'izin') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @endif
+                                                                            ">{{ ucfirst($subjectAttendance->status) }}</span>
                                     </li>
                                 @empty
                                     <li id="no-students-on-leave" class="p-4 text-center text-sm text-gray-500 italic">
@@ -327,7 +327,8 @@
 
                 faceStatus.textContent = 'Memuat model wajah...';
                 try {
-                    const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+                    // Memuat model dari penyimpanan lokal (menghindari lambat/diblokir oleh CDN)
+                    const MODEL_URL = '{{ asset('models') }}';
 
                     let progress = 0;
                     const interval = setInterval(() => {
@@ -354,6 +355,7 @@
                     isModelsLoaded = true;
                     return true;
                 } catch (error) {
+                    if (typeof interval !== 'undefined') clearInterval(interval);
                     console.error('Error loading face models:', error);
                     faceStatus.textContent = 'Gagal memuat model wajah. Periksa interent.';
                     if (overlay) overlay.classList.add('hidden');
@@ -365,13 +367,19 @@
                 if (!await loadFaceModels()) return;
 
                 if (!faceMatcher) {
-                    faceStatus.textContent = 'Memproses data wajah...';
-                    const labeledDescriptors = await loadLabeledImages();
-                    if (labeledDescriptors.length === 0) {
-                        faceStatus.textContent = 'Tidak ada data wajah siswa untuk kelas ini.';
+                    faceStatus.textContent = 'Memproses data wajah... (Mohon tunggu)';
+                    try {
+                        const labeledDescriptors = await loadLabeledImages();
+                        if (labeledDescriptors.length === 0) {
+                            faceStatus.textContent = 'Tidak ada data wajah valid yang dapat dimuat. Pastikan foto kelas ini jelas.';
+                            return;
+                        }
+                        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
+                    } catch (error) {
+                        faceStatus.textContent = 'Terjadi kesalahan sistem saat memproses wajah.';
+                        console.error(error);
                         return;
                     }
-                    faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
                 }
 
                 faceStatus.textContent = 'Menyalakan kamera...';
@@ -400,14 +408,36 @@
             function loadLabeledImages() {
                 return Promise.all(
                     studentsWithPhotos.map(async student => {
-                        try {
-                            const img = await faceapi.fetchImage(student.photo_url);
-                            const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-                            if (!detections) return null;
-                            return new faceapi.LabeledFaceDescriptors(student.unique_id, [detections.descriptor]);
-                        } catch (err) {
-                            return null;
-                        }
+                        return new Promise((resolve) => {
+                            try {
+                                const img = new Image();
+                                img.crossOrigin = 'anonymous';
+                                img.src = student.photo_url;
+
+                                img.onload = async () => {
+                                    try {
+                                        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                                        if (!detections) {
+                                            console.warn(`Wajah tidak terdeteksi pada foto profil: ${student.name}`);
+                                            resolve(null);
+                                            return;
+                                        }
+                                        resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [detections.descriptor]));
+                                    } catch (e) {
+                                        console.error(`Gagal deteksi AI foto ${student.name}:`, e);
+                                        resolve(null);
+                                    }
+                                };
+
+                                img.onerror = () => {
+                                    console.error(`Gagal memuat URL foto untuk ${student.name} (CORS/URL Tdk Valid)`);
+                                    resolve(null);
+                                };
+                            } catch (err) {
+                                console.error(`Error kritis proses foto ${student.name}:`, err);
+                                resolve(null);
+                            }
+                        });
                     })
                 ).then(results => results.filter(res => res !== null));
             }
@@ -543,7 +573,7 @@
                 const listItem = document.createElement('li');
                 listItem.className = 'p-4 flex items-center justify-between animate-[fade-in_0.5s]';
                 listItem.innerHTML = `<span class="font-medium text-sm text-gray-800 dark:text-gray-200">${name}</span>
-                                      <span class="text-xs text-gray-500 dark:text-gray-400">${time}</span>`;
+                                                  <span class="text-xs text-gray-500 dark:text-gray-400">${time}</span>`;
                 attendedList.prepend(listItem);
                 attendedCount.textContent = parseInt(attendedCount.textContent) + 1;
             }
@@ -560,7 +590,7 @@
                 const listItem = document.createElement('li');
                 listItem.className = 'p-4 flex items-center justify-between animate-[fade-in_0.5s]';
                 listItem.innerHTML = `<span class="font-medium text-sm text-gray-800 dark:text-gray-200">${name}</span>
-                                      <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span>`;
+                                                  <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span>`;
                 leaveList.prepend(listItem);
             }
 
