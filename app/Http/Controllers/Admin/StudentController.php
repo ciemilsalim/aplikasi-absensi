@@ -48,11 +48,10 @@ class StudentController extends Controller
         if ($sortBy === 'class_name') {
             $query->orderBy(
                 SchoolClass::select('name')
-                ->whereColumn('id', 'students.school_class_id'),
+                    ->whereColumn('id', 'students.school_class_id'),
                 $sortDirection
             );
-        }
-        else {
+        } else {
             $query->orderBy($sortBy, $sortDirection);
         }
 
@@ -89,7 +88,7 @@ class StudentController extends Controller
         ]);
 
         $data = $request->all();
-        $data['unique_id'] = (string)Str::uuid();
+        $data['unique_id'] = (string) Str::uuid();
 
         // Handle Photo Upload
         if ($request->hasFile('photo')) {
@@ -125,7 +124,19 @@ class StudentController extends Controller
 
         $data = $request->all();
 
-        if ($request->hasFile('photo')) {
+        if ($request->filled('webcam_photo')) {
+            // Delete old photo
+            if ($student->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->photo)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($student->photo);
+            }
+            $image = $request->webcam_photo;
+            $image = str_replace('data:image/png;base64,', '', $image);
+            $image = str_replace(' ', '+', $image);
+            $imageName = 'student_webcam_' . time() . '.png';
+            $path = 'students/photos/' . $imageName;
+            \Illuminate\Support\Facades\Storage::disk('public')->put($path, base64_decode($image));
+            $data['photo'] = $path;
+        } elseif ($request->hasFile('photo')) {
             // Delete old photo
             if ($student->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->photo)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($student->photo);
@@ -184,8 +195,7 @@ class StudentController extends Controller
 
         try {
             Excel::import(new StudentsImport, $request->file('file'));
-        }
-        catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();
             $errorMessages = [];
             foreach ($failures as $failure) {
