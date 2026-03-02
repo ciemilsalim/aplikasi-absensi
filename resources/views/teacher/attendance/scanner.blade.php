@@ -442,7 +442,7 @@
             function validateLocation(coords) {
                 const schoolLat = parseFloat(settings.school_latitude);
                 const schoolLng = parseFloat(settings.school_longitude);
-                const maxRadius = parseFloat(settings.school_radius);
+                const maxRadius = parseFloat(settings.attendance_radius || 100);
 
                 const distance = calculateDistance(coords.latitude, coords.longitude, schoolLat, schoolLng);
                 distanceDebug.textContent = Math.round(distance);

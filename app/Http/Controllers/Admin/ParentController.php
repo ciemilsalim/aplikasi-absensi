@@ -25,12 +25,12 @@ class ParentController extends Controller
         $parentsWithoutStudents = $totalParents - $parentsWithStudents;
 
         // Validasi parameter untuk pengurutan
-        $sortBy = in_array($request->query('sort_by'), ['name', 'email', 'students_count']) 
-            ? $request->query('sort_by') 
+        $sortBy = in_array($request->query('sort_by'), ['name', 'email', 'students_count'])
+            ? $request->query('sort_by')
             : 'created_at';
 
-        $sortDirection = in_array($request->query('sort_direction'), ['asc', 'desc']) 
-            ? $request->query('sort_direction') 
+        $sortDirection = in_array($request->query('sort_direction'), ['asc', 'desc'])
+            ? $request->query('sort_direction')
             : 'desc';
 
         $perPage = in_array($request->query('per_page'), [10, 25, 50, 100])
@@ -41,14 +41,17 @@ class ParentController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('email', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('students', function ($studentQuery) use ($search) {
+                        $studentQuery->where('name', 'like', "%{$search}%");
+                    });
             });
         }
-        
+
         if ($sortBy === 'email') {
             $query->orderBy(
                 User::select('email')
@@ -146,7 +149,7 @@ class ParentController extends Controller
     public function destroy(ParentModel $parent)
     {
         $parent->user()->delete();
-        
+
         return redirect()->route('admin.parents.index')->with('success', 'Akun orang tua berhasil dihapus.');
     }
 
@@ -170,12 +173,12 @@ class ParentController extends Controller
         try {
             Excel::import(new ParentsImport, $request->file('file'));
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-             $failures = $e->failures();
-             $errorMessages = [];
-             foreach ($failures as $failure) {
-                 $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
-             }
-             return redirect()->back()->with('import_errors', $errorMessages);
+            $failures = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+            return redirect()->back()->with('import_errors', $errorMessages);
         }
 
         return redirect()->route('admin.parents.index')->with('success', 'Data orang tua berhasil diimpor!');
@@ -188,8 +191,8 @@ class ParentController extends Controller
     public function getOnlineStatus()
     {
         $onlineParentUserIds = User::where('role', 'parent')
-                               ->where('last_seen_at', '>', now()->subMinutes(5))
-                               ->pluck('id');
+            ->where('last_seen_at', '>', now()->subMinutes(5))
+            ->pluck('id');
 
         return response()->json($onlineParentUserIds);
     }

@@ -23,7 +23,7 @@ class TeacherAttendanceController extends Controller
     public function showScanner()
     {
         $teacher = Auth::user()->teacher;
-        $settings = Setting::whereIn('key', ['school_latitude', 'school_longitude', 'school_radius'])->pluck('value', 'key');
+        $settings = Setting::whereIn('key', ['school_latitude', 'school_longitude', 'attendance_radius'])->pluck('value', 'key');
 
         $hasPhoto = !empty($teacher->photo);
 
@@ -53,9 +53,9 @@ class TeacherAttendanceController extends Controller
         $holiday = \App\Models\Calendar::where('is_holiday', true)
             ->whereDate('start_date', '<=', $today)
             ->where(function ($query) use ($today) {
-            $query->whereNull('end_date')
-                ->orWhereDate('end_date', '>=', $today);
-        })->first();
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $today);
+            })->first();
 
         if ($holiday) {
             return response()->json(['success' => false, 'message' => 'Hari ini libur: ' . $holiday->title], 422);
@@ -65,7 +65,7 @@ class TeacherAttendanceController extends Controller
         // 1. Verify Location (Server-side check as backup/validation)
         $schoolLat = Setting::where('key', 'school_latitude')->value('value');
         $schoolLng = Setting::where('key', 'school_longitude')->value('value');
-        $radius = Setting::where('key', 'school_radius')->value('value');
+        $radius = Setting::where('key', 'attendance_radius')->value('value') ?? 100;
 
         if ($schoolLat && $schoolLng && $radius) {
             $distance = $this->calculateDistance($request->latitude, $request->longitude, $schoolLat, $schoolLng);
