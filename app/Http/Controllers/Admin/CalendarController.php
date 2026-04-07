@@ -17,6 +17,17 @@ class CalendarController extends Controller
         return view('admin.calendars.index', compact('calendars'));
     }
 
+    public function list(Request $request)
+    {
+        $year = $request->year ?? date('Y');
+
+        $calendars = Calendar::whereYear('start_date', $year)
+            ->orderBy('start_date', 'asc')
+            ->get();
+
+        return view('admin.calendars.list', compact('calendars', 'year'));
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -70,7 +81,23 @@ class CalendarController extends Controller
      */
     public function update(Request $request, Calendar $calendar)
     {
-        //
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'description' => 'nullable|string',
+        ]);
+
+        $calendar->update([
+            'title' => $request->title,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'description' => $request->description,
+            'is_holiday' => $request->has('is_holiday'),
+            'is_self_study' => $request->has('is_self_study'),
+        ]);
+
+        return redirect()->back()->with('success', 'Agenda berhasil diperbarui.');
     }
 
     /**

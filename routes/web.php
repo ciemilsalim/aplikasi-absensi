@@ -132,7 +132,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
             // Kurikulum
             Route::post('calendars/import', [\App\Http\Controllers\Admin\CalendarController::class, 'import'])->name('calendars.import');
-            Route::resource('calendars', \App\Http\Controllers\Admin\CalendarController::class)->except(['show', 'edit', 'update', 'create']);
+            Route::get('calendars/list', [\App\Http\Controllers\Admin\CalendarController::class, 'list'])->name('calendars.list');
+            Route::resource('calendars', \App\Http\Controllers\Admin\CalendarController::class)->except(['show', 'edit', 'create']);
 
             // Jadwal Pelajaran (Dipindahkan ke Kurikulum)
             Route::get('schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules.index');
