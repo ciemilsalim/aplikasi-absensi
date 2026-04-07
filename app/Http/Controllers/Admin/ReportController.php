@@ -172,7 +172,7 @@ class ReportController extends Controller
             ->orderBy('name')
             ->get();
 
-        $reportData = $students->map(function ($student) use ($months, $trimesterMap) {
+        $reportData = $students->map(function ($student) use ($months, $trimesterMap, $year) {
             $studentData = [
                 'name' => $student->name,
                 'nis' => $student->nis,
@@ -183,10 +183,37 @@ class ReportController extends Controller
                 $attendancesInMonth = $student->attendances->filter(function ($att) use ($m) {
                     return Carbon::parse($att->attendance_time)->month == $m;
                 });
-                $hadir = $attendancesInMonth->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
-                $sakit = $attendancesInMonth->where('status', 'sakit')->count();
-                $izin = $attendancesInMonth->where('status', 'izin')->count();
-                $alpa = $attendancesInMonth->where('status', 'alpa')->count();
+                
+                $startDate = Carbon::create($year, $m, 1)->startOfMonth();
+                $endDate = $startDate->copy()->endOfMonth();
+                $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+                $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
+                $period = CarbonPeriod::create($startDate, $endDate);
+
+                $workdays = collect($period)->filter(function ($d) use ($holidays) {
+                    return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
+                });
+
+                $hadir = 0; $sakit = 0; $izin = 0; $alpa = 0;
+
+                foreach ($workdays as $wDate) {
+                    $dateString = $wDate->format('Y-m-d');
+                    $attendanceRecord = $attendancesInMonth->firstWhere(function($item) use ($dateString) {
+                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                    });
+                    
+                    $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
+                    
+                    if ($isSelfStudy) {
+                        $hadir++;
+                    } else {
+                        $status = $attendanceRecord ? $attendanceRecord->status : null;
+                        if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadir++;
+                        elseif ($status === 'sakit') $sakit++;
+                        elseif ($status === 'izin') $izin++;
+                        elseif ($status === 'alpa') $alpa++;
+                    }
+                }
 
                 // Hitung persen berdasar effective_days - (alpa+izin+sakit) atau Hadir
                 // User meminta jumlah efektif sebagai %
