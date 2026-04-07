@@ -100,13 +100,30 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($attendances as $index => $attendance)
+            @forelse ($workdays as $index => $date)
+                @php
+                    $dateString = $date->format('Y-m-d');
+                    $attendance = $attendances->firstWhere(function($item) use ($dateString) {
+                        return \Carbon\Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                    });
+                    $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
+                @endphp
                 <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="text-center">{{ $attendance->attendance_time->translatedFormat('d M Y') }}</td>
-                    <td class="text-center">{{ in_array($attendance->status, ['izin', 'sakit', 'alpa']) ? '-' : $attendance->attendance_time->format('H:i:s') }}</td>
-                    <td class="text-center">{{ $attendance->checkout_time ? $attendance->checkout_time->format('H:i:s') : '-' }}</td>
-                    <td class="text-center" style="text-transform: capitalize;">{{ $attendance->status }}</td>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td class="text-center">{{ $date->translatedFormat('d M Y') }}</td>
+                    @if($isSelfStudy)
+                        <td class="text-center">-</td>
+                        <td class="text-center">-</td>
+                        <td class="text-center" style="font-weight:bold; color:#1d4ed8;">Belajar Mandiri</td>
+                    @elseif($attendance)
+                        <td class="text-center">{{ in_array($attendance->status, ['izin', 'sakit', 'alpa']) ? '-' : $attendance->attendance_time->format('H:i:s') }}</td>
+                        <td class="text-center">{{ $attendance->checkout_time ? $attendance->checkout_time->format('H:i:s') : '-' }}</td>
+                        <td class="text-center" style="text-transform: capitalize;">{{ $attendance->status }}</td>
+                    @else
+                        <td class="text-center">-</td>
+                        <td class="text-center">-</td>
+                        <td class="text-center">Alpa</td>
+                    @endif
                 </tr>
             @empty
                 <tr>

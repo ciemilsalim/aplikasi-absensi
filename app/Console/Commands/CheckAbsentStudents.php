@@ -31,8 +31,10 @@ class CheckAbsentStudents extends Command
             return 0;
         }
 
-        // 2. Cek Kalender Pendidikan (Hari Libur)
-        $holiday = \App\Models\Calendar::where('is_holiday', true)
+        // 2. Cek Kalender Pendidikan (Hari Libur & Belajar Mandiri)
+        $holiday = \App\Models\Calendar::where(function($q) {
+                $q->where('is_holiday', true)->orWhere('is_self_study', true);
+            })
             ->whereDate('start_date', '<=', $today)
             ->where(function ($query) use ($today) {
                 $query->whereNull('end_date')
@@ -40,7 +42,7 @@ class CheckAbsentStudents extends Command
             })->first();
 
         if ($holiday) {
-            $this->info('Hari ini libur: ' . $holiday->title . '. Pengecekan alpa dilewati.');
+            $this->info('Hari ini terdaftar sebagai: ' . $holiday->title . '. Pengecekan alpa dilewati.');
             return 0;
         }
 

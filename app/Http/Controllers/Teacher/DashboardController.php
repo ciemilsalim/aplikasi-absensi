@@ -326,24 +326,45 @@ class DashboardController extends Controller
                 });
             });
 
-        $attendanceSummary = [];
-        foreach ($students as $student) {
-            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
-            $summary = [
-                'hadir' => $studentAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
-                'sakit' => $studentAttendances->where('status', 'sakit')->count(),
-                'izin' => $studentAttendances->where('status', 'izin')->count(),
-                'alpa' => $studentAttendances->where('status', 'alpa')->count(),
-            ];
-            $attendanceSummary[$student->id] = $summary;
-        }
-
         $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+        $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
         $period = CarbonPeriod::create($startDate, $endDate);
 
         $period = collect($period)->filter(function ($date) use ($holidays) {
             return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
+
+        $attendanceSummary = [];
+        foreach ($students as $student) {
+            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
+            $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
+            
+            foreach ($period as $date) {
+                $dateString = $date->format('Y-m-d');
+                $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
+                    return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                });
+                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
+                
+                if ($isSelfStudy) {
+                    $hadirCount++;
+                } else {
+                    $status = $attendanceRecord ? $attendanceRecord->status : null;
+                    if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
+                    elseif ($status === 'sakit') $sakitCount++;
+                    elseif ($status === 'izin') $izinCount++;
+                    elseif ($status === 'alpa') $alpaCount++;
+                }
+            }
+
+            $summary = [
+                'hadir' => $hadirCount,
+                'sakit' => $sakitCount,
+                'izin' => $izinCount,
+                'alpa' => $alpaCount,
+            ];
+            $attendanceSummary[$student->id] = $summary;
+        }
 
         return view('teacher.attendance-history', compact(
             'teacher',
@@ -352,7 +373,8 @@ class DashboardController extends Controller
             'attendances',
             'period',
             'selectedDate',
-            'attendanceSummary'
+            'attendanceSummary',
+            'selfStudyDays'
         ));
     }
 
@@ -390,24 +412,45 @@ class DashboardController extends Controller
                 });
             });
 
-        $attendanceSummary = [];
-        foreach ($students as $student) {
-            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
-            $summary = [
-                'hadir' => $studentAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
-                'sakit' => $studentAttendances->where('status', 'sakit')->count(),
-                'izin' => $studentAttendances->where('status', 'izin')->count(),
-                'alpa' => $studentAttendances->where('status', 'alpa')->count(),
-            ];
-            $attendanceSummary[$student->id] = $summary;
-        }
-
         $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+        $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
         $period = CarbonPeriod::create($startDate, $endDate);
 
         $workdays = collect($period)->filter(function ($date) use ($holidays) {
             return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
+
+        $attendanceSummary = [];
+        foreach ($students as $student) {
+            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
+            $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
+            
+            foreach ($workdays as $date) {
+                $dateString = $date->format('Y-m-d');
+                $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
+                    return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                });
+                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
+                
+                if ($isSelfStudy) {
+                    $hadirCount++;
+                } else {
+                    $status = $attendanceRecord ? $attendanceRecord->status : null;
+                    if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
+                    elseif ($status === 'sakit') $sakitCount++;
+                    elseif ($status === 'izin') $izinCount++;
+                    elseif ($status === 'alpa') $alpaCount++;
+                }
+            }
+
+            $summary = [
+                'hadir' => $hadirCount,
+                'sakit' => $sakitCount,
+                'izin' => $izinCount,
+                'alpa' => $alpaCount,
+            ];
+            $attendanceSummary[$student->id] = $summary;
+        }
 
         return view('teacher.print.attendance-report', [
             'settings' => $settings,
@@ -416,7 +459,8 @@ class DashboardController extends Controller
             'attendances' => $attendances,
             'period' => $workdays,
             'selectedDate' => $selectedDate,
-            'attendanceSummary' => $attendanceSummary
+            'attendanceSummary' => $attendanceSummary,
+            'selfStudyDays' => $selfStudyDays
         ]);
     }
 
@@ -581,24 +625,45 @@ class DashboardController extends Controller
                 });
             });
 
-        $attendanceSummary = [];
-        foreach ($students as $student) {
-            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
-            $summary = [
-                'hadir' => $studentAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
-                'sakit' => $studentAttendances->where('status', 'sakit')->count(),
-                'izin' => $studentAttendances->where('status', 'izin')->count(),
-                'alpa' => $studentAttendances->where('status', 'alpa')->count(),
-            ];
-            $attendanceSummary[$student->id] = $summary;
-        }
-
         $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+        $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
         $period = CarbonPeriod::create($startDate, $endDate);
 
         $workdays = collect($period)->filter(function ($date) use ($holidays) {
             return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
+
+        $attendanceSummary = [];
+        foreach ($students as $student) {
+            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
+            $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
+            
+            foreach ($workdays as $date) {
+                $dateString = $date->format('Y-m-d');
+                $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
+                    return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                });
+                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
+                
+                if ($isSelfStudy) {
+                    $hadirCount++;
+                } else {
+                    $status = $attendanceRecord ? $attendanceRecord->status : null;
+                    if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
+                    elseif ($status === 'sakit') $sakitCount++;
+                    elseif ($status === 'izin') $izinCount++;
+                    elseif ($status === 'alpa') $alpaCount++;
+                }
+            }
+
+            $summary = [
+                'hadir' => $hadirCount,
+                'sakit' => $sakitCount,
+                'izin' => $izinCount,
+                'alpa' => $alpaCount,
+            ];
+            $attendanceSummary[$student->id] = $summary;
+        }
         // --- SELESAI LOGIKA PENGAMBILAN DATA ---
 
         $fileName = 'Laporan Kehadiran ' . $class->name . ' - ' . $selectedDate->translatedFormat('F Y') . '.xlsx';
@@ -610,7 +675,8 @@ class DashboardController extends Controller
             $workdays,
             $attendances,
             $attendanceSummary,
-            $selectedDate
+            $selectedDate,
+            $selfStudyDays
         ), $fileName);
     }
 

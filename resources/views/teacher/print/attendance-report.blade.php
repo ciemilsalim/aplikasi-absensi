@@ -151,12 +151,19 @@
                             $attendanceRecord = $attendances->get($student->id, collect())->get($dateString);
                             $status = $attendanceRecord ? $attendanceRecord->status : null;
                             $statusText = '-';
-                            switch ($status) {
-                                case 'tepat_waktu': $statusText = 'H'; break;
-                                case 'terlambat': $statusText = 'T'; break;
-                                case 'izin': $statusText = 'I'; break;
-                                case 'sakit': $statusText = 'S'; break;
-                                case 'alpa': $statusText = 'A'; break;
+                            
+                            $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
+
+                            if ($isSelfStudy) {
+                                $statusText = 'BM';
+                            } else {
+                                switch ($status) {
+                                    case 'tepat_waktu': $statusText = 'H'; break;
+                                    case 'terlambat': $statusText = 'T'; break;
+                                    case 'izin': $statusText = 'I'; break;
+                                    case 'sakit': $statusText = 'S'; break;
+                                    case 'alpa': $statusText = 'A'; break;
+                                }
                             }
                         @endphp
                         <td>{{ $statusText }}</td>

@@ -19,11 +19,12 @@ class AttendanceReportExport implements FromView, ShouldAutoSize, WithTitle, Wit
     protected $attendances;
     protected $attendanceSummary;
     protected $selectedDate;
+    protected $selfStudyDays;
 
     /**
      * Konstruktor untuk menerima data yang SUDAH DIOLAH dari controller.
      */
-    public function __construct($class, $students, $period, $attendances, $attendanceSummary, $selectedDate)
+    public function __construct($class, $students, $period, $attendances, $attendanceSummary, $selectedDate, $selfStudyDays)
     {
         $this->class = $class;
         $this->students = $students;
@@ -31,6 +32,7 @@ class AttendanceReportExport implements FromView, ShouldAutoSize, WithTitle, Wit
         $this->attendances = $attendances;
         $this->attendanceSummary = $attendanceSummary;
         $this->selectedDate = $selectedDate;
+        $this->selfStudyDays = $selfStudyDays;
     }
 
     /**
@@ -47,6 +49,7 @@ class AttendanceReportExport implements FromView, ShouldAutoSize, WithTitle, Wit
             'attendances' => $this->attendances,
             'attendanceSummary' => $this->attendanceSummary,
             'selectedDate' => $this->selectedDate,
+            'selfStudyDays' => $this->selfStudyDays,
             'settings' => [] // Tambahkan array kosong jika view membutuhkan variabel ini
         ]);
     }

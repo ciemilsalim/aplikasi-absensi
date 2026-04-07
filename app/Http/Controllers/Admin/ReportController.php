@@ -10,6 +10,7 @@ use App\Models\Attendance;
 use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -81,16 +82,42 @@ class ReportController extends Controller
             ->orderBy('name')
             ->get();
 
-        $reportData = $students->map(function ($student) {
+        $startDate = $date->copy()->startOfMonth();
+        $endDate = $date->copy()->endOfMonth();
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+        $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
+        $period = CarbonPeriod::create($startDate, $endDate);
+
+        $workdays = collect($period)->filter(function ($d) use ($holidays) {
+            return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
+        });
+
+        $reportData = $students->map(function ($student) use ($workdays, $selfStudyDays) {
             $attendancesInMonth = $student->attendances;
-            $hadir = $attendancesInMonth->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
-            $sakit = $attendancesInMonth->where('status', 'sakit')->count();
-            $izin = $attendancesInMonth->where('status', 'izin')->count();
-            $alpa = $attendancesInMonth->where('status', 'alpa')->count();
+            $hadir = 0; $sakit = 0; $izin = 0; $alpa = 0;
+
+            foreach ($workdays as $wDate) {
+                $dateString = $wDate->format('Y-m-d');
+                $attendanceRecord = $attendancesInMonth->firstWhere(function($item) use ($dateString) {
+                    return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                });
+                
+                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
+                
+                if ($isSelfStudy) {
+                    $hadir++;
+                } else {
+                    $status = $attendanceRecord ? $attendanceRecord->status : null;
+                    if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadir++;
+                    elseif ($status === 'sakit') $sakit++;
+                    elseif ($status === 'izin') $izin++;
+                    elseif ($status === 'alpa') $alpa++;
+                }
+            }
 
             return (object)[
-            'name' => $student->name, 'nis' => $student->nis,
-            'hadir' => $hadir, 'sakit' => $sakit, 'izin' => $izin, 'alpa' => $alpa,
+                'name' => $student->name, 'nis' => $student->nis,
+                'hadir' => $hadir, 'sakit' => $sakit, 'izin' => $izin, 'alpa' => $alpa,
             ];
         });
 
@@ -220,9 +247,19 @@ class ReportController extends Controller
             ->orderBy('attendance_time', 'asc')
             ->get();
 
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+        $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
+        $period = \Carbon\CarbonPeriod::create($startDate, $endDate);
+        
+        $workdays = collect($period)->filter(function ($date) use ($holidays) {
+            return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
+        });
+
         $pdfData = $this->getCommonPdfData();
         $pdfData['student'] = $student;
         $pdfData['attendances'] = $attendances;
+        $pdfData['workdays'] = $workdays;
+        $pdfData['selfStudyDays'] = $selfStudyDays;
         $pdfData['startDate'] = $startDate->translatedFormat('d F Y');
         $pdfData['endDate'] = $endDate->translatedFormat('d F Y');
 

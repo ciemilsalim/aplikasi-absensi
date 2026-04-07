@@ -111,6 +111,11 @@
                     border-color: #10b981;
                 }
 
+                .fc-event.self-study-event {
+                    background-color: #3b82f6;
+                    border-color: #3b82f6;
+                }
+
                 /* Cursor pointer pada event */
                 .fc-event {
                     cursor: pointer;
@@ -180,13 +185,18 @@
                                             <x-input-error :messages="$errors->get('description')" class="mt-2" />
                                         </div>
 
-                                        <div class="flex items-center">
+                                        <div class="flex items-center mt-2">
                                             <input id="is_holiday" type="checkbox" name="is_holiday" value="1"
-                                                class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                                checked>
+                                                class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                                             <label for="is_holiday"
-                                                class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Tandai
-                                                sebagai Hari Libur</label>
+                                                class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Tandai sebagai Hari Libur</label>
+                                        </div>
+
+                                        <div class="flex items-center">
+                                            <input id="is_self_study" type="checkbox" name="is_self_study" value="1"
+                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                            <label for="is_self_study"
+                                                class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Tandai sebagai Belajar Mandiri</label>
                                         </div>
 
                                         <div class="flex justify-end">
@@ -278,10 +288,11 @@
                             start: item.start_date,
                             // FullCalendar butuh end date +1 hari jika allday agar merender kotak dengan benar
                             end: item.end_date ? new Date(new Date(item.end_date).getTime() + 86400000).toISOString().split('T')[0] : item.start_date,
-                            classNames: item.is_holiday ? ['holiday-event'] : ['activity-event'],
+                            classNames: item.is_self_study ? ['self-study-event'] : (item.is_holiday ? ['holiday-event'] : ['activity-event']),
                             extendedProps: {
                                 description: item.description,
-                                is_holiday: item.is_holiday
+                                is_holiday: item.is_holiday,
+                                is_self_study: item.is_self_study
                             },
                             allDay: true
                         };
@@ -300,7 +311,14 @@
                             var eventObj = info.event;
 
                             var descText = eventObj.extendedProps.description ? '<br><span class="text-sm text-gray-500">' + eventObj.extendedProps.description + '</span>' : '';
-                            var typeText = eventObj.extendedProps.is_holiday ? '<span class="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800">Hari Libur</span>' : '<span class="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800">Kegiatan</span>';
+                            var typeText = '';
+                            if (eventObj.extendedProps.is_self_study) {
+                                typeText = '<span class="px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800">Belajar Mandiri</span>';
+                            } else if (eventObj.extendedProps.is_holiday) {
+                                typeText = '<span class="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800">Hari Libur</span>';
+                            } else {
+                                typeText = '<span class="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800">Kegiatan</span>';
+                            }
 
                             Swal.fire({
                                 title: eventObj.title,

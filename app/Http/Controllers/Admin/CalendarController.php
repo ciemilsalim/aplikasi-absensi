@@ -43,6 +43,7 @@ class CalendarController extends Controller
             'end_date' => $request->end_date,
             'description' => $request->description,
             'is_holiday' => $request->has('is_holiday'),
+            'is_self_study' => $request->has('is_self_study'),
         ]);
 
         return redirect()->route('admin.calendars.index')->with('success', 'Agenda berhasil ditambahkan.');

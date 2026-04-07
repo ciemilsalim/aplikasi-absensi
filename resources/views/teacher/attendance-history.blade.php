@@ -114,13 +114,20 @@
                                                 $attendanceId = $attendanceRecord ? $attendanceRecord->id : '';
                                                 $badgeColor = 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300';
                                                 $statusText = '-';
+                                                
+                                                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
 
-                                                switch ($status) {
-                                                    case 'tepat_waktu': $badgeColor = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'; $statusText = 'H'; break;
-                                                    case 'terlambat': $badgeColor = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'; $statusText = 'T'; break;
-                                                    case 'izin': $badgeColor = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'; $statusText = 'I'; break;
-                                                    case 'sakit': $badgeColor = 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'; $statusText = 'S'; break;
-                                                    case 'alpa': $badgeColor = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'; $statusText = 'A'; break;
+                                                if ($isSelfStudy) {
+                                                    $badgeColor = 'bg-blue-500 text-white dark:bg-blue-600 dark:text-gray-100 shadow-sm';
+                                                    $statusText = 'BM';
+                                                } else {
+                                                    switch ($status) {
+                                                        case 'tepat_waktu': $badgeColor = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'; $statusText = 'H'; break;
+                                                        case 'terlambat': $badgeColor = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'; $statusText = 'T'; break;
+                                                        case 'izin': $badgeColor = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'; $statusText = 'I'; break;
+                                                        case 'sakit': $badgeColor = 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'; $statusText = 'S'; break;
+                                                        case 'alpa': $badgeColor = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'; $statusText = 'A'; break;
+                                                    }
                                                 }
                                             @endphp
                                             <td class="px-4 py-4 whitespace-nowrap text-sm text-center">

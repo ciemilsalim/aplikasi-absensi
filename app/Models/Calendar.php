@@ -12,12 +12,14 @@ class Calendar extends Model
         'end_date',
         'description',
         'is_holiday',
+        'is_self_study',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
         'is_holiday' => 'boolean',
+        'is_self_study' => 'boolean',
     ];
 
     /**
@@ -50,5 +52,29 @@ class Calendar extends Model
             }
         }
         return false;
+    }
+
+    /**
+     * Mendapatkan daftar hari belajar mandiri dalam rentang tanggal tertentu
+     */
+    public static function getSelfStudyDaysInRange($startDate, $endDate)
+    {
+        return self::where('is_self_study', true)
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('start_date', [$startDate, $endDate])
+                    ->orWhereBetween('end_date', [$startDate, $endDate])
+                    ->orWhere(function ($q) use ($startDate, $endDate) {
+                        $q->whereDate('start_date', '<=', $startDate)
+                            ->whereDate('end_date', '>=', $endDate);
+                    });
+            })->get();
+    }
+
+    /**
+     * Memeriksa apakah sebuah instance Carbon jatuh pada hari belajar mandiri
+     */
+    public static function isDateInSelfStudy($date, $selfStudyDays)
+    {
+        return self::isDateInHolidays($date, $selfStudyDays);
     }
 }
