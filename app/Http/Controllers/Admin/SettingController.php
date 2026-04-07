@@ -31,10 +31,11 @@ class SettingController extends Controller
     /**
      * Menampilkan halaman pengaturan Waktu Absensi.
      */
-    public function attendance()
+    public function attendance(Request $request)
     {
         $settings = Setting::pluck('value', 'key');
-        return view('admin.settings.attendance', compact('settings'));
+        $selectedYear = $request->input('year', date('Y'));
+        return view('admin.settings.attendance', compact('settings', 'selectedYear'));
     }
 
     /**
@@ -80,8 +81,9 @@ class SettingController extends Controller
             ]);
             
             $attendanceKeys = ['jam_masuk', 'jam_pulang', 'jam_masuk_guru', 'jam_pulang_guru'];
+            $selectedYear = $request->input('effective_year', date('Y'));
             for ($i = 1; $i <= 12; $i++) {
-                $monthKey = 'effective_days_' . $i;
+                $monthKey = 'effective_days_' . $selectedYear . '_' . $i;
                 $rules[$monthKey] = 'nullable|integer|min:0|max:31';
                 $attendanceKeys[] = $monthKey;
             }

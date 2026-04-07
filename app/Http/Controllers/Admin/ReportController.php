@@ -127,10 +127,13 @@ class ReportController extends Controller
 
         $trimesterMap = [];
         foreach ($months as $m) {
-            $effectiveDays = Setting::where('key', 'effective_days_' . $m)->value('value');
+            $effectiveDays = Setting::where('key', 'effective_days_' . $year . '_' . $m)->value('value');
+            if ($effectiveDays === null) {
+                $effectiveDays = Setting::where('key', 'effective_days_' . $m)->value('value');
+            }
             $trimesterMap[$m] = [
                 'name' => $monthNames[$m],
-                'effective_days' => $effectiveDays ? (int)$effectiveDays : 0
+                'effective_days' => $effectiveDays !== null ? (int)$effectiveDays : 0
             ];
         }
 

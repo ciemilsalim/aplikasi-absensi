@@ -5,7 +5,7 @@
     <title>Rekap Kehadiran Triwulan {{ $trimester }} Tahun {{ $year }}</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 10px; margin: 0; padding: 0; }
-        .header { display: flex; align-items: center; justify-content: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
+        .header { display: flex; align-items: center; justify-content: center; padding-bottom: 5px; margin-bottom: 10px; }
         .header img { height: 60px; margin-right: 15px; }
         .header .text-center { text-align: center; }
         .header h1 { margin: 0; font-size: 16px; text-transform: uppercase; }
