@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 // Impor class yang dibutuhkan untuk export
 use App\Exports\AttendanceReportExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
 {
@@ -417,6 +418,127 @@ class DashboardController extends Controller
             'selectedDate' => $selectedDate,
             'attendanceSummary' => $attendanceSummary
         ]);
+    }
+
+    public function printTrimesterAttendance(Request $request)
+    {
+        $teacher = Auth::user()->teacher;
+
+        if (!$teacher || !$teacher->homeroomClass) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak memiliki kelas untuk dicetak.');
+        }
+
+        $class = $teacher->homeroomClass;
+        
+        $request->validate([
+            'trimester' => 'required|in:1,2,3,4',
+            'year' => 'required|integer|min:2000',
+        ]);
+
+        $year = $request->year;
+        $trimester = $request->trimester;
+        
+        $months = [];
+        if ($trimester == 1) $months = [1, 2, 3];
+        elseif ($trimester == 2) $months = [4, 5, 6];
+        elseif ($trimester == 3) $months = [7, 8, 9];
+        elseif ($trimester == 4) $months = [10, 11, 12];
+
+        // Dapatkan hari efektif per bulan
+        $monthNames = [
+            1 => 'JANUARI', 2 => 'FEBRUARI', 3 => 'MARET', 4 => 'APRIL',
+            5 => 'MEI', 6 => 'JUNI', 7 => 'JULI', 8 => 'AGUSTUS',
+            9 => 'SEPTEMBER', 10 => 'OKTOBER', 11 => 'NOVEMBER', 12 => 'DESEMBER'
+        ];
+
+        $trimesterMap = [];
+        foreach ($months as $m) {
+            $effectiveDays = Setting::where('key', 'effective_days_' . $m)->value('value');
+            $trimesterMap[$m] = [
+                'name' => $monthNames[$m],
+                'effective_days' => $effectiveDays ? (int)$effectiveDays : 0
+            ];
+        }
+
+        $students = Student::where('school_class_id', $class->id)
+            ->with(['attendances' => function ($query) use ($year, $months) {
+                $query->whereYear('attendance_time', $year)
+                      ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+            }])
+            ->orderBy('name')
+            ->get();
+
+        $reportData = $students->map(function ($student) use ($months, $trimesterMap) {
+            $studentData = [
+                'name' => $student->name,
+                'nis' => $student->nis,
+                'monthly_data' => []
+            ];
+
+            foreach ($months as $m) {
+                $attendancesInMonth = $student->attendances->filter(function ($att) use ($m) {
+                    return Carbon::parse($att->attendance_time)->month == $m;
+                });
+                $hadir = $attendancesInMonth->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
+                $sakit = $attendancesInMonth->where('status', 'sakit')->count();
+                $izin = $attendancesInMonth->where('status', 'izin')->count();
+                $alpa = $attendancesInMonth->where('status', 'alpa')->count();
+
+                $effDays = $trimesterMap[$m]['effective_days'];
+                
+                $totalAbsen = $sakit + $izin + $alpa;
+                $jml = $totalAbsen;
+                if ($effDays > 0) {
+                    $persen = (($effDays - $jml) / $effDays) * 100;
+                    $persenStr = round($persen, 0) . '%';
+                } else {
+                    $persenStr = '0%';
+                }
+
+                $studentData['monthly_data'][$m] = [
+                    'alpa' => $alpa,
+                    'izin' => $izin,
+                    'sakit' => $sakit,
+                    'jml' => $jml,
+                    'persen' => $persenStr
+                ];
+            }
+            return (object)$studentData;
+        });
+
+        // Common PDF Data similar to Admin
+        $settings = Setting::pluck('value', 'key');
+        $logoPath = $settings->get('app_logo');
+        $logoBase64 = null;
+        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
+            try {
+                $logoData = \Illuminate\Support\Facades\Storage::disk('public')->get($logoPath);
+                $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
+            } catch (\Exception $e) { }
+        }
+
+        $pdfData = [
+            'schoolName' => $settings->get('school_name', config('app.name')),
+            'schoolAddress' => $settings->get('school_address'),
+            'logoBase64' => $logoBase64,
+            'appName' => config('app.name', 'SIASEK'),
+            'printDate' => now()->translatedFormat('d F Y, H:i:s'),
+            'userRole' => Auth::check() ? ucfirst(Auth::user()->role) : 'Tamu',
+            'headmasterName' => $settings->get('school_headmaster_name', '-'),
+            'headmasterNip' => $settings->get('school_headmaster_nip', '-'),
+            'reportData' => $reportData,
+            'className' => $class->name,
+            'trimester' => $trimester,
+            'year' => $year,
+            'trimesterMap' => $trimesterMap,
+            'months' => $months,
+            'homeroomTeacherName' => $teacher->name ?? null,
+            'homeroomTeacherNip' => $teacher->nip ?? null,
+        ];
+
+        $pdf = Pdf::loadView('admin.reports.triwulan_pdf', $pdfData);
+        $pdf->setPaper('A4', 'landscape');
+        return $pdf->stream('laporan-triwulan-' . $class->name . '-T' . $trimester . '-' . $year . '.pdf');
     }
 
     /**

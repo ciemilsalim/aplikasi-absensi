@@ -188,6 +188,9 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::get('/attendance-history', [TeacherDashboardController::class, 'showAttendanceHistory'])->name('attendance.history');
     Route::post('/attendance-history/update', [TeacherDashboardController::class, 'updateAttendance'])->name('attendance.update');
     Route::get('/attendance/print', [TeacherDashboardController::class, 'printAttendance'])->name('attendance.print');
+    
+    // Rute cetak rekap triwulan guru
+    Route::get('/attendance/print-trimester', [TeacherDashboardController::class, 'printTrimesterAttendance'])->name('attendance.print_trimester');
 
     // RUTE BARU UNTUK EXPORT EXCEL
     Route::get('/attendance/export', [TeacherDashboardController::class, 'exportAttendanceExcel'])->name('attendance.export.excel');

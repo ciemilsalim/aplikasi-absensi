@@ -70,7 +70,7 @@ class SettingController extends Controller
         }
 
         // Validasi untuk form Waktu Absensi
-        if ($request->has('jam_masuk')) {
+        if ($request->has('form_type') && $request->form_type === 'attendance') {
             $rules = array_merge($rules, [
                 'jam_masuk' => 'required|date_format:H:i',
                 'jam_pulang' => 'required|date_format:H:i|after:jam_masuk',
@@ -78,7 +78,15 @@ class SettingController extends Controller
                 'jam_masuk_guru' => 'required|date_format:H:i',
                 'jam_pulang_guru' => 'required|date_format:H:i|after:jam_masuk_guru',
             ]);
-            $settingsToUpdate = array_merge($settingsToUpdate, $request->only(['jam_masuk', 'jam_pulang', 'jam_masuk_guru', 'jam_pulang_guru']));
+            
+            $attendanceKeys = ['jam_masuk', 'jam_pulang', 'jam_masuk_guru', 'jam_pulang_guru'];
+            for ($i = 1; $i <= 12; $i++) {
+                $monthKey = 'effective_days_' . $i;
+                $rules[$monthKey] = 'nullable|integer|min:0|max:31';
+                $attendanceKeys[] = $monthKey;
+            }
+
+            $settingsToUpdate = array_merge($settingsToUpdate, $request->only($attendanceKeys));
             // PERBAIKAN: Logika untuk menangani checkbox notifikasi alpa
             $settingsToUpdate['send_absent_notification'] = $request->has('send_absent_notification') ? 'on' : 'off';
         }

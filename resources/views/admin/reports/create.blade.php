@@ -21,11 +21,14 @@
                             <input type="hidden" name="report_type" x-model="reportType">
                             
                             <!-- Pilihan Jenis Laporan -->
-                            {{-- Updated to a 2x2 grid to accommodate the new option --}}
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <label @click="reportType = 'class_monthly'" class="flex items-center p-4 border rounded-lg cursor-pointer transition" :class="reportType === 'class_monthly' ? 'bg-sky-50 border-sky-500 dark:bg-sky-900/50' : 'border-gray-300 dark:border-slate-700'">
                                     <input type="radio" name="report_type_option" value="class_monthly" x-model="reportType" class="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500">
                                     <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">Rekap Kelas Bulanan</span>
+                                </label>
+                                <label @click="reportType = 'class_trimester'" class="flex items-center p-4 border rounded-lg cursor-pointer transition" :class="reportType === 'class_trimester' ? 'bg-sky-50 border-sky-500 dark:bg-sky-900/50' : 'border-gray-300 dark:border-slate-700'">
+                                    <input type="radio" name="report_type_option" value="class_trimester" x-model="reportType" class="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500">
+                                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">Rekap Kelas Triwulan</span>
                                 </label>
                                 <label @click="reportType = 'student_detailed'" class="flex items-center p-4 border rounded-lg cursor-pointer transition" :class="reportType === 'student_detailed' ? 'bg-sky-50 border-sky-500 dark:bg-sky-900/50' : 'border-gray-300 dark:border-slate-700'">
                                     <input type="radio" name="report_type_option" value="student_detailed" x-model="reportType" class="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500">
@@ -35,7 +38,6 @@
                                     <input type="radio" name="report_type_option" value="school_lateness" x-model="reportType" class="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500">
                                     <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">Rekap Terlambat</span>
                                 </label>
-                                {{-- NEW REPORT OPTION ADDED HERE --}}
                                 <label @click="reportType = 'school_no_checkout'" class="flex items-center p-4 border rounded-lg cursor-pointer transition" :class="reportType === 'school_no_checkout' ? 'bg-sky-50 border-sky-500 dark:bg-sky-900/50' : 'border-gray-300 dark:border-slate-700'">
                                     <input type="radio" name="report_type_option" value="school_no_checkout" x-model="reportType" class="h-4 w-4 text-sky-600 border-gray-300 focus:ring-sky-500">
                                     <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">Tidak Absen Pulang</span>
@@ -44,20 +46,36 @@
                             
                             <!-- Filter Dinamis -->
                             <div class="border-t border-gray-200 dark:border-slate-700 pt-6 space-y-4">
-                                {{-- Filter untuk Rekap Kelas Bulanan --}}
-                                <div x-show="reportType === 'class_monthly'" x-transition class="space-y-4">
+                                {{-- Filter untuk Rekap Kelas Bulanan & Triwulan --}}
+                                <div x-show="['class_monthly', 'class_trimester'].includes(reportType)" x-transition class="space-y-4">
                                     <div>
                                         <x-input-label for="school_class_id" value="Pilih Kelas" />
-                                        <select name="school_class_id" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm" x-bind:required="reportType === 'class_monthly'" x-bind:disabled="reportType !== 'class_monthly'">
+                                        <select id="school_class_id" name="school_class_id" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm" x-bind:required="['class_monthly', 'class_trimester'].includes(reportType)" x-bind:disabled="!['class_monthly', 'class_trimester'].includes(reportType)">
                                             <option value="">-- Pilih Kelas --</option>
                                             @foreach($classes as $class)
                                                 <option value="{{ $class->id }}">{{ $class->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div>
+                                    <div x-show="reportType === 'class_monthly'">
                                         <x-input-label for="month" value="Pilih Bulan" />
                                         <x-text-input id="month" type="month" name="month" class="mt-1 block w-full" :value="date('Y-m')" x-bind:required="reportType === 'class_monthly'" x-bind:disabled="reportType !== 'class_monthly'" />
+                                    </div>
+                                    <div x-show="reportType === 'class_trimester'" class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <x-input-label for="trimester" value="Pilih Triwulan" />
+                                            <select id="trimester" name="trimester" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm" x-bind:required="reportType === 'class_trimester'" x-bind:disabled="reportType !== 'class_trimester'">
+                                                <option value="">-- Pilih Triwulan --</option>
+                                                <option value="1">Triwulan 1 (Jan - Mar)</option>
+                                                <option value="2">Triwulan 2 (Apr - Jun)</option>
+                                                <option value="3">Triwulan 3 (Jul - Sep)</option>
+                                                <option value="4">Triwulan 4 (Okt - Des)</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <x-input-label for="year" value="Tahun" />
+                                            <x-text-input id="year" type="number" min="2000" name="year" class="mt-1 block w-full" :value="date('Y')" x-bind:required="reportType === 'class_trimester'" x-bind:disabled="reportType !== 'class_trimester'" />
+                                        </div>
                                     </div>
                                 </div>
                                 

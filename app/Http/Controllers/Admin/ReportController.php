@@ -32,9 +32,11 @@ class ReportController extends Controller
     public function generate(Request $request)
     {
         $request->validate([
-            'report_type' => 'required|in:class_monthly,student_detailed,school_lateness,school_no_checkout',
+            'report_type' => 'required|in:class_monthly,class_trimester,student_detailed,school_lateness,school_no_checkout',
             'month' => 'required_if:report_type,class_monthly|date_format:Y-m',
-            'school_class_id' => 'required_if:report_type,class_monthly|exists:school_classes,id',
+            'school_class_id' => 'required_if:report_type,class_monthly,class_trimester|exists:school_classes,id',
+            'trimester' => 'required_if:report_type,class_trimester|in:1,2,3,4',
+            'year' => 'required_if:report_type,class_trimester|integer|min:2000',
             'student_id' => 'required_if:report_type,student_detailed|exists:students,id',
             'start_date' => 'required_if:report_type,student_detailed,school_lateness,school_no_checkout|date',
             'end_date' => 'required_if:report_type,student_detailed,school_lateness,school_no_checkout|date|after_or_equal:start_date',
@@ -44,6 +46,9 @@ class ReportController extends Controller
 
         if ($reportType === 'class_monthly') {
             return $this->generateClassMonthlyReport($request);
+        }
+        elseif ($reportType === 'class_trimester') {
+            return $this->generateClassTrimesterReport($request);
         }
         elseif ($reportType === 'student_detailed') {
             return $this->generateStudentDetailedReport($request);
@@ -96,6 +101,105 @@ class ReportController extends Controller
 
         $pdf = Pdf::loadView('admin.reports.pdf', $pdfData);
         return $pdf->stream('laporan-kelas-' . $class->name . '-' . $date->format('F-Y') . '.pdf');
+    }
+
+    /**
+     * Membuat laporan rekap kehadiran triwulan kelas.
+     */
+    private function generateClassTrimesterReport(Request $request)
+    {
+        $class = SchoolClass::findOrFail($request->school_class_id);
+        $year = $request->year;
+        $trimester = $request->trimester;
+        
+        $months = [];
+        if ($trimester == 1) $months = [1, 2, 3];
+        elseif ($trimester == 2) $months = [4, 5, 6];
+        elseif ($trimester == 3) $months = [7, 8, 9];
+        elseif ($trimester == 4) $months = [10, 11, 12];
+
+        // Dapatkan hari efektif per bulan
+        $monthNames = [
+            1 => 'JANUARI', 2 => 'FEBRUARI', 3 => 'MARET', 4 => 'APRIL',
+            5 => 'MEI', 6 => 'JUNI', 7 => 'JULI', 8 => 'AGUSTUS',
+            9 => 'SEPTEMBER', 10 => 'OKTOBER', 11 => 'NOVEMBER', 12 => 'DESEMBER'
+        ];
+
+        $trimesterMap = [];
+        foreach ($months as $m) {
+            $effectiveDays = Setting::where('key', 'effective_days_' . $m)->value('value');
+            $trimesterMap[$m] = [
+                'name' => $monthNames[$m],
+                'effective_days' => $effectiveDays ? (int)$effectiveDays : 0
+            ];
+        }
+
+        $students = Student::where('school_class_id', $class->id)
+            ->with(['attendances' => function ($query) use ($year, $months) {
+                $query->whereYear('attendance_time', $year)
+                      ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+            }])
+            ->orderBy('name')
+            ->get();
+
+        $reportData = $students->map(function ($student) use ($months, $trimesterMap) {
+            $studentData = [
+                'name' => $student->name,
+                'nis' => $student->nis,
+                'monthly_data' => []
+            ];
+
+            foreach ($months as $m) {
+                $attendancesInMonth = $student->attendances->filter(function ($att) use ($m) {
+                    return Carbon::parse($att->attendance_time)->month == $m;
+                });
+                $hadir = $attendancesInMonth->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
+                $sakit = $attendancesInMonth->where('status', 'sakit')->count();
+                $izin = $attendancesInMonth->where('status', 'izin')->count();
+                $alpa = $attendancesInMonth->where('status', 'alpa')->count();
+
+                // Hitung persen berdasar effective_days - (alpa+izin+sakit) atau Hadir
+                // User meminta jumlah efektif sebagai %
+                $effDays = $trimesterMap[$m]['effective_days'];
+                
+                $totalAbsen = $sakit + $izin + $alpa;
+                // Asumsi: JML kolom adalah total hari ia tidak hadir. % berdasar kehadiran
+                $jml = $totalAbsen;
+                if ($effDays > 0) {
+                    // Bisa hadir / hari efektif * 100% atau (Hari Efektif - Jml) / Hari Efektif * 100%
+                    $persen = (($effDays - $jml) / $effDays) * 100;
+                    $persenStr = round($persen, 0) . '%';
+                } else {
+                    $persenStr = '0%';
+                }
+
+                $studentData['monthly_data'][$m] = [
+                    'alpa' => $alpa,
+                    'izin' => $izin,
+                    'sakit' => $sakit,
+                    'jml' => $jml,
+                    'persen' => $persenStr
+                ];
+            }
+            return (object)$studentData;
+        });
+
+        $pdfData = $this->getCommonPdfData();
+        $pdfData['reportData'] = $reportData;
+        $pdfData['className'] = $class->name;
+        $pdfData['trimester'] = $trimester;
+        $pdfData['year'] = $year;
+        $pdfData['trimesterMap'] = $trimesterMap;
+        $pdfData['months'] = $months;
+
+        // Ambil nama wali kelas jika ada
+        $homeroomTeacher = $class->homeroomTeacher;
+        $pdfData['homeroomTeacherName'] = $homeroomTeacher->name ?? null;
+        $pdfData['homeroomTeacherNip'] = $homeroomTeacher->nip ?? null;
+
+        $pdf = Pdf::loadView('admin.reports.triwulan_pdf', $pdfData);
+        $pdf->setPaper('A4', 'landscape');
+        return $pdf->stream('laporan-triwulan-' . $class->name . '-T' . $trimester . '-' . $year . '.pdf');
     }
 
     /**

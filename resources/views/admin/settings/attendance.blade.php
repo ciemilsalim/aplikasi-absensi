@@ -60,6 +60,27 @@
                         <div class="absolute left-1 top-1 bg-white border-gray-300 border peer-checked:border-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-full"></div>
                     </div>
                 </label>
+
+                {{-- Pengaturan Hari Efektif Belajar --}}
+                <div class="border-t border-gray-200 dark:border-slate-700 pt-6">
+                    <h4 class="text-md font-medium text-gray-900 dark:text-gray-200 mb-2">Pengaturan Hari Efektif Belajar (Bulanan)</h4>
+                    <p class="text-sm text-gray-500 mb-4">Masukkan jumlah hari efektif per bulan untuk kalkulasi persentase pada Laporan Kelas Triwulan.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        @php
+                            $months = [
+                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                            ];
+                        @endphp
+                        @foreach($months as $monthNum => $monthName)
+                            <div>
+                                <x-input-label for="effective_days_{{ $monthNum }}" :value="__($monthName)" />
+                                <x-text-input id="effective_days_{{ $monthNum }}" class="block mt-1 w-full" type="number" min="0" max="31" name="effective_days_{{ $monthNum }}" :value="old('effective_days_'.$monthNum, $settings['effective_days_'.$monthNum] ?? 0)" />
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
               </div>
               <div class="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-end">
                   <x-primary-button type="submit">Simpan Pengaturan</x-primary-button>
