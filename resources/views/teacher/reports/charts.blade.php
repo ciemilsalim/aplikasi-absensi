@@ -234,7 +234,15 @@
                         options: {
                             responsive: true,
                             plugins: {
-                                legend: { position: 'bottom' }
+                                legend: { position: 'bottom' },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let val = context.parsed;
+                                            return context.label + ': ' + (val ? val.toFixed(1) : 0) + '%';
+                                        }
+                                    }
+                                }
                             }
                         }
                     });
@@ -258,7 +266,25 @@
                             maintainAspectRatio: false,
                             scales: {
                                 x: { stacked: false },
-                                y: { stacked: false, beginAtZero: true }
+                                y: { 
+                                    stacked: false, 
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value + "%";
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.parsed.y + '%';
+                                        }
+                                    }
+                                }
                             }
                         }
                     });

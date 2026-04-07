@@ -125,17 +125,44 @@ class ReportController extends Controller
                 }
             }
 
+            // Hitung persentase berdasarkan hari efektif (dari Settings)
+            $effectiveDaysSetting = \App\Models\Setting::where('key', 'effective_days_' . $year . '_' . $m)->value('value');
+            if ($effectiveDaysSetting === null) {
+                $effectiveDaysSetting = \App\Models\Setting::where('key', 'effective_days_' . $m)->value('value');
+            }
+            $effDays = $effectiveDaysSetting !== null ? (int)$effectiveDaysSetting : 0;
+            
+            $totalStudentsCount = count($students);
+            $maxPossible = $effDays * $totalStudentsCount;
+            
+            // Perbarui Hadir berdasar total efektif dikurangi ketidakhadiran nyata (jika kalender beda dari efektif)
+            $totalAbsen = $sakitMonth + $izinMonth + $alpaMonth;
+            
+            if ($maxPossible > 0) {
+                $calculatedHadir = $maxPossible - $totalAbsen;
+                if ($calculatedHadir < 0) $calculatedHadir = 0;
+                
+                $p_hadir = round(($calculatedHadir / $maxPossible) * 100, 1);
+                $p_sakit = round(($sakitMonth / $maxPossible) * 100, 1);
+                $p_izin  = round(($izinMonth / $maxPossible) * 100, 1);
+                $p_alpa  = round(($alpaMonth / $maxPossible) * 100, 1);
+            } else {
+                $p_hadir = 0; $p_sakit = 0; $p_izin = 0; $p_alpa = 0;
+            }
+
             $monthlyDataArray[] = [
-                'hadir' => $hadirMonth,
-                'sakit' => $sakitMonth,
-                'izin' => $izinMonth,
-                'alpa' => $alpaMonth,
+                'hadir' => $p_hadir,
+                'sakit' => $p_sakit,
+                'izin' => $p_izin,
+                'alpa' => $p_alpa,
             ];
 
-            $totalSum['hadir'] += $hadirMonth;
-            $totalSum['sakit'] += $sakitMonth;
-            $totalSum['izin'] += $izinMonth;
-            $totalSum['alpa'] += $alpaMonth;
+            // Akumulasi sum menggunakan rata-rata atau total persentase
+            // Kita totalkan jumlah persentase untuk nanti dirata-ratakan langsung oleh donut chart
+            $totalSum['hadir'] += $p_hadir;
+            $totalSum['sakit'] += $p_sakit;
+            $totalSum['izin'] += $p_izin;
+            $totalSum['alpa'] += $p_alpa;
         }
 
         return response()->json([
