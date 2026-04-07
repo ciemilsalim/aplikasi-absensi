@@ -58,43 +58,15 @@
                         <div>
                             <x-input-label value="Pilih Detail Periode" />
                             <select x-model="filters.period_value" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">
-                                <template x-if="filters.period_type === 'month'">
-                                    <optgroup label="Bulan">
-                                        <option value="1">Januari</option>
-                                        <option value="2">Februari</option>
-                                        <option value="3">Maret</option>
-                                        <option value="4">April</option>
-                                        <option value="5">Mei</option>
-                                        <option value="6">Juni</option>
-                                        <option value="7">Juli</option>
-                                        <option value="8">Agustus</option>
-                                        <option value="9">September</option>
-                                        <option value="10">Oktober</option>
-                                        <option value="11">November</option>
-                                        <option value="12">Desember</option>
-                                    </optgroup>
-                                </template>
-                                <template x-if="filters.period_type === 'trimester'">
-                                    <optgroup label="Triwulan">
-                                        <option value="1">Triwulan 1 (Jan-Mar)</option>
-                                        <option value="2">Triwulan 2 (Apr-Jun)</option>
-                                        <option value="3">Triwulan 3 (Jul-Sep)</option>
-                                        <option value="4">Triwulan 4 (Okt-Des)</option>
-                                    </optgroup>
-                                </template>
-                                <template x-if="filters.period_type === 'semester'">
-                                    <optgroup label="Semester">
-                                        <option value="1">Semester Ganjil (Jul-Des)</option>
-                                        <option value="2">Semester Genap (Jan-Jun)</option>
-                                    </optgroup>
+                                <template x-for="opt in periodOptions" :key="opt.value">
+                                    <option :value="opt.value" x-text="opt.label"></option>
                                 </template>
                             </select>
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
                         <button @click="generateChart()" :disabled="isLoading" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 disabled:opacity-50">
-                            <span x-show="!isLoading">Tampilkan Analitik</span>
-                            <span x-show="isLoading">Memproses...</span>
+                            <span x-text="isLoading ? 'Memproses...' : 'Tampilkan Analitik'"></span>
                         </button>
                     </div>
                 </div>
@@ -145,6 +117,31 @@
                 errorMsg: '',
                 pieChartInst: null,
                 barChartInst: null,
+
+                get periodOptions() {
+                    if (this.filters.period_type === 'month') {
+                        return [
+                            {value: 1, label: 'Januari'}, {value: 2, label: 'Februari'},
+                            {value: 3, label: 'Maret'}, {value: 4, label: 'April'},
+                            {value: 5, label: 'Mei'}, {value: 6, label: 'Juni'},
+                            {value: 7, label: 'Juli'}, {value: 8, label: 'Agustus'},
+                            {value: 9, label: 'September'}, {value: 10, label: 'Oktober'},
+                            {value: 11, label: 'November'}, {value: 12, label: 'Desember'}
+                        ];
+                    } else if (this.filters.period_type === 'trimester') {
+                        return [
+                            {value: 1, label: 'Triwulan 1 (Jan-Mar)'},
+                            {value: 2, label: 'Triwulan 2 (Apr-Jun)'},
+                            {value: 3, label: 'Triwulan 3 (Jul-Sep)'},
+                            {value: 4, label: 'Triwulan 4 (Okt-Des)'}
+                        ];
+                    } else {
+                        return [
+                            {value: 1, label: 'Semester Ganjil (Jul-Des)'},
+                            {value: 2, label: 'Semester Genap (Jan-Jun)'}
+                        ];
+                    }
+                },
 
                 initData() {
                     // pre-select first student if available
