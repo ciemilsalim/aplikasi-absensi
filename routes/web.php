@@ -97,6 +97,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::get('/reports', [ReportController::class, 'create'])->name('reports.create');
             Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+            Route::get('/reports/charts', [ReportController::class, 'charts'])->name('reports.charts');
+            Route::post('/reports/charts/data', [ReportController::class, 'chartData'])->name('reports.charts.data');
         }
     );
 
@@ -192,6 +194,10 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     
     // Rute cetak rekap triwulan guru
     Route::get('/attendance/print-trimester', [TeacherDashboardController::class, 'printTrimesterAttendance'])->name('attendance.print_trimester');
+
+    // Rute untuk chart analisis visual guru
+    Route::get('/attendance/charts', [TeacherDashboardController::class, 'charts'])->name('attendance.charts');
+    Route::post('/attendance/charts/data', [TeacherDashboardController::class, 'chartData'])->name('attendance.charts.data');
 
     // RUTE BARU UNTUK EXPORT EXCEL
     Route::get('/attendance/export', [TeacherDashboardController::class, 'exportAttendanceExcel'])->name('attendance.export.excel');

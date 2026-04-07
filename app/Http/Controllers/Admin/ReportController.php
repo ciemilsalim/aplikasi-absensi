@@ -28,6 +28,124 @@ class ReportController extends Controller
     }
 
     /**
+     * Menampilkan antarmuka Analitik Visual (Chart).
+     */
+    public function charts()
+    {
+        $classes = SchoolClass::orderBy('name')->get();
+        $students = Student::with('schoolClass')->orderBy('name')->get();
+        
+        return view('admin.reports.charts', compact('classes', 'students'));
+    }
+
+    /**
+     * Memproses data untuk merender Chart.
+     */
+    public function chartData(Request $request)
+    {
+        $params = $request->validate([
+            'target_type' => 'required|in:class,student',
+            'period_type' => 'required|in:month,trimester,semester',
+            'year' => 'required|integer',
+            'period_value' => 'required|integer',
+            'school_class_id' => 'required_if:target_type,class|nullable|exists:school_classes,id',
+            'student_id' => 'required_if:target_type,student|nullable|exists:students,id',
+        ]);
+
+        $year = (int) $params['year'];
+        $months = [];
+        $labels = [];
+
+        if ($params['period_type'] === 'month') {
+            $months = [(int) $params['period_value']];
+            $labels = [Carbon::create()->month($months[0])->translatedFormat('F')];
+        } elseif ($params['period_type'] === 'trimester') {
+            $t = (int) $params['period_value'];
+            $months = [($t - 1) * 3 + 1, ($t - 1) * 3 + 2, ($t - 1) * 3 + 3];
+            foreach($months as $m) $labels[] = Carbon::create()->month($m)->translatedFormat('F');
+        } elseif ($params['period_type'] === 'semester') {
+            $s = (int) $params['period_value'];
+            if ($s === 1) { // Ganjil: Jul - Dec
+                $months = [7, 8, 9, 10, 11, 12];
+            } else { // Genap: Jan - Jun
+                $months = [1, 2, 3, 4, 5, 6];
+                // $year = $year + 1; // Opsional jika Genap dianggap tahun kalender berikutnya, asumsi menggunakan tahun yang dipilih UI
+            }
+            foreach($months as $m) $labels[] = Carbon::create()->month($m)->translatedFormat('F');
+        }
+
+        $studentsQuery = Student::query();
+        if ($params['target_type'] === 'class') {
+            $studentsQuery->where('school_class_id', $params['school_class_id']);
+        } else {
+            $studentsQuery->where('id', $params['student_id']);
+        }
+
+        // Ambil data absensi
+        $students = $studentsQuery->with(['attendances' => function ($query) use ($year, $months) {
+            $query->whereYear('attendance_time', $year)
+                  ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+        }])->get();
+
+        $monthlyDataArray = [];
+        $totalSum = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
+
+        foreach ($months as $m) {
+            $startDate = Carbon::create($year, $m, 1)->startOfMonth();
+            $endDate = $startDate->copy()->endOfMonth();
+            
+            $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+            $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
+            $period = CarbonPeriod::create($startDate, $endDate);
+
+            $workdays = collect($period)->filter(function ($d) use ($holidays) {
+                return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
+            });
+
+            $hadirMonth = 0; $sakitMonth = 0; $izinMonth = 0; $alpaMonth = 0;
+
+            foreach ($workdays as $wDate) {
+                $dateString = $wDate->format('Y-m-d');
+                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
+
+                foreach ($students as $student) {
+                    $attendanceRecord = $student->attendances->firstWhere(function($item) use ($dateString) {
+                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                    });
+
+                    if ($isSelfStudy) {
+                        $hadirMonth++;
+                    } else {
+                        $status = $attendanceRecord ? $attendanceRecord->status : null;
+                        if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirMonth++;
+                        elseif ($status === 'sakit') $sakitMonth++;
+                        elseif ($status === 'izin') $izinMonth++;
+                        elseif ($status === 'alpa') $alpaMonth++;
+                    }
+                }
+            }
+
+            $monthlyDataArray[] = [
+                'hadir' => $hadirMonth,
+                'sakit' => $sakitMonth,
+                'izin' => $izinMonth,
+                'alpa' => $alpaMonth,
+            ];
+
+            $totalSum['hadir'] += $hadirMonth;
+            $totalSum['sakit'] += $sakitMonth;
+            $totalSum['izin'] += $izinMonth;
+            $totalSum['alpa'] += $alpaMonth;
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'monthly' => $monthlyDataArray,
+            'summary' => $totalSum
+        ]);
+    }
+
+    /**
      * Membuat dan menampilkan laporan dalam format PDF berdasarkan jenisnya.
      */
     public function generate(Request $request)

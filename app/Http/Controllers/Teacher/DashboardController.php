@@ -723,4 +723,121 @@ class DashboardController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Catatan berhasil disimpan.']);
     }
+
+    public function charts()
+    {
+        $teacher = Auth::user()->teacher;
+        $class = $teacher ? $teacher->homeroomClass : null;
+        if (!$class) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Anda belum ditetapkan sebagai wali kelas.');
+        }
+
+        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        return view('teacher.reports.charts', compact('class', 'students'));
+    }
+
+    public function chartData(Request $request)
+    {
+        $teacher = Auth::user()->teacher;
+        $class = $teacher ? $teacher->homeroomClass : null;
+        if (!$class) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $params = $request->validate([
+            'target_type' => 'required|in:class,student',
+            'period_type' => 'required|in:month,trimester,semester',
+            'year' => 'required|integer',
+            'period_value' => 'required|integer',
+            'student_id' => 'required_if:target_type,student|nullable|exists:students,id',
+        ]);
+
+        $year = (int) $params['year'];
+        $months = [];
+        $labels = [];
+
+        if ($params['period_type'] === 'month') {
+            $months = [(int) $params['period_value']];
+            $labels = [Carbon::create()->month($months[0])->translatedFormat('F')];
+        } elseif ($params['period_type'] === 'trimester') {
+            $t = (int) $params['period_value'];
+            $months = [($t - 1) * 3 + 1, ($t - 1) * 3 + 2, ($t - 1) * 3 + 3];
+            foreach($months as $m) $labels[] = Carbon::create()->month($m)->translatedFormat('F');
+        } elseif ($params['period_type'] === 'semester') {
+            $s = (int) $params['period_value'];
+            if ($s === 1) { // Ganjil: Jul - Dec
+                $months = [7, 8, 9, 10, 11, 12];
+            } else { // Genap: Jan - Jun
+                $months = [1, 2, 3, 4, 5, 6];
+            }
+            foreach($months as $m) $labels[] = Carbon::create()->month($m)->translatedFormat('F');
+        }
+
+        $studentsQuery = Student::where('school_class_id', $class->id);
+        if ($params['target_type'] === 'student') {
+            $studentsQuery->where('id', $params['student_id']);
+        }
+
+        $students = $studentsQuery->with(['attendances' => function ($query) use ($year, $months) {
+            $query->whereYear('attendance_time', $year)
+                  ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+        }])->get();
+
+        $monthlyDataArray = [];
+        $totalSum = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
+
+        foreach ($months as $m) {
+            $startDate = Carbon::create($year, $m, 1)->startOfMonth();
+            $endDate = $startDate->copy()->endOfMonth();
+            
+            $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+            $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
+            $period = CarbonPeriod::create($startDate, $endDate);
+
+            $workdays = collect($period)->filter(function ($d) use ($holidays) {
+                return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
+            });
+
+            $hadirMonth = 0; $sakitMonth = 0; $izinMonth = 0; $alpaMonth = 0;
+
+            foreach ($workdays as $wDate) {
+                $dateString = $wDate->format('Y-m-d');
+                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
+
+                foreach ($students as $student) {
+                    $attendanceRecord = $student->attendances->firstWhere(function($item) use ($dateString) {
+                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                    });
+
+                    if ($isSelfStudy) {
+                        $hadirMonth++;
+                    } else {
+                        $status = $attendanceRecord ? $attendanceRecord->status : null;
+                        if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirMonth++;
+                        elseif ($status === 'sakit') $sakitMonth++;
+                        elseif ($status === 'izin') $izinMonth++;
+                        elseif ($status === 'alpa') $alpaMonth++;
+                    }
+                }
+            }
+
+            $monthlyDataArray[] = [
+                'hadir' => $hadirMonth,
+                'sakit' => $sakitMonth,
+                'izin' => $izinMonth,
+                'alpa' => $alpaMonth,
+            ];
+
+            $totalSum['hadir'] += $hadirMonth;
+            $totalSum['sakit'] += $sakitMonth;
+            $totalSum['izin'] += $izinMonth;
+            $totalSum['alpa'] += $alpaMonth;
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'monthly' => $monthlyDataArray,
+            'summary' => $totalSum
+        ]);
+    }
 }
