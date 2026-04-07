@@ -140,8 +140,8 @@
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('chartAnalytics', () => ({
+        window.chartAnalytics = function() {
+            return {
                 allStudents: @json($students), // Semua murid yg akan difilter local
                 filteredStudents: [],
                 filters: {
@@ -294,8 +294,8 @@
                         }
                     });
                 }
-            }));
-        });
+            };
+        }
     </script>
     @endpush
 </x-app-layout>
