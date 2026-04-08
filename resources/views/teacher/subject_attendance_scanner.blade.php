@@ -480,7 +480,8 @@
 
                                 img.onload = async () => {
                                     try {
-                                        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                                        const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 });
+                                        const detections = await faceapi.detectSingleFace(img, options).withFaceLandmarks().withFaceDescriptor();
                                         if (!detections) {
                                             console.warn(`Wajah tidak terdeteksi pada foto profil: ${student.name}`);
                                             resolve(null);
@@ -516,7 +517,7 @@
                 faceScanInterval = setInterval(async () => {
                     if (faceVideo.paused || faceVideo.ended) return;
 
-                    const detections = await faceapi.detectAllFaces(faceVideo, new faceapi.SsdMobilenetv1Options())
+                    const detections = await faceapi.detectAllFaces(faceVideo, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
                         .withFaceLandmarks()
                         .withFaceDescriptors();
 

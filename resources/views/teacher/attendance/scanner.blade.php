@@ -241,7 +241,8 @@
                     loading.classList.remove('hidden');
                     loadingText.textContent = "Mendeteksi wajah...";
 
-                    const detections = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+                    const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 });
+                    const detections = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
 
                     if (detections) {
                         const canvas = document.createElement('canvas');
@@ -316,7 +317,8 @@
 
                     img.onload = async () => {
                         try {
-                            const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                            const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 });
+                            const detections = await faceapi.detectSingleFace(img, options).withFaceLandmarks().withFaceDescriptor();
                             if (detections) {
                                 resolve(new faceapi.LabeledFaceDescriptors('me', [detections.descriptor]));
                             } else {

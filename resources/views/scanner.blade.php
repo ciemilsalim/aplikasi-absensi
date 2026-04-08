@@ -665,9 +665,10 @@
 
                                 img.onload = async () => {
                                     try {
-                                        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                                        const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }); // Turunkan threshold agar lebih mudah mendeteksi wajah
+                                        const detections = await faceapi.detectSingleFace(img, options).withFaceLandmarks().withFaceDescriptor();
                                         if (!detections) {
-                                            console.warn(`Wajah tidak terdeteksi pada foto profil: ${student.name}`);
+                                            console.warn(`Wajah tidak terdeteksi pada foto profil: ${student.name} (Bahkan dengan confidence 0.3)`);
                                             resolve(null);
                                             return;
                                         }
