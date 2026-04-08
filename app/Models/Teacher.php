@@ -15,6 +15,7 @@ class Teacher extends Model
         'nip',
         'phone_number',
         'photo',
+        'face_descriptor',
     ];
 
     // Relasi ke model User (satu guru memiliki satu akun login)

@@ -13,7 +13,7 @@ class AttendanceController extends Controller
 {
     public function showScanner()
     {
-        $students = Student::select('id', 'unique_id', 'name', 'photo')
+        $students = Student::select('id', 'unique_id', 'name', 'photo', 'face_descriptor')
             ->whereNotNull('photo')
             ->get()
             ->map(function ($student) {
@@ -21,6 +21,7 @@ class AttendanceController extends Controller
             'unique_id' => $student->unique_id,
             'name' => $student->name,
             'photo_url' => asset('storage/' . $student->photo),
+            'face_descriptor' => $student->face_descriptor,
             ];
         });
 
@@ -151,6 +152,33 @@ class AttendanceController extends Controller
         }
         catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => 'Terjadi kesalahan pada server.'], 500);
+        }
+    }
+
+    public function saveStudentDescriptor(Request $request)
+    {
+        $request->validate([
+            'unique_id' => 'required|string|exists:students,unique_id',
+            'face_descriptor' => 'required|string', // JSON stringified array
+        ]);
+
+        try {
+            $student = Student::where('unique_id', $request->unique_id)->firstOrFail();
+            
+            // Simpan descriptor ke database
+            $student->update([
+                'face_descriptor' => $request->face_descriptor
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Pola wajah berhasil disimpan.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menyimpan pola wajah.'
+            ], 500);
         }
     }
 

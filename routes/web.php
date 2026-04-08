@@ -87,6 +87,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'scanner.access'])->group(function () {
     Route::get('/scanner', [AttendanceController::class, 'showScanner'])->name('scanner');
     Route::post('/attendance', [AttendanceController::class, 'storeAttendance'])->name('attendance.store');
+    // Baru: Menyimpan pola wajah (descriptor) siswa dari scanner
+    Route::post('/attendance/save-student-descriptor', [AttendanceController::class, 'saveStudentDescriptor'])->name('attendance.save_descriptor');
 });
 
 // == GRUP RUTE ADMIN ==

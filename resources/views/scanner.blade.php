@@ -646,6 +646,19 @@
                     studentsWithPhotos.map(async student => {
                         return new Promise(async (resolve) => {
                             try {
+                                // JIKA SUDAH ADA DESCRIPTOR DI DATABASE, GUNAKAN LANGSUNG (CEPAT!)
+                                if (student.face_descriptor) {
+                                    try {
+                                        const descArray = JSON.parse(student.face_descriptor);
+                                        const floatArray = new Float32Array(descArray);
+                                        resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [floatArray]));
+                                        return;
+                                    } catch (e) {
+                                        console.warn("Gagal parsing descriptor untuk student:", student.name, e);
+                                    }
+                                }
+
+                                // JIKA BELUM ADA, PROSES SEPERTI BIASA (LAMBAT)
                                 const img = new Image();
                                 img.crossOrigin = 'anonymous';
                                 img.src = student.photo_url;
@@ -658,6 +671,22 @@
                                             resolve(null);
                                             return;
                                         }
+
+                                        // SIMPAN KE DATABASE SECARA ASYNCHRONOUS UNTUK PENGGUNAAN BERIKUTNYA
+                                        const descriptorStr = JSON.stringify(Array.from(detections.descriptor));
+                                        fetch("{{ route('attendance.save_descriptor') }}", {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                                'Accept': 'application/json'
+                                            },
+                                            body: JSON.stringify({
+                                                unique_id: student.unique_id,
+                                                face_descriptor: descriptorStr
+                                            })
+                                        }).catch(err => console.error("Gagal menyimpan cache descriptor:", err));
+
                                         resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [detections.descriptor]));
                                     } catch (e) {
                                         console.error(`Gagal deteksi AI foto ${student.name}:`, e);
@@ -667,7 +696,7 @@
 
                                 img.onerror = () => {
                                     console.error(`Gagal memuat URL foto untuk ${student.name} (CORS/URL Tdk Valid)`);
-                                    resolve(null); // Bypass error gently
+                                    resolve(null);
                                 };
                             } catch (err) {
                                 console.error(`Error kritis proses foto ${student.name}:`, err);

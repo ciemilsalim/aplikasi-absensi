@@ -17,7 +17,8 @@ class Student extends Model
         'nis',
         'school_class_id',
         'unique_id',
-        'photo'
+        'photo',
+        'face_descriptor'
     ];
 
     // Otomatis membuat unique_id saat siswa baru dibuat

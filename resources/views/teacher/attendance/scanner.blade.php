@@ -114,6 +114,7 @@
             const settings = @json($settings);
             const hasPhoto = @json($hasPhoto);
             const teacherPhotoUrl = "{{ $teacher->photo ? asset('storage/' . $teacher->photo) : '' }}";
+            const cachedDescriptor = @json($face_descriptor);
 
             // Elements
             const video = document.getElementById('video');
@@ -248,8 +249,9 @@
                         canvas.height = video.videoHeight;
                         canvas.getContext('2d').drawImage(video, 0, 0);
                         const imageBase64 = canvas.toDataURL('image/png');
+                        const descriptorStr = JSON.stringify(Array.from(detections.descriptor));
 
-                        registerFace(imageBase64);
+                        registerFace(imageBase64, descriptorStr);
                     } else {
                         loading.classList.add('hidden');
                         showError("Wajah tidak terdeteksi. Pastikan pencahayaan cukup dan wajah terlihat jelas.");
@@ -262,7 +264,7 @@
                 });
             }
 
-            async function registerFace(imageBase64) {
+            async function registerFace(imageBase64, descriptorStr) {
                 try {
                     loadingText.textContent = "Menyimpan data...";
                     const response = await fetch("{{ route('teacher.attendance.register_face') }}", {
@@ -271,7 +273,10 @@
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
-                        body: JSON.stringify({ photo: imageBase64 })
+                        body: JSON.stringify({ 
+                            photo: imageBase64,
+                            face_descriptor: descriptorStr
+                        })
                     });
 
                     const data = await response.json();
@@ -292,6 +297,17 @@
             // --- 5. Face Processing (Attendance) ---
             async function loadLabeledImages() {
                 if (!teacherPhotoUrl) return null;
+
+                // JIKA SUDAH ADA DESCRIPTOR DI DATABASE, GUNAKAN LANGSUNG
+                if (cachedDescriptor) {
+                    try {
+                        const descArray = JSON.parse(cachedDescriptor);
+                        const floatArray = new Float32Array(descArray);
+                        return new faceapi.LabeledFaceDescriptors('me', [floatArray]);
+                    } catch (e) {
+                        console.warn("Gagal parsing cached descriptor:", e);
+                    }
+                }
 
                 return new Promise((resolve, reject) => {
                     const img = new Image();

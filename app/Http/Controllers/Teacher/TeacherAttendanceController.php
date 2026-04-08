@@ -26,8 +26,9 @@ class TeacherAttendanceController extends Controller
         $settings = Setting::whereIn('key', ['school_latitude', 'school_longitude', 'attendance_radius'])->pluck('value', 'key');
 
         $hasPhoto = !empty($teacher->photo);
+        $face_descriptor = $teacher->face_descriptor;
 
-        return view('teacher.attendance.scanner', compact('teacher', 'settings', 'hasPhoto'));
+        return view('teacher.attendance.scanner', compact('teacher', 'settings', 'hasPhoto', 'face_descriptor'));
     }
 
     public function store(Request $request)
@@ -98,6 +99,7 @@ class TeacherAttendanceController extends Controller
     {
         $request->validate([
             'photo' => 'required|string', // Base64
+            'face_descriptor' => 'nullable|string', // JSON stringified array
         ]);
 
         $teacher = Auth::user()->teacher;
@@ -115,7 +117,10 @@ class TeacherAttendanceController extends Controller
 
         Storage::disk('public')->put($path, base64_decode($image));
 
-        $teacher->update(['photo' => $path]);
+        $teacher->update([
+            'photo' => $path,
+            'face_descriptor' => $request->face_descriptor
+        ]);
 
         return response()->json(['success' => true, 'message' => 'Wajah berhasil didaftarkan!']);
     }
