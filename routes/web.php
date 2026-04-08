@@ -209,6 +209,9 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::post('/leave-requests/{leaveRequest}/reject', [TeacherLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
 
     Route::post('/notes/update', [TeacherDashboardController::class, 'updateNote'])->name('notes.update');
+    
+    // Baru: Wali kelas ganti foto murid
+    Route::post('/students/{student}/update-photo', [TeacherDashboardController::class, 'updateStudentPhoto'])->name('students.update_photo');
 
     // == RUTE UNTUK ABSENSI MATA PELAJARAN ==
     Route::get('/subject-attendance/scanner/{schedule}', [SubjectAttendanceController::class, 'showScanner'])->name('subject.attendance.scanner');

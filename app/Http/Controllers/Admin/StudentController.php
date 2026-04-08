@@ -94,6 +94,7 @@ class StudentController extends Controller
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('students/photos', 'public');
             $data['photo'] = $path;
+            $data['face_descriptor'] = null;
         }
 
         Student::create($data);
@@ -136,6 +137,7 @@ class StudentController extends Controller
             $path = 'students/photos/' . $imageName;
             \Illuminate\Support\Facades\Storage::disk('public')->put($path, base64_decode($image));
             $data['photo'] = $path;
+            $data['face_descriptor'] = null;
         } elseif ($request->hasFile('photo')) {
             // Delete old photo
             if ($student->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->photo)) {
@@ -143,6 +145,7 @@ class StudentController extends Controller
             }
             $path = $request->file('photo')->store('students/photos', 'public');
             $data['photo'] = $path;
+            $data['face_descriptor'] = null;
         }
 
         $student->update($data);

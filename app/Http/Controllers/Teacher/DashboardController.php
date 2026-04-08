@@ -707,6 +707,40 @@ class DashboardController extends Controller
         ), $fileName);
     }
 
+    public function updateStudentPhoto(Request $request, Student $student)
+    {
+        $teacher = Auth::user()->teacher;
+
+        // Validasi otoritas Wali Kelas
+        if (!$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
+            return back()->with('error', 'Anda tidak memiliki wewenang untuk mengubah data siswa di luar kelas Anda.');
+        }
+
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        try {
+            // Hapus foto lama jika ada
+            if ($student->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->photo)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($student->photo);
+            }
+
+            // Simpan foto baru
+            $path = $request->file('photo')->store('students/photos', 'public');
+            
+            // Update database dan reset face_descriptor
+            $student->update([
+                'photo' => $path,
+                'face_descriptor' => null
+            ]);
+
+            return back()->with('success', 'Foto ' . $student->name . ' berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui foto siswa.');
+        }
+    }
+
     public function updateNote(Request $request)
     {
         $request->validate(['content' => 'nullable|string']);

@@ -50,6 +50,19 @@ class ProfileController extends Controller
             // Simpan foto baru dan dapatkan path-nya
             $path = $request->file('photo')->store('profile-photos', 'public');
             $user->profile_photo_path = $path;
+
+            // SINKRONISASI KE TABEL TEACHER
+            if ($user->teacher) {
+                // Hapus foto lama di guru jika berbeda dengan di user (langkah opsional tapi baik)
+                if ($user->teacher->photo && $user->teacher->photo !== $path) {
+                    Storage::disk('public')->delete($user->teacher->photo);
+                }
+                
+                $user->teacher->update([
+                    'photo' => $path,
+                    'face_descriptor' => null // Reset pola wajah karena foto berubah
+                ]);
+            }
         }
         // --- AKHIR LOGIKA UPLOAD FOTO ---
 
