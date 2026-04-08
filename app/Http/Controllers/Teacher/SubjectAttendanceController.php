@@ -49,13 +49,14 @@ class SubjectAttendanceController extends Controller
 
         $studentsForFaceRecognition = Student::where('school_class_id', $classId)
             ->whereNotNull('photo')
-            ->select('id', 'unique_id', 'name', 'photo')
+            ->select('id', 'unique_id', 'name', 'photo', 'face_descriptor') // Tambahkan face_descriptor
             ->get()
             ->map(function ($student) {
                 return [
                     'unique_id' => $student->unique_id,
                     'name' => $student->name,
                     'photo_url' => asset('storage/' . $student->photo),
+                    'face_descriptor' => $student->face_descriptor, // Tambahkan ke array response
                 ];
             });
 
