@@ -166,7 +166,7 @@
                     this.isLoading = true;
                     
                     try {
-                        const response = await fetch("{{ route('attendance.charts.data') }}", {
+                        const response = await fetch("{{ route('teacher.attendance.charts.data') }}", {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
