@@ -28,11 +28,12 @@ class TeacherAttendanceController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Anda bukan Wali Kelas dari kelas manapun.'], 404);
         }
 
-        $today = now()->startOfDay();
+        $dateStr = $request->query('date');
+        $date = $dateStr ? Carbon::parse($dateStr)->startOfDay() : now()->startOfDay();
 
         $students = Student::where('school_class_id', $homeroomClass->id)
-            ->with(['attendances' => function ($query) use ($today) {
-                $query->whereDate('attendance_time', $today);
+            ->with(['attendances' => function ($query) use ($date) {
+                $query->whereDate('attendance_time', $date);
             }])
             ->get()
             ->map(function ($student) {
