@@ -5,6 +5,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TeacherAttendanceController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\LeaveRequestController;
+use App\Http\Controllers\Api\ScheduleController;
+use App\Http\Controllers\Api\JournalController;
+use App\Http\Controllers\Api\AnnouncementController;
+use App\Http\Controllers\Api\CalendarController;
+use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\TeacherSelfAttendanceController;
+use App\Http\Controllers\Api\ProfileController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -14,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Rute Absensi untuk Wali Kelas
     Route::get('/teacher/students', [TeacherAttendanceController::class, 'getHomeroomStudents']);
     Route::post('/teacher/attendance/scan', [TeacherAttendanceController::class, 'scanQr']);
+    Route::patch('/teacher/students/{studentId}/attendance/override', [TeacherAttendanceController::class, 'overrideAttendance']);
 
     // Rute Permohonan Izin Siswa (Wali Kelas)
     Route::get('/teacher/leave-requests', [LeaveRequestController::class, 'index']);
@@ -46,6 +55,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/self-attendance/status', [TeacherSelfAttendanceController::class, 'getStatus']);
     Route::post('/teacher/self-attendance/clock-in', [TeacherSelfAttendanceController::class, 'store']);
     Route::post('/teacher/self-attendance/register-face', [TeacherSelfAttendanceController::class, 'registerFace']);
+
+    // Rute Profil Guru
+    Route::get('/teacher/profile', [ProfileController::class, 'show']);
+    Route::put('/teacher/profile', [ProfileController::class, 'update']);
 
     // Rute Pengaturan & Profil Sekolah
     Route::get('/settings/gps', [SettingController::class, 'getGpsSettings']);
