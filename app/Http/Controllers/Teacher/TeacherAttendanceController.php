@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\TeacherAttendance;
 use App\Models\Setting;
+use App\Traits\GpsValidationTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,7 @@ use Carbon\Carbon;
 
 class TeacherAttendanceController extends Controller
 {
+    use GpsValidationTrait;
     public function index()
     {
         $teacher = Auth::user()->teacher;
@@ -64,15 +66,9 @@ class TeacherAttendanceController extends Controller
         // ==================================
 
         // 1. Verify Location (Server-side check as backup/validation)
-        $schoolLat = Setting::where('key', 'school_latitude')->value('value');
-        $schoolLng = Setting::where('key', 'school_longitude')->value('value');
-        $radius = Setting::where('key', 'attendance_radius')->value('value') ?? 100;
-
-        if ($schoolLat && $schoolLng && $radius) {
-            $distance = $this->calculateDistance($request->latitude, $request->longitude, $schoolLat, $schoolLng);
-            if ($distance > $radius) {
-                return response()->json(['success' => false, 'message' => 'Anda berada di luar jangkauan sekolah. Jarak: ' . round($distance) . 'm'], 422);
-            }
+        $gpsValidation = $this->validateGps($request->latitude, $request->longitude);
+        if (!$gpsValidation['isValid']) {
+            return response()->json(['success' => false, 'message' => $gpsValidation['message']], 422);
         }
 
         // 2. Decode and Save Photo Evidence
@@ -123,21 +119,5 @@ class TeacherAttendanceController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Wajah berhasil didaftarkan!']);
-    }
-
-    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
-    {
-        $earthRadius = 6371000; // meters
-
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLon = deg2rad($lon2 - $lon1);
-
-        $a = sin($dLat / 2) * sin($dLat / 2) +
-            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-            sin($dLon / 2) * sin($dLon / 2);
-
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
-        return $earthRadius * $c;
     }
 }
