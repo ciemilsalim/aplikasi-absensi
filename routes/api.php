@@ -55,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/self-attendance/status', [TeacherSelfAttendanceController::class, 'getStatus']);
     Route::post('/teacher/self-attendance/clock-in', [TeacherSelfAttendanceController::class, 'store']);
     Route::post('/teacher/self-attendance/register-face', [TeacherSelfAttendanceController::class, 'registerFace']);
+    Route::get('/teacher/self-attendance/history', [TeacherSelfAttendanceController::class, 'getHistory']);
 
     // Rute Profil Guru
     Route::get('/teacher/profile', [ProfileController::class, 'show']);

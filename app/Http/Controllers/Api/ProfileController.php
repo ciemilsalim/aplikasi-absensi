@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
@@ -31,7 +32,7 @@ class ProfileController extends Controller
                 'nip'           => $teacher->nip,
                 'email'         => $user->email,
                 'phone_number'  => $teacher->phone_number,
-                'photo_url'     => $teacher->photo ? asset('storage/' . $teacher->photo) : null,
+                'photo_url'      => $teacher->photo ? url('storage/' . $teacher->photo) : null,
                 'homeroom_class' => $teacher->homeroomClass ? $teacher->homeroomClass->name : 'Bukan Wali Kelas',
                 'joined_at'     => $teacher->created_at->format('d M Y'),
             ]
@@ -57,11 +58,32 @@ class ProfileController extends Controller
             'phone_number'        => 'nullable|string|max:20',
             'current_password'    => 'required_with:new_password|string',
             'new_password'        => ['nullable', 'string', 'confirmed', Password::min(6)],
+            'photo'               => 'nullable|string', // Base64
         ]);
 
         // Update nomor telepon guru
         if ($request->filled('phone_number')) {
             $teacher->phone_number = $request->phone_number;
+            $teacher->save();
+        }
+
+        // Update foto jika diisi (Base64)
+        if ($request->filled('photo')) {
+            $image = $request->photo;
+            $image = str_replace('data:image/png;base64,', '', $image);
+            $image = str_replace('data:image/jpeg;base64,', '', $image);
+            $image = str_replace(' ', '+', $image);
+            
+            $imageName = 'teacher_profile_' . $teacher->id . '_' . time() . '.png';
+            $path = 'teachers/photos/' . $imageName;
+
+            // Hapus foto lama jika ada dan bukan path default
+            if ($teacher->photo && Storage::disk('public')->exists($teacher->photo)) {
+                Storage::disk('public')->delete($teacher->photo);
+            }
+
+            Storage::disk('public')->put($path, base64_decode($image));
+            $teacher->photo = $path;
             $teacher->save();
         }
 
@@ -79,8 +101,9 @@ class ProfileController extends Controller
         }
 
         return response()->json([
-            'status'  => 'success',
-            'message' => 'Profil berhasil diperbarui.',
+            'status'    => 'success',
+            'message'   => 'Profil berhasil diperbarui.',
+            'photo_url' => $teacher->photo ? url('storage/' . $teacher->photo) : null,
         ]);
     }
 }

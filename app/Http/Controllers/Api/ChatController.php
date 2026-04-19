@@ -38,17 +38,18 @@ class ChatController extends Controller
             ->get()
             ->map(function ($student) use ($teacher) {
                 $conversation = $student->conversations->first();
-                $parent = $student->parents->first(); // Mengambil satu orang tua saja untuk chat ini
+                $parent = $student->parents->first();
 
                 return [
                     'student_id' => $student->id,
                     'student_name' => $student->name,
                     'student_photo' => $student->photo ? asset('storage/' . $student->photo) : null,
                     'parent_id' => $parent ? $parent->id : null,
-                    'parent_name' => $parent ? $parent->name : 'N/A',
+                    'parent_name' => $parent ? $parent->name : null,
+                    'parent_photo' => $parent && $parent->photo ? asset('storage/' . $parent->photo) : null,
                     'conversation_id' => $conversation ? $conversation->id : null,
-                    'last_message' => $conversation ? $conversation->messages()->latest()->first()->body ?? '' : '',
-                    'last_message_time' => $conversation ? ($conversation->messages()->latest()->first()->created_at ?? $conversation->created_at)->format('H:i') : '',
+                    'last_message' => $conversation ? $conversation->messages()->latest()->first()?->body ?? '' : '',
+                    'last_message_time' => $conversation ? ($conversation->messages()->latest()->first()?->created_at ?? $conversation->created_at)->format('H:i') : '',
                     'unread_count' => $conversation ? $conversation->messages()->where('user_id', '!=', $teacher->user_id)->whereNull('read_at')->count() : 0,
                 ];
             });

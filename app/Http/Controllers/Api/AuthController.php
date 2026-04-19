@@ -44,6 +44,7 @@ class AuthController extends Controller
 
         // Dapatkan data guru
         $teacherInfo = $user->teacher;
+        $isHomeroom = $teacherInfo ? $teacherInfo->homeroomClass()->exists() : false;
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -56,6 +57,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'is_homeroom' => $isHomeroom,
                 'teacher_info' => $teacherInfo,
             ]
         ]);

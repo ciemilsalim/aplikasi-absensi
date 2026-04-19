@@ -63,4 +63,9 @@ class Student extends Model
     {
         return $this->hasMany(LeaveRequest::class);
     }
+
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
+    }
 }

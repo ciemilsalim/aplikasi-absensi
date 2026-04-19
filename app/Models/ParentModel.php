@@ -10,7 +10,7 @@ class ParentModel extends Model
 {
     use HasFactory;
     protected $table = 'parents';
-    protected $fillable = ['user_id', 'name', 'phone_number'];
+    protected $fillable = ['user_id', 'name', 'phone_number', 'photo'];
 
     // Relasi ke model User (satu orang tua memiliki satu akun login)
     public function user()

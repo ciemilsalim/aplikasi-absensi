@@ -44,4 +44,9 @@ class Teacher extends Model
     {
         return $this->hasMany(TeachingAssignment::class);
     }
+
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
+    }
 }

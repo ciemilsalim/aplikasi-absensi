@@ -126,4 +126,25 @@ class TeacherSelfAttendanceController extends Controller
             'photo_url' => asset('storage/' . $path)
         ]);
     }
+
+    /**
+     * Get attendance history for the teacher.
+     */
+    public function getHistory(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        if (!$teacher) {
+            return response()->json(['status' => 'error', 'message' => 'Data guru tidak ditemukan.'], 404);
+        }
+
+        $history = TeacherAttendance::where('teacher_id', $teacher->id)
+            ->orderBy('created_at', 'desc')
+            ->limit($request->query('limit', 30))
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $history
+        ]);
+    }
 }
