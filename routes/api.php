@@ -32,6 +32,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/schedules', [ScheduleController::class, 'index']);
     Route::get('/teacher/schedules/{id}/students', [ScheduleController::class, 'getStudents']);
     Route::post('/teacher/schedules/attendance', [ScheduleController::class, 'storeAttendance']);
+    Route::get('/teacher/subject-attendance/history', [ScheduleController::class, 'getHistory']);
+    Route::get('/teacher/subject-attendance/history/detail', [ScheduleController::class, 'getHistoryDetail']);
+    Route::get('/teacher/subject-attendance/attention', [ScheduleController::class, 'getAttentionStudents']);
+
 
     // Rute Jurnal Mengajar
     Route::get('/teacher/journals', [JournalController::class, 'index']);

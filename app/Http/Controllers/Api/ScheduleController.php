@@ -189,4 +189,141 @@ class ScheduleController extends Controller
         
         return $now->between($startTime, $endTime);
     }
+
+    /**
+     * Get history of subject attendance sessions for the current teacher.
+     * Grouped by date × schedule, with summary counts.
+     */
+    public function getHistory(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        if (!$teacher) {
+            return response()->json(['status' => 'error', 'message' => 'Anda bukan guru.'], 403);
+        }
+
+        // Ambil semua schedule milik guru ini
+        $scheduleIds = Schedule::whereHas('teachingAssignment', fn($q) => $q->where('teacher_id', $teacher->id))
+            ->pluck('id');
+
+        // Kelompokkan absensi berdasarkan schedule_id + tanggal
+        $sessions = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
+            ->selectRaw('schedule_id, DATE(created_at) as date, 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = "hadir" THEN 1 ELSE 0 END) as hadir,
+                SUM(CASE WHEN status = "sakit" THEN 1 ELSE 0 END) as sakit,
+                SUM(CASE WHEN status = "izin" THEN 1 ELSE 0 END) as izin,
+                SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) as alpa,
+                SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) as bolos')
+            ->groupBy('schedule_id', 'date')
+            ->orderByDesc('date')
+            ->get()
+            ->map(function ($row) {
+                $schedule = Schedule::with('teachingAssignment.subject:id,name', 'teachingAssignment.schoolClass:id,name')
+                    ->find($row->schedule_id);
+                return [
+                    'schedule_id'  => $row->schedule_id,
+                    'date'         => $row->date,
+                    'subject_name' => $schedule->teachingAssignment->subject->name ?? '-',
+                    'class_name'   => $schedule->teachingAssignment->schoolClass->name ?? '-',
+                    'total'        => (int) $row->total,
+                    'hadir'        => (int) $row->hadir,
+                    'sakit'        => (int) $row->sakit,
+                    'izin'         => (int) $row->izin,
+                    'alpa'         => (int) $row->alpa,
+                    'bolos'        => (int) $row->bolos,
+                ];
+            });
+
+        return response()->json(['status' => 'success', 'data' => $sessions]);
+    }
+
+    /**
+     * Get student detail for a specific history session (date + schedule_id).
+     */
+    public function getHistoryDetail(Request $request)
+    {
+        $request->validate([
+            'schedule_id' => 'required|exists:schedules,id',
+            'date'        => 'required|date',
+        ]);
+
+        $teacher = $request->user()->teacher;
+        if (!$teacher) {
+            return response()->json(['status' => 'error', 'message' => 'Anda bukan guru.'], 403);
+        }
+
+        $date     = Carbon::parse($request->date)->toDateString();
+        $schedId  = $request->schedule_id;
+
+        $schedule = Schedule::with('teachingAssignment.subject:id,name', 'teachingAssignment.schoolClass:id,name')
+            ->findOrFail($schedId);
+
+        $records = SubjectAttendance::where('schedule_id', $schedId)
+            ->whereDate('created_at', $date)
+            ->with('student:id,name,nis')
+            ->get()
+            ->map(fn($r) => [
+                'student_id'   => $r->student_id,
+                'student_name' => $r->student->name ?? '-',
+                'nis'          => $r->student->nis ?? '-',
+                'status'       => $r->status,
+                'notes'        => $r->notes,
+            ]);
+
+        return response()->json([
+            'status'       => 'success',
+            'date'         => $date,
+            'subject_name' => $schedule->teachingAssignment->subject->name ?? '-',
+            'class_name'   => $schedule->teachingAssignment->schoolClass->name ?? '-',
+            'data'         => $records,
+        ]);
+    }
+
+    /**
+     * Get students needing attendance attention (high alpa/bolos count).
+     * Threshold: >= 3 alpa/bolos across all subjects taught by this teacher.
+     */
+    public function getAttentionStudents(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        if (!$teacher) {
+            return response()->json(['status' => 'error', 'message' => 'Anda bukan guru.'], 403);
+        }
+
+        $threshold = (int) $request->query('threshold', 3);
+
+        $scheduleIds = Schedule::whereHas('teachingAssignment', fn($q) => $q->where('teacher_id', $teacher->id))
+            ->pluck('id');
+
+        // Hitung kumulatif alpa+bolos per siswa per jadwal
+        $rows = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
+            ->whereIn('status', ['alpa', 'bolos'])
+            ->selectRaw('student_id, schedule_id,
+                COUNT(*) as total_absent,
+                SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) as alpa,
+                SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) as bolos')
+            ->groupBy('student_id', 'schedule_id')
+            ->having('total_absent', '>=', $threshold)
+            ->orderByDesc('total_absent')
+            ->get();
+
+        // Enrich dengan nama siswa, mata pelajaran, kelas
+        $result = $rows->map(function ($row) {
+            $student  = Student::select('id', 'name', 'nis')->find($row->student_id);
+            $schedule = Schedule::with('teachingAssignment.subject:id,name', 'teachingAssignment.schoolClass:id,name')
+                ->find($row->schedule_id);
+            return [
+                'student_id'   => $row->student_id,
+                'student_name' => $student->name ?? '-',
+                'nis'          => $student->nis ?? '-',
+                'subject_name' => $schedule->teachingAssignment->subject->name ?? '-',
+                'class_name'   => $schedule->teachingAssignment->schoolClass->name ?? '-',
+                'total_absent' => (int) $row->total_absent,
+                'alpa'         => (int) $row->alpa,
+                'bolos'        => (int) $row->bolos,
+            ];
+        });
+
+        return response()->json(['status' => 'success', 'threshold' => $threshold, 'data' => $result]);
+    }
 }
