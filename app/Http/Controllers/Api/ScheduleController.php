@@ -110,6 +110,46 @@ class ScheduleController extends Controller
         $teacherId = $request->user()->teacher->id;
         $scheduleId = $request->schedule_id;
 
+        $date = Carbon::today();
+
+        // 1. Cek Akhir Pekan
+        if ($date->isWeekend()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Absen mapel tidak dapat dilakukan pada akhir pekan.',
+            ], 422);
+        }
+
+        // 2. Cek Hari Libur
+        $holidays = \App\Models\Calendar::getHolidaysInRange($date, $date);
+        if (\App\Models\Calendar::isDateInHolidays($date, $holidays)) {
+            $holiday = $holidays->first(function($h) use ($date) {
+                $start = $h->start_date->copy()->startOfDay();
+                $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
+                return $date->between($start, $end);
+            });
+            $title = $holiday ? $holiday->title : 'Hari Libur';
+            return response()->json([
+                'status'  => 'error',
+                'message' => "Absen mapel dibatalkan: $title (Hari Libur).",
+            ], 422);
+        }
+
+        // 3. Cek Belajar Mandiri
+        $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($date, $date);
+        if (\App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays)) {
+            $selfStudy = $selfStudyDays->first(function($h) use ($date) {
+                $start = $h->start_date->copy()->startOfDay();
+                $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
+                return $date->between($start, $end);
+            });
+            $title = $selfStudy ? $selfStudy->title : 'Belajar Mandiri';
+            return response()->json([
+                'status'  => 'error',
+                'message' => "Absen mapel dibatalkan: $title (Belajar Mandiri).",
+            ], 422);
+        }
+
         DB::beginTransaction();
         try {
             foreach ($request->attendances as $att) {

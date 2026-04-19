@@ -94,6 +94,44 @@ class TeacherAttendanceController extends Controller
         $now   = now();
         $today = $now->copy()->startOfDay();
 
+        // 1. Cek Akhir Pekan
+        if ($today->isWeekend()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Absen tidak dapat dilakukan pada akhir pekan.',
+            ], 422);
+        }
+
+        // 2. Cek Hari Libur
+        $holidays = \App\Models\Calendar::getHolidaysInRange($today, $today);
+        if (\App\Models\Calendar::isDateInHolidays($today, $holidays)) {
+            $holiday = $holidays->first(function($h) use ($today) {
+                $start = $h->start_date->copy()->startOfDay();
+                $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
+                return $today->between($start, $end);
+            });
+            $title = $holiday ? $holiday->title : 'Hari Libur';
+            return response()->json([
+                'status'  => 'error',
+                'message' => "Absen dibatalkan: $title (Hari Libur).",
+            ], 422);
+        }
+
+        // 3. Cek Belajar Mandiri
+        $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($today, $today);
+        if (\App\Models\Calendar::isDateInSelfStudy($today, $selfStudyDays)) {
+            $selfStudy = $selfStudyDays->first(function($h) use ($today) {
+                $start = $h->start_date->copy()->startOfDay();
+                $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
+                return $today->between($start, $end);
+            });
+            $title = $selfStudy ? $selfStudy->title : 'Belajar Mandiri';
+            return response()->json([
+                'status'  => 'error',
+                'message' => "Absen dibatalkan: $title (Belajar Mandiri).",
+            ], 422);
+        }
+
         $attendance = Attendance::where('student_id', $student->id)
             ->whereDate('attendance_time', $today)
             ->first();
@@ -165,6 +203,44 @@ class TeacherAttendanceController extends Controller
         $date = $request->filled('date')
             ? Carbon::parse($request->date)->startOfDay()
             : now()->startOfDay();
+
+        // 1. Cek Akhir Pekan
+        if ($date->isWeekend()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Absen tidak dapat dikoreksi/diisi pada akhir pekan.',
+            ], 422);
+        }
+
+        // 2. Cek Hari Libur
+        $holidays = \App\Models\Calendar::getHolidaysInRange($date, $date);
+        if (\App\Models\Calendar::isDateInHolidays($date, $holidays)) {
+            $holiday = $holidays->first(function($h) use ($date) {
+                $start = $h->start_date->copy()->startOfDay();
+                $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
+                return $date->between($start, $end);
+            });
+            $title = $holiday ? $holiday->title : 'Hari Libur';
+            return response()->json([
+                'status'  => 'error',
+                'message' => "Tidak dapat mengubah absen: $title (Hari Libur).",
+            ], 422);
+        }
+
+        // 3. Cek Belajar Mandiri
+        $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($date, $date);
+        if (\App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays)) {
+            $selfStudy = $selfStudyDays->first(function($h) use ($date) {
+                $start = $h->start_date->copy()->startOfDay();
+                $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
+                return $date->between($start, $end);
+            });
+            $title = $selfStudy ? $selfStudy->title : 'Belajar Mandiri';
+            return response()->json([
+                'status'  => 'error',
+                'message' => "Tidak dapat mengubah absen: $title (Belajar Mandiri).",
+            ], 422);
+        }
 
         $attendance = Attendance::where('student_id', $studentId)
             ->whereDate('attendance_time', $date)
