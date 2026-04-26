@@ -14,22 +14,50 @@ use Illuminate\Support\Facades\Auth;
 
 class ParentStudentController extends Controller
 {
-    /**
-     * Get attendance history for a specific student.
-     */
     public function attendance(Request $request, Student $student)
     {
         $this->authorizeParent($student);
 
-        $limit = $request->get('limit', 30);
+        $limit = (int)$request->get('limit', 30);
+        $currentPage = (int)$request->get('page', 1);
         
-        $attendances = Attendance::where('student_id', $student->id)
-            ->latest('attendance_time')
-            ->paginate($limit);
+        // 1. Query dasar: Kecualikan Akhir Pekan (Minggu=1, Sabtu=7)
+        // Kita pastikan Jumat (6) tetap tampil.
+        $query = Attendance::where('student_id', $student->id)
+            ->whereRaw("DAYOFWEEK(attendance_time) NOT IN (1, 7)");
+
+        $attendances = $query->latest('attendance_time')->get();
+
+        // 2. Filter Hari Libur dari tabel Calendar
+        $holidays = \App\Models\Calendar::where('is_holiday', true)->get();
+        
+        $filtered = $attendances->reject(function($att) use ($holidays) {
+            $date = \Carbon\Carbon::parse($att->attendance_time);
+            return \App\Models\Calendar::isDateInHolidays($date, $holidays);
+        });
+
+        // 3. Paginas manual untuk hasil yang sudah di-filter
+        $offset = ($currentPage - 1) * $limit;
+        $items = $filtered->slice($offset, $limit)->values();
+        $total = $filtered->count();
+        $lastPage = (int)ceil($total / $limit);
 
         return response()->json([
             'status' => 'success',
-            'data' => $attendances
+            'data' => [
+                'current_page' => $currentPage,
+                'data' => $items,
+                'first_page_url' => null,
+                'from' => $offset + 1,
+                'last_page' => $lastPage,
+                'last_page_url' => null,
+                'next_page_url' => $currentPage < $lastPage ? "next" : null,
+                'path' => $request->url(),
+                'per_page' => $limit,
+                'prev_page_url' => $currentPage > 1 ? "prev" : null,
+                'to' => min($offset + $limit, $total),
+                'total' => $total,
+            ]
         ]);
     }
 
