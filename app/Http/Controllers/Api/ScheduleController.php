@@ -69,11 +69,14 @@ class ScheduleController extends Controller
         $students = Student::where('school_class_id', $classId)
             ->select('id', 'name', 'nis', 'unique_id')
             ->get()
-            ->map(function ($student) use ($id) {
-                // Cek apakah sudah diabsen hari ini untuk jadwal ini
+            ->map(function ($student) use ($id, $request) {
+                // Gunakan date dari request jika ada, jika tidak gunakan today
+                $date = $request->query('date') ? Carbon::parse($request->query('date')) : Carbon::today();
+                
+                // Cek apakah sudah diabsen pada tanggal tersebut untuk jadwal ini
                 $attendance = SubjectAttendance::where('schedule_id', $id)
                     ->where('student_id', $student->id)
-                    ->whereDate('created_at', Carbon::today())
+                    ->whereDate('created_at', $date)
                     ->first();
 
                 return [
@@ -110,61 +113,78 @@ class ScheduleController extends Controller
         $teacherId = $request->user()->teacher->id;
         $scheduleId = $request->schedule_id;
 
-        $date = Carbon::today();
+        // Gunakan date dari request jika ada (untuk edit riwayat), jika tidak gunakan today
+        $date = $request->date ? Carbon::parse($request->date) : Carbon::today();
+        $isPastDate = $date->isBefore(Carbon::today());
 
-        // 1. Cek Akhir Pekan
-        if ($date->isWeekend()) {
+        // 1. Cek Akhir Pekan (Hanya jika input hari ini, untuk riwayat diizinkan edit)
+        if (!$isPastDate && $date->isWeekend()) {
             return response()->json([
                 'status'  => 'error',
                 'message' => 'Absen mapel tidak dapat dilakukan pada akhir pekan.',
             ], 422);
         }
 
-        // 2. Cek Hari Libur
-        $holidays = \App\Models\Calendar::getHolidaysInRange($date, $date);
-        if (\App\Models\Calendar::isDateInHolidays($date, $holidays)) {
-            $holiday = $holidays->first(function($h) use ($date) {
-                $start = $h->start_date->copy()->startOfDay();
-                $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
-                return $date->between($start, $end);
-            });
-            $title = $holiday ? $holiday->title : 'Hari Libur';
-            return response()->json([
-                'status'  => 'error',
-                'message' => "Absen mapel dibatalkan: $title (Hari Libur).",
-            ], 422);
+        // 2. Cek Hari Libur (Hanya jika input hari ini)
+        if (!$isPastDate) {
+            $holidays = \App\Models\Calendar::getHolidaysInRange($date, $date);
+            if (\App\Models\Calendar::isDateInHolidays($date, $holidays)) {
+                $holiday = $holidays->first(function($h) use ($date) {
+                    $start = $h->start_date->copy()->startOfDay();
+                    $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
+                    return $date->between($start, $end);
+                });
+                $title = $holiday ? $holiday->title : 'Hari Libur';
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => "Absen mapel dibatalkan: $title (Hari Libur).",
+                ], 422);
+            }
         }
 
-        // 3. Cek Belajar Mandiri
-        $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($date, $date);
-        if (\App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays)) {
-            $selfStudy = $selfStudyDays->first(function($h) use ($date) {
-                $start = $h->start_date->copy()->startOfDay();
-                $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
-                return $date->between($start, $end);
-            });
-            $title = $selfStudy ? $selfStudy->title : 'Belajar Mandiri';
-            return response()->json([
-                'status'  => 'error',
-                'message' => "Absen mapel dibatalkan: $title (Belajar Mandiri).",
-            ], 422);
+        // 3. Cek Belajar Mandiri (Hanya jika input hari ini)
+        if (!$isPastDate) {
+            $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($date, $date);
+            if (\App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays)) {
+                $selfStudy = $selfStudyDays->first(function($h) use ($date) {
+                    $start = $h->start_date->copy()->startOfDay();
+                    $end = $h->end_date ? $h->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
+                    return $date->between($start, $end);
+                });
+                $title = $selfStudy ? $selfStudy->title : 'Belajar Mandiri';
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => "Absen mapel dibatalkan: $title (Belajar Mandiri).",
+                ], 422);
+            }
         }
 
         DB::beginTransaction();
         try {
             foreach ($request->attendances as $att) {
-                SubjectAttendance::updateOrCreate(
-                    [
-                        'schedule_id' => $scheduleId,
-                        'student_id' => $att['student_id'],
-                        'created_at' => Carbon::today()->startOfDay(), // Workaround for daily uniqueness if needed
-                    ],
-                    [
+                // Gunakan updateOrCreate dengan pencarian berdasarkan schedule_id, student_id, dan DATE(created_at)
+                // Karena updateOrCreate bawaan Laravel tidak support whereDate, kita cari manual dulu
+                $attendance = SubjectAttendance::where('schedule_id', $scheduleId)
+                    ->where('student_id', $att['student_id'])
+                    ->whereDate('created_at', $date)
+                    ->first();
+
+                if ($attendance) {
+                    $attendance->update([
                         'teacher_id' => $teacherId,
                         'status' => $att['status'],
                         'notes' => $att['notes'] ?? null,
-                    ]
-                );
+                    ]);
+                } else {
+                    SubjectAttendance::create([
+                        'schedule_id' => $scheduleId,
+                        'student_id' => $att['student_id'],
+                        'teacher_id' => $teacherId,
+                        'status' => $att['status'],
+                        'notes' => $att['notes'] ?? null,
+                        'created_at' => $date->startOfDay(), // Pastikan jamnya konsisten jika input manual masa lalu
+                    ]);
+                }
             }
             DB::commit();
 
