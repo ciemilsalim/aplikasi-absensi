@@ -21,24 +21,35 @@ class ParentStudentController extends Controller
         $limit = (int)$request->get('limit', 30);
         $currentPage = (int)$request->get('page', 1);
         
-        // 1. Query dasar: Kecualikan Akhir Pekan (Minggu=1, Sabtu=7)
-        // Kita pastikan Jumat (6) tetap tampil.
-        $query = Attendance::where('student_id', $student->id)
-            ->whereRaw("DAYOFWEEK(attendance_time) NOT IN (1, 7)");
+        // 1. Ambil data mentah. Kita filter di PHP agar konsisten dengan timezone Asia/Makassar.
+        $attendances = Attendance::where('student_id', $student->id)
+            ->latest('attendance_time')
+            ->get();
 
-        $attendances = $query->latest('attendance_time')->get();
-
-        // 2. Filter Hari Libur dari tabel Calendar
+        // 2. Filter Hari Libur (Calendar) dan Akhir Pekan
         $holidays = \App\Models\Calendar::where('is_holiday', true)->get();
         
         $filtered = $attendances->reject(function($att) use ($holidays) {
             $date = \Carbon\Carbon::parse($att->attendance_time);
+            
+            // Carbon dayOfWeek: 0 (Sun), 6 (Sat). Kita pastikan 5 (Friday) tetap masuk.
+            if ($date->isSunday() || $date->isSaturday()) {
+                return true;
+            }
+            
+            // Cek apakah tanggal ini terdaftar sebagai hari libur
             return \App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
 
-        // 3. Paginas manual untuk hasil yang sudah di-filter
+        // 3. Paginas manual dan format output waktu
         $offset = ($currentPage - 1) * $limit;
-        $items = $filtered->slice($offset, $limit)->values();
+        $items = $filtered->slice($offset, $limit)->values()->map(function($item) {
+            // Kita kirimkan waktu dalam format ISO8601 agar Flutter bisa memproses zona waktu dengan benar.
+            // Contoh: 2024-04-26T07:00:00+08:00
+            $item->attendance_time_iso = $item->attendance_time->toIso8601String();
+            return $item;
+        });
+
         $total = $filtered->count();
         $lastPage = (int)ceil($total / $limit);
 
@@ -47,15 +58,8 @@ class ParentStudentController extends Controller
             'data' => [
                 'current_page' => $currentPage,
                 'data' => $items,
-                'first_page_url' => null,
-                'from' => $offset + 1,
                 'last_page' => $lastPage,
-                'last_page_url' => null,
-                'next_page_url' => $currentPage < $lastPage ? "next" : null,
-                'path' => $request->url(),
                 'per_page' => $limit,
-                'prev_page_url' => $currentPage > 1 ? "prev" : null,
-                'to' => min($offset + $limit, $total),
                 'total' => $total,
             ]
         ]);

@@ -21,7 +21,25 @@ class ParentLeaveRequestController extends Controller
         $requests = LeaveRequest::with(['student', 'approver'])
             ->where('parent_id', $parent->id)
             ->latest()
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                $start = \Carbon\Carbon::parse($item->start_date);
+                $end = \Carbon\Carbon::parse($item->end_date);
+                $duration = $start->diffInDays($end) + 1;
+
+                return [
+                    'id' => $item->id,
+                    'student_name' => $item->student->name,
+                    'type' => $item->type,
+                    'start_date' => $item->start_date->format('Y-m-d'),
+                    'end_date' => $item->end_date->format('Y-m-d'),
+                    'duration' => $duration,
+                    'reason' => $item->reason,
+                    'status' => $item->status,
+                    'attachment_url' => $item->attachment ? asset('storage/' . $item->attachment) : null,
+                    'created_at' => $item->created_at->format('Y-m-d H:i:s'),
+                ];
+            });
 
         return response()->json([
             'status' => 'success',
