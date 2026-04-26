@@ -31,6 +31,11 @@ class ParentDashboardController extends Controller
             $query->whereDate('attendance_time', now()->toDateString());
         }])->get();
 
+        $students->transform(function ($student) {
+            $student->photo_url = $student->photo ? asset('storage/' . $student->photo) : null;
+            return $student;
+        });
+
         // Latest announcements
         $announcements = Announcement::whereNotNull('published_at')
             ->where('published_at', '<=', now())

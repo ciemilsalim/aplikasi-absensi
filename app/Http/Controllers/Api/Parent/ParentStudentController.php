@@ -30,9 +30,11 @@ class ParentStudentController extends Controller
         $holidays = \App\Models\Calendar::where('is_holiday', true)->get();
         
         $filtered = $attendances->reject(function($att) use ($holidays) {
-            $date = \Carbon\Carbon::parse($att->attendance_time);
+            // Kita asumsikan data di DB tersimpan dalam UTC jika jamnya bergeser 8 jam.
+            // Kita paksa konversi ke Asia/Makassar sebelum pengecekan hari.
+            $date = \Carbon\Carbon::parse($att->attendance_time, 'UTC')->timezone('Asia/Makassar');
             
-            // Carbon dayOfWeek: 0 (Sun), 6 (Sat). Kita pastikan 5 (Friday) tetap masuk.
+            // Carbon dayOfWeek: 0 (Sun), 6 (Sat). 
             if ($date->isSunday() || $date->isSaturday()) {
                 return true;
             }
@@ -44,9 +46,10 @@ class ParentStudentController extends Controller
         // 3. Paginas manual dan format output waktu
         $offset = ($currentPage - 1) * $limit;
         $items = $filtered->slice($offset, $limit)->values()->map(function($item) {
-            // Kita kirimkan waktu dalam format ISO8601 agar Flutter bisa memproses zona waktu dengan benar.
-            // Contoh: 2024-04-26T07:00:00+08:00
-            $item->attendance_time_iso = $item->attendance_time->toIso8601String();
+            // Konversi ke Makassar untuk tampilan di App
+            $date = \Carbon\Carbon::parse($item->attendance_time, 'UTC')->timezone('Asia/Makassar');
+            $item->attendance_time = $date->format('Y-m-d H:i:s');
+            $item->attendance_time_iso = $date->toIso8601String();
             return $item;
         });
 

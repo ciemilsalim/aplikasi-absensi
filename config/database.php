@@ -60,6 +60,7 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'timezone' => '+08:00',
            'dump' => [
                 'dump_binary_path' => env('DB_DUMP_BINARY_PATH', ''), // ini penting
                 // 'dump_binary_path' => '/usr/bin/',
@@ -86,6 +87,7 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'timezone' => '+08:00',
         ],
 
         'pgsql' => [
