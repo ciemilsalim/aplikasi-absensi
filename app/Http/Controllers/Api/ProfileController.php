@@ -16,6 +16,26 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $user = $request->user();
+        
+        if ($user->role === 'parent') {
+            $parent = $user->parent;
+            if (!$parent) {
+                return response()->json(['status' => 'error', 'message' => 'Data orang tua tidak ditemukan.'], 404);
+            }
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'name'          => $parent->name,
+                    'nip'           => 'Wali Murid',
+                    'email'         => $user->email,
+                    'phone_number'  => $parent->phone_number,
+                    'photo_url'     => $parent->photo ? url('storage/' . $parent->photo) : null,
+                    'homeroom_class' => 'Orang Tua Siswa',
+                    'joined_at'     => $parent->created_at->format('d M Y'),
+                ]
+            ]);
+        }
+
         $teacher = $user->teacher;
 
         if (!$teacher) {

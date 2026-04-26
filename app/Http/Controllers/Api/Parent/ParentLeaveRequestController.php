@@ -18,7 +18,7 @@ class ParentLeaveRequestController extends Controller
     {
         $parent = Auth::user()->parent;
         
-        $requests = LeaveRequest::with(['student', 'teacher'])
+        $requests = LeaveRequest::with(['student', 'approver'])
             ->where('parent_id', $parent->id)
             ->latest()
             ->get();
