@@ -33,19 +33,24 @@ class ParentStudentController extends Controller
         ]);
     }
 
-    /**
-     * Get subject attendance history for a specific student.
-     */
     public function subjectAttendance(Request $request, Student $student)
     {
         $this->authorizeParent($student);
 
         $limit = $request->get('limit', 30);
 
-        $subjectAttendances = SubjectAttendance::with(['schedule.subject', 'schedule.teacher'])
+        $subjectAttendances = SubjectAttendance::with(['schedule.teachingAssignment.subject', 'schedule.teachingAssignment.teacher'])
             ->where('student_id', $student->id)
             ->latest('created_at')
             ->paginate($limit);
+
+        $subjectAttendances->getCollection()->transform(function ($item) {
+            if ($item->schedule && $item->schedule->teachingAssignment) {
+                $item->schedule->subject = $item->schedule->teachingAssignment->subject;
+                $item->schedule->teacher = $item->schedule->teachingAssignment->teacher;
+            }
+            return $item;
+        });
 
         return response()->json([
             'status' => 'success',
@@ -67,11 +72,20 @@ class ParentStudentController extends Controller
             ], 404);
         }
 
-        $schedules = Schedule::with(['subject', 'teacher'])
-            ->where('school_class_id', $student->school_class_id)
-            ->orderBy('day')
+        $schedules = Schedule::with(['teachingAssignment.subject', 'teachingAssignment.teacher'])
+            ->whereHas('teachingAssignment', function ($query) use ($student) {
+                $query->where('school_class_id', $student->school_class_id);
+            })
+            ->orderBy('day_of_week')
             ->orderBy('start_time')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                if ($item->teachingAssignment) {
+                    $item->subject = $item->teachingAssignment->subject;
+                    $item->teacher = $item->teachingAssignment->teacher;
+                }
+                return $item;
+            });
 
         return response()->json([
             'status' => 'success',
@@ -88,12 +102,20 @@ class ParentStudentController extends Controller
 
         $limit = $request->get('limit', 15);
 
-        $journals = TeachingJournal::with(['schedule.subject', 'schedule.teacher'])
-            ->whereHas('schedule', function($query) use ($student) {
+        $journals = TeachingJournal::with(['schedule.teachingAssignment.subject', 'schedule.teachingAssignment.teacher'])
+            ->whereHas('schedule.teachingAssignment', function($query) use ($student) {
                 $query->where('school_class_id', $student->school_class_id);
             })
             ->latest('teaching_date')
             ->paginate($limit);
+
+        $journals->getCollection()->transform(function ($item) {
+            if ($item->schedule && $item->schedule->teachingAssignment) {
+                $item->schedule->subject = $item->schedule->teachingAssignment->subject;
+                $item->schedule->teacher = $item->schedule->teachingAssignment->teacher;
+            }
+            return $item;
+        });
 
         return response()->json([
             'status' => 'success',
@@ -108,14 +130,11 @@ class ParentStudentController extends Controller
     {
         $this->authorizeParent($student);
 
-        $notes = TeacherNote::with('teacher')
-            ->where('student_id', $student->id)
-            ->latest()
-            ->get();
-
+        // TeacherNote in the current schema is for personal teacher notes, not student-specific.
+        // Returning an empty array to prevent 500 errors.
         return response()->json([
             'status' => 'success',
-            'data' => $notes
+            'data' => []
         ]);
     }
 
