@@ -49,11 +49,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Rute Kalender Akademik
     Route::get('/teacher/calendar', [CalendarController::class, 'index']);
 
-    // Rute Komunikasi / Chat
-    Route::get('/teacher/chats', [ChatController::class, 'index']);
-    Route::post('/teacher/chats/start', [ChatController::class, 'startConversation']);
-    Route::get('/teacher/chats/{id}/messages', [ChatController::class, 'getMessages']);
-    Route::post('/teacher/chats/{id}/send', [ChatController::class, 'sendMessage']);
+    // Rute Komunikasi / Chat (Umum untuk Guru & Ortu)
+    Route::get('/chat', [ChatController::class, 'index']);
+    Route::post('/chat/start', [ChatController::class, 'startConversation']);
+    Route::get('/chat/{id}/messages', [ChatController::class, 'getMessages']);
+    Route::post('/chat/{id}/send', [ChatController::class, 'sendMessage']);
 
     // Rute Absensi Mandiri Guru (Face & GPS)
     Route::get('/teacher/self-attendance/status', [TeacherSelfAttendanceController::class, 'getStatus']);
@@ -65,7 +65,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/profile', [ProfileController::class, 'show']);
     Route::put('/teacher/profile', [ProfileController::class, 'update']);
 
+    // == RUTE KHUSUS ORANG TUA ==
+    Route::prefix('parent')->middleware('role:parent')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Api\Parent\ParentDashboardController::class, 'index']);
+        
+        // Data Siswa/Anak
+        Route::get('/students/{student}/attendance', [\App\Http\Controllers\Api\Parent\ParentStudentController::class, 'attendance']);
+        Route::get('/students/{student}/subject-attendance', [\App\Http\Controllers\Api\Parent\ParentStudentController::class, 'subjectAttendance']);
+        Route::get('/students/{student}/schedule', [\App\Http\Controllers\Api\Parent\ParentStudentController::class, 'schedule']);
+        Route::get('/students/{student}/journals', [\App\Http\Controllers\Api\Parent\ParentStudentController::class, 'journals']);
+        Route::get('/students/{student}/notes', [\App\Http\Controllers\Api\Parent\ParentStudentController::class, 'notes']);
+
+        // Perizinan
+        Route::get('/leave-requests', [\App\Http\Controllers\Api\Parent\ParentLeaveRequestController::class, 'index']);
+        Route::post('/leave-requests', [\App\Http\Controllers\Api\Parent\ParentLeaveRequestController::class, 'store']);
+    });
+
     // Rute Pengaturan & Profil Sekolah
     Route::get('/settings/gps', [SettingController::class, 'getGpsSettings']);
     Route::get('/settings/school-profile', [SettingController::class, 'getSchoolProfile']);
 });
+

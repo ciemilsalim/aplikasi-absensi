@@ -35,16 +35,35 @@ class AuthController extends Controller
             ], 401);
         }
 
-        if ($user->role !== 'teacher') {
+        // Cek apakah role diizinkan (teacher atau parent)
+        if (!in_array($user->role, ['teacher', 'parent'])) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Akses ditolak. Anda bukan Wali Kelas.',
+                'message' => 'Akses ditolak.',
             ], 403);
         }
 
-        // Dapatkan data guru
-        $teacherInfo = $user->teacher;
-        $isHomeroom = $teacherInfo ? $teacherInfo->homeroomClass()->exists() : false;
+        $responseData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+        ];
+
+        // Tambahan info jika Guru
+        if ($user->role === 'teacher') {
+            $teacherInfo = $user->teacher;
+            $responseData['is_homeroom'] = $teacherInfo ? $teacherInfo->homeroomClass()->exists() : false;
+            $responseData['teacher_info'] = $teacherInfo;
+        }
+
+        // Tambahan info jika Ortu
+        if ($user->role === 'parent') {
+            $parentInfo = $user->parent;
+            $responseData['parent_info'] = $parentInfo;
+            // Sertakan daftar anak untuk inisialisasi cepat di mobile
+            $responseData['students'] = $parentInfo ? $parentInfo->students()->with('schoolClass')->get() : [];
+        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -52,15 +71,9 @@ class AuthController extends Controller
             'status' => 'success',
             'message' => 'Login berhasil',
             'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'is_homeroom' => $isHomeroom,
-                'teacher_info' => $teacherInfo,
-            ]
+            'user' => $responseData
         ]);
+
     }
 
     public function logout(Request $request)

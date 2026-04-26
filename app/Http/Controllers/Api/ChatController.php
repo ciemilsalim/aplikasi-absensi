@@ -14,13 +14,17 @@ use Carbon\Carbon;
 class ChatController extends Controller
 {
     /**
-     * Get list of conversations for the teacher.
-     * We'll list all students in the homeroom class and their existing conversations.
+     * Get list of conversations for the user (Teacher or Parent).
      */
     public function index(Request $request)
     {
-        $teacher = $request->user()->teacher;
+        $user = $request->user();
 
+        if ($user->role === 'parent') {
+            return $this->indexForParent($user);
+        }
+
+        $teacher = $user->teacher;
         if (!$teacher || !$teacher->homeroomClass) {
             return response()->json([
                 'status' => 'error',
@@ -41,6 +45,7 @@ class ChatController extends Controller
                 $parent = $student->parents->first();
 
                 return [
+                    'type' => 'parent',
                     'student_id' => $student->id,
                     'student_name' => $student->name,
                     'student_photo' => $student->photo ? asset('storage/' . $student->photo) : null,
@@ -61,10 +66,77 @@ class ChatController extends Controller
     }
 
     /**
+     * Get chat contacts for parent role.
+     */
+    private function indexForParent($user)
+    {
+        $parent = $user->parent;
+        $students = $parent->students()->with('schoolClass.homeroomTeacher.user')->get();
+        
+        $contacts = collect();
+
+        // 1. Tambahkan Wali Kelas setiap anak
+        foreach ($students as $student) {
+            $teacher = $student->schoolClass?->homeroomTeacher;
+            if ($teacher) {
+                $conv = Conversation::where('parent_id', $parent->id)
+                    ->where('teacher_id', $teacher->id)
+                    ->where('student_id', $student->id)
+                    ->first();
+
+                $contacts->push([
+                    'type' => 'teacher',
+                    'teacher_id' => $teacher->id,
+                    'teacher_name' => $teacher->name,
+                    'teacher_photo' => $teacher->photo ? asset('storage/' . $teacher->photo) : null,
+                    'student_id' => $student->id,
+                    'student_name' => $student->name,
+                    'conversation_id' => $conv?->id,
+                    'last_message' => $conv ? $conv->messages()->latest()->first()?->body ?? '' : '',
+                    'last_message_time' => $conv ? ($conv->messages()->latest()->first()?->created_at ?? $conv->created_at)->format('H:i') : '',
+                    'unread_count' => $conv ? $conv->messages()->where('user_id', '!=', $user->id)->whereNull('read_at')->count() : 0,
+                ]);
+            }
+        }
+
+        // 2. Tambahkan Admin
+        $admins = \App\Models\User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $adminConv = \App\Models\AdminConversation::where('parent_id', $parent->id)
+                ->where('admin_id', $admin->id)
+                ->first();
+
+            $contacts->push([
+                'type' => 'admin',
+                'admin_id' => $admin->id,
+                'admin_name' => $admin->name,
+                'admin_photo' => null, // Admin usually generic
+                'conversation_id' => $adminConv?->id,
+                'is_admin' => true,
+                'last_message' => $adminConv ? \App\Models\AdminMessage::where('admin_conversation_id', $adminConv->id)->latest()->first()?->body ?? '' : '',
+                'last_message_time' => $adminConv ? (\App\Models\AdminMessage::where('admin_conversation_id', $adminConv->id)->latest()->first()?->created_at ?? $adminConv->created_at)->format('H:i') : '',
+                'unread_count' => $adminConv ? \App\Models\AdminMessage::where('admin_conversation_id', $adminConv->id)->where('user_id', '!=', $user->id)->whereNull('read_at')->count() : 0,
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $contacts
+        ]);
+    }
+
+
+    /**
      * Get messages for a specific conversation.
      */
     public function getMessages(Request $request, $id)
     {
+        $isAdmin = $request->get('is_admin') === 'true';
+
+        if ($isAdmin) {
+            return $this->getAdminMessages($request, $id);
+        }
+
         $conversation = Conversation::with(['messages' => function ($query) {
                 $query->orderBy('created_at', 'asc');
             }])
@@ -90,6 +162,34 @@ class ChatController extends Controller
         ]);
     }
 
+    private function getAdminMessages(Request $request, $id)
+    {
+        $conversation = \App\Models\AdminConversation::findOrFail($id);
+        
+        $messages = \App\Models\AdminMessage::where('admin_conversation_id', $id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Tandai sebagai terbaca
+        \App\Models\AdminMessage::where('admin_conversation_id', $id)
+            ->where('user_id', '!=', $request->user()->id)
+            ->whereNull('read_at')
+            ->update(['read_at' => Carbon::now()]);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $messages->map(function ($m) use ($request) {
+                return [
+                    'id' => $m->id,
+                    'body' => $m->body,
+                    'is_me' => $m->user_id == $request->user()->id,
+                    'time' => $m->created_at->format('H:i'),
+                    'read' => $m->read_at != null,
+                ];
+            })
+        ]);
+    }
+
     /**
      * Send a message.
      */
@@ -99,13 +199,22 @@ class ChatController extends Controller
             'body' => 'required|string',
         ]);
 
-        $conversation = Conversation::findOrFail($id);
+        $isAdmin = $request->get('is_admin') === 'true';
 
-        $message = Message::create([
-            'conversation_id' => $conversation->id,
-            'user_id' => $request->user()->id,
-            'body' => $request->body,
-        ]);
+        if ($isAdmin) {
+            $message = \App\Models\AdminMessage::create([
+                'admin_conversation_id' => $id,
+                'user_id' => $request->user()->id,
+                'body' => $request->body,
+            ]);
+        } else {
+            $conversation = Conversation::findOrFail($id);
+            $message = Message::create([
+                'conversation_id' => $conversation->id,
+                'user_id' => $request->user()->id,
+                'body' => $request->body,
+            ]);
+        }
 
         return response()->json([
             'status' => 'success',
@@ -119,23 +228,31 @@ class ChatController extends Controller
         ]);
     }
 
+
     /**
      * Create or get conversation for a student.
      */
     public function startConversation(Request $request)
     {
         $request->validate([
-            'student_id' => 'required|exists:students,id',
+            'student_id' => 'nullable|exists:students,id',
             'parent_id' => 'required|exists:parents,id',
+            'teacher_id' => 'nullable|exists:teachers,id',
+            'admin_id' => 'nullable|exists:users,id',
         ]);
 
-        $teacher = $request->user()->teacher;
-
-        $conversation = Conversation::firstOrCreate([
-            'student_id' => $request->student_id,
-            'teacher_id' => $teacher->id,
-            'parent_id' => $request->parent_id,
-        ]);
+        if ($request->admin_id) {
+            $conversation = \App\Models\AdminConversation::firstOrCreate([
+                'parent_id' => $request->parent_id,
+                'admin_id' => $request->admin_id,
+            ]);
+        } else {
+            $conversation = Conversation::firstOrCreate([
+                'student_id' => $request->student_id,
+                'teacher_id' => $request->teacher_id ?? $request->user()->teacher?->id,
+                'parent_id' => $request->parent_id,
+            ]);
+        }
 
         return response()->json([
             'status' => 'success',
@@ -144,4 +261,5 @@ class ChatController extends Controller
             ]
         ]);
     }
+
 }
