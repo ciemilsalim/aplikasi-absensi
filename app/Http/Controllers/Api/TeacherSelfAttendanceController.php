@@ -32,8 +32,9 @@ class TeacherSelfAttendanceController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'has_clocked_in' => $attendance != null,
-                'attendance_data' => $attendance,
+                'has_clocked_in'     => $attendance != null,
+                'is_checked_out'     => ($attendance && $attendance->checkout_time) ? true : false,
+                'attendance_data'    => $attendance,
                 'is_face_registered' => !empty($teacher->photo),
             ]
         ]);
@@ -92,7 +93,63 @@ class TeacherSelfAttendanceController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Absensi berhasil dicatat!',
+            'message' => 'Absensi datang berhasil dicatat!',
+            'data' => $attendance
+        ]);
+    }
+
+    /**
+     * Store teacher self-attendance (Clock Out).
+     */
+    public function clockOut(Request $request)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'photo' => 'required|string', // Base64
+        ]);
+
+        $teacher = $request->user()->teacher;
+        $today = Carbon::today();
+
+        // 1. Cek Record Hari Ini
+        $attendance = TeacherAttendance::where('teacher_id', $teacher->id)
+            ->whereDate('created_at', $today)
+            ->first();
+
+        if (!$attendance) {
+            return response()->json(['status' => 'error', 'message' => 'Anda belum melakukan absensi datang hari ini.'], 422);
+        }
+
+        if ($attendance->checkout_time) {
+            return response()->json(['status' => 'error', 'message' => 'Anda sudah melakukan absensi pulang hari ini.'], 422);
+        }
+
+        // 2. Validasi GPS
+        $gpsValidation = $this->validateGps($request->latitude, $request->longitude);
+        if (!$gpsValidation['isValid']) {
+            return response()->json(['status' => 'error', 'message' => $gpsValidation['message']], 422);
+        }
+
+        // 3. Save Photo Evidence
+        $image = $request->photo;
+        $image = str_replace('data:image/png;base64,', '', $image);
+        $image = str_replace(' ', '+', $image);
+        $imageName = 'teacher_checkout_' . $teacher->id . '_' . time() . '.png';
+        $path = 'teacher_attendances/' . $imageName;
+        Storage::disk('public')->put($path, base64_decode($image));
+
+        // 4. Update Record
+        $attendance->update([
+            'checkout_time'           => now(),
+            'checkout_latitude'       => $request->latitude,
+            'checkout_longitude'      => $request->longitude,
+            'checkout_photo_evidence' => $path,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Absensi pulang berhasil dicatat!',
             'data' => $attendance
         ]);
     }

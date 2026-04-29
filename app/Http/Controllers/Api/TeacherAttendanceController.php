@@ -46,7 +46,9 @@ class TeacherAttendanceController extends Controller
                     'nis'           => $student->nis,
                     'photo_url'     => $student->photo ? asset('storage/' . $student->photo) : null,
                     'status'        => $attendance ? $attendance->status : 'belum_absen',
-                    'time'          => $attendance ? $attendance->attendance_time->format('H:i:s') : null,
+                    'in_time'       => $attendance ? $attendance->attendance_time->format('H:i:s') : null,
+                    'out_time'      => ($attendance && $attendance->checkout_time) ? $attendance->checkout_time->format('H:i:s') : null,
+                    'is_checked_out'=> ($attendance && $attendance->checkout_time) ? true : false,
                     'attendance_id' => $attendance ? $attendance->id : null,
                 ];
             });
@@ -64,7 +66,10 @@ class TeacherAttendanceController extends Controller
             'student_unique_id' => 'required|string|exists:students,unique_id',
             'latitude'          => 'required|numeric',
             'longitude'         => 'required|numeric',
+            'type'              => 'nullable|string|in:in,out',
         ]);
+
+        $type = $request->input('type', 'in');
 
         $gpsValidation = $this->validateGps($request->latitude, $request->longitude);
         if (!$gpsValidation['isValid']) {
@@ -144,33 +149,62 @@ class TeacherAttendanceController extends Controller
             ], 409);
         }
 
-        if ($attendance) {
+        if ($type === 'in') {
+            if ($attendance) {
+                return response()->json([
+                    'status'       => 'already_clocked_in',
+                    'message'      => 'Siswa sudah absen masuk hari ini.',
+                    'student_name' => $student->name,
+                ], 200);
+            }
+
+            $settings        = Setting::pluck('value', 'key');
+            $batasWaktuMasuk = $settings->get('jam_masuk', '07:30');
+            $lateTime        = $today->copy()->setTimeFromTimeString($batasWaktuMasuk);
+
+            $status = ($now->gt($lateTime)) ? 'terlambat' : 'tepat_waktu';
+
+            $newAttendance = Attendance::create([
+                'student_id'      => $student->id,
+                'attendance_time' => $now,
+                'status'          => $status,
+            ]);
+
             return response()->json([
-                'status'       => 'already_clocked_in',
-                'message'      => 'Siswa sudah diabsen hari ini.',
+                'status'            => 'success',
+                'message'           => 'Absensi datang berhasil dicatat',
+                'attendance_status' => $status,
+                'student_name'      => $student->name,
+                'time'              => $newAttendance->attendance_time->format('H:i:s'),
+            ]);
+        } else {
+            // Type == 'out'
+            if (!$attendance) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Siswa belum absen datang. Silakan absen datang terlebih dahulu.',
+                ], 422);
+            }
+
+            if ($attendance->checkout_time) {
+                return response()->json([
+                    'status'       => 'already_clocked_out',
+                    'message'      => 'Siswa sudah absen pulang hari ini.',
+                    'student_name' => $student->name,
+                ], 200);
+            }
+
+            $attendance->update([
+                'checkout_time' => $now,
+            ]);
+
+            return response()->json([
+                'status'       => 'success',
+                'message'      => 'Absensi pulang berhasil dicatat',
                 'student_name' => $student->name,
-            ], 200);
+                'time'         => $now->format('H:i:s'),
+            ]);
         }
-
-        $settings        = Setting::pluck('value', 'key');
-        $batasWaktuMasuk = $settings->get('jam_masuk', '07:30');
-        $lateTime        = $today->copy()->setTimeFromTimeString($batasWaktuMasuk);
-
-        $status = ($now->gt($lateTime)) ? 'terlambat' : 'tepat_waktu';
-
-        $newAttendance = Attendance::create([
-            'student_id'      => $student->id,
-            'attendance_time' => $now,
-            'status'          => $status,
-        ]);
-
-        return response()->json([
-            'status'            => 'success',
-            'message'           => 'Absensi berhasil dicatat',
-            'attendance_status' => $status,
-            'student_name'      => $student->name,
-            'time'              => $newAttendance->attendance_time->format('H:i:s'),
-        ]);
     }
 
     /**
@@ -180,10 +214,16 @@ class TeacherAttendanceController extends Controller
     public function overrideAttendance(Request $request, $studentId)
     {
         $request->validate([
-            'status' => 'required|in:tepat_waktu,terlambat,izin,sakit,alpa',
+            'status' => 'required|in:tepat_waktu,terlambat,izin,sakit,alpa,pulang',
+            'type'   => 'nullable|in:in,out',
             'date'   => 'nullable|date',
             'notes'  => 'nullable|string|max:255',
         ]);
+
+        $type = $request->input('type', 'in');
+        if ($request->status === 'pulang') {
+            $type = 'out';
+        }
 
         $user    = $request->user();
         $teacher = $user->teacher;
@@ -246,19 +286,48 @@ class TeacherAttendanceController extends Controller
             ->whereDate('attendance_time', $date)
             ->first();
 
-        if ($attendance) {
-            $attendance->status = $request->status;
-            if ($request->filled('notes')) {
-                $attendance->notes = $request->notes;
+        if ($type === 'in') {
+            $status = $request->status === 'pulang' ? 'tepat_waktu' : $request->status;
+
+            if ($attendance) {
+                $attendance->status = $status;
+                if ($request->filled('notes')) {
+                    $attendance->notes = $request->notes;
+                }
+                
+                // Jika status diubah jadi tidak hadir, hapus jam pulang
+                if (in_array($status, ['izin', 'sakit', 'alpa'])) {
+                    $attendance->checkout_time = null;
+                }
+                
+                $attendance->save();
+            } else {
+                $attendance = Attendance::create([
+                    'student_id'      => $studentId,
+                    'attendance_time' => $date->copy()->setTime(now()->hour, now()->minute, now()->second),
+                    'status'          => $status,
+                    'notes'           => $request->notes,
+                ]);
             }
-            $attendance->save();
         } else {
-            $attendance = Attendance::create([
-                'student_id'      => $studentId,
-                'attendance_time' => $date->copy()->setTime(7, 0, 0),
-                'status'          => $request->status,
-                'notes'           => $request->notes,
-            ]);
+            // type == 'out'
+            if ($attendance) {
+                $attendance->checkout_time = $request->status === 'alpa' ? null : now();
+                if ($request->filled('notes')) {
+                    $attendance->notes = $request->notes;
+                }
+                $attendance->save();
+            } else {
+                // Buat record baru jika belum ada (meskipun idealnya in dulu)
+                // Tapi untuk override wali kelas kita izinkan
+                $attendance = Attendance::create([
+                    'student_id'      => $studentId,
+                    'attendance_time' => $date->copy()->setTime(7, 0, 0),
+                    'checkout_time'   => now(),
+                    'status'          => 'tepat_waktu',
+                    'notes'           => $request->notes,
+                ]);
+            }
         }
 
         return response()->json([

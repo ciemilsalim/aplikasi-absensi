@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Rute Absensi Mandiri Guru (Face & GPS)
     Route::get('/teacher/self-attendance/status', [TeacherSelfAttendanceController::class, 'getStatus']);
     Route::post('/teacher/self-attendance/clock-in', [TeacherSelfAttendanceController::class, 'store']);
+    Route::post('/teacher/self-attendance/clock-out', [TeacherSelfAttendanceController::class, 'clockOut']);
     Route::post('/teacher/self-attendance/register-face', [TeacherSelfAttendanceController::class, 'registerFace']);
     Route::get('/teacher/self-attendance/history', [TeacherSelfAttendanceController::class, 'getHistory']);
 

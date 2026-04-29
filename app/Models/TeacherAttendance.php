@@ -15,6 +15,19 @@ class TeacherAttendance extends Model
         'latitude',
         'longitude',
         'photo_evidence',
+        'checkout_time',
+        'checkout_photo_evidence',
+        'checkout_latitude',
+        'checkout_longitude',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'checkout_time' => 'datetime',
     ];
 
     public function teacher()
