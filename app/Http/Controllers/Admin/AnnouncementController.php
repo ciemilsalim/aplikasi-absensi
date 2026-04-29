@@ -34,14 +34,20 @@ class AnnouncementController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'publish_now' => 'nullable|boolean',
         ]);
+
+        $bannerPath = null;
+        if ($request->hasFile('banner')) {
+            $bannerPath = $request->file('banner')->store('announcements', 'public');
+        }
 
         Announcement::create([
             'user_id' => Auth::id(),
             'title' => $request->title,
             'content' => $request->content,
-            // Jika checkbox 'Publish Now' dicentang, langsung isi tanggal publikasi
+            'banner' => $bannerPath,
             'published_at' => $request->has('publish_now') ? now() : null,
         ]);
 
@@ -64,14 +70,25 @@ class AnnouncementController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'publish_now' => 'nullable|boolean',
         ]);
 
-        $announcement->update([
+        $data = [
             'title' => $request->title,
             'content' => $request->content,
             'published_at' => $request->has('publish_now') ? ($announcement->published_at ?? now()) : null,
-        ]);
+        ];
+
+        if ($request->hasFile('banner')) {
+            // Hapus banner lama jika ada
+            if ($announcement->banner) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($announcement->banner);
+            }
+            $data['banner'] = $request->file('banner')->store('announcements', 'public');
+        }
+
+        $announcement->update($data);
 
         return redirect()->route('admin.announcements.index')->with('success', 'Pengumuman berhasil diperbarui.');
     }
@@ -81,6 +98,9 @@ class AnnouncementController extends Controller
      */
     public function destroy(Announcement $announcement)
     {
+        if ($announcement->banner) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($announcement->banner);
+        }
         $announcement->delete();
         return redirect()->route('admin.announcements.index')->with('success', 'Pengumuman berhasil dihapus.');
     }

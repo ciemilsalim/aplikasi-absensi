@@ -15,12 +15,20 @@ class Announcement extends Model
         'user_id',
         'title',
         'content',
+        'banner',
         'published_at',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
     ];
+
+    protected $appends = ['banner_url'];
+
+    public function getBannerUrlAttribute()
+    {
+        return $this->banner ? asset('storage/' . $this->banner) : null;
+    }
 
     public function user()
     {

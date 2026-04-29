@@ -28,6 +28,7 @@ class AnnouncementController extends Controller
                     'content' => $item->content,
                     'published_at' => $item->published_at->format('d M Y H:i'),
                     'author' => $item->user->name ?? 'Admin Sekolah',
+                    'banner_url' => $item->banner_url,
                 ];
             });
 
@@ -52,6 +53,7 @@ class AnnouncementController extends Controller
                 'content' => $announcement->content,
                 'published_at' => $announcement->published_at->format('d F Y H:i'),
                 'author' => $announcement->user->name ?? 'Admin Sekolah',
+                'banner_url' => $announcement->banner_url,
             ]
         ]);
     }

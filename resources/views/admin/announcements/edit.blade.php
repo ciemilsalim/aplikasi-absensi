@@ -12,7 +12,7 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <form action="{{ route('admin.announcements.update', $announcement) }}" method="POST">
+                <form action="{{ route('admin.announcements.update', $announcement) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <div class="p-6 space-y-6">
@@ -20,6 +20,19 @@
                             <x-input-label for="title" :value="__('Judul Pengumuman')" />
                             <x-text-input id="title" class="block mt-1 w-full" type="text" name="title" :value="old('title', $announcement->title)" required autofocus />
                             <x-input-error class="mt-2" :messages="$errors->get('title')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="banner" :value="__('Gambar Banner (Kosongkan jika tidak ingin mengubah)')" />
+                            @if($announcement->banner)
+                                <div class="mt-2 mb-4">
+                                    <p class="text-xs text-gray-500 mb-1">Banner saat ini:</p>
+                                    <img src="{{ asset('storage/' . $announcement->banner) }}" alt="Current Banner" class="h-32 rounded-lg shadow-sm border border-gray-200">
+                                </div>
+                            @endif
+                            <input type="file" id="banner" name="banner" class="block mt-1 w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" accept="image/*">
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Rekomendasi ukuran 1200x600 px (Maks. 2MB)</p>
+                            <x-input-error class="mt-2" :messages="$errors->get('banner')" />
                         </div>
 
                         <div>
