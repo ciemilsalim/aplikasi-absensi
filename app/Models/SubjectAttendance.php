@@ -20,6 +20,8 @@ class SubjectAttendance extends Model
         'teacher_id',
         'status',
         'notes',
+        'academic_year_id',
+        'semester_id',
     ];
 
     /**
@@ -44,5 +46,15 @@ class SubjectAttendance extends Model
     public function teacher()
     {
         return $this->belongsTo(Teacher::class);
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
     }
 }

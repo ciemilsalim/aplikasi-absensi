@@ -174,6 +174,21 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             // Obrolan Admin
             Route::get('/chat/{selectedParent?}', [AdminChatController::class, 'index'])->name('chat.index');
             Route::post('/chat/conversations/{conversation}', [AdminChatController::class, 'storeMessage'])->name('chat.store_message');
+
+            // Manajemen Tahun Ajaran & Semester
+            Route::get('/academic-periods', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'index'])->name('academic-periods.index');
+            Route::post('/academic-periods/year', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'storeYear'])->name('academic-periods.year.store');
+            Route::post('/academic-periods/semester', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'storeSemester'])->name('academic-periods.semester.store');
+            Route::post('/academic-periods/year/{id}/activate', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'activateYear'])->name('academic-periods.year.activate');
+            Route::post('/academic-periods/semester/{id}/activate', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'activateSemester'])->name('academic-periods.semester.activate');
+            Route::delete('/academic-periods/year/{id}', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'destroyYear'])->name('academic-periods.year.destroy');
+            Route::delete('/academic-periods/semester/{id}', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'destroySemester'])->name('academic-periods.semester.destroy');
+
+            // Manajemen Ekstrakurikuler
+            Route::resource('extracurriculars', \App\Http\Controllers\Admin\ExtracurricularController::class);
+            Route::get('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'students'])->name('extracurriculars.students');
+            Route::post('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'assignStudents'])->name('extracurriculars.assign_students');
+            Route::delete('extracurriculars/{extracurricular}/students/{student}', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'removeStudent'])->name('extracurriculars.remove_student');
         }
     );
 });
@@ -234,6 +249,12 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::get('/attendance/scanner', [\App\Http\Controllers\Teacher\TeacherAttendanceController::class, 'showScanner'])->name('attendance.scanner');
     Route::post('/attendance/store', [\App\Http\Controllers\Teacher\TeacherAttendanceController::class, 'store'])->name('attendance.store');
     Route::post('/attendance/register-face', [\App\Http\Controllers\Teacher\TeacherAttendanceController::class, 'registerFace'])->name('attendance.register_face');
+
+    // == RUTE UNTUK ABSENSI EKSTRAKURIKULER ==
+    Route::get('/extracurricular-attendance', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'index'])->name('extracurricular-attendance.index');
+    Route::get('/extracurricular-attendance/{extracurricular}/create', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'create'])->name('extracurricular-attendance.create');
+    Route::post('/extracurricular-attendance/{extracurricular}', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'store'])->name('extracurricular-attendance.store');
+    Route::get('/extracurricular-attendance/{extracurricular}/report', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'report'])->name('extracurricular-attendance.report');
 });
 
 require __DIR__ . '/auth.php';

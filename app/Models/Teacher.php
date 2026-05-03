@@ -49,4 +49,9 @@ class Teacher extends Model
     {
         return $this->hasMany(Conversation::class);
     }
+
+    public function coachingExtracurriculars()
+    {
+        return $this->hasMany(Extracurricular::class, 'teacher_id');
+    }
 }

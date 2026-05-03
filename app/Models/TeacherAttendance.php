@@ -19,6 +19,8 @@ class TeacherAttendance extends Model
         'checkout_photo_evidence',
         'checkout_latitude',
         'checkout_longitude',
+        'academic_year_id',
+        'semester_id',
     ];
 
     /**
@@ -33,5 +35,15 @@ class TeacherAttendance extends Model
     public function teacher()
     {
         return $this->belongsTo(Teacher::class);
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
     }
 }
