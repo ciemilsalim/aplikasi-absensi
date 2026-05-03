@@ -67,6 +67,28 @@
                 </div>
             @endif
 
+            {{-- === PENGUMUMAN === --}}
+            @if(isset($announcements) && $announcements->isNotEmpty())
+                <div class="space-y-4">
+                    @foreach($announcements as $announcement)
+                        <div class="bg-sky-50 dark:bg-sky-900/30 border-l-4 border-sky-500 p-4 rounded-r-xl shadow-sm">
+                            <div class="flex gap-3">
+                                <div class="flex-shrink-0">
+                                    <span class="material-icons text-sky-500">campaign</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800 dark:text-white">{{ $announcement->title }}</h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{{ $announcement->content }}</p>
+                                    <p class="text-[10px] text-sky-600 dark:text-sky-400 mt-2 font-medium">
+                                        {{ $announcement->published_at->translatedFormat('d F Y') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
             {{-- === KONTEN DINAMIS === --}}
             <div class="space-y-6">
                  @if($currentView === 'wali_kelas' && $isHomeroomTeacher)

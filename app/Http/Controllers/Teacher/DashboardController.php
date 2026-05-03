@@ -15,6 +15,7 @@ use App\Models\TeachingAssignment;
 use App\Models\TeacherNote;
 use App\Models\Extracurricular;
 use App\Models\ExtracurricularAttendance;
+use App\Models\Announcement;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
@@ -85,6 +86,12 @@ class DashboardController extends Controller
             $viewData['classPerformanceData'] = [];
         }
 
+        // Ambil pengumuman terbaru
+        $viewData['announcements'] = Announcement::whereNotNull('published_at')
+                                     ->where('published_at', '<=', now())
+                                     ->latest('published_at')
+                                     ->take(3)
+                                     ->get();
 
         return view('teacher.dashboard', $viewData);
     }
