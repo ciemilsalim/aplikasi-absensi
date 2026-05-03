@@ -75,6 +75,13 @@ class ExtracurricularController extends Controller
 
         $date = $request->date ?? Carbon::today()->toDateString();
         $extracurricularId = $request->extracurricular_id;
+        
+        $academicYear = \App\Models\AcademicYear::getActive();
+        $semester = \App\Models\Semester::getActive();
+
+        if (!$academicYear || !$semester) {
+            return response()->json(['status' => 'error', 'message' => 'Tahun ajaran atau semester aktif belum diatur oleh admin.'], 422);
+        }
 
         foreach ($request->attendances as $att) {
             \App\Models\ExtracurricularAttendance::updateOrCreate(
@@ -86,6 +93,8 @@ class ExtracurricularController extends Controller
                 [
                     'status' => $att['status'],
                     'teacher_id' => Auth::user()->teacher->id,
+                    'academic_year_id' => $academicYear->id,
+                    'semester_id' => $semester->id,
                 ]
             );
         }
