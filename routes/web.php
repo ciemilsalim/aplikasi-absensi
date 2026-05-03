@@ -130,6 +130,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::resource('subjects', \App\Http\Controllers\Admin\SubjectController::class)->except(['show']);
             Route::post('users/bulk-destroy', [UserController::class, 'bulkDestroy'])->name('users.bulk_destroy');
             Route::post('students/bulk-destroy', [StudentController::class, 'bulkDestroy'])->name('students.bulk_destroy');
+            Route::post('students/bulk-promote', [StudentController::class, 'bulkPromote'])->name('students.bulk_promote');
 
             Route::get('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class, 'index'])->name('classes.assign_teacher');
             Route::post('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class, 'store'])->name('classes.store_teacher_assignment');

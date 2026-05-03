@@ -180,6 +180,23 @@ class StudentController extends Controller
     }
 
     /**
+     * Memindahkan siswa yang dipilih ke kelas baru (Naik Kelas massal).
+     */
+    public function bulkPromote(Request $request)
+    {
+        $request->validate([
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:students,id',
+            'target_class_id' => 'required|exists:school_classes,id',
+        ]);
+
+        Student::whereIn('id', $request->student_ids)
+            ->update(['school_class_id' => $request->target_class_id]);
+
+        return redirect()->route('admin.students.index')->with('success', 'Siswa yang dipilih berhasil dipindahkan ke kelas baru.');
+    }
+
+    /**
      * Menampilkan form untuk impor data siswa dari Excel.
      */
     public function showImportForm()
