@@ -19,9 +19,9 @@ class SettingController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'latitude' => $settings->get('school_latitude'),
-                'longitude' => $settings->get('school_longitude'),
-                'radius' => (int) $settings->get('attendance_radius', 100),
+                'school_latitude' => $settings->get('school_latitude'),
+                'school_longitude' => $settings->get('school_longitude'),
+                'attendance_radius' => (int) $settings->get('attendance_radius', 100),
             ]
         ]);
     }

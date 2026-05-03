@@ -16,7 +16,7 @@ class SchoolLocationSettingSeeder extends Seeder
         $settings = [
             ['key' => 'school_latitude', 'value' => '-6.471947'],
             ['key' => 'school_longitude', 'value' => '106.840428'],
-            ['key' => 'school_radius', 'value' => '100'], // Dalam meter
+            ['key' => 'attendance_radius', 'value' => '100'], // Dalam meter
         ];
 
         foreach ($settings as $setting) {
