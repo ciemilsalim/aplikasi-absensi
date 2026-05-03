@@ -66,6 +66,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teacher/profile', [ProfileController::class, 'show']);
     Route::put('/teacher/profile', [ProfileController::class, 'update']);
 
+    // Rute Ekstrakurikuler (Pembina)
+    Route::get('/teacher/extracurriculars', [\App\Http\Controllers\Api\ExtracurricularController::class, 'index']);
+    Route::get('/teacher/extracurriculars/{id}/students', [\App\Http\Controllers\Api\ExtracurricularController::class, 'getStudents']);
+    Route::post('/teacher/extracurriculars/attendance', [\App\Http\Controllers\Api\ExtracurricularController::class, 'storeAttendance']);
+
     // == RUTE KHUSUS ORANG TUA ==
     Route::prefix('parent')->middleware('role:parent')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\Parent\ParentDashboardController::class, 'index']);
@@ -76,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/students/{student}/schedule', [\App\Http\Controllers\Api\Parent\ParentStudentController::class, 'schedule']);
         Route::get('/students/{student}/journals', [\App\Http\Controllers\Api\Parent\ParentStudentController::class, 'journals']);
         Route::get('/students/{student}/notes', [\App\Http\Controllers\Api\Parent\ParentStudentController::class, 'notes']);
+        Route::get('/students/{student}/extracurricular-attendance', [\App\Http\Controllers\Api\Parent\ParentStudentController::class, 'extracurricularAttendance']);
 
         // Perizinan
         Route::get('/leave-requests', [\App\Http\Controllers\Api\Parent\ParentLeaveRequestController::class, 'index']);

@@ -173,6 +173,23 @@ class ParentStudentController extends Controller
         ]);
     }
 
+    public function extracurricularAttendance(Request $request, Student $student)
+    {
+        $this->authorizeParent($student);
+
+        $limit = $request->get('limit', 30);
+
+        $attendances = \App\Models\ExtracurricularAttendance::with(['extracurricular'])
+            ->where('student_id', $student->id)
+            ->latest('date')
+            ->paginate($limit);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $attendances
+        ]);
+    }
+
     /**
      * Helper to ensure the parent is authorized to view this student.
      */

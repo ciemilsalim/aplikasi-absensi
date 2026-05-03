@@ -54,6 +54,7 @@ class AuthController extends Controller
         if ($user->role === 'teacher') {
             $teacherInfo = $user->teacher;
             $responseData['is_homeroom'] = $teacherInfo ? $teacherInfo->homeroomClass()->exists() : false;
+            $responseData['is_coach'] = $teacherInfo ? $teacherInfo->coachingExtracurriculars()->exists() : false;
             $responseData['teacher_info'] = $teacherInfo;
         }
 
