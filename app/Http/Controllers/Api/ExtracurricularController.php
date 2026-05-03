@@ -31,8 +31,8 @@ class ExtracurricularController extends Controller
         $teacher = Auth::user()->teacher;
         $extracurricular = Extracurricular::findOrFail($id);
 
-        // Otorisasi sederhana
-        if (!$teacher->coachingExtracurriculars->contains($id)) {
+        // Otorisasi: Pastikan guru ini adalah pembinanya
+        if ($extracurricular->teacher_id !== $teacher->id) {
             return response()->json(['status' => 'error', 'message' => 'Anda bukan pembina ekskul ini'], 403);
         }
 
