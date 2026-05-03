@@ -44,10 +44,10 @@ class ExtracurricularController extends Controller
         }
 
         $date = request('date', Carbon::today()->toDateString());
-        $students = $extracurricular->students()->with(['attendances' => function($q) use ($date, $id) {
+        $students = $extracurricular->students()->with(['extracurricularAttendances' => function($q) use ($date, $id) {
             $q->where('date', $date)->where('extracurricular_id', $id);
         }])->get()->map(function($student) {
-            $attendance = $student->attendances->first();
+            $attendance = $student->extracurricularAttendances->first();
             return [
                 'id' => $student->id,
                 'name' => $student->name,
