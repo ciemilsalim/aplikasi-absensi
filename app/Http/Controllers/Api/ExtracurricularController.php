@@ -31,9 +31,16 @@ class ExtracurricularController extends Controller
         $teacher = Auth::user()->teacher;
         $extracurricular = Extracurricular::findOrFail($id);
 
+        if (!$teacher) {
+            return response()->json(['status' => 'error', 'message' => 'Profil guru tidak ditemukan.'], 404);
+        }
+
         // Otorisasi: Pastikan guru ini adalah pembinanya
-        if ($extracurricular->teacher_id !== $teacher->id) {
-            return response()->json(['status' => 'error', 'message' => 'Anda bukan pembina ekskul ini'], 403);
+        if ($extracurricular->teacher_id != $teacher->id) {
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'Akses ditolak. Anda login sebagai ' . $teacher->name . ' (ID:' . $teacher->id . '), sedangkan pembina ekskul ini adalah Guru dengan ID:' . $extracurricular->teacher_id
+            ], 403);
         }
 
         $date = request('date', Carbon::today()->toDateString());
