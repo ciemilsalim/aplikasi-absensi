@@ -181,7 +181,7 @@ class ParentStudentController extends Controller
 
         $attendances = \App\Models\ExtracurricularAttendance::with(['extracurricular'])
             ->where('student_id', $student->id)
-            ->latest('date')
+            ->latest('attendance_date')
             ->paginate($limit);
 
         return response()->json([
