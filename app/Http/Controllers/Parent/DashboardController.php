@@ -24,9 +24,16 @@ class DashboardController extends Controller
             return redirect()->route('profile.edit')->with('warning', 'Harap lengkapi data profil Anda terlebih dahulu.');
         }
 
-        $students = $parent->students()->with(['attendances' => function($query){
-            $query->latest()->take(5);
-        }, 'schoolClass'])->get();
+        $students = $parent->students()->with([
+            'attendances' => function($query){
+                $query->latest()->take(5);
+            }, 
+            'schoolClass',
+            'extracurriculars',
+            'extracurricularAttendances' => function($query) {
+                $query->latest()->take(5);
+            }
+        ])->get();
         
         // PERBAIKAN: Mengambil kembali 3 pengumuman terbaru yang sudah dipublikasikan
         $announcements = Announcement::whereNotNull('published_at')

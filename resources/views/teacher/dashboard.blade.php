@@ -30,21 +30,35 @@
         <main class="flex-grow pt-6 pb-6 px-4 space-y-6">
 
             {{-- === SWITCHER TAMPILAN === --}}
-            @if($isHomeroomTeacher && $isSubjectTeacher)
-                <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-1.5">
-                    <div class="flex items-center justify-center space-x-2" role="tablist">
+            @if(($isHomeroomTeacher && $isSubjectTeacher) || $isExtracurricularCoach)
+                <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-1.5 overflow-x-auto no-scrollbar">
+                    <div class="flex items-center justify-start space-x-2 min-w-max" role="tablist">
+                        @if($isHomeroomTeacher)
                         <a href="{{ route('teacher.dashboard', ['view' => 'wali_kelas']) }}"
                            class="flex-1 flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200
                                   {{ $currentView === 'wali_kelas' ? 'bg-sky-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700' }}">
                             <span class="material-icons text-base mr-2">groups</span>
                             Wali Kelas
                         </a>
+                        @endif
+
+                        @if($isSubjectTeacher)
                         <a href="{{ route('teacher.dashboard', ['view' => 'guru_mapel']) }}"
                            class="flex-1 flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200
                                   {{ $currentView === 'guru_mapel' ? 'bg-sky-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700' }}">
                             <span class="material-icons text-base mr-2">menu_book</span>
                             Guru Mapel
                         </a>
+                        @endif
+
+                        @if($isExtracurricularCoach)
+                        <a href="{{ route('teacher.dashboard', ['view' => 'pembina_ekskul']) }}"
+                           class="flex-1 flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200
+                                  {{ $currentView === 'pembina_ekskul' ? 'bg-sky-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700' }}">
+                            <span class="material-icons text-base mr-2">military_tech</span>
+                            Ekskul
+                        </a>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -55,6 +69,8 @@
                     @include('teacher.partials._dashboard-wali-kelas')
                 @elseif($currentView === 'guru_mapel' && $isSubjectTeacher)
                     @include('teacher.partials._dashboard-guru-mapel')
+                @elseif($currentView === 'pembina_ekskul' && $isExtracurricularCoach)
+                    @include('teacher.partials._dashboard-pembina-ekskul')
                 @endif
             </div>
 

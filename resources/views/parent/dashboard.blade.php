@@ -116,6 +116,52 @@
                                 @endforelse
                             </ul>
                         </div>
+
+                        {{-- Riwayat Ekstrakurikuler --}}
+                        <div class="mt-8 border-t border-gray-200 dark:border-slate-700 pt-6">
+                            <h4 class="text-base font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-500">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                                </svg>
+                                Kegiatan Ekstrakurikuler:
+                            </h4>
+                            
+                            @if($student->extracurriculars->isNotEmpty())
+                                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    @foreach($student->extracurriculars as $ekskul)
+                                        <div class="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                                            <h5 class="font-bold text-slate-800 dark:text-white uppercase text-xs tracking-tight mb-3">{{ $ekskul->name }}</h5>
+
+                                            <div class="space-y-2">
+                                                @php
+                                                    $ekskulAttendances = $student->extracurricularAttendances
+                                                        ->where('extracurricular_id', $ekskul->id)
+                                                        ->take(3);
+                                                @endphp
+                                                
+                                                @forelse($ekskulAttendances as $att)
+                                                    <div class="flex justify-between items-center text-[10px]">
+                                                        <span class="text-slate-500 dark:text-slate-400 font-medium">{{ \Carbon\Carbon::parse($att->attendance_date)->translatedFormat('d M Y') }}</span>
+                                                        <span class="px-2 py-0.5 rounded-full font-black uppercase text-[9px]
+                                                            @if($att->status == 'hadir') bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 @endif
+                                                            @if($att->status == 'sakit') bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 @endif
+                                                            @if($att->status == 'izin') bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 @endif
+                                                            @if($att->status == 'alpa') bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400 @endif
+                                                        ">
+                                                            {{ $att->status }}
+                                                        </span>
+                                                    </div>
+                                                @empty
+                                                    <p class="text-[10px] text-slate-400 italic">Belum ada riwayat absensi.</p>
+                                                @endforelse
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="mt-4 text-xs text-gray-500 italic">Anak Anda belum terdaftar di kegiatan ekstrakurikuler manapun.</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
             @empty

@@ -13,6 +13,8 @@ use App\Models\Schedule;
 use App\Models\SubjectAttendance;
 use App\Models\TeachingAssignment;
 use App\Models\TeacherNote;
+use App\Models\Extracurricular;
+use App\Models\ExtracurricularAttendance;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
@@ -40,16 +42,21 @@ class DashboardController extends Controller
 
         $isHomeroomTeacher = $teacher->homeroomClass()->exists();
         $isSubjectTeacher = $teacher->teachingAssignments()->exists();
+        $isExtracurricularCoach = $teacher->coachingExtracurriculars()->exists();
 
-        if (!$isHomeroomTeacher && !$isSubjectTeacher) {
+        if (!$isHomeroomTeacher && !$isSubjectTeacher && !$isExtracurricularCoach) {
             return view('teacher.dashboard-no-role', $viewData);
         }
 
-        $defaultView = $isHomeroomTeacher ? 'wali_kelas' : 'guru_mapel';
+        // Tentukan view default
+        $defaultView = 'guru_mapel';
+        if ($isHomeroomTeacher) $defaultView = 'wali_kelas';
+        if (!$isHomeroomTeacher && !$isSubjectTeacher && $isExtracurricularCoach) $defaultView = 'pembina_ekskul';
         $currentView = $request->input('view', $defaultView);
 
         $viewData['isHomeroomTeacher'] = $isHomeroomTeacher;
         $viewData['isSubjectTeacher'] = $isSubjectTeacher;
+        $viewData['isExtracurricularCoach'] = $isExtracurricularCoach;
         $viewData['currentView'] = $currentView;
 
         if ($currentView === 'wali_kelas' && $isHomeroomTeacher) {
@@ -58,6 +65,10 @@ class DashboardController extends Controller
 
         if ($currentView === 'guru_mapel' && $isSubjectTeacher) {
             $viewData = array_merge($viewData, $this->getSubjectTeacherData($teacher));
+        }
+
+        if ($currentView === 'pembina_ekskul' && $isExtracurricularCoach) {
+            $viewData = array_merge($viewData, $this->getExtracurricularCoachData($teacher));
         }
 
         if (!isset($viewData['schedulesToday'])) {
@@ -244,6 +255,36 @@ class DashboardController extends Controller
             'lastAttendanceSummary' => $lastAttendanceSummary,
             'classPerformanceData' => $classPerformanceData,
             'teacherNote' => $teacherNote,
+        ];
+    }
+
+    private function getExtracurricularCoachData($teacher)
+    {
+        $today = Carbon::today();
+        $extracurriculars = Extracurricular::where('teacher_id', $teacher->id)
+            ->withCount('students')
+            ->get();
+
+        $todayAttendanceStats = [];
+        foreach ($extracurriculars as $ekskul) {
+            $stats = ExtracurricularAttendance::where('extracurricular_id', $ekskul->id)
+                ->whereDate('attendance_date', $today)
+                ->select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')
+                ->pluck('total', 'status');
+
+            $todayAttendanceStats[$ekskul->id] = [
+                'hadir' => $stats->get('hadir', 0),
+                'sakit' => $stats->get('sakit', 0),
+                'izin' => $stats->get('izin', 0),
+                'alpa' => $stats->get('alpa', 0),
+                'total_recorded' => $stats->sum(),
+            ];
+        }
+
+        return [
+            'coachedExtracurriculars' => $extracurriculars,
+            'todayExtracurricularStats' => $todayAttendanceStats,
         ];
     }
 
