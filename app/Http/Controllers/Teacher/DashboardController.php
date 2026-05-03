@@ -48,10 +48,14 @@ class DashboardController extends Controller
             return view('teacher.dashboard-no-role', $viewData);
         }
 
-        // Tentukan view default
-        $defaultView = 'guru_mapel';
-        if ($isHomeroomTeacher) $defaultView = 'wali_kelas';
-        if (!$isHomeroomTeacher && !$isSubjectTeacher && $isExtracurricularCoach) $defaultView = 'pembina_ekskul';
+        // Tentukan view default berdasarkan prioritas
+        if ($isHomeroomTeacher) {
+            $defaultView = 'wali_kelas';
+        } elseif ($isSubjectTeacher) {
+            $defaultView = 'guru_mapel';
+        } else {
+            $defaultView = 'pembina_ekskul';
+        }
         $currentView = $request->input('view', $defaultView);
 
         $viewData['isHomeroomTeacher'] = $isHomeroomTeacher;

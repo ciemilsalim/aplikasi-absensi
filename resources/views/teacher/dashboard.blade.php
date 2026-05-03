@@ -30,7 +30,11 @@
         <main class="flex-grow pt-6 pb-6 px-4 space-y-6">
 
             {{-- === SWITCHER TAMPILAN === --}}
-            @if(($isHomeroomTeacher && $isSubjectTeacher) || $isExtracurricularCoach)
+            @php
+                $roleCount = ($isHomeroomTeacher ? 1 : 0) + ($isSubjectTeacher ? 1 : 0) + ($isExtracurricularCoach ? 1 : 0);
+            @endphp
+
+            @if($roleCount > 1)
                 <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-1.5 overflow-x-auto no-scrollbar">
                     <div class="flex items-center justify-start space-x-2 min-w-max" role="tablist">
                         @if($isHomeroomTeacher)
