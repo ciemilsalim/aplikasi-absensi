@@ -311,14 +311,28 @@ class ScheduleController extends Controller
         }
 
         $threshold = (int) $request->query('threshold', 3);
+        $homeroomParam = $request->query('homeroom_only');
+        
+        // Default to homeroom if they are a homeroom teacher and the parameter is not explicitly false
+        $isHomeroomOnly = $homeroomParam === 'true' || ($homeroomParam === null && $teacher->homeroomClass);
 
-        $scheduleIds = Schedule::whereHas('teachingAssignment', fn($q) => $q->where('teacher_id', $teacher->id))
-            ->pluck('id');
+        $query = SubjectAttendance::whereIn('status', ['alpa', 'bolos']);
+
+        if ($isHomeroomOnly) {
+            $homeroomClass = $teacher->homeroomClass;
+            if (!$homeroomClass) {
+                return response()->json(['status' => 'error', 'message' => 'Anda bukan Wali Kelas.'], 403);
+            }
+            $studentIds = Student::where('school_class_id', $homeroomClass->id)->pluck('id');
+            $query->whereIn('student_id', $studentIds);
+        } else {
+            $scheduleIds = Schedule::whereHas('teachingAssignment', fn($q) => $q->where('teacher_id', $teacher->id))
+                ->pluck('id');
+            $query->whereIn('schedule_id', $scheduleIds);
+        }
 
         // Hitung kumulatif alpa+bolos per siswa per jadwal
-        $rows = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
-            ->whereIn('status', ['alpa', 'bolos'])
-            ->selectRaw('student_id, schedule_id,
+        $rows = $query->selectRaw('student_id, schedule_id,
                 COUNT(*) as total_absent,
                 SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) as alpa,
                 SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) as bolos')
@@ -329,21 +343,31 @@ class ScheduleController extends Controller
 
         // Enrich dengan nama siswa, mata pelajaran, kelas
         $result = $rows->map(function ($row) {
-            $student  = Student::select('id', 'name', 'nis')->find($row->student_id);
-            $schedule = Schedule::with('teachingAssignment.subject:id,name', 'teachingAssignment.schoolClass:id,name')
-                ->find($row->schedule_id);
+            $student  = Student::with('schoolClass:id,name')->select('id', 'name', 'nis', 'school_class_id')->find($row->student_id);
+            $schedule = Schedule::with('teachingAssignment.subject:id,name')->find($row->schedule_id);
             return [
                 'student_id'   => $row->student_id,
                 'student_name' => $student->name ?? '-',
                 'nis'          => $student->nis ?? '-',
                 'subject_name' => $schedule->teachingAssignment->subject->name ?? '-',
-                'class_name'   => $schedule->teachingAssignment->schoolClass->name ?? '-',
+                'class_name'   => $student->schoolClass->name ?? '-',
                 'total_absent' => (int) $row->total_absent,
                 'alpa'         => (int) $row->alpa,
                 'bolos'        => (int) $row->bolos,
             ];
         });
 
-        return response()->json(['status' => 'success', 'threshold' => $threshold, 'data' => $result]);
+        return response()->json([
+            'status' => 'success', 
+            'threshold' => $threshold, 
+            'debug' => [
+                'isHomeroomOnly' => $isHomeroomOnly,
+                'homeroomParam' => $homeroomParam,
+                'teacher_id' => $teacher->id,
+                'homeroom_class_id' => $teacher->homeroomClass ? $teacher->homeroomClass->id : null,
+                'homeroom_class_name' => $teacher->homeroomClass ? $teacher->homeroomClass->name : null,
+            ],
+            'data' => $result
+        ]);
     }
 }
