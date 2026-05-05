@@ -3,6 +3,7 @@
 // File: app/Models/Student.php
 namespace App\Models;
 
+use App\Models\User;
 use App\Models\ParentModel;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ class Student extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'name',
         'nis',
         'school_class_id',
@@ -21,6 +23,11 @@ class Student extends Model
         'face_descriptor'
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     // Otomatis membuat unique_id saat siswa baru dibuat
     protected static function boot()
     {
@@ -28,6 +35,17 @@ class Student extends Model
         static::creating(function ($model) {
             if (empty($model->unique_id)) {
                 $model->unique_id = (string)Str::uuid();
+            }
+
+            // Otomatis buat user account jika belum ada
+            if (empty($model->user_id)) {
+                $user = User::create([
+                    'name' => $model->name,
+                    'email' => $model->nis . '@mokopani.com',
+                    'password' => bcrypt($model->nis),
+                    'role' => 'student',
+                ]);
+                $model->user_id = $user->id;
             }
         });
     }

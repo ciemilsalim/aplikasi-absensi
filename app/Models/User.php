@@ -59,6 +59,11 @@ class User extends Authenticatable
         return $this->hasOne(Teacher::class);
     }
 
+    public function student()
+    {
+        return $this->hasOne(Student::class);
+    }
+
     // File: app/Models/User.php (Diperbarui)
 // Tambahkan metode ini ke model User Anda
     public function notifications() {
