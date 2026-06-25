@@ -44,6 +44,7 @@ use App\Http\Controllers\Teacher\SubjectAttendanceController;
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::view('/offline', 'offline')->name('offline'); // Endpoint PWA
+Route::get('/sso/login', [\App\Http\Controllers\Auth\SsoLoginController::class, 'login'])->name('sso.login');
 
 // == RUTE AUTENTIKASI & PENGALIHAN ==
 Route::get('/dashboard', function () {

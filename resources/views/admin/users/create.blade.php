@@ -35,6 +35,7 @@
                                 <option value="operator" {{ old('role') == 'operator' ? 'selected' : '' }}>Operator</option>
                                 <option value="teacher" {{ old('role') == 'teacher' ? 'selected' : '' }}>Guru</option>
                                 <option value="parent" {{ old('role') == 'parent' ? 'selected' : '' }}>Orang Tua</option>
+                                <option value="student" {{ old('role') == 'student' ? 'selected' : '' }}>Siswa</option>
                             </select>
                             <x-input-error class="mt-2" :messages="$errors->get('role')" />
                         </div>
