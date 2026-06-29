@@ -109,11 +109,16 @@
                         </div>
                     </div>
                     <div class="relative mt-12 lg:mt-0">
-                        {{-- PERBAIKAN: Mengembalikan logo aplikasi dengan animasi --}}
                         <div class="animate-gentle-float">
-                            <x-application-logo
-                                class="mx-auto w-[20rem] max-w-full text-sky-500/30 dark:text-sky-400/30 animate-[fade-in-up_0.8s_ease-out_forwards]"
-                                style="animation-delay: 0.3s;" />
+                            @if(isset($appLogoPath) && $appLogoPath)
+                                <img src="{{ asset('storage/' . $appLogoPath) }}" alt="Logo {{ $appName ?? 'Aplikasi' }}" 
+                                    class="mx-auto h-48 sm:h-56 lg:h-64 w-auto object-contain animate-[fade-in-up_0.8s_ease-out_forwards] drop-shadow-2xl"
+                                    style="animation-delay: 0.3s;">
+                            @else
+                                <x-application-logo
+                                    class="mx-auto w-[16rem] sm:w-[20rem] max-w-full text-sky-500/30 dark:text-sky-400/30 animate-[fade-in-up_0.8s_ease-out_forwards]"
+                                    style="animation-delay: 0.3s;" />
+                            @endif
                         </div>
                     </div>
                 </div>
