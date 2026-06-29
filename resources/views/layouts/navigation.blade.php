@@ -107,14 +107,9 @@
             @auth
                 @if(auth()->user()->role === 'admin')
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dasbor</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.parents.index')" :active="request()->routeIs('admin.parents.*')">Manajemen Ortu</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.teachers.index')" :active="request()->routeIs('admin.teachers.*')">Data Guru</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.classes.index')" :active="request()->routeIs('admin.classes.*')">Data Kelas</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">Data Siswa</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.announcements.index')" :active="request()->routeIs('admin.announcements.*')">Pengumuman</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="env('SIPADA_URL', 'http://localhost:8000') . '/dashboard'" class="text-sky-600 dark:text-sky-400 font-semibold bg-sky-50 dark:bg-sky-950/20">Portal Data SIPADA</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.leave_requests.index')" :active="request()->routeIs('admin.leave_requests.*')">Pengajuan Izin</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.reports.create')" :active="request()->routeIs('admin.reports.*')">Laporan</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.settings.identity')" :active="request()->routeIs('admin.settings.identity')">Pengaturan</x-responsive-nav-link>
                 @endif
                 @if(auth()->user()->role === 'parent')
                     <x-responsive-nav-link :href="route('parent.dashboard')" :active="request()->routeIs('parent.dashboard')">Dasbor Anak</x-responsive-nav-link>

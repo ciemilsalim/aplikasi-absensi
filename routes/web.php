@@ -105,19 +105,32 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         }
     );
 
-    // Rute yang HANYA bisa diakses oleh Admin
+    // Rute yang HANYA bisa diakses oleh Admin (Tetap Aktif)
     Route::middleware(['role:admin'])->group(
+        function () {
+            // Pengajuan Izin
+            Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
+            Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
+            Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
+
+            // Obrolan Admin
+            Route::get('/chat/{selectedParent?}', [AdminChatController::class, 'index'])->name('chat.index');
+            Route::post('/chat/conversations/{conversation}', [AdminChatController::class, 'storeMessage'])->name('chat.store_message');
+
+            // Laporan Guru
+            Route::get('reports/teacher', [\App\Http\Controllers\Admin\TeacherReportController::class, 'index'])->name('reports.teacher.index');
+            Route::get('reports/teacher/print', [\App\Http\Controllers\Admin\TeacherReportController::class, 'print'])->name('reports.teacher.print');
+        }
+    );
+
+    // Rute yang HANYA bisa diakses oleh Admin dan DIREDIRECT karena terduplikasi di SIPADA
+    Route::middleware(['role:admin', 'sipada.redirect'])->group(
         function () {
             // Pengaturan
             Route::get('/settings/identity', [SettingController::class, 'identity'])->name('settings.identity');
             Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
             Route::get('/settings/attendance', [SettingController::class, 'attendance'])->name('settings.attendance');
             Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
-
-            // Pengajuan Izin
-            Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
-            Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
-            Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
 
             // Manajemen Data (CRUD)
             Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
@@ -148,11 +161,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::delete('schedules/{schedule}', [\App\Http\Controllers\Admin\ScheduleController::class, 'destroy'])->name('schedules.destroy');
 
             // Impor Data (Contoh, jika ada)
-            // ...
-    
-            // Laporan Guru
-            Route::get('reports/teacher', [\App\Http\Controllers\Admin\TeacherReportController::class, 'index'])->name('reports.teacher.index');
-            Route::get('reports/teacher/print', [\App\Http\Controllers\Admin\TeacherReportController::class, 'print'])->name('reports.teacher.print');
             Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');
             Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
             Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
@@ -172,10 +180,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
             Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
             Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
-
-            // Obrolan Admin
-            Route::get('/chat/{selectedParent?}', [AdminChatController::class, 'index'])->name('chat.index');
-            Route::post('/chat/conversations/{conversation}', [AdminChatController::class, 'storeMessage'])->name('chat.store_message');
 
             // Manajemen Tahun Ajaran & Semester
             Route::get('/academic-periods', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'index'])->name('academic-periods.index');

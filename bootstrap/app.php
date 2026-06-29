@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'teacher'        => \App\Http\Middleware\TeacherMiddleware::class,
             'scanner.access' => \App\Http\Middleware\ScannerAccessMiddleware::class,
             'role' => \App\Http\Middleware\CheckRoleMiddleware::class,
+            'sipada.redirect'=> \App\Http\Middleware\RedirectToSipada::class,
         ]);
     })
     ->withSchedule(function ($schedule) {
