@@ -350,6 +350,12 @@
                                  <span class="material-icons text-slate-600 dark:text-slate-400">manage_accounts</span>
                                  <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Edit Profil Saya</span>
                              </a>
+                             @if(auth()->user()->role === 'admin')
+                                 <a href="{{ route('settings.appearance') }}" class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                                     <span class="material-icons text-slate-600 dark:text-slate-400">palette</span>
+                                     <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tampilan & Logo</span>
+                                 </a>
+                             @endif
                              <form method="POST" action="{{ route('logout') }}">
                                  @csrf
                                  <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-950/40 transition">

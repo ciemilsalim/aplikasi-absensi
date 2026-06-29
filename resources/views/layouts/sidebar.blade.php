@@ -99,19 +99,30 @@
 
                          {{-- Laporan Dropdown --}}
                          @if(in_array(auth()->user()->role, ['admin', 'operator']))
-                            <li x-data="{ open: {{ request()->routeIs(['admin.reports.*']) ? 'true' : 'false' }} }">
-                                <button @click="open = !open" class="group flex items-center w-full gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs(['admin.reports.*']) ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }}">
-                                    <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.75h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5-1.5a1.5 1.5 0 0 1-1.5-1.5V6.75A2.25 2.25 0 0 1 4.5 4.5h15a2.25 2.25 0 0 1 2.25 2.25v12.75a1.5 1.5 0 0 1-1.5 1.5h-16.5a1.5 1.5 0 0 1-1.5-1.5Z" />
-                                    </svg>
-                                    Laporan
-                                    <svg class="ml-auto h-5 w-5 shrink-0 transition-transform duration-200" :class="{ 'rotate-90': open }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>
-                                </button>
-                                <ul x-show="open" x-transition class="mt-1 ml-4 pl-4 space-y-1 border-l-2 border-slate-200 dark:border-slate-600">
-                                     <li><a href="{{ route('admin.reports.create') }}" class="{{ request()->routeIs('admin.reports.create') ? 'text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300' }} block rounded-md p-2 text-sm leading-6 hover:bg-slate-50 dark:hover:bg-slate-700">Laporan Siswa</a></li>
-                                     <li><a href="{{ route('admin.reports.teacher.index') }}" class="{{ request()->routeIs('admin.reports.teacher.*') ? 'text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300' }} block rounded-md p-2 text-sm leading-6 hover:bg-slate-50 dark:hover:bg-slate-700">Laporan Guru</a></li>
-                                </ul>
-                            </li>
+                             <li x-data="{ open: {{ request()->routeIs(['admin.reports.*']) ? 'true' : 'false' }} }">
+                                 <button @click="open = !open" class="group flex items-center w-full gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs(['admin.reports.*']) ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }}">
+                                     <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.75h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5-1.5a1.5 1.5 0 0 1-1.5-1.5V6.75A2.25 2.25 0 0 1 4.5 4.5h15a2.25 2.25 0 0 1 2.25 2.25v12.75a1.5 1.5 0 0 1-1.5 1.5h-16.5a1.5 1.5 0 0 1-1.5-1.5Z" />
+                                     </svg>
+                                     Laporan
+                                     <svg class="ml-auto h-5 w-5 shrink-0 transition-transform duration-200" :class="{ 'rotate-90': open }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>
+                                 </button>
+                                 <ul x-show="open" x-transition class="mt-1 ml-4 pl-4 space-y-1 border-l-2 border-slate-200 dark:border-slate-600">
+                                      <li><a href="{{ route('admin.reports.create') }}" class="{{ request()->routeIs('admin.reports.create') ? 'text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300' }} block rounded-md p-2 text-sm leading-6 hover:bg-slate-50 dark:hover:bg-slate-700">Laporan Siswa</a></li>
+                                      <li><a href="{{ route('admin.reports.teacher.index') }}" class="{{ request()->routeIs('admin.reports.teacher.*') ? 'text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300' }} block rounded-md p-2 text-sm leading-6 hover:bg-slate-50 dark:hover:bg-slate-700">Laporan Guru</a></li>
+                                 </ul>
+                             </li>
+                             @if(auth()->user()->role === 'admin')
+                                 <li>
+                                     <a href="{{ route('settings.appearance') }}" class="{{ request()->routeIs('settings.appearance') ? 'bg-slate-100 dark:bg-slate-700 text-sky-600 dark:text-white' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 hover:bg-slate-50 dark:hover:bg-slate-700' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
+                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 shrink-0">
+                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                         </svg>
+                                         Tampilan & Logo
+                                     </a>
+                                 </li>
+                             @endif
                          @endif
             </ul>
         </li>

@@ -123,14 +123,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         }
     );
 
+    // Rute pengaturan penampilan & logo (tidak di-redirect ke SIPADA)
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+    });
+
     // Rute yang HANYA bisa diakses oleh Admin dan DIREDIRECT karena terduplikasi di SIPADA
     Route::middleware(['role:admin', 'sipada.redirect'])->group(
         function () {
             // Pengaturan
             Route::get('/settings/identity', [SettingController::class, 'identity'])->name('settings.identity');
-            Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
             Route::get('/settings/attendance', [SettingController::class, 'attendance'])->name('settings.attendance');
-            Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
             // Manajemen Data (CRUD)
             Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
