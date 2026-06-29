@@ -112,7 +112,7 @@ class TeacherReportController extends Controller
     private function getCommonPdfData()
     {
         $settings = \App\Models\Setting::pluck('value', 'key');
-        $logoPath = 'logos/GR8zWSDSCQUOjEN85kR6ewEc7QYHP9gWMzuHF4G3.png';
+        $logoPath = $settings->get('app_logo');
         $logoBase64 = null;
         if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
             try {

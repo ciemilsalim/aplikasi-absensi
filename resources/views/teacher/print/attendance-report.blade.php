@@ -105,16 +105,12 @@
 <body>
 
     <div class="header-container">
-        @php
-            $hardcodedLogo = 'logos/GR8zWSDSCQUOjEN85kR6ewEc7QYHP9gWMzuHF4G3.png';
-            $logoPath = storage_path('app/public/' . $hardcodedLogo);
-            $logoSrc = '';
-            if (file_exists($logoPath)) {
+        @if(isset($settings['app_logo']) && $settings['app_logo'] && file_exists(storage_path('app/public/' . $settings['app_logo'])))
+            @php
+                $logoPath = storage_path('app/public/' . $settings['app_logo']);
                 $logoData = base64_encode(file_get_contents($logoPath));
                 $logoSrc = 'data:image/' . pathinfo($logoPath, PATHINFO_EXTENSION) . ';base64,' . $logoData;
-            }
-        @endphp
-        @if($logoSrc)
+            @endphp
             <img src="{{ $logoSrc }}" alt="Logo Sekolah" class="logo">
         @endif
         <div class="header-text">

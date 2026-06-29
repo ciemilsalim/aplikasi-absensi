@@ -68,7 +68,7 @@ class LogoServiceProvider extends ServiceProvider
             }
             
             $view->with([
-                'appLogoPath' => 'logos/GR8zWSDSCQUOjEN85kR6ewEc7QYHP9gWMzuHF4G3.png',
+                'appLogoPath' => $settings->get('app_logo'),
                 'appName' => $settings->get('school_name', config('app.name', 'AbsensiSiswa')),
                 'darkModeEnabled' => $settings->get('dark_mode', 'off') === 'on',
                 'pendingLeaveRequestsCount' => $pendingLeaveRequestsCount,

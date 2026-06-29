@@ -46,7 +46,7 @@ class SettingController extends Controller
                 'address' => $settings->get('school_address'),
                 'headmaster_name' => $settings->get('school_headmaster_name'),
                 'headmaster_nip' => $settings->get('school_headmaster_nip'),
-                'logo_url' => asset('storage/logos/GR8zWSDSCQUOjEN85kR6ewEc7QYHP9gWMzuHF4G3.png'),
+                'logo_url' => $settings->get('app_logo') ? asset('storage/' . $settings->get('app_logo')) : null,
             ]
         ]);
     }
