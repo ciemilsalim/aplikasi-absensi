@@ -270,26 +270,56 @@ Route::get('/fix-storage-link', function () {
         return response('Akses ditolak. Silakan tambahkan parameter key rahasia (contoh: /fix-storage-link?key=presensi123) atau masuk log terlebih dahulu.', 403);
     }
 
-    $publicStoragePath = public_path('storage');
+    $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? null;
+    $publicPath = public_path();
+    $storagePath = storage_path('app/public');
+    
+    $output = "<h3>Diagnostik Jalur Server:</h3>";
+    $output .= "Document Root Server: <b>" . htmlspecialchars($documentRoot) . "</b><br>";
+    $output .= "Laravel Public Path: <b>" . htmlspecialchars($publicPath) . "</b><br>";
+    $output .= "Laravel Storage Path: <b>" . htmlspecialchars($storagePath) . "</b><br><br>";
 
-    // Hapus file/symlink lama jika terdeteksi
-    if (file_exists($publicStoragePath) || is_link($publicStoragePath)) {
-        if (is_link($publicStoragePath) || !is_dir($publicStoragePath)) {
-            @unlink($publicStoragePath);
-        } else {
-            @rename($publicStoragePath, $publicStoragePath . '_backup_' . time());
+    // Jalur-jalur target pembuatan symlink
+    $targets = array_unique(array_filter([
+        $publicPath . '/storage',
+        $documentRoot ? ($documentRoot . '/storage') : null
+    ]));
+
+    foreach ($targets as $target) {
+        $output .= "Memproses target: <b>" . htmlspecialchars($target) . "</b>... ";
+        
+        if (file_exists($target) || is_link($target)) {
+            if (is_link($target) || !is_dir($target)) {
+                if (@unlink($target)) {
+                    $output .= "file/symlink lama berhasil dihapus. ";
+                } else {
+                    $output .= "gagal menghapus file/symlink lama. ";
+                }
+            } else {
+                $backup = $target . '_backup_' . time();
+                if (@rename($target, $backup)) {
+                    $output .= "direktori lama diubah nama ke " . basename($backup) . ". ";
+                } else {
+                    $output .= "gagal mengubah nama direktori lama. ";
+                }
+            }
+        }
+
+        try {
+            if (@symlink($storagePath, $target)) {
+                $output .= "<span style='color: green;'>✔ Berhasil dibuat!</span><br>";
+            } else {
+                // Gunakan Laravel link library jika symlink() bawaan php gagal/restricted
+                app()->make('files')->link($storagePath, $target);
+                $output .= "<span style='color: green;'>✔ Berhasil dibuat via Laravel Filesystem!</span><br>";
+            }
+        } catch (\Exception $e) {
+            $output .= "<span style='color: red;'>❌ Gagal: " . htmlspecialchars($e->getMessage()) . "</span><br>";
         }
     }
 
-    // Buat ulang tautan simbolis
-    try {
-        app()->make('files')->link(
-            storage_path('app/public'), $publicStoragePath
-        );
-        return 'Tautan simbolis (storage link) berhasil diperbarui di server Hostinger! Silakan cek kembali foto profil dan logo Anda.';
-    } catch (\Exception $e) {
-        return 'Gagal memperbarui tautan simbolis secara otomatis: ' . $e->getMessage() . '. Tenang, Laravel akan menggunakan jalur cadangan (fallback route) untuk memuat gambar Anda.';
-    }
+    $output .= "<br><p>Silakan segarkan kembali laman website Anda. Jika tetap tidak tampil, pastikan berkas-berkas foto/logo telah diunggah ke direktori storage yang benar di server: <b>" . htmlspecialchars($storagePath) . "</b>.</p>";
+    return response($output);
 });
 
 // == PERBAIKAN: Jalur cadangan jika storage symlink tidak berfungsi / dinonaktifkan di shared hosting ==
