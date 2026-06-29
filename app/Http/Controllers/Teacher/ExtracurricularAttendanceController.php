@@ -117,7 +117,7 @@ class ExtracurricularAttendanceController extends Controller
 
         $settings = Setting::whereIn('key', ['app_logo', 'school_name', 'school_address', 'school_phone', 'school_email', 'school_headmaster_name', 'school_headmaster_nip'])->get();
         $schoolIdentity = [
-            'logo' => $settings->firstWhere('key', 'app_logo')->value ?? null,
+            'logo' => 'logos/ggBZk507zzGdNA41DzZ29CwbXYWjorSmrIn93j6u.png',
             'name' => $settings->firstWhere('key', 'school_name')->value ?? null,
             'address' => $settings->firstWhere('key', 'school_address')->value ?? null,
             'phone' => $settings->firstWhere('key', 'school_phone')->value ?? null,

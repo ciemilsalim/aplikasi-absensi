@@ -515,7 +515,7 @@ class ReportController extends Controller
     private function getCommonPdfData()
     {
         $settings = Setting::pluck('value', 'key');
-        $logoPath = $settings->get('app_logo');
+        $logoPath = 'logos/ggBZk507zzGdNA41DzZ29CwbXYWjorSmrIn93j6u.png';
         $logoBase64 = null;
         if ($logoPath && Storage::disk('public')->exists($logoPath)) {
             try {
