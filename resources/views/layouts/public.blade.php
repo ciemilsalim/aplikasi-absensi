@@ -1,3 +1,21 @@
+@php
+    $teacherScheduleId = null;
+    if (auth()->check() && auth()->user()->role === 'teacher') {
+        $teacher = auth()->user()->teacher;
+        if ($teacher) {
+            $dayOfWeekNumber = now()->dayOfWeek;
+            $firstSchedule = \App\Models\Schedule::where('day_of_week', $dayOfWeekNumber)
+                ->whereHas('teachingAssignment', function ($query) use ($teacher) {
+                    $query->where('teacher_id', $teacher->id);
+                })
+                ->orderBy('start_time', 'asc')
+                ->first();
+            if ($firstSchedule) {
+                $teacherScheduleId = $firstSchedule->id;
+            }
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full scroll-smooth">
 
@@ -61,6 +79,7 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     @stack('styles')
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style type="text/tailwindcss">
         body { @apply font-sans; }
@@ -91,7 +110,7 @@
             </path>
         </svg>
     </div>
-    <div class="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div x-data="{ mobileMenuOpen: false }" class="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
         <header x-data="{ atTop: true }" @scroll.window="atTop = (window.pageYOffset < 50)"
             :class="{ 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg': !atTop }"
             class="sticky top-0 z-50 transition-all duration-300">
@@ -112,10 +131,241 @@
                         class="font-semibold text-sky-600 hover:underline">emilsalimramadhan@gmail.com</a></p>
             </div>
         </footer>
+
+        {{-- PERBAIKAN: Bottom Navigation Bar dipindahkan ke sini --}}
+        @auth
+            <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 z-50 px-2 lg:hidden">
+                <div class="flex justify-around items-center max-w-7xl mx-auto h-16 pb-1">
+                    @if(in_array(auth()->user()->role, ['admin', 'operator']))
+                        <a href="{{ route('admin.dashboard') }}"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">home</span>
+                            <span class="text-[10px] mt-0.5">Beranda</span>
+                        </a>
+                        <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">swap_horiz</span>
+                            <span class="text-[10px] mt-0.5">SIPADA</span>
+                        </a>
+                        
+                        <!-- Tombol Scan QR Tengah (Diperbesar) -->
+                        <div class="relative -mt-6 flex flex-col items-center justify-center w-full">
+                            <a href="{{ route('scanner') }}"
+                                class="flex items-center justify-center h-14 w-14 rounded-full bg-sky-600 hover:bg-sky-700 text-white shadow-lg border-4 border-white dark:border-slate-800 transition transform hover:scale-105 active:scale-95">
+                                <span class="material-icons text-2xl">qr_code_scanner</span>
+                            </a>
+                            <span class="text-[9px] font-semibold mt-1 text-slate-500 dark:text-gray-400">Scan QR</span>
+                        </div>
+
+                        <a href="{{ route('admin.chat.index') }}"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">chat</span>
+                            <span class="text-[10px] mt-0.5">Pesan</span>
+                        </a>
+                        <button @click="mobileMenuOpen = true"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200 text-gray-500 dark:text-gray-400">
+                            <span class="material-icons">menu</span>
+                            <span class="text-[10px] mt-0.5">Lainnya</span>
+                        </button>
+                    @elseif(auth()->user()->role === 'teacher')
+                        <a href="{{ route('teacher.dashboard') }}"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">home</span>
+                            <span class="text-[10px] mt-0.5">Beranda</span>
+                        </a>
+                        <a href="{{ route('teacher.attendance.dashboard') }}"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">person_pin</span>
+                            <span class="text-[10px] mt-0.5">Absen Saya</span>
+                        </a>
+
+                        <!-- Tombol Scan QR Tengah (Diperbesar) -->
+                        <div class="relative -mt-6 flex flex-col items-center justify-center w-full">
+                            @if(auth()->user()->teacher?->homeroomClass)
+                                <a href="{{ route('scanner') }}"
+                                    class="flex items-center justify-center h-14 w-14 rounded-full bg-sky-600 hover:bg-sky-700 text-white shadow-lg border-4 border-white dark:border-slate-800 transition transform hover:scale-105 active:scale-95">
+                                    <span class="material-icons text-2xl">qr_code_scanner</span>
+                                </a>
+                            @else
+                                @if($teacherScheduleId)
+                                    <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $teacherScheduleId]) }}"
+                                        class="flex items-center justify-center h-14 w-14 rounded-full bg-sky-600 hover:bg-sky-700 text-white shadow-lg border-4 border-white dark:border-slate-800 transition transform hover:scale-105 active:scale-95">
+                                        <span class="material-icons text-2xl">qr_code_scanner</span>
+                                    </a>
+                                @else
+                                    <button @click="alert('Tidak ada jadwal mengajar aktif hari ini untuk melakukan presensi mata pelajaran.')"
+                                        class="flex items-center justify-center h-14 w-14 rounded-full bg-gray-400 dark:bg-slate-700 text-white shadow-lg border-4 border-white dark:border-slate-800 transition">
+                                        <span class="material-icons text-2xl">qr_code_scanner</span>
+                                    </button>
+                                @endif
+                            @endif
+                            <span class="text-[9px] font-semibold mt-1 text-slate-500 dark:text-gray-400">Scan QR</span>
+                        </div>
+
+                        <a href="{{ route('teacher.subject.attendance.report') }}"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">assessment</span>
+                            <span class="text-[10px] mt-0.5">Rekap Mapel</span>
+                        </a>
+                        <button @click="mobileMenuOpen = true"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200 text-gray-500 dark:text-gray-400">
+                            <span class="material-icons">menu</span>
+                            <span class="text-[10px] mt-0.5">Lainnya</span>
+                        </button>
+                    @elseif(auth()->user()->role === 'parent')
+                        <a href="{{ route('parent.dashboard') }}"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">home</span>
+                            <span class="text-[10px] mt-0.5">Beranda</span>
+                        </a>
+                        <a href="{{ route('parent.leave-requests.index') }}"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">assignment_turned_in</span>
+                            <span class="text-[10px] mt-0.5">Izin/Sakit</span>
+                        </a>
+                        <a href="{{ route('chat.index') }}"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">chat</span>
+                            <span class="text-[10px] mt-0.5">Obrolan</span>
+                        </a>
+                        <a href="{{ route('profile.edit') }}"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                            <span class="material-icons">account_circle</span>
+                            <span class="text-[10px] mt-0.5">Profil</span>
+                        </a>
+                        <button @click="mobileMenuOpen = true"
+                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200 text-gray-500 dark:text-gray-400">
+                            <span class="material-icons">menu</span>
+                            <span class="text-[10px] mt-0.5">Lainnya</span>
+                        </button>
+                    @endif
+                </div>
+            </nav>
+
+            <!-- Mobile Menu Bottom Sheet -->
+            <div x-show="mobileMenuOpen" class="relative z-50 lg:hidden" style="display: none;" x-transition>
+                <!-- Backdrop -->
+                <div class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 transition-opacity" @click="mobileMenuOpen = false"></div>
+
+                <!-- Bottom Sheet Container -->
+                <div class="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-3xl bg-white dark:bg-slate-800 p-6 shadow-2xl transition-transform duration-300"
+                     x-show="mobileMenuOpen"
+                     x-transition:enter="transform transition ease-out duration-300"
+                     x-transition:enter-start="translate-y-full"
+                     x-transition:enter-end="translate-y-0"
+                     x-transition:leave="transform transition ease-in duration-200"
+                     x-transition:leave-start="translate-y-0"
+                     x-transition:leave-end="translate-y-full">
+                     
+                     <!-- Drag handle indicator -->
+                     <div class="mx-auto h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-600 mb-5"></div>
+
+                     <!-- Title / Close -->
+                     <div class="flex items-center justify-between mb-6 pb-2 border-b border-gray-100 dark:border-slate-700">
+                         <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                             <span class="material-icons text-sky-500">grid_view</span>
+                             Menu Aplikasi
+                         </h3>
+                         <button @click="mobileMenuOpen = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                             <span class="material-icons">close</span>
+                         </button>
+                     </div>
+
+                     <!-- Scrollable items -->
+                     <div class="overflow-y-auto pb-8 space-y-6">
+                         @if(in_array(auth()->user()->role, ['admin', 'operator']))
+                             <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Pemindai & Laporan</div>
+                             <div class="grid grid-cols-2 gap-3">
+                                 <a href="{{ route('admin.leave_requests.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
+                                     <span class="material-icons text-amber-600 dark:text-amber-400 text-3xl mb-1.5">assignment_turned_in</span>
+                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Persetujuan Izin Siswa</span>
+                                 </a>
+                                 <a href="{{ route('scanner') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
+                                     <span class="material-icons text-sky-600 dark:text-sky-400 text-3xl mb-1.5">qr_code_scanner</span>
+                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pemindai Hadir</span>
+                                 </a>
+                                 <a href="{{ route('permit.scanner') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
+                                     <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">assignment</span>
+                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pemindai Izin</span>
+                                 </a>
+                                 <a href="{{ route('admin.reports.create') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
+                                     <span class="material-icons text-emerald-600 dark:text-emerald-400 text-3xl mb-1.5">bar_chart</span>
+                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Laporan Siswa</span>
+                                 </a>
+                                 <a href="{{ route('admin.reports.teacher.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
+                                     <span class="material-icons text-teal-600 dark:text-teal-400 text-3xl mb-1.5">analytics</span>
+                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Laporan Guru</span>
+                                 </a>
+                             </div>
+                         @elseif(auth()->user()->role === 'teacher')
+                             <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Pemindai & Menu Guru</div>
+                             <div class="grid grid-cols-2 gap-3">
+                                 <a href="{{ route('teacher.subject.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
+                                     <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">history_edu</span>
+                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Riwayat Presensi Mapel</span>
+                                 </a>
+                                 <a href="{{ route('scanner') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
+                                     <span class="material-icons text-sky-600 dark:text-sky-400 text-3xl mb-1.5">qr_code_scanner</span>
+                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pemindai Hadir</span>
+                                 </a>
+                                 <a href="{{ route('permit.scanner') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
+                                     <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">assignment</span>
+                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pemindai Izin</span>
+                                 </a>
+                                 @if(auth()->user()->teacher?->homeroomClass)
+                                     <a href="{{ route('teacher.leave_requests.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
+                                         <span class="material-icons text-amber-600 dark:text-amber-400 text-3xl mb-1.5">assignment_turned_in</span>
+                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Persetujuan Izin Wali Kelas</span>
+                                     </a>
+                                     <a href="{{ route('teacher.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
+                                         <span class="material-icons text-blue-600 dark:text-blue-400 text-3xl mb-1.5">history</span>
+                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Riwayat Kehadiran</span>
+                                     </a>
+                                     <a href="{{ route('chat.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
+                                         <span class="material-icons text-pink-600 dark:text-pink-400 text-3xl mb-1.5">chat</span>
+                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Obrolan Ortu</span>
+                                     </a>
+                                 @endif
+                                 @if(auth()->user()->teacher?->coachingExtracurriculars()->exists())
+                                     <a href="{{ route('teacher.extracurricular-attendance.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
+                                         <span class="material-icons text-rose-600 dark:text-rose-400 text-3xl mb-1.5">star</span>
+                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Absensi Ekskul</span>
+                                     </a>
+                                 @endif
+                             </div>
+                         @elseif(auth()->user()->role === 'parent')
+                             <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Lainnya</div>
+                             <div class="grid grid-cols-2 gap-3">
+                                 <a href="{{ route('parent.dashboard') }}#ekskul" @click="mobileMenuOpen = false" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
+                                     <span class="material-icons text-purple-600 dark:text-purple-400 text-3xl mb-1.5">star</span>
+                                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Kegiatan Ekstrakurikuler</span>
+                                 </a>
+                             </div>
+                         @endif
+
+                         <!-- Akun & Keluar -->
+                         <div class="text-xs font-bold uppercase text-gray-400 tracking-wider pt-2">Pengaturan Akun</div>
+                         <div class="space-y-2">
+                             <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                                 <span class="material-icons text-slate-600 dark:text-slate-400">manage_accounts</span>
+                                 <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Edit Profil Saya</span>
+                             </a>
+                             <form method="POST" action="{{ route('logout') }}">
+                                 @csrf
+                                 <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-950/40 transition">
+                                     <span class="material-icons">logout</span>
+                                     <span class="text-sm font-semibold">Keluar / Logout</span>
+                                 </button>
+                             </form>
+                         </div>
+                     </div>
+                </div>
+            </div>
+        @endauth
     </div>
 
     <div x-data="{ show: false }" @scroll.window="show = (window.pageYOffset > 300)"
-        class="fixed bottom-5 right-5 z-50">
+        class="fixed bottom-5 right-5 z-50 hidden lg:block">
         <button x-show="show" @click="window.scrollTo({ top: 0, behavior: 'smooth' })" x-transition
             class="p-3 rounded-full bg-sky-600 text-white shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
             aria-label="Kembali ke atas" style="display: none;">
@@ -125,6 +375,38 @@
             </svg>
         </button>
     </div>
+
+    {{-- PERBAIKAN: Skrip untuk navigasi aktif dipindahkan ke sini --}}
+    @auth
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const navItems = document.querySelectorAll('.nav-item');
+                const currentPath = window.location.pathname;
+                navItems.forEach(item => {
+                    const hrefAttr = item.getAttribute('href');
+                    if (!hrefAttr) return;
+                    try {
+                        let itemPath = '';
+                        if (hrefAttr.startsWith('http')) {
+                            itemPath = new URL(hrefAttr).pathname;
+                        } else {
+                            itemPath = new URL(hrefAttr, window.location.origin).pathname;
+                        }
+                        
+                        if (currentPath === itemPath || (itemPath !== '/' && currentPath.startsWith(itemPath))) {
+                            item.classList.add('text-sky-500', 'dark:text-sky-400');
+                            item.classList.remove('text-gray-500', 'dark:text-gray-400');
+                        } else {
+                            item.classList.add('text-gray-500', 'dark:text-gray-400');
+                            item.classList.remove('text-sky-500', 'dark:text-sky-400');
+                        }
+                    } catch (e) {
+                        // Ignored
+                    }
+                });
+            });
+        </script>
+    @endauth
 
     @stack('scripts')
     <script>

@@ -8,14 +8,13 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6">
             
             <!-- Welcome & Notifikasi -->
             <div class="space-y-4">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Selamat Datang, {{ Auth::user()->name }}!</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Pantau kehadiran dan ajukan izin untuk putra/putri Anda di sini.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Selamat Datang di Portal Presensi Orang Tua, {{ Auth::user()->name }}!</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Pantau kehadiran real-time putra/putri Anda dan ajukan izin ketidakhadiran secara mudah dari sini.</p>
                 </div>
 
                 {{-- Notifikasi Internal untuk Siswa Alpa --}}
@@ -173,5 +172,4 @@
                  </div>
             @endforelse
         </div>
-    </div>
 </x-app-layout>

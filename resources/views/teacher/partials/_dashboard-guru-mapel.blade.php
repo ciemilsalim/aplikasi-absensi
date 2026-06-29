@@ -8,8 +8,8 @@
                     <img class="h-16 w-16 rounded-full object-cover" src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ Auth::user()->name }}">
                 </div>
                 <div>
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Selamat Datang, {{ $teacher->name }}!</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mt-1">Berikut adalah jadwal mengajar Anda untuk hari ini, {{ now()->translatedFormat('l, d F Y') }}.</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Selamat Datang di Portal Presensi Guru, {{ $teacher->name }}!</h3>
+                    <p class="text-gray-500 dark:text-gray-400 mt-1">Kelola presensi kelas mata pelajaran Anda hari ini, {{ now()->translatedFormat('l, d F Y') }}.</p>
                 </div>
             </div>
         </div>

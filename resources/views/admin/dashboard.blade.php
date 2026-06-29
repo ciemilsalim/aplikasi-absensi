@@ -8,17 +8,16 @@
         </h2>
     </x-slot>
 
-    <div class="py-6 md:py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6">
 
             <!-- Bagian Welcome dan Akses Cepat -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <!-- Welcome Section -->
                 <div class="lg:col-span-2 bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
-                        <h3 class="text-2xl font-bold">Selamat Datang, {{ Auth::user()->name }}!</h3>
+                        <h3 class="text-2xl font-bold">Selamat Datang di Aplikasi Presensi, {{ Auth::user()->name }}!</h3>
                         <p class="text-gray-500 dark:text-gray-400 mt-1">
-                            Ini adalah pusat kendali aplikasi Anda. Pantau statistik harian dan kelola semua data dari sini.
+                            Kelola data kehadiran harian, pantau statistik presensi real-time, dan tindak lanjuti izin masuk dengan cepat.
                         </p>
                     </div>
                 </div>
@@ -254,7 +253,6 @@
                 </div>
             </div>
         </div>
-    </div>
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
