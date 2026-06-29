@@ -18,7 +18,7 @@
                      <a href="{{ route('welcome') }}" class="flex items-center gap-3">
                         <x-application-logo class="h-12 w-auto text-sky-600 dark:text-sky-500" />
                         <div>
-                            <p class="font-bold text-xl text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'AbsensiSiswa') }}</p>
+                            <p class="font-bold text-xl text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'Presensi') }}</p>
                             <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">{{ $appName ?? 'Nama Sekolah Anda' }}</p>
                         </div>
                     </a>

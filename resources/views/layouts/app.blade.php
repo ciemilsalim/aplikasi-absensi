@@ -24,6 +24,11 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <script>
         tailwind.config = {
@@ -31,7 +36,7 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Helvetica', 'Arial', 'sans-serif']
+                        sans: ['Inter', 'sans-serif']
                     },
                     colors: {
                         sky: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49' }
@@ -154,33 +159,84 @@
 
     {{-- PERBAIKAN: Bottom Navigation Bar dipindahkan ke sini --}}
     @auth
-        @if(auth()->user()->role === 'teacher')
-            <nav
-                class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 z-50 px-2 lg:hidden">
-                <div class="flex justify-around max-w-7xl mx-auto">
-                    <a href="{{ route('teacher.dashboard') }}"
+        <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 z-50 px-2 lg:hidden">
+            <div class="flex justify-around max-w-7xl mx-auto">
+                @if(in_array(auth()->user()->role, ['admin', 'operator']))
+                    <a href="{{ route('admin.dashboard') }}"
                         class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
                         <span class="material-icons">home</span>
-                        <span class="text-xs mt-1">Beranda</span>
+                        <span class="text-[10px] mt-0.5">Beranda</span>
                     </a>
-                    <a href="{{ route('teacher.subject.attendance.history') }}"
+                    <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard"
                         class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                        <span class="material-icons">history_edu</span>
-                        <span class="text-xs mt-1">Riwayat Mapel</span>
+                        <span class="material-icons">swap_horiz</span>
+                        <span class="text-[10px] mt-0.5">SIPADA</span>
                     </a>
-                    <a href="{{ route('teacher.subject.attendance.report') }}"
+                    <a href="{{ route('admin.leave_requests.index') }}"
                         class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                        <span class="material-icons">assessment</span>
-                        <span class="text-xs mt-1">Rekap Mapel</span>
+                        <span class="material-icons">assignment_turned_in</span>
+                        <span class="text-[10px] mt-0.5">Izin</span>
+                    </a>
+                    <a href="{{ route('admin.chat.index') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">chat</span>
+                        <span class="text-[10px] mt-0.5">Pesan</span>
                     </a>
                     <a href="{{ route('profile.edit') }}"
                         class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
                         <span class="material-icons">account_circle</span>
-                        <span class="text-xs mt-1">Profil</span>
+                        <span class="text-[10px] mt-0.5">Profil</span>
                     </a>
-                </div>
-            </nav>
-        @endif
+                @elseif(auth()->user()->role === 'teacher')
+                    <a href="{{ route('teacher.dashboard') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">home</span>
+                        <span class="text-[10px] mt-0.5">Beranda</span>
+                    </a>
+                    <a href="{{ route('teacher.attendance.dashboard') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">person_pin</span>
+                        <span class="text-[10px] mt-0.5">Absen Saya</span>
+                    </a>
+                    <a href="{{ route('teacher.subject.attendance.history') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">history_edu</span>
+                        <span class="text-[10px] mt-0.5">Riwayat Mapel</span>
+                    </a>
+                    <a href="{{ route('teacher.subject.attendance.report') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">assessment</span>
+                        <span class="text-[10px] mt-0.5">Rekap Mapel</span>
+                    </a>
+                    <a href="{{ route('profile.edit') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">account_circle</span>
+                        <span class="text-[10px] mt-0.5">Profil</span>
+                    </a>
+                @elseif(auth()->user()->role === 'parent')
+                    <a href="{{ route('parent.dashboard') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">home</span>
+                        <span class="text-[10px] mt-0.5">Beranda</span>
+                    </a>
+                    <a href="{{ route('parent.leave-requests.index') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">assignment_turned_in</span>
+                        <span class="text-[10px] mt-0.5">Izin/Sakit</span>
+                    </a>
+                    <a href="{{ route('chat.index') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">chat</span>
+                        <span class="text-[10px] mt-0.5">Obrolan</span>
+                    </a>
+                    <a href="{{ route('profile.edit') }}"
+                        class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
+                        <span class="material-icons">account_circle</span>
+                        <span class="text-[10px] mt-0.5">Profil</span>
+                    </a>
+                @endif
+            </div>
+        </nav>
     @endauth
 
     @stack('scripts')
@@ -213,24 +269,34 @@
 
     {{-- PERBAIKAN: Skrip untuk navigasi aktif dipindahkan ke sini --}}
     @auth
-        @if(auth()->user()->role === 'teacher')
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    const navItems = document.querySelectorAll('.nav-item');
-                    const currentPath = window.location.pathname;
-                    navItems.forEach(item => {
-                        const itemPath = new URL(item.getAttribute('href')).pathname;
-                        if (currentPath.startsWith(itemPath)) {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const navItems = document.querySelectorAll('.nav-item');
+                const currentPath = window.location.pathname;
+                navItems.forEach(item => {
+                    const hrefAttr = item.getAttribute('href');
+                    if (!hrefAttr) return;
+                    try {
+                        let itemPath = '';
+                        if (hrefAttr.startsWith('http')) {
+                            itemPath = new URL(hrefAttr).pathname;
+                        } else {
+                            itemPath = new URL(hrefAttr, window.location.origin).pathname;
+                        }
+                        
+                        if (currentPath === itemPath || (itemPath !== '/' && currentPath.startsWith(itemPath))) {
                             item.classList.add('text-sky-500', 'dark:text-sky-400');
                             item.classList.remove('text-gray-500', 'dark:text-gray-400');
                         } else {
                             item.classList.add('text-gray-500', 'dark:text-gray-400');
                             item.classList.remove('text-sky-500', 'dark:text-sky-400');
                         }
-                    });
+                    } catch (e) {
+                        // Ignored
+                    }
                 });
-            </script>
-        @endif
+            });
+        </script>
     @endauth
 </body>
 

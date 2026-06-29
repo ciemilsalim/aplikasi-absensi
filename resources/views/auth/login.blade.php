@@ -5,8 +5,8 @@
             <img class="absolute inset-0 h-full w-full object-cover" src="https://images.unsplash.com/photo-1594608661623-aa0bd3a69d98?q=80&w=2798&auto=format&fit=crop" alt="Gedung sekolah modern yang cerah">
             <div class="absolute inset-0 bg-sky-900/40"></div>
              <div class="absolute bottom-0 left-0 p-12 text-white">
-                 <h2 class="text-3xl font-bold leading-snug">Absensi Lebih Mudah, Data Lebih Akurat.</h2>
-                 <p class="mt-2 text-sky-200/80">Selamat datang kembali di platform absensi andalan Anda.</p>
+                 <h2 class="text-3xl font-bold leading-snug">Presensi Lebih Mudah, Data Lebih Akurat.</h2>
+                 <p class="mt-2 text-sky-200/80">Selamat datang kembali di platform presensi andalan Anda.</p>
              </div>
         </div>
 
@@ -18,7 +18,7 @@
                      <a href="{{ route('welcome') }}" class="flex items-center gap-3">
                         <x-application-logo class="h-12 w-auto text-sky-600 dark:text-sky-500" />
                         <div>
-                            <p class="font-bold text-xl text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'AbsensiSiswa') }}</p>
+                            <p class="font-bold text-xl text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'Presensi') }}</p>
                             <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">{{ $appName ?? 'Nama Sekolah Anda' }}</p>
                         </div>
                     </a>

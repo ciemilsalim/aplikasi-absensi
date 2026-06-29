@@ -9,7 +9,7 @@
                     <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center gap-3">
                         <x-application-logo class="block h-9 w-auto" />
                         <span class="block font-bold text-xl text-slate-800 dark:text-white tracking-tight">
-                            {{ config('app.name', 'AbsensiSiswa') }}
+                            {{ config('app.name', 'Presensi') }}
                         </span>
                     </a>
                 </div>

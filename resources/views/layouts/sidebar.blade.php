@@ -5,7 +5,7 @@
         <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center gap-3">
             <x-application-logo class="block h-9 w-auto" />
             <div>
-                <p class="font-bold text-lg text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'AbsensiSiswa') }}</p>
+                <p class="font-bold text-lg text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'Presensi') }}</p>
                 <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">{{ $appName ?? 'Nama Sekolah' }}</p>
             </div>
         </a>
