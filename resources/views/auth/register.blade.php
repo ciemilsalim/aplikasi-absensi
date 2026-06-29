@@ -15,7 +15,7 @@
             <div class="mx-auto w-full max-w-sm lg:w-96">
                 <div>
                        {{-- PERBAIKAN: Menampilkan nama aplikasi dan nama sekolah --}}
-                     <a href="{{ route('welcome') }}" class="flex items-center gap-3">
+                     <a href="{{ route('login') }}" class="flex items-center gap-3">
                         <x-application-logo class="h-12 w-auto text-sky-600 dark:text-sky-500" />
                         <div>
                             <p class="font-bold text-xl text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'Presensi') }}</p>
@@ -77,7 +77,7 @@
 
                 {{-- Link Kembali ke Beranda BARU --}}
                 <div class="mt-8 text-center">
-                    <a href="{{ route('welcome') }}" class="text-sm font-medium text-slate-600 hover:text-sky-500 dark:text-slate-400 dark:hover:text-sky-400">
+                    <a href="{{ route('login') }}" class="text-sm font-medium text-slate-600 hover:text-sky-500 dark:text-slate-400 dark:hover:text-sky-400">
                         &larr; Kembali ke Beranda
                     </a>
                 </div>

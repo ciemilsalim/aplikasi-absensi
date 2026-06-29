@@ -42,7 +42,7 @@
             <h1 class="mt-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">Halaman tidak ditemukan</h1>
             <p class="mt-6 text-base leading-7 text-gray-600 dark:text-gray-300">Maaf, kami tidak dapat menemukan halaman yang Anda cari.</p>
             <div class="mt-10 flex items-center justify-center gap-x-6">
-                <a href="{{ route('welcome') }}" class="rounded-md bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
+                <a href="{{ route('login') }}" class="rounded-md bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
                     Kembali ke Beranda
                 </a>
             </div>

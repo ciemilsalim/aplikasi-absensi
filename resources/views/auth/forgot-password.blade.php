@@ -14,7 +14,7 @@
         <div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-white dark:bg-slate-900">
             <div class="mx-auto w-full max-w-sm lg:w-96">
                 <div>
-                     <a href="{{ route('welcome') }}">
+                     <a href="{{ route('login') }}">
                         <x-application-logo class="h-12 w-auto text-sky-600 dark:text-sky-500" />
                     </a>
                     <h2 class="mt-8 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Lupa Password?</h2>

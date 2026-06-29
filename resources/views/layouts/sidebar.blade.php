@@ -2,7 +2,7 @@
 <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-slate-800 px-6 pb-4 border-r border-gray-200 dark:border-slate-700">
     <!-- Logo & Nama Aplikasi -->
     <div class="flex h-16 shrink-0 items-center gap-x-3">
-        <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center gap-3">
+        <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="flex items-center gap-3">
             <x-application-logo class="block h-9 w-auto" />
             <div>
                 <p class="font-bold text-lg text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'Presensi') }}</p>

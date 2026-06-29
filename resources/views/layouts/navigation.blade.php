@@ -6,7 +6,7 @@
             <div class="flex">
                 <!-- Logo -->
                <div class="shrink-0 flex items-center">
-                    <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}" class="flex items-center gap-3">
+                    <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="flex items-center gap-3">
                         <x-application-logo class="block h-9 w-auto" />
                         <span class="block font-bold text-xl text-slate-800 dark:text-white tracking-tight">
                             {{ config('app.name', 'Presensi') }}

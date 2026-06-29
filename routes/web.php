@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\WelcomeController;
+
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AboutController;
@@ -47,7 +47,7 @@ Route::get('/', function () {
     }
     return redirect()->route('login');
 })->name('home');
-Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome');
+
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::view('/offline', 'offline')->name('offline'); // Endpoint PWA
 Route::get('/sso/login', [\App\Http\Controllers\Auth\SsoLoginController::class, 'login'])->name('sso.login');
@@ -64,7 +64,7 @@ Route::get('/dashboard', function () {
     if ($user->role === 'teacher') {
         return redirect()->route('teacher.dashboard');
     }
-    return redirect()->route('welcome');
+    return redirect()->route('login');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // == GRUP RUTE YANG MEMERLUKAN LOGIN ==
