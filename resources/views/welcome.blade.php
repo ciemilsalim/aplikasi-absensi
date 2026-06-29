@@ -7,7 +7,7 @@
     <title>{{ $appName ?? config('app.name', 'Laravel') }} - Sistem Absensi Modern</title>
 
     @if (isset($appLogoPath) && $appLogoPath)
-        <link rel="icon" type="image/png" href="{{ asset('storage/' . $appLogoPath) }}">
+        <link rel="icon" type="image/png" href="/storage/{{ $appLogoPath }}">
     @endif
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -111,7 +111,7 @@
                     <div class="relative mt-12 lg:mt-0">
                         <div class="animate-gentle-float">
                             @if(isset($appLogoPath) && $appLogoPath)
-                                <img src="{{ asset('storage/' . $appLogoPath) }}" alt="Logo {{ $appName ?? 'Aplikasi' }}" 
+                                <img src="/storage/{{ $appLogoPath }}" alt="Logo {{ $appName ?? 'Aplikasi' }}" 
                                     class="mx-auto h-48 sm:h-56 lg:h-64 w-auto object-contain animate-[fade-in-up_0.8s_ease-out_forwards] drop-shadow-2xl"
                                     style="animation-delay: 0.3s;">
                             @else

@@ -4,7 +4,7 @@
      Variabel $appLogoPath ini dikirim oleh LogoServiceProvider. --}}
 @if (isset($appLogoPath) && $appLogoPath)
     {{-- Jika ada, tampilkan logo yang diunggah dari storage --}}
-    <img src="{{ asset('storage/' . $appLogoPath) }}" alt="Logo Aplikasi" {{ $attributes->merge(['class' => $class]) }}>
+    <img src="/storage/{{ $appLogoPath }}" alt="Logo Aplikasi" {{ $attributes->merge(['class' => $class]) }}>
 @else
     {{-- Jika tidak ada, tampilkan logo SVG default --}}
     <svg {{ $attributes->merge(['class' => 'fill-current ' . $class]) }} viewBox="0 0 57 57" xmlns="http://www.w3.org/2000/svg">
