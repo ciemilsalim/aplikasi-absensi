@@ -267,75 +267,83 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::get('/extracurricular-attendance/{extracurricular}/report', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'report'])->name('extracurricular-attendance.report');
 });
 
-// == PERBAIKAN: Utilitas perbaikan storage symlink untuk Hostinger / Shared Hosting ==
+// == UTILITAS: Pembersihan cache dan diagnostik server ==
 Route::get('/fix-storage-link', function () {
     // Pengamanan sederhana dengan token rahasia
     if (!auth()->check() && request('key') !== 'presensi123') {
         return response('Akses ditolak. Silakan tambahkan parameter key rahasia (contoh: /fix-storage-link?key=presensi123) atau masuk log terlebih dahulu.', 403);
     }
 
-    $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? null;
-    $publicPath = public_path();
-    $storagePath = storage_path('app/public');
-    
-    // Pembersihan Cache Sistem
-    $cacheOutput = '';
+    $output = '<html><body style="font-family: sans-serif; max-width: 800px; margin: 20px auto; padding: 0 20px;">';
+    $output .= '<h2>🔧 Utilitas Server Presensi</h2>';
+
+    // 1. Pembersihan Cache Sistem
+    $output .= '<h3>1. Pembersihan Cache</h3>';
     try {
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        $cacheOutput = "<span style='color: green;'><b>✔ Route, Config, View, dan Cache berhasil dibersihkan!</b></span><br><br>";
+        $output .= "<p style='color: green;'><b>✔ Route, Config, View, dan Cache berhasil dibersihkan!</b></p>";
     } catch (\Throwable $e) {
-        $cacheOutput = "<span style='color: red;'><b>❌ Gagal membersihkan cache via Artisan: " . htmlspecialchars($e->getMessage()) . "</b></span><br><br>";
+        $output .= "<p style='color: red;'><b>❌ Gagal membersihkan cache: " . htmlspecialchars($e->getMessage()) . "</b></p>";
     }
+
+    // 2. Diagnostik (hanya cek, TIDAK menghapus/membuat symlink)
+    $output .= '<h3>2. Diagnostik Jalur Server</h3>';
+    $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? '(tidak tersedia)';
+    $publicPath = public_path();
+    $storagePath = storage_path('app/public');
     
-    $output = $cacheOutput;
-    $output .= "<h3>Diagnostik Jalur Server:</h3>";
-    $output .= "Document Root Server: <b>" . htmlspecialchars($documentRoot) . "</b><br>";
-    $output .= "Laravel Public Path: <b>" . htmlspecialchars($publicPath) . "</b><br>";
-    $output .= "Laravel Storage Path: <b>" . htmlspecialchars($storagePath) . "</b><br><br>";
+    $output .= "<p>Document Root: <code>" . htmlspecialchars($documentRoot) . "</code><br>";
+    $output .= "Laravel Public Path: <code>" . htmlspecialchars($publicPath) . "</code><br>";
+    $output .= "Laravel Storage Path: <code>" . htmlspecialchars($storagePath) . "</code></p>";
 
-    // Jalur-jalur target pembuatan symlink
-    $targets = array_unique(array_filter([
-        $publicPath . '/storage',
-        $documentRoot ? ($documentRoot . '/storage') : null
-    ]));
-
-    foreach ($targets as $target) {
-        $output .= "Memproses target: <b>" . htmlspecialchars($target) . "</b>... ";
+    // 3. Cek status symlink (tanpa menghapus/membuat ulang)
+    $output .= '<h3>3. Status Symlink Storage</h3>';
+    $symlinkTarget = $publicPath . '/storage';
+    
+    if (is_link($symlinkTarget)) {
+        $realTarget = @readlink($symlinkTarget);
+        $output .= "<p style='color: green;'><b>✔ Symlink aktif:</b> <code>" . htmlspecialchars($symlinkTarget) . "</code> → <code>" . htmlspecialchars($realTarget) . "</code></p>";
         
-        if (file_exists($target) || is_link($target)) {
-            if (is_link($target) || !is_dir($target)) {
-                if (@unlink($target)) {
-                    $output .= "file/symlink lama berhasil dihapus. ";
-                } else {
-                    $output .= "gagal menghapus file/symlink lama. ";
-                }
-            } else {
-                $backup = $target . '_backup_' . time();
-                if (@rename($target, $backup)) {
-                    $output .= "direktori lama diubah nama ke " . basename($backup) . ". ";
-                } else {
-                    $output .= "gagal mengubah nama direktori lama. ";
-                }
-            }
+        // Cek apakah target symlink valid
+        if (is_dir($symlinkTarget)) {
+            $output .= "<p style='color: green;'>✔ Target symlink valid dan dapat diakses.</p>";
+        } else {
+            $output .= "<p style='color: red;'>⚠ Symlink ada tapi target tidak dapat diakses. Buat ulang symlink via SSH.</p>";
         }
-
-        try {
-            if (@symlink($storagePath, $target)) {
-                $output .= "<span style='color: green;'>✔ Berhasil dibuat!</span><br>";
-            } else {
-                // Gunakan Laravel link library jika symlink() bawaan php gagal/restricted
-                app()->make('files')->link($storagePath, $target);
-                $output .= "<span style='color: green;'>✔ Berhasil dibuat via Laravel Filesystem!</span><br>";
-            }
-        } catch (\Throwable $e) {
-            $output .= "<span style='color: red;'>❌ Gagal: " . htmlspecialchars($e->getMessage()) . "</span><br>";
-        }
+    } elseif (is_dir($symlinkTarget)) {
+        $output .= "<p style='color: orange;'><b>⚠ Direktori fisik ditemukan</b> (bukan symlink): <code>" . htmlspecialchars($symlinkTarget) . "</code></p>";
+    } else {
+        $output .= "<p style='color: red;'><b>❌ Symlink tidak ditemukan:</b> <code>" . htmlspecialchars($symlinkTarget) . "</code></p>";
+        $output .= "<p>Buat symlink via SSH Hostinger dengan perintah:<br><code>ln -s /home/u478110651/presensi-smpn1biau/storage/app/public /home/u478110651/presensi-smpn1biau/public/storage</code></p>";
     }
 
-    $output .= "<br><p>Silakan segarkan kembali laman website Anda. Jika tetap tidak tampil, pastikan berkas-berkas foto/logo telah diunggah ke direktori storage yang benar di server: <b>" . htmlspecialchars($storagePath) . "</b>.</p>";
+    // 4. Cek logo di database
+    $output .= '<h3>4. Status Logo Aplikasi</h3>';
+    try {
+        $logoSetting = \App\Models\Setting::where('key', 'app_logo')->first();
+        if ($logoSetting && $logoSetting->value) {
+            $logoPath = $logoSetting->value;
+            $output .= "<p>Logo path di database: <code>" . htmlspecialchars($logoPath) . "</code></p>";
+            
+            $fullPath = storage_path('app/public/' . $logoPath);
+            if (file_exists($fullPath)) {
+                $output .= "<p style='color: green;'>✔ File logo ditemukan di storage.</p>";
+                $output .= "<p>Preview: <img src='/storage/" . htmlspecialchars($logoPath) . "' style='max-height: 80px; border: 1px solid #ccc; padding: 4px;'></p>";
+            } else {
+                $output .= "<p style='color: red;'>❌ File logo TIDAK ditemukan di: <code>" . htmlspecialchars($fullPath) . "</code></p>";
+            }
+        } else {
+            $output .= "<p style='color: orange;'>⚠ Belum ada logo yang diunggah (kunci 'app_logo' kosong di database).</p>";
+        }
+    } catch (\Throwable $e) {
+        $output .= "<p style='color: red;'>❌ Gagal membaca database: " . htmlspecialchars($e->getMessage()) . "</p>";
+    }
+
+    $output .= '<hr><p><small>Halaman ini <b>tidak</b> menghapus atau membuat ulang symlink. Untuk membuat symlink, gunakan SSH.</small></p>';
+    $output .= '</body></html>';
     return response($output);
 });
 
