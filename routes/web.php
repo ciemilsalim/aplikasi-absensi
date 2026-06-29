@@ -41,7 +41,13 @@ use App\Http\Controllers\Teacher\SubjectAttendanceController;
 /* |-------------------------------------------------------------------------- | Rute Web |-------------------------------------------------------------------------- */
 
 // == RUTE PUBLIK ==
-Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+})->name('home');
+Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome');
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::view('/offline', 'offline')->name('offline'); // Endpoint PWA
 Route::get('/sso/login', [\App\Http\Controllers\Auth\SsoLoginController::class, 'login'])->name('sso.login');
