@@ -278,7 +278,20 @@ Route::get('/fix-storage-link', function () {
     $publicPath = public_path();
     $storagePath = storage_path('app/public');
     
-    $output = "<h3>Diagnostik Jalur Server:</h3>";
+    // Pembersihan Cache Sistem
+    $cacheOutput = '';
+    try {
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        $cacheOutput = "<span style='color: green;'><b>✔ Route, Config, View, dan Cache berhasil dibersihkan!</b></span><br><br>";
+    } catch (\Throwable $e) {
+        $cacheOutput = "<span style='color: red;'><b>❌ Gagal membersihkan cache via Artisan: " . htmlspecialchars($e->getMessage()) . "</b></span><br><br>";
+    }
+    
+    $output = $cacheOutput;
+    $output .= "<h3>Diagnostik Jalur Server:</h3>";
     $output .= "Document Root Server: <b>" . htmlspecialchars($documentRoot) . "</b><br>";
     $output .= "Laravel Public Path: <b>" . htmlspecialchars($publicPath) . "</b><br>";
     $output .= "Laravel Storage Path: <b>" . htmlspecialchars($storagePath) . "</b><br><br>";
