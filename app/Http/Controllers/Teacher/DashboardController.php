@@ -634,7 +634,7 @@ class DashboardController extends Controller
 
         // Common PDF Data similar to Admin
         $settings = Setting::pluck('value', 'key');
-        $logoPath = 'logos/ggBZk507zzGdNA41DzZ29CwbXYWjorSmrIn93j6u.png';
+        $logoPath = 'logos/GR8zWSDSCQUOjEN85kR6ewEc7QYHP9gWMzuHF4G3.png';
         $logoBase64 = null;
         if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
             try {

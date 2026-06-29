@@ -106,7 +106,7 @@
 
     <div class="header-container">
         @php
-            $hardcodedLogo = 'logos/ggBZk507zzGdNA41DzZ29CwbXYWjorSmrIn93j6u.png';
+            $hardcodedLogo = 'logos/GR8zWSDSCQUOjEN85kR6ewEc7QYHP9gWMzuHF4G3.png';
             $logoPath = storage_path('app/public/' . $hardcodedLogo);
             $logoSrc = '';
             if (file_exists($logoPath)) {
