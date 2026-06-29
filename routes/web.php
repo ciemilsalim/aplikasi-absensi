@@ -263,4 +263,49 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::get('/extracurricular-attendance/{extracurricular}/report', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'report'])->name('extracurricular-attendance.report');
 });
 
+// == PERBAIKAN: Utilitas perbaikan storage symlink untuk Hostinger / Shared Hosting ==
+Route::get('/fix-storage-link', function () {
+    // Pengamanan sederhana dengan token rahasia
+    if (!auth()->check() && request('key') !== 'presensi123') {
+        return response('Akses ditolak. Silakan tambahkan parameter key rahasia (contoh: /fix-storage-link?key=presensi123) atau masuk log terlebih dahulu.', 403);
+    }
+
+    $publicStoragePath = public_path('storage');
+
+    // Hapus file/symlink lama jika terdeteksi
+    if (file_exists($publicStoragePath) || is_link($publicStoragePath)) {
+        if (is_link($publicStoragePath) || !is_dir($publicStoragePath)) {
+            @unlink($publicStoragePath);
+        } else {
+            @rename($publicStoragePath, $publicStoragePath . '_backup_' . time());
+        }
+    }
+
+    // Buat ulang tautan simbolis
+    try {
+        app()->make('files')->link(
+            storage_path('app/public'), $publicStoragePath
+        );
+        return 'Tautan simbolis (storage link) berhasil diperbarui di server Hostinger! Silakan cek kembali foto profil dan logo Anda.';
+    } catch (\Exception $e) {
+        return 'Gagal memperbarui tautan simbolis secara otomatis: ' . $e->getMessage() . '. Tenang, Laravel akan menggunakan jalur cadangan (fallback route) untuk memuat gambar Anda.';
+    }
+});
+
+// == PERBAIKAN: Jalur cadangan jika storage symlink tidak berfungsi / dinonaktifkan di shared hosting ==
+Route::get('/storage/{path}', function ($path) {
+    // Bersihkan dari potensi peretasan direktori (directory traversal)
+    $path = str_replace(['..', '\\'], '', $path);
+    $filePath = storage_path('app/public/' . $path);
+
+    if (!file_exists($filePath) || is_dir($filePath)) {
+        abort(404);
+    }
+
+    $file = file_get_contents($filePath);
+    $type = mime_content_type($filePath);
+
+    return response($file)->header('Content-Type', $type);
+})->where('path', '.*');
+
 require __DIR__ . '/auth.php';
