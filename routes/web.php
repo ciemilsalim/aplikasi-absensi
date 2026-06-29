@@ -313,7 +313,7 @@ Route::get('/fix-storage-link', function () {
                 app()->make('files')->link($storagePath, $target);
                 $output .= "<span style='color: green;'>✔ Berhasil dibuat via Laravel Filesystem!</span><br>";
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $output .= "<span style='color: red;'>❌ Gagal: " . htmlspecialchars($e->getMessage()) . "</span><br>";
         }
     }
@@ -333,7 +333,26 @@ Route::get('/storage/{path}', function ($path) {
     }
 
     $file = file_get_contents($filePath);
-    $type = mime_content_type($filePath);
+    
+    // Deteksi MIME type secara aman jika extension fileinfo tidak aktif
+    $type = null;
+    if (function_exists('mime_content_type')) {
+        $type = @mime_content_type($filePath);
+    }
+    
+    if (!$type) {
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $mimeTypes = [
+            'png'  => 'image/png',
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif'  => 'image/gif',
+            'svg'  => 'image/svg+xml',
+            'webp' => 'image/webp',
+            'pdf'  => 'application/pdf',
+        ];
+        $type = $mimeTypes[$extension] ?? 'application/octet-stream';
+    }
 
     return response($file)->header('Content-Type', $type);
 })->where('path', '.*');
