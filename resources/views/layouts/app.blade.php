@@ -363,7 +363,7 @@
                                      <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Edit Profil Saya</span>
                                  </a>
                                  @if(auth()->user()->role === 'admin')
-                                     <a href="{{ route('settings.appearance') }}" class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                                     <a href="{{ route('admin.settings.appearance') }}" class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition">
                                          <span class="material-icons text-slate-600 dark:text-slate-400">palette</span>
                                          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tampilan & Logo</span>
                                      </a>
