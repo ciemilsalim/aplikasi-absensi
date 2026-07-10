@@ -196,34 +196,4 @@ class StudentController extends Controller
         return redirect()->route('admin.students.index')->with('success', 'Siswa yang dipilih berhasil dipindahkan ke kelas baru.');
     }
 
-    /**
-     * Menampilkan form untuk impor data siswa dari Excel.
-     */
-    public function showImportForm()
-    {
-        return view('admin.students.import');
-    }
-
-    /**
-     * Menangani proses impor dari file Excel.
-     */
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        try {
-            Excel::import(new StudentsImport, $request->file('file'));
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            $failures = $e->failures();
-            $errorMessages = [];
-            foreach ($failures as $failure) {
-                $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors()) . ' (Nilai: ' . $failure->values()[$failure->attribute()] . ')';
-            }
-            return redirect()->back()->with('import_errors', $errorMessages);
-        }
-
-        return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil diimpor!');
-    }
 }

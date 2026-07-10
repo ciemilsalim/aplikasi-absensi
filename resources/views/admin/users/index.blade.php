@@ -71,6 +71,7 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                     <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                                     <option value="operator" {{ request('role') == 'operator' ? 'selected' : '' }}>Operator</option>
                                     <option value="teacher" {{ request('role') == 'teacher' ? 'selected' : '' }}>Guru</option>
+                                    <option value="student" {{ request('role') == 'student' ? 'selected' : '' }}>Siswa</option>
                                     <option value="parent" {{ request('role') == 'parent' ? 'selected' : '' }}>Orang Tua</option>
                                 </select>
                                 
@@ -125,6 +126,7 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                             @if($user->role == 'admin') bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300
                                             @elseif($user->role == 'operator') bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300
                                             @elseif($user->role == 'teacher') bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300
+                                            @elseif($user->role == 'student') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300
                                             @else bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300 @endif">
                                             {{ ucfirst($user->role) }}
                                         </span>

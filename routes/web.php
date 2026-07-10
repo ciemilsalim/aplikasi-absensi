@@ -174,8 +174,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::delete('schedules/{schedule}', [\App\Http\Controllers\Admin\ScheduleController::class, 'destroy'])->name('schedules.destroy');
 
             // Impor Data (Contoh, jika ada)
-            Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');
-            Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
             Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
             Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
             Route::get('/teachers/import', [TeacherController::class, 'showImportForm'])->name('teachers.import.form');
