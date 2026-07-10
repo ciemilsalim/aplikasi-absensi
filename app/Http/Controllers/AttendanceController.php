@@ -31,13 +31,22 @@ class AttendanceController extends Controller
     public function storeAttendance(Request $request)
     {
         $request->validate([
-            'student_unique_id' => 'required|string|exists:students,unique_id',
+            'student_unique_id' => 'required|string',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
         ]);
 
         try {
-            $student = Student::where('unique_id', $request->student_unique_id)->firstOrFail();
+            $qrData = $request->student_unique_id;
+            $parts = explode('-', $qrData);
+            
+            if (count($parts) === 2) {
+                // Format gabungan: NIS-UNIQUE_ID
+                $student = Student::where('nis', $parts[0])->where('unique_id', $parts[1])->firstOrFail();
+            } else {
+                // Format lama atau manual
+                $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->firstOrFail();
+            }
             $now = now();
             $today = $now->copy()->startOfDay();
 

@@ -226,28 +226,4 @@ class StudentController extends Controller
 
         return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil diimpor!');
     }
-
-    /**
-     * Menampilkan halaman pratinjau cetak kartu QR.
-     */
-    public function qr(Request $request)
-    {
-        $query = Student::with('schoolClass');
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('nis', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('school_class_id')) {
-            $query->where('school_class_id', $request->school_class_id);
-        }
-
-        $students = $query->orderBy('name')->get();
-
-        return view('admin.students.qr', compact('students'));
-    }
 }

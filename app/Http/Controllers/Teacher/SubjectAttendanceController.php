@@ -69,13 +69,24 @@ class SubjectAttendanceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'student_unique_id' => 'required|string|exists:students,unique_id',
+            'student_unique_id' => 'required|string',
             'schedule_id' => 'required|integer|exists:schedules,id',
         ]);
 
         $teacher = Auth::user()->teacher;
         $schedule = Schedule::find($request->schedule_id);
-        $student = Student::where('unique_id', $request->student_unique_id)->first();
+        
+        $qrData = $request->student_unique_id;
+        $parts = explode('-', $qrData);
+        
+        if (count($parts) === 2) {
+            // Format gabungan: NIS-UNIQUE_ID
+            $student = Student::where('nis', $parts[0])->where('unique_id', $parts[1])->first();
+        } else {
+            // Format lama atau manual
+            $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->first();
+        }
+        
         $today = Carbon::today();
 
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {

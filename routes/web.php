@@ -185,8 +185,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('/parents/online-status', [ParentController::class, 'getOnlineStatus'])->name('parents.online_status');
             Route::get('/teachers/online-status', [TeacherController::class, 'getOnlineStatus'])->name('teachers.online_status');
 
-            // Cetak QR
-            Route::get('/students/qr', [StudentController::class, 'qr'])->name('students.qr');
 
             // Backup
             Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');

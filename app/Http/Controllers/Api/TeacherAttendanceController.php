@@ -63,7 +63,7 @@ class TeacherAttendanceController extends Controller
     public function scanQr(Request $request)
     {
         $request->validate([
-            'student_unique_id' => 'required|string|exists:students,unique_id',
+            'student_unique_id' => 'required|string',
             'latitude'          => 'required|numeric',
             'longitude'         => 'required|numeric',
             'type'              => 'nullable|string|in:in,out',
@@ -87,7 +87,20 @@ class TeacherAttendanceController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Anda bukan Wali Kelas.'], 403);
         }
 
-        $student = Student::where('unique_id', $request->student_unique_id)->first();
+        $qrData = $request->student_unique_id;
+        $parts = explode('-', $qrData);
+        
+        if (count($parts) === 2) {
+            // Format gabungan: NIS-UNIQUE_ID
+            $student = Student::where('nis', $parts[0])->where('unique_id', $parts[1])->first();
+        } else {
+            // Format lama atau manual
+            $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->first();
+        }
+        
+        if (!$student) {
+            return response()->json(['status' => 'error', 'message' => 'Siswa tidak ditemukan.'], 404);
+        }
 
         if ($student->school_class_id !== $homeroomClass->id) {
             return response()->json([
