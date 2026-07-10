@@ -15,6 +15,7 @@ class TeacherReportController extends Controller
     {
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
+        $activeSemesterId = session('active_semester_id');
 
         // 1. Statistik Hari Ini
         $today = Carbon::today();
@@ -34,6 +35,9 @@ class TeacherReportController extends Controller
 
         // 2. Chart Data (Bulanan)
         $attendanceTrend = TeacherAttendance::select(DB::raw('DATE(created_at) as date'), 'status', DB::raw('count(*) as count'))
+            ->when($activeSemesterId, function ($query) use ($activeSemesterId) {
+                return $query->where('semester_id', $activeSemesterId);
+            })
             ->whereMonth('created_at', $month)
             ->whereYear('created_at', $year)
             ->groupBy('date', 'status')
@@ -52,8 +56,11 @@ class TeacherReportController extends Controller
         }
 
         // 3. Rekapitulasi per Guru
-        $teachers = Teacher::with(['attendances' => function ($q) use ($month, $year) {
+        $teachers = Teacher::with(['attendances' => function ($q) use ($month, $year, $activeSemesterId) {
             $q->whereMonth('created_at', $month)->whereYear('created_at', $year);
+            if ($activeSemesterId) {
+                $q->where('semester_id', $activeSemesterId);
+            }
         }])->orderBy('name')->get();
 
         $recap = $teachers->map(function ($teacher) {
@@ -79,12 +86,16 @@ class TeacherReportController extends Controller
     {
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
+        $activeSemesterId = session('active_semester_id');
 
         $monthName = Carbon::createFromDate($year, $month)->translatedFormat('F Y');
 
         // Rekapitulasi per Guru (Logic copied for PDF generation)
-        $teachers = Teacher::with(['attendances' => function ($q) use ($month, $year) {
+        $teachers = Teacher::with(['attendances' => function ($q) use ($month, $year, $activeSemesterId) {
             $q->whereMonth('created_at', $month)->whereYear('created_at', $year);
+            if ($activeSemesterId) {
+                $q->where('semester_id', $activeSemesterId);
+            }
         }])->orderBy('name')->get();
 
         $recap = $teachers->map(function ($teacher) {

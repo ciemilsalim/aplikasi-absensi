@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class TeachingAssignment extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\ScopedByAcademicPeriod;
 
-    protected $fillable = ['school_class_id', 'subject_id', 'teacher_id'];
+    protected $fillable = ['school_class_id', 'subject_id', 'teacher_id', 'semester_id', 'academic_year_id'];
 
     public function schoolClass()
     {

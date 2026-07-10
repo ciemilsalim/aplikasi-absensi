@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TeacherAttendance extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\ScopedByAcademicPeriod;
 
     protected $fillable = [
         'teacher_id',

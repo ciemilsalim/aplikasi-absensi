@@ -85,6 +85,9 @@ class ReportController extends Controller
         $students = $studentsQuery->with(['attendances' => function ($query) use ($year, $months) {
             $query->whereYear('attendance_time', $year)
                   ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+            if (session('active_semester_id')) {
+                $query->where('semester_id', session('active_semester_id'));
+            }
         }])->get();
 
         $monthlyDataArray = [];
@@ -223,6 +226,9 @@ class ReportController extends Controller
             ->with(['attendances' => function ($query) use ($date) {
             $query->whereYear('attendance_time', $date->year)
                 ->whereMonth('attendance_time', $date->month);
+            if (session('active_semester_id')) {
+                $query->where('semester_id', session('active_semester_id'));
+            }
         }])
             ->orderBy('name')
             ->get();
@@ -313,6 +319,9 @@ class ReportController extends Controller
             ->with(['attendances' => function ($query) use ($year, $months) {
                 $query->whereYear('attendance_time', $year)
                       ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                if (session('active_semester_id')) {
+                    $query->where('semester_id', session('active_semester_id'));
+                }
             }])
             ->orderBy('name')
             ->get();
@@ -416,6 +425,9 @@ class ReportController extends Controller
 
         $attendances = Attendance::where('student_id', $student->id)
             ->whereBetween('attendance_time', [$startDate, $endDate])
+            ->when(session('active_semester_id'), function ($q) {
+                return $q->where('semester_id', session('active_semester_id'));
+            })
             ->orderBy('attendance_time', 'asc')
             ->get();
 
@@ -459,10 +471,16 @@ class ReportController extends Controller
             ->whereHas('attendances', function ($query) use ($startDate, $endDate) {
             $query->where('status', 'terlambat')
                 ->whereBetween('attendance_time', [$startDate, $endDate]);
+            if (session('active_semester_id')) {
+                $query->where('semester_id', session('active_semester_id'));
+            }
         })
             ->withCount(['attendances as late_count' => function ($query) use ($startDate, $endDate) {
             $query->where('status', 'terlambat')
                 ->whereBetween('attendance_time', [$startDate, $endDate]);
+            if (session('active_semester_id')) {
+                $query->where('semester_id', session('active_semester_id'));
+            }
         }])
             ->orderByDesc('late_count')
             ->get();
@@ -489,6 +507,9 @@ class ReportController extends Controller
             ->whereIn('status', ['tepat_waktu', 'terlambat'])
             ->whereNull('checkout_time')
             ->whereBetween('attendance_time', [$startDate, $endDate])
+            ->when(session('active_semester_id'), function ($q) {
+                return $q->where('attendances.semester_id', session('active_semester_id'));
+            })
             ->join('students', 'attendances.student_id', '=', 'students.id')
             ->join('school_classes', 'students.school_class_id', '=', 'school_classes.id')
             ->orderBy('school_classes.name', 'asc')

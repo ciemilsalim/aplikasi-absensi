@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Attendance extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\ScopedByAcademicPeriod;
 
     /**
      * The attributes that are mass assignable.
@@ -19,6 +19,8 @@ class Attendance extends Model
         'attendance_time',
         'checkout_time',
         'status', // Ditambahkan untuk status keterlambatan
+        'academic_year_id',
+        'semester_id',
     ];
 
     /**

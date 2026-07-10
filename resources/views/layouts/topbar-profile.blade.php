@@ -82,6 +82,23 @@
         @endif
     </div>
     
+    {{-- Global Academic Period Switcher --}}
+    @if(isset($globalSemesters) && $globalSemesters->count() > 0)
+    <div class="hidden sm:flex items-center">
+        <form action="{{ route('set-academic-period') }}" method="POST" id="global-switcher-form" class="m-0">
+            @csrf
+            <select name="semester_id" onchange="document.getElementById('global-switcher-form').submit()" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-xs sm:leading-6 dark:bg-slate-800 dark:text-white dark:ring-slate-600 font-medium">
+                @foreach($globalSemesters as $semester)
+                    <option value="{{ $semester->id }}" {{ (isset($globalActiveSemesterId) && $globalActiveSemesterId == $semester->id) ? 'selected' : '' }}>
+                        TA. {{ $semester->academicYear->name ?? '' }} - {{ $semester->name }}
+                    </option>
+                @endforeach
+            </select>
+        </form>
+    </div>
+    <div class="hidden sm:block sm:h-6 sm:w-px sm:bg-gray-200 dark:sm:bg-slate-700 mx-2" aria-hidden="true"></div>
+    @endif
+    
     <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200 dark:lg:bg-slate-700" aria-hidden="true"></div>
 
     @auth

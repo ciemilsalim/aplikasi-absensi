@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Middleware ini akan berjalan pada setiap permintaan web
         $middleware->web(append: [
             \App\Http\Middleware\UpdateLastSeenMiddleware::class,
+            \App\Http\Middleware\SetAcademicPeriod::class,
         ]);
 
         // Mendaftarkan alias untuk middleware peran

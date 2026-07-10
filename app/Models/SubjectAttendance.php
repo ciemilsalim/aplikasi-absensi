@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SubjectAttendance extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\ScopedByAcademicPeriod;
 
     /**
      * The attributes that are mass assignable.

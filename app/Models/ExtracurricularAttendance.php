@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ExtracurricularAttendance extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\ScopedByAcademicPeriod;
 
     protected $fillable = [
         'extracurricular_id',

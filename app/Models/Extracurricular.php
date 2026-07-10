@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Extracurricular extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\ScopedByAcademicPeriod;
 
-    protected $fillable = ['name', 'description', 'teacher_id'];
+    protected $fillable = ['name', 'description', 'teacher_id', 'semester_id', 'academic_year_id'];
 
     public function coach()
     {

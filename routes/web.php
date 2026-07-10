@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AcademicPeriodController;
 
 // Middleware
 use App\Http\Middleware\AdminMiddleware;
@@ -69,6 +70,8 @@ Route::get('/dashboard', function () {
 
 // == GRUP RUTE YANG MEMERLUKAN LOGIN ==
 Route::middleware('auth')->group(function () {
+    Route::post('/set-academic-period', [AcademicPeriodController::class, 'setPeriod'])->name('set-academic-period');
+    
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

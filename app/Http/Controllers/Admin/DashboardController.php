@@ -26,7 +26,10 @@ class DashboardController extends Controller
                         : Carbon::today();
 
         $attendancesQuery = Attendance::with(['student.schoolClass'])
-                                      ->whereDate('attendance_time', $selectedDate);
+                                      ->whereDate('attendance_time', $selectedDate)
+                                      ->when(session('active_semester_id'), function ($q) {
+                                          return $q->where('semester_id', session('active_semester_id'));
+                                      });
 
         // --- STATISTIK ---
         $allAttendancesToday = (clone $attendancesQuery)->get();
@@ -79,6 +82,9 @@ class DashboardController extends Controller
             ->whereNotNull('attendance_time')
             ->whereNull('checkout_time')
             ->whereNotIn('status', ['izin', 'sakit', 'alpa', 'izin_keluar'])
+            ->when(session('active_semester_id'), function ($q) {
+                return $q->where('semester_id', session('active_semester_id'));
+            })
             ->get();
         
         return view('admin.dashboard', [
