@@ -38,13 +38,16 @@ class AttendanceController extends Controller
 
         try {
             $qrData = $request->student_unique_id;
-            $parts = explode('-', $qrData);
+            $qrData = $request->student_unique_id;
             
-            if (count($parts) === 2) {
-                // Format gabungan: NIS-UNIQUE_ID
-                $student = Student::where('nis', $parts[0])->where('unique_id', $parts[1])->firstOrFail();
+            // Format gabungan: NIS-UNIQUE_ID
+            // UUID length is 36. We check if the string has NIS- prefix before UUID
+            if (strlen($qrData) > 37 && substr($qrData, -37, 1) === '-') {
+                $nis = substr($qrData, 0, -37);
+                $uniqueId = substr($qrData, -36);
+                $student = Student::where('nis', $nis)->where('unique_id', $uniqueId)->firstOrFail();
             } else {
-                // Format lama atau manual
+                // Format lama atau manual (hanya UUID atau hanya NIS)
                 $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->firstOrFail();
             }
             $now = now();
