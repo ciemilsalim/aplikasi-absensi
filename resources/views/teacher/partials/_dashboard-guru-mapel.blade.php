@@ -25,11 +25,26 @@
             </div>
         </div>
 
-        <!-- Jadwal Mengajar Hari Ini -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+        <!-- Jadwal Mengajar -->
+        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg" x-data="{ activeTab: 'today' }">
+            <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Jadwal Mengajar Anda</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Kelola dan lakukan absensi untuk kelas mengajar Anda.</p>
+                </div>
+                <div class="flex bg-gray-100 dark:bg-slate-900 p-1 rounded-lg self-start sm:self-auto">
+                    <button @click="activeTab = 'today'" :class="activeTab === 'today' ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'" class="px-4 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 focus:outline-none">
+                        Hari Ini
+                    </button>
+                    <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'" class="px-4 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 focus:outline-none">
+                        Semua Jadwal
+                    </button>
+                </div>
+            </div>
+            
             <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Jadwal Mengajar Hari Ini</h3>
-                <div class="relative border-l border-gray-200 dark:border-slate-700 ml-4">
+                <!-- Tab Jadwal Hari Ini -->
+                <div x-show="activeTab === 'today'" class="relative border-l border-gray-200 dark:border-slate-700 ml-4">
                     @forelse($schedulesToday as $schedule)
                         <div class="mb-10 ml-8">
                             <span class="absolute flex items-center justify-center w-8 h-8 {{ now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time)) ? 'bg-green-100 dark:bg-green-900' : 'bg-sky-100 dark:bg-sky-900' }} rounded-full -left-4 ring-8 ring-white dark:ring-slate-800">
@@ -56,6 +71,55 @@
                              <div class="text-center py-10 px-6">
                                 <i class="fas fa-calendar-check fa-3x text-gray-400 dark:text-gray-500"></i>
                                 <p class="mt-4 text-gray-600 dark:text-gray-300">Tidak ada jadwal mengajar untuk Anda hari ini.</p>
+                            </div>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Tab Semua Jadwal -->
+                <div x-show="activeTab === 'all'" class="relative border-l border-gray-200 dark:border-slate-700 ml-4" style="display: none;">
+                    @php
+                        $dayNames = [
+                            1 => 'Senin',
+                            2 => 'Selasa',
+                            3 => 'Rabu',
+                            4 => 'Kamis',
+                            5 => 'Jumat',
+                            6 => 'Sabtu',
+                            7 => 'Minggu',
+                        ];
+                    @endphp
+                    @forelse($allSchedules as $schedule)
+                        <div class="mb-10 ml-8">
+                            <span class="absolute flex items-center justify-center w-8 h-8 bg-slate-100 dark:bg-slate-700 rounded-full -left-4 ring-8 ring-white dark:ring-slate-800">
+                                <i class="fas fa-calendar text-slate-500 dark:text-slate-300"></i>
+                            </span>
+                            <div class="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
+                                <div class="flex flex-wrap items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 text-xs font-semibold text-sky-700 bg-sky-50 dark:bg-sky-950/40 dark:text-sky-300 rounded border border-sky-100 dark:border-sky-900/30">
+                                        {{ $dayNames[$schedule->day_of_week] ?? 'Hari Lain' }}
+                                    </span>
+                                    <time class="text-sm font-normal leading-none text-gray-500 dark:text-gray-400">
+                                        {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
+                                    </time>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {{ $schedule->teachingAssignment->subject->name }}
+                                </h4>
+                                <p class="text-base font-normal text-gray-600 dark:text-gray-300">
+                                    Kelas: {{ $schedule->teachingAssignment->schoolClass->name }}
+                                </p>
+                                <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" class="inline-flex items-center px-4 py-2 mt-4 text-sm font-medium text-white bg-sky-600 rounded-lg hover:bg-sky-700 focus:ring-4 focus:outline-none focus:ring-sky-300 dark:focus:ring-sky-800">
+                                    <i class="fas fa-qrcode mr-2"></i>
+                                    Ambil Absensi
+                                </a>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="ml-4">
+                             <div class="text-center py-10 px-6">
+                                <i class="fas fa-calendar-times fa-3x text-gray-400 dark:text-gray-500"></i>
+                                <p class="mt-4 text-gray-600 dark:text-gray-300">Anda belum memiliki jadwal mengajar terdaftar.</p>
                             </div>
                         </div>
                     @endforelse

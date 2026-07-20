@@ -79,6 +79,9 @@ class DashboardController extends Controller
         if (!isset($viewData['schedulesToday'])) {
             $viewData['schedulesToday'] = collect();
         }
+        if (!isset($viewData['allSchedules'])) {
+            $viewData['allSchedules'] = collect();
+        }
         if (!isset($viewData['chartLabels'])) {
             $viewData['chartLabels'] = [];
         }
@@ -258,10 +261,22 @@ class DashboardController extends Controller
             ];
         }
 
+        $allSchedules = Schedule::with([
+            'teachingAssignment.schoolClass',
+            'teachingAssignment.subject'
+        ])
+            ->whereHas('teachingAssignment', function ($query) use ($teacher) {
+                $query->where('teacher_id', $teacher->id);
+            })
+            ->orderBy('day_of_week', 'asc')
+            ->orderBy('start_time', 'asc')
+            ->get();
+
         $teacherNote = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
 
         return [
             'schedulesToday' => $schedulesToday,
+            'allSchedules' => $allSchedules,
             'studentsForAttentionMapel' => $studentsForAttention,
             'lastAttendanceSummary' => $lastAttendanceSummary,
             'classPerformanceData' => $classPerformanceData,
