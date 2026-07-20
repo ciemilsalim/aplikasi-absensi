@@ -107,12 +107,7 @@
 
         </main>
         
-        <!-- ===== FLOATING ACTION BUTTON (FAB) ===== -->
-        @if($isSubjectTeacher && isset($schedulesToday) && $schedulesToday->isNotEmpty())
-        <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedulesToday->first()->id]) }}" class="fixed z-40 right-6 bottom-20 lg:bottom-6 h-14 w-14 bg-sky-500 hover:bg-sky-600 rounded-full flex items-center justify-center text-white shadow-lg transition">
-            <span class="material-icons">qr_code_scanner</span>
-        </a>
-        @endif
+
 
     </div>
 
