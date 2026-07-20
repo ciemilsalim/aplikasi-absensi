@@ -65,7 +65,10 @@ Route::get('/dashboard', function () {
     if ($user->role === 'teacher') {
         return redirect()->route('teacher.dashboard');
     }
-    return redirect()->route('login');
+    
+    // Mencegah redirect loop untuk role yang tidak terdaftar (seperti 'user' default)
+    auth()->logout();
+    return redirect()->route('login')->withErrors(['role' => 'Peran Anda tidak dikenali oleh sistem absensi. Silakan hubungi administrator.']);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // == GRUP RUTE YANG MEMERLUKAN LOGIN ==
