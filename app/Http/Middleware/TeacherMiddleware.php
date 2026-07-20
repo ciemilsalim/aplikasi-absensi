@@ -10,7 +10,7 @@ class TeacherMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->role === 'teacher') {
+        if (auth()->check() && auth()->user()->hasRole('teacher')) {
             return $next($request);
         }
         return redirect('/');

@@ -27,7 +27,7 @@ class ChatController extends Controller
         $adminConversation = null;
         $adminUser = null; // Inisialisasi variabel adminUser
 
-        if ($user->role === 'parent') {
+        if ($user->hasRole('parent')) {
             // PERBARUAN: Mengambil data admin untuk diteruskan ke view
             $adminUser = User::where('role', 'admin')->first();
             if ($adminUser) {
@@ -80,7 +80,7 @@ class ChatController extends Controller
     public function showAdminChat()
     {
         $user = Auth::user();
-        if ($user->role !== 'parent') abort(403);
+        if (!$user->hasRole('parent')) abort(403);
         
         $parent = $user->parent;
         $adminUser = User::where('role', 'admin')->first();
@@ -125,7 +125,7 @@ class ChatController extends Controller
     {
         $conversationIds = [];
         try {
-            if ($user->role === 'parent') {
+            if ($user->hasRole('parent')) {
                 $parent = $user->parent;
                 if (!$parent) return collect();
                 $students = $parent->students()->with('schoolClass.homeroomTeacher')->get();
@@ -135,7 +135,7 @@ class ChatController extends Controller
                         $conversationIds[] = $conversation->id;
                     }
                 }
-            } elseif ($user->role === 'teacher' && $user->teacher?->homeroomClass) {
+            } elseif ($user->hasRole('teacher') && $user->teacher?->homeroomClass) {
                 $teacher = $user->teacher;
                 $students = $teacher->homeroomClass->students()->with('parents')->get();
                 foreach ($students as $student) {
@@ -167,8 +167,8 @@ class ChatController extends Controller
     private function authorizeConversationAccess(Conversation $conversation)
     {
         $user = Auth::user();
-        if ($user->role === 'parent' && $conversation->parent_id !== $user->parent?->id) abort(403);
-        if ($user->role === 'teacher' && $conversation->teacher_id !== $user->teacher?->id) abort(403);
+        if ($user->hasRole('parent') && $conversation->parent_id !== $user->parent?->id) abort(403);
+        if ($user->hasRole('teacher') && $conversation->teacher_id !== $user->teacher?->id) abort(403);
     }
 }
 

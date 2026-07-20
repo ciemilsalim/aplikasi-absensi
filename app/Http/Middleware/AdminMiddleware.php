@@ -16,7 +16,7 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Cek jika pengguna sudah login DAN memiliki role 'admin'
-        if (auth()->check() && auth()->user()->role === 'admin') {
+        if (auth()->check() && auth()->user()->hasRole('admin')) {
             return $next($request);
         }
 

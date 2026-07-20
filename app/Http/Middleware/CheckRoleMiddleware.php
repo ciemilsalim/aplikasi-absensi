@@ -20,7 +20,7 @@ class CheckRoleMiddleware
     {
         // Jika pengguna tidak login atau tidak memiliki salah satu dari peran yang diizinkan,
         // hentikan permintaan dan tampilkan halaman error 403 (Forbidden).
-        if (!Auth::check() || !in_array(Auth::user()->role, $roles)) {
+        if (!Auth::check() || !Auth::user()->hasAnyRole($roles)) {
             abort(403, 'AKSES DITOLAK');
         }
 

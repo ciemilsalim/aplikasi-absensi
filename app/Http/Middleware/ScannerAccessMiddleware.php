@@ -23,7 +23,7 @@ class ScannerAccessMiddleware
         $user = Auth::user();
 
         // PERBAIKAN: Izinkan jika peran adalah admin, operator, guru, atau satpam
-        if (in_array($user->role, ['admin', 'operator', 'teacher', 'satpam'])) {
+        if ($user->hasAnyRole(['admin', 'operator', 'teacher', 'satpam'])) {
             return $next($request);
         }
 

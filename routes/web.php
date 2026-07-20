@@ -56,13 +56,13 @@ Route::get('/sso/login', [\App\Http\Controllers\Auth\SsoLoginController::class, 
 // == RUTE AUTENTIKASI & PENGALIHAN ==
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    if (in_array($user->role, ['admin', 'operator', 'satpam'])) {
+    if ($user->hasAnyRole(['admin', 'operator', 'satpam'])) {
         return redirect()->route('admin.dashboard');
     }
-    if ($user->role === 'parent') {
+    if ($user->hasRole('parent')) {
         return redirect()->route('parent.dashboard');
     }
-    if ($user->role === 'teacher') {
+    if ($user->hasRole('teacher')) {
         return redirect()->route('teacher.dashboard');
     }
     
