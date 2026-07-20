@@ -47,6 +47,18 @@
             {{-- == PENGELOMPOKAN MENU GURU == --}}
             @auth
                 @if(auth()->user()->hasRole('teacher'))
+                    <li>
+                        <div class="text-xs font-semibold leading-6 text-gray-400">Aplikasi Terintegrasi</div>
+                        <ul role="list" class="-mx-2 mt-2 space-y-1">
+                            <li>
+                                <a href="{{ route('sso.lms') }}" class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-100 dark:border-indigo-900/50">
+                                    <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.315 48.315 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" /></svg>
+                                    LMS Mokopani
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                     {{-- Tampilkan menu ini HANYA jika guru punya tugas mengajar mapel --}}
                     @if(auth()->user()->teacher?->teachingAssignments()->exists())
                     <li>
