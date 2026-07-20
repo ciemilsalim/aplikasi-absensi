@@ -1,12 +1,23 @@
 <x-guest-layout>
     <div class="flex min-h-screen">
         <!-- Panel Kiri (Gambar) -->
-        <div class="relative hidden w-0 flex-1 lg:block">
-            <img class="absolute inset-0 h-full w-full object-cover" src="https://images.unsplash.com/photo-1594608661623-aa0bd3a69d98?q=80&w=2798&auto=format&fit=crop" alt="Gedung sekolah modern yang cerah">
-            <div class="absolute inset-0 bg-sky-900/40"></div>
-             <div class="absolute bottom-0 left-0 p-12 text-white">
-                 <h2 class="text-3xl font-bold leading-snug">Presensi Lebih Mudah, Data Lebih Akurat.</h2>
-                 <p class="mt-2 text-sky-200/80">Selamat datang kembali di platform presensi andalan Anda.</p>
+        <div class="relative hidden w-0 flex-1 lg:block bg-sky-50 dark:bg-slate-800 overflow-hidden">
+            <style>
+                @keyframes float-elegant {
+                    0%, 100% { transform: translateY(0) scale(1); }
+                    50% { transform: translateY(-15px) scale(1.02); }
+                }
+                .animate-float-elegant {
+                    animation: float-elegant 7s ease-in-out infinite;
+                }
+            </style>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <img class="absolute inset-0 h-full w-full object-cover animate-float-elegant" src="{{ asset('images/login-illustration.png') }}" alt="Ilustrasi siswa SMP sedang presensi">
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-sky-900/80 via-sky-900/20 to-transparent"></div>
+             <div class="absolute bottom-0 left-0 p-12 text-white z-10">
+                 <h2 class="text-3xl font-bold leading-snug drop-shadow-md">Presensi Lebih Mudah, Data Lebih Akurat.</h2>
+                 <p class="mt-2 text-sky-100 drop-shadow">Selamat datang kembali di platform presensi andalan Anda.</p>
              </div>
         </div>
 

@@ -1,12 +1,23 @@
 <x-guest-layout>
     <div class="flex min-h-screen">
         <!-- Panel Kiri (Gambar) - Tersembunyi di mobile -->
-        <div class="relative hidden w-0 flex-1 lg:block">
-             <img class="absolute inset-0 h-full w-full object-cover" src="https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2940&auto=format&fit=crop" alt="Siswa berdiskusi">
-             <div class="absolute inset-0 bg-sky-900/40"></div>
-             <div class="absolute inset-0 flex flex-col justify-end p-12 text-white">
-                 <h2 class="text-3xl font-bold">Bergabung dengan Komunitas Kami.</h2>
-                 <p class="mt-2 text-sky-200">Daftarkan diri Anda untuk mulai mengelola kehadiran dengan lebih baik.</p>
+        <div class="relative hidden w-0 flex-1 lg:block bg-sky-50 dark:bg-slate-800 overflow-hidden">
+            <style>
+                @keyframes float-elegant-register {
+                    0%, 100% { transform: translateY(0) scale(1.05); }
+                    50% { transform: translateY(-12px) scale(1.07); }
+                }
+                .animate-float-elegant-register {
+                    animation: float-elegant-register 8s ease-in-out infinite;
+                }
+            </style>
+             <div class="absolute inset-0 flex items-center justify-center">
+                 <img class="absolute inset-0 h-full w-full object-cover animate-float-elegant-register" src="{{ asset('images/register-illustration.png') }}" alt="Ilustrasi orang tua mendaftar secara online">
+             </div>
+             <div class="absolute inset-0 bg-gradient-to-t from-sky-900/80 via-sky-900/20 to-transparent"></div>
+             <div class="absolute bottom-0 left-0 p-12 text-white z-10">
+                 <h2 class="text-3xl font-bold drop-shadow-md">Bergabung dengan Komunitas Kami.</h2>
+                 <p class="mt-2 text-sky-100 drop-shadow">Daftarkan diri Anda untuk mulai mengelola kehadiran dengan lebih baik.</p>
              </div>
         </div>
 
