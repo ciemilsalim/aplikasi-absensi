@@ -56,7 +56,7 @@ Route::get('/sso/login', [\App\Http\Controllers\Auth\SsoLoginController::class, 
 // == RUTE AUTENTIKASI & PENGALIHAN ==
 Route::get('/dashboard', function () {
     $user = auth()->user();
-    if (in_array($user->role, ['admin', 'operator'])) {
+    if (in_array($user->role, ['admin', 'operator', 'satpam'])) {
         return redirect()->route('admin.dashboard');
     }
     if ($user->role === 'parent') {
@@ -103,8 +103,8 @@ Route::middleware(['auth', 'scanner.access'])->group(function () {
 
 // == GRUP RUTE ADMIN ==
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    // Rute yang bisa diakses oleh Admin & Operator
-    Route::middleware(['role:admin,operator'])->group(
+    // Rute yang bisa diakses oleh Admin, Operator, & Satpam
+    Route::middleware(['role:admin,operator,satpam'])->group(
         function () {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::get('/reports', [ReportController::class, 'create'])->name('reports.create');
