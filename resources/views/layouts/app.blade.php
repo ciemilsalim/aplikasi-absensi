@@ -310,10 +310,14 @@
                                      </a>
                                  </div>
                              @elseif(auth()->user()->role === 'teacher')
-                                 <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Pemindai & Menu Guru</div>
-                                 <div class="grid grid-cols-2 gap-3">
-                                     <a href="{{ route('teacher.subject.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
-                                         <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">history_edu</span>
+                                  <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Pemindai & Menu Guru</div>
+                                  <div class="grid grid-cols-2 gap-3">
+                                      <a href="{{ route('sso.lms') }}" class="flex flex-col items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-2xl transition col-span-2 text-indigo-600 dark:text-indigo-400">
+                                          <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">school</span>
+                                          <span class="text-xs font-bold">LMS Mokopani</span>
+                                      </a>
+                                      <a href="{{ route('teacher.subject.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
+                                          <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">history_edu</span>
                                          <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Riwayat Presensi Mapel</span>
                                      </a>
                                      <a href="{{ route('scanner') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
