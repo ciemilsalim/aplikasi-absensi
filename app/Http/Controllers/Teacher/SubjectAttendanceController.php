@@ -20,7 +20,7 @@ class SubjectAttendanceController extends Controller
     /**
      * Menampilkan halaman pemindai QR untuk absensi mata pelajaran.
      */
-    public function showScanner(Schedule $schedule)
+    public function showScanner(Request $request, Schedule $schedule)
     {
         $teacher = Auth::user()->teacher;
 
@@ -28,11 +28,12 @@ class SubjectAttendanceController extends Controller
             return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak berhak mengakses halaman ini.');
         }
 
-        $today = Carbon::today();
+        $dateStr = $request->input('date');
+        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
         $classId = $schedule->teachingAssignment->school_class_id;
 
         $subjectAttendancesToday = SubjectAttendance::where('schedule_id', $schedule->id)
-            ->whereDate('created_at', $today)
+            ->whereDate('created_at', $selectedDate)
             ->with('student')
             ->get();
 
@@ -60,7 +61,7 @@ class SubjectAttendanceController extends Controller
                 ];
             });
 
-        return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave', 'studentsWithoutNotice', 'studentsForFaceRecognition'));
+        return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave', 'studentsWithoutNotice', 'studentsForFaceRecognition', 'selectedDate'));
     }
 
     /**
@@ -71,6 +72,7 @@ class SubjectAttendanceController extends Controller
         $request->validate([
             'student_unique_id' => 'required|string',
             'schedule_id' => 'required|integer|exists:schedules,id',
+            'date' => 'nullable|date_format:Y-m-d',
         ]);
 
         $teacher = Auth::user()->teacher;
@@ -87,7 +89,9 @@ class SubjectAttendanceController extends Controller
             $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->first();
         }
         
-        $today = Carbon::today();
+        $dateStr = $request->input('date');
+        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
+        $attendanceDateTime = $selectedDate->copy()->setTimeFrom(now());
 
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
@@ -99,16 +103,16 @@ class SubjectAttendanceController extends Controller
 
         // == CEK HARI LIBUR & AKHIR PEKAN ==
         // 1. Cek Akhir Pekan (Sabtu & Minggu)
-        if ($today->isWeekend()) {
+        if ($selectedDate->isWeekend()) {
             return response()->json(['success' => false, 'message' => 'Absensi tidak dapat dilakukan pada akhir pekan.'], 422);
         }
 
         // 2. Cek Kalender Pendidikan (Hari Libur)
         $holiday = \App\Models\Calendar::where('is_holiday', true)
-            ->whereDate('start_date', '<=', $today)
-            ->where(function ($query) use ($today) {
+            ->whereDate('start_date', '<=', $selectedDate)
+            ->where(function ($query) use ($selectedDate) {
                 $query->whereNull('end_date')
-                    ->orWhereDate('end_date', '>=', $today);
+                    ->orWhereDate('end_date', '>=', $selectedDate);
             })->first();
 
         if ($holiday) {
@@ -118,19 +122,22 @@ class SubjectAttendanceController extends Controller
 
         $existingAttendance = SubjectAttendance::where('schedule_id', $schedule->id)
             ->where('student_id', $student->id)
-            ->whereDate('created_at', $today)
+            ->whereDate('created_at', $selectedDate)
             ->first();
 
         if ($existingAttendance) {
             return response()->json(['success' => false, 'message' => 'Siswa sudah diabsen sebelumnya.'], 409);
         }
 
-        $attendance = SubjectAttendance::create([
+        $attendance = new SubjectAttendance([
             'schedule_id' => $schedule->id,
             'student_id' => $student->id,
             'teacher_id' => $teacher->id,
             'status' => 'hadir',
         ]);
+        $attendance->created_at = $attendanceDateTime;
+        $attendance->updated_at = $attendanceDateTime;
+        $attendance->save();
 
         return response()->json([
             'success' => true,
@@ -170,12 +177,16 @@ class SubjectAttendanceController extends Controller
             'student_id' => 'required|exists:students,id',
             'schedule_id' => 'required|exists:schedules,id',
             'status' => 'required|in:sakit,izin,alpa,bolos',
+            'date' => 'nullable|date_format:Y-m-d',
         ]);
 
         $teacher = Auth::user()->teacher;
         $student = Student::find($request->student_id);
         $schedule = Schedule::find($request->schedule_id);
-        $today = Carbon::today();
+        
+        $dateStr = $request->input('date');
+        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
+        $attendanceDateTime = $selectedDate->copy()->setTimeFrom(now());
 
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
@@ -183,7 +194,7 @@ class SubjectAttendanceController extends Controller
 
         $attendance = SubjectAttendance::where('schedule_id', $schedule->id)
             ->where('student_id', $student->id)
-            ->whereDate('created_at', $today)
+            ->whereDate('created_at', $selectedDate)
             ->first();
 
         if ($attendance) {
@@ -192,12 +203,15 @@ class SubjectAttendanceController extends Controller
                 'teacher_id' => $teacher->id,
             ]);
         } else {
-            $attendance = SubjectAttendance::create([
+            $attendance = new SubjectAttendance([
                 'schedule_id' => $schedule->id,
                 'student_id' => $student->id,
                 'teacher_id' => $teacher->id,
                 'status' => $request->status,
             ]);
+            $attendance->created_at = $attendanceDateTime;
+            $attendance->updated_at = $attendanceDateTime;
+            $attendance->save();
         }
 
         return response()->json([

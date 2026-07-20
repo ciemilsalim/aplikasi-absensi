@@ -44,8 +44,15 @@
                 <div class="lg:col-span-2 space-y-6">
                     <!-- Informasi Jadwal -->
                     <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Informasi Pembelajaran</h3>
-                        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 dark:border-slate-700 pb-4 mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Informasi Pembelajaran</h3>
+                            <div class="mt-2 sm:mt-0 flex items-center gap-2">
+                                <label for="attendance-date" class="text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal Absen:</label>
+                                <input type="date" id="attendance-date" name="date" value="{{ $selectedDate->format('Y-m-d') }}" 
+                                    class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-xs py-1 px-2">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400">Mata Pelajaran</p>
                                 <p class="font-semibold text-gray-800 dark:text-gray-200">
@@ -626,6 +633,7 @@
             }
 
             function processAttendance(studentId) {
+                const selectedDate = document.getElementById('attendance-date').value;
                 fetch("{{ route('teacher.subject.attendance.store') }}", {
                     method: 'POST',
                     headers: {
@@ -635,7 +643,8 @@
                     },
                     body: JSON.stringify({
                         student_unique_id: studentId,
-                        schedule_id: scheduleId
+                        schedule_id: scheduleId,
+                        date: selectedDate
                     })
                 }).then(response => response.json().then(data => ({ status: response.status, body: data })))
                     .then(({ status, body }) => {
@@ -756,6 +765,7 @@
                 const button = event.target;
                 const studentId = button.dataset.studentId;
                 const status = button.dataset.status;
+                const selectedDate = document.getElementById('attendance-date').value;
 
                 fetch("{{ route('teacher.subject.attendance.mark_manual') }}", {
                     method: 'POST',
@@ -767,7 +777,8 @@
                     body: JSON.stringify({
                         student_id: studentId,
                         schedule_id: scheduleId,
-                        status: status
+                        status: status,
+                        date: selectedDate
                     })
                 }).then(response => response.json().then(data => ({ status: response.status, body: data })))
                     .then(({ status, body }) => {
@@ -791,6 +802,12 @@
                         startScannerWithCamera(cameras[currentCameraIndex].id);
                     });
                 }
+            });
+
+            // Event listener untuk reload halaman ketika tanggal diubah
+            const dateInput = document.getElementById('attendance-date');
+            dateInput.addEventListener('change', function() {
+                window.location.href = `?date=${this.value}`;
             });
 
         });
