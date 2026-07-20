@@ -41,8 +41,26 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'parent', // PERBAIKAN: Menetapkan peran secara otomatis
+            'role' => 'parent', // PERBAIKAN: Menetapkan peran secara otomatis di aplikasi absensi
         ]);
+
+        // 1.5. Pastikan terdaftar juga di tabel Spatie Roles milik SIPADA
+        try {
+            $role = \Illuminate\Support\Facades\DB::table('roles')
+                ->where('name', 'parent')
+                ->orWhere('name', 'Parent')
+                ->first();
+                
+            if ($role) {
+                \Illuminate\Support\Facades\DB::table('model_has_roles')->insertOrIgnore([
+                    'role_id' => $role->id,
+                    'model_type' => 'App\Models\User',
+                    'model_id' => $user->id,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Abaikan jika tabel tidak ada atau terjadi kesalahan integrasi
+        }
 
         // 2. Buat juga data parent yang terhubung dengan user baru
         // Nomor HP bisa ditambahkan nanti oleh admin atau di halaman profil
