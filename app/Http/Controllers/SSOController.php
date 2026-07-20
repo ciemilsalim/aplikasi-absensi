@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class SSOController extends Controller
 {
     /**
-     * Redirect to LMS with SSO signature.
+     * Redirect to LMS using secure database token SSO.
      */
     public function redirectToLms(Request $request)
     {
@@ -18,50 +19,30 @@ class SSOController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $timestamp = now()->timestamp;
-        $userId = $user->id;
-        $secret = env('SSO_SECRET_KEY', 'default_sso_secret_key_123'); // Fallback string if not set
+        // Secure role check: only allow 'teacher' or 'admin' or 'operator'
+        $isTeacher = $user->hasRole('teacher') || ($user->teacher !== null);
+        $isAdmin = $user->hasAnyRole(['admin', 'operator']);
 
-        $signature = hash_hmac('sha256', $userId . '|' . $timestamp, $secret);
+        if (!$isTeacher && !$isAdmin) {
+            abort(403, 'Anda tidak memiliki hak akses untuk SSO ke LMS Mokopani.');
+        }
 
+        // 1. Generate a secure random token
+        $token = Str::random(60);
+
+        // 2. Store the token in the shared database with a 1-minute expiration
+        DB::table('sso_tokens')->insert([
+            'user_id' => $user->id,
+            'token' => $token,
+            'expires_at' => Carbon::now('UTC')->addMinute(),
+            'created_at' => Carbon::now('UTC'),
+            'updated_at' => Carbon::now('UTC'),
+        ]);
+
+        // 3. Get target LMS URL
         $lmsUrl = env('LMS_URL', 'http://localhost:8001');
-        
-        $url = rtrim($lmsUrl, '/') . '/sso/login?user_id=' . $userId . '&timestamp=' . $timestamp . '&signature=' . $signature;
 
-        return redirect()->away($url);
-    }
-
-    /**
-     * Handle incoming SSO login from LMS.
-     */
-    public function login(Request $request)
-    {
-        $userId = $request->query('user_id');
-        $timestamp = $request->query('timestamp');
-        $signature = $request->query('signature');
-        $secret = env('SSO_SECRET_KEY', 'default_sso_secret_key_123');
-
-        if (!$userId || !$timestamp || !$signature) {
-            abort(403, 'Missing SSO parameters.');
-        }
-
-        // Check if token is expired (e.g., older than 60 seconds)
-        if (now()->timestamp - $timestamp > 60) {
-            abort(403, 'SSO Token has expired.');
-        }
-
-        $expectedSignature = hash_hmac('sha256', $userId . '|' . $timestamp, $secret);
-
-        if (!hash_equals($expectedSignature, $signature)) {
-            abort(403, 'Invalid SSO Signature.');
-        }
-
-        $user = User::findOrFail($userId);
-        
-        // Log the user in
-        Auth::login($user);
-
-        // Redirect to dashboard or intended route
-        return redirect()->route('dashboard');
+        // 4. Redirect to the target LMS SSO login route
+        return redirect()->away(rtrim($lmsUrl, '/') . '/sso/login?token=' . $token);
     }
 }

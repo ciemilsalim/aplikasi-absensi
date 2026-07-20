@@ -51,7 +51,7 @@ Route::get('/', function () {
 
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::view('/offline', 'offline')->name('offline'); // Endpoint PWA
-Route::get('/sso/login', [\App\Http\Controllers\SSOController::class, 'login'])->name('sso.login');
+Route::get('/sso/login', [\App\Http\Controllers\Auth\SsoLoginController::class, 'login'])->name('sso.login');
 Route::get('/sso/lms', [\App\Http\Controllers\SSOController::class, 'redirectToLms'])->name('sso.lms');
 
 // == RUTE AUTENTIKASI & PENGALIHAN ==
