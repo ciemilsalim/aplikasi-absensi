@@ -1,18 +1,9 @@
 <x-guest-layout>
     <div class="flex min-h-screen">
         <!-- Panel Kiri (Gambar) -->
-        <div class="relative hidden w-0 flex-1 lg:block bg-sky-50 dark:bg-slate-800 overflow-hidden">
-            <style>
-                @keyframes float-elegant {
-                    0%, 100% { transform: translateY(0) scale(1); }
-                    50% { transform: translateY(-15px) scale(1.02); }
-                }
-                .animate-float-elegant {
-                    animation: float-elegant 7s ease-in-out infinite;
-                }
-            </style>
+        <div class="relative hidden w-0 flex-1 lg:block bg-sky-50 dark:bg-slate-800 overflow-hidden group">
             <div class="absolute inset-0 flex items-center justify-center">
-                <img class="absolute inset-0 h-full w-full object-cover animate-float-elegant" src="{{ asset('images/login-illustration.png') }}" alt="Ilustrasi siswa SMP sedang presensi">
+                <img class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out group-hover:scale-110" src="{{ asset('images/login-illustration.png') }}" alt="Ilustrasi siswa SMP sedang presensi">
             </div>
             <div class="absolute inset-0 bg-gradient-to-t from-sky-900/80 via-sky-900/20 to-transparent"></div>
              <div class="absolute bottom-0 left-0 p-12 text-white z-10">

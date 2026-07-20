@@ -1,18 +1,9 @@
 <x-guest-layout>
     <div class="flex min-h-screen">
         <!-- Panel Kiri (Gambar) - Tersembunyi di mobile -->
-        <div class="relative hidden w-0 flex-1 lg:block bg-sky-50 dark:bg-slate-800 overflow-hidden">
-            <style>
-                @keyframes float-elegant-register {
-                    0%, 100% { transform: translateY(0) scale(1.05); }
-                    50% { transform: translateY(-12px) scale(1.07); }
-                }
-                .animate-float-elegant-register {
-                    animation: float-elegant-register 8s ease-in-out infinite;
-                }
-            </style>
+        <div class="relative hidden w-0 flex-1 lg:block bg-sky-50 dark:bg-slate-800 overflow-hidden group">
              <div class="absolute inset-0 flex items-center justify-center">
-                 <img class="absolute inset-0 h-full w-full object-cover animate-float-elegant-register" src="{{ asset('images/register-illustration.png') }}" alt="Ilustrasi orang tua mendaftar secara online">
+                 <img class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out group-hover:scale-110" src="{{ asset('images/register-illustration.png') }}" alt="Ilustrasi orang tua mendaftar secara online">
              </div>
              <div class="absolute inset-0 bg-gradient-to-t from-sky-900/80 via-sky-900/20 to-transparent"></div>
              <div class="absolute bottom-0 left-0 p-12 text-white z-10">
