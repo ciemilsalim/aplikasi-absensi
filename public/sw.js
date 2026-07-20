@@ -1,4 +1,4 @@
-const CACHE_NAME = 'siasek-cache-v1';
+const CACHE_NAME = 'siasek-cache-v2';
 const urlsToCache = [
     '/',
     '/offline',
@@ -19,21 +19,33 @@ self.addEventListener('install', event => {
 
 // Menggunakan Cache
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // Jika ada di cache, kembalikan dari cache
-                if (response) {
-                    return response;
-                }
-                
-                // Jika tidak, coba ambil dari jaringan
-                return fetch(event.request).catch(() => {
-                    // Jika jaringan gagal, tampilkan halaman offline
-                    return caches.match('/offline');
+    // Hanya tangani permintaan GET
+    if (event.request.method !== 'GET') {
+        return;
+    }
+
+    // Untuk permintaan navigasi (halaman HTML), gunakan jaringan dulu, lalu fallback ke offline
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request).catch(() => {
+                return caches.match('/offline').then(response => {
+                    // Jika halaman offline tidak ada di cache, kembalikan response default agar tidak ERR_FAILED
+                    return response || new Response('Anda sedang offline dan halaman offline tidak tersedia.', {
+                        status: 503,
+                        statusText: 'Service Unavailable',
+                        headers: new Headers({ 'Content-Type': 'text/plain' })
+                    });
                 });
             })
-    );
+        );
+    } else {
+        // Untuk aset lainnya (CSS, JS, gambar), gunakan cache dulu, lalu fallback ke jaringan
+        event.respondWith(
+            caches.match(event.request).then(response => {
+                return response || fetch(event.request);
+            })
+        );
+    }
 });
 
 // Aktivasi & Membersihkan Cache Lama
