@@ -119,6 +119,7 @@
                 @endif
                 @if(auth()->user()->role === 'teacher')
                     <x-responsive-nav-link :href="route('teacher.dashboard')" :active="request()->routeIs('teacher.dashboard')">Dasbor</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('sso.lms')" class="text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/20 border-l-4 border-indigo-500">LMS Mokopani</x-responsive-nav-link>
                     @if(Auth::user()->teacher && Auth::user()->teacher->homeroomClass)
                         <x-responsive-nav-link :href="route('teacher.leave_requests.index')" :active="request()->routeIs('teacher.leave_requests.*')">Pengajuan Izin</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('teacher.attendance.history')" :active="request()->routeIs('teacher.attendance.history')">Riwayat Kehadiran</x-responsive-nav-link>
