@@ -120,6 +120,23 @@ class SubjectAttendanceController extends Controller
         }
         // ==================================
 
+        // == CEK JAM SEKOLAH / KERJA ==
+        $settings = \App\Models\Setting::pluck('value', 'key');
+        $jamMasuk = $settings->get('jam_masuk', '07:30');
+        $jamPulang = $settings->get('jam_pulang_guru') ?: $settings->get('jam_pulang', '16:00');
+        
+        $now = now();
+        $startTime = Carbon::createFromTimeString($jamMasuk)->subMinutes(30);
+        $endTime = Carbon::createFromTimeString($jamPulang)->addHours(1);
+        
+        if (!$now->between($startTime, $endTime)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Absensi hanya dapat dilakukan pada jam sekolah/kerja (' . $startTime->format('H:i') . ' - ' . $endTime->format('H:i') . ').'
+            ], 422);
+        }
+        // ==============================
+
         $existingAttendance = SubjectAttendance::where('schedule_id', $schedule->id)
             ->where('student_id', $student->id)
             ->whereDate('created_at', $selectedDate)
@@ -191,6 +208,42 @@ class SubjectAttendanceController extends Controller
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
         }
+
+        // == CEK HARI LIBUR & AKHIR PEKAN ==
+        // 1. Cek Akhir Pekan (Sabtu & Minggu)
+        if ($selectedDate->isWeekend()) {
+            return response()->json(['success' => false, 'message' => 'Absensi tidak dapat dilakukan pada akhir pekan.'], 422);
+        }
+
+        // 2. Cek Kalender Pendidikan (Hari Libur)
+        $holiday = \App\Models\Calendar::where('is_holiday', true)
+            ->whereDate('start_date', '<=', $selectedDate)
+            ->where(function ($query) use ($selectedDate) {
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $selectedDate);
+            })->first();
+
+        if ($holiday) {
+            return response()->json(['success' => false, 'message' => 'Hari ini libur: ' . $holiday->title], 422);
+        }
+        // ==================================
+
+        // == CEK JAM SEKOLAH / KERJA ==
+        $settings = \App\Models\Setting::pluck('value', 'key');
+        $jamMasuk = $settings->get('jam_masuk', '07:30');
+        $jamPulang = $settings->get('jam_pulang_guru') ?: $settings->get('jam_pulang', '16:00');
+        
+        $now = now();
+        $startTime = Carbon::createFromTimeString($jamMasuk)->subMinutes(30);
+        $endTime = Carbon::createFromTimeString($jamPulang)->addHours(1);
+        
+        if (!$now->between($startTime, $endTime)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Absensi hanya dapat dilakukan pada jam sekolah/kerja (' . $startTime->format('H:i') . ' - ' . $endTime->format('H:i') . ').'
+            ], 422);
+        }
+        // ==============================
 
         $attendance = SubjectAttendance::where('schedule_id', $schedule->id)
             ->where('student_id', $student->id)

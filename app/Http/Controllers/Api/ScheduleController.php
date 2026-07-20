@@ -204,8 +204,32 @@ class ScheduleController extends Controller
     private function isScheduleActive($start, $end)
     {
         $now = Carbon::now();
-        $startTime = Carbon::createFromFormat('H:i:s', $start);
-        $endTime = Carbon::createFromFormat('H:i:s', $end);
+        
+        // 1. Cek akhir pekan
+        if ($now->isWeekend()) {
+            return false;
+        }
+        
+        // 2. Cek hari libur
+        $today = $now->copy()->startOfDay();
+        $holiday = \App\Models\Calendar::where('is_holiday', true)
+            ->whereDate('start_date', '<=', $today)
+            ->where(function ($query) use ($today) {
+                $query->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $today);
+            })->first();
+            
+        if ($holiday) {
+            return false;
+        }
+
+        // 3. Cek apakah dalam jam sekolah (mengambil dari settings)
+        $settings = \App\Models\Setting::pluck('value', 'key');
+        $jamMasuk = $settings->get('jam_masuk', '07:30');
+        $jamPulang = $settings->get('jam_pulang_guru') ?: $settings->get('jam_pulang', '16:00');
+        
+        $startTime = Carbon::createFromTimeString($jamMasuk)->subMinutes(30);
+        $endTime = Carbon::createFromTimeString($jamPulang)->addHours(1);
         
         return $now->between($startTime, $endTime);
     }
