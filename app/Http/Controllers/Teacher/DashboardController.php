@@ -322,10 +322,10 @@ class DashboardController extends Controller
             'status' => 'required|string|in:tepat_waktu,terlambat,sakit,izin,alpa,hapus',
         ]);
 
-        $teacher = Auth::user()->teacher;
+        $teacher = Auth::user()?->teacher;
         $student = Student::find($request->student_id);
 
-        if (!$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
+        if (!$teacher || !$student || !$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
             return back()->with('error', 'Anda tidak berwenang mengubah absensi siswa ini.');
         }
 
@@ -776,10 +776,10 @@ class DashboardController extends Controller
 
     public function updateStudentPhoto(Request $request, Student $student)
     {
-        $teacher = Auth::user()->teacher;
+        $teacher = Auth::user()?->teacher;
 
         // Validasi otoritas Wali Kelas
-        if (!$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
+        if (!$teacher || !$student || !$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
             return back()->with('error', 'Anda tidak memiliki wewenang untuk mengubah data siswa di luar kelas Anda.');
         }
 

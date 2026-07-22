@@ -22,7 +22,15 @@ class SubjectAttendanceController extends Controller
      */
     public function showScanner(Request $request, Schedule $schedule)
     {
-        $teacher = Auth::user()->teacher;
+        $teacher = Auth::user()?->teacher;
+
+        if (!$teacher) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Data guru tidak ditemukan.');
+        }
+
+        if (!$schedule->teachingAssignment) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Penugasan mengajar tidak ditemukan.');
+        }
 
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
             return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak berhak mengakses halaman ini.');
@@ -75,8 +83,19 @@ class SubjectAttendanceController extends Controller
             'date' => 'nullable|date_format:Y-m-d',
         ]);
 
-        $teacher = Auth::user()->teacher;
-        $schedule = Schedule::find($request->schedule_id);
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher) {
+            return response()->json(['success' => false, 'message' => 'Data guru tidak ditemukan.'], 403);
+        }
+
+        $schedule = Schedule::with('teachingAssignment')->find($request->schedule_id);
+        if (!$schedule || !$schedule->teachingAssignment) {
+            return response()->json(['success' => false, 'message' => 'Jadwal mengajar tidak ditemukan.'], 404);
+        }
+
+        if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
+            return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
+        }
         
         $qrData = $request->student_unique_id;
         $parts = explode('-', $qrData);
@@ -88,18 +107,18 @@ class SubjectAttendanceController extends Controller
             // Format lama atau manual
             $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->first();
         }
-        
-        $dateStr = $request->input('date');
-        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
-        $attendanceDateTime = $selectedDate->copy()->setTimeFrom(now());
 
-        if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
-            return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan atau QR Code tidak valid.'], 404);
         }
 
         if ($student->school_class_id !== $schedule->teachingAssignment->school_class_id) {
             return response()->json(['success' => false, 'message' => 'Siswa tidak terdaftar di kelas ini.'], 422);
         }
+
+        $dateStr = $request->input('date');
+        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
+        $attendanceDateTime = $selectedDate->copy()->setTimeFrom(now());
 
         // == CEK HARI LIBUR & AKHIR PEKAN ==
         // 1. Cek Akhir Pekan (Sabtu & Minggu)
@@ -197,17 +216,32 @@ class SubjectAttendanceController extends Controller
             'date' => 'nullable|date_format:Y-m-d',
         ]);
 
-        $teacher = Auth::user()->teacher;
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher) {
+            return response()->json(['success' => false, 'message' => 'Data guru tidak ditemukan.'], 403);
+        }
+
         $student = Student::find($request->student_id);
-        $schedule = Schedule::find($request->schedule_id);
-        
-        $dateStr = $request->input('date');
-        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
-        $attendanceDateTime = $selectedDate->copy()->setTimeFrom(now());
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan.'], 404);
+        }
+
+        $schedule = Schedule::with('teachingAssignment')->find($request->schedule_id);
+        if (!$schedule || !$schedule->teachingAssignment) {
+            return response()->json(['success' => false, 'message' => 'Jadwal mengajar tidak ditemukan.'], 404);
+        }
 
         if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
         }
+
+        if ($student->school_class_id !== $schedule->teachingAssignment->school_class_id) {
+            return response()->json(['success' => false, 'message' => 'Siswa tidak terdaftar di kelas ini.'], 422);
+        }
+        
+        $dateStr = $request->input('date');
+        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
+        $attendanceDateTime = $selectedDate->copy()->setTimeFrom(now());
 
         // == CEK HARI LIBUR & AKHIR PEKAN ==
         // 1. Cek Akhir Pekan (Sabtu & Minggu)

@@ -103,7 +103,7 @@ class LeaveRequestController extends Controller
     {
         $teacher = Auth::user()->teacher;
         // Abort jika guru bukan wali kelas dari siswa yang mengajukan
-        if (!$teacher || $teacher->homeroomClass?->id !== $leaveRequest->student->school_class_id) {
+        if (!$teacher || $teacher->homeroomClass?->id !== $leaveRequest->student?->school_class_id) {
             abort(403, 'ANDA TIDAK BERHAK MEMPROSES PENGAJUAN INI.');
         }
     }

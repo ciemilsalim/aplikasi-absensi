@@ -63,7 +63,13 @@ class ScheduleController extends Controller
      */
     public function getStudents(Request $request, $id)
     {
-        $schedule = Schedule::with('teachingAssignment')->findOrFail($id);
+        $schedule = Schedule::with(['teachingAssignment.subject', 'teachingAssignment.schoolClass'])->findOrFail($id);
+        if (!$schedule->teachingAssignment) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Penugasan mengajar tidak ditemukan untuk jadwal ini.'
+            ], 404);
+        }
         $classId = $schedule->teachingAssignment->school_class_id;
 
         $students = Student::where('school_class_id', $classId)
@@ -92,8 +98,8 @@ class ScheduleController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $students,
-            'subject_name' => $schedule->teachingAssignment->subject->name,
-            'class_name' => $schedule->teachingAssignment->schoolClass->name,
+            'subject_name' => $schedule->teachingAssignment->subject->name ?? '-',
+            'class_name' => $schedule->teachingAssignment->schoolClass->name ?? '-',
         ]);
     }
 
@@ -267,8 +273,8 @@ class ScheduleController extends Controller
                 return [
                     'schedule_id'  => $row->schedule_id,
                     'date'         => $row->date,
-                    'subject_name' => $schedule->teachingAssignment->subject->name ?? '-',
-                    'class_name'   => $schedule->teachingAssignment->schoolClass->name ?? '-',
+                    'subject_name' => $schedule?->teachingAssignment?->subject?->name ?? '-',
+                    'class_name'   => $schedule?->teachingAssignment?->schoolClass?->name ?? '-',
                     'total'        => (int) $row->total,
                     'hadir'        => (int) $row->hadir,
                     'sakit'        => (int) $row->sakit,
