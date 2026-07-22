@@ -43,7 +43,7 @@ class PermitController extends Controller
         ]);
 
         $qrData = $request->student_unique_id;
-        $parts = explode('-', $qrData);
+        $parts = explode('-', $qrData, 2);
         
         if (count($parts) === 2) {
             // Format gabungan: NIS-UNIQUE_ID
