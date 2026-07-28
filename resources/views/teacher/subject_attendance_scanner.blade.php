@@ -236,8 +236,10 @@
                                         <span
                                             class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $student->name }}</span>
                                         <div class="flex items-center gap-1">
+                                            <button data-student-id="{{ $student->id }}" data-status="hadir"
+                                                class="manual-mark-btn px-2 py-1 text-xs font-medium text-emerald-800 bg-emerald-100 hover:bg-emerald-200 rounded-full" title="Hadir">H</button>
                                             <button data-student-id="{{ $student->id }}" data-status="sakit"
-                                                class="manual-mark-btn px-2 py-1 text-xs font-medium text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-full">S</button>
+                                                class="manual-mark-btn px-2 py-1 text-xs font-medium text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-full" title="Sakit">S</button>
                                             <button data-student-id="{{ $student->id }}" data-status="izin"
                                                 class="manual-mark-btn px-2 py-1 text-xs font-medium text-purple-800 bg-purple-100 hover:bg-purple-200 rounded-full">I</button>
                                             <button data-student-id="{{ $student->id }}" data-status="alpa"
@@ -712,7 +714,7 @@
                         if (data.student.status === 'sakit' || data.student.status === 'izin') {
                             addStudentToLeaveList(data.student.name, data.student.status);
                             removeStudentFromNoNoticeList(data.student.id);
-                        } else if (data.student.time) { // Jika ada 'time', berarti dari scan (hadir)
+                        } else if (data.student.status === 'hadir') { // Update list hadir
                             addStudentToList(data.student.name, data.student.time);
                             removeStudentFromNoNoticeList(data.student.id);
                         } else { // Jika status lain (alpa/bolos) dari manual mark

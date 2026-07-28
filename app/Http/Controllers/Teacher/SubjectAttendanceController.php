@@ -212,7 +212,7 @@ class SubjectAttendanceController extends Controller
         $request->validate([
             'student_id' => 'required|exists:students,id',
             'schedule_id' => 'required|exists:schedules,id',
-            'status' => 'required|in:sakit,izin,alpa,bolos',
+            'status' => 'required|in:hadir,sakit,izin,alpa,bolos',
             'date' => 'nullable|date_format:Y-m-d',
         ]);
 
@@ -307,7 +307,8 @@ class SubjectAttendanceController extends Controller
             'student' => [
                 'id' => $student->id,
                 'name' => $student->name,
-                'status' => $request->status
+                'status' => $request->status,
+                'time' => $attendanceDateTime->format('H:i')
             ]
         ]);
     }
