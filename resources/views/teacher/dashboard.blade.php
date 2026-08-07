@@ -109,6 +109,89 @@
                 </div>
             @endif
 
+            {{-- === PERINGATAN SISWA BELUM ABSEN === --}}
+            @if($currentView === 'wali_kelas' && isset($totalBelumAbsen) && $totalBelumAbsen > 0 && isset($isEffectiveSchoolDay) && $isEffectiveSchoolDay)
+                <div x-data="{ showAbsentModal: false }" class="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded-r-xl shadow-sm">
+                    <div class="flex gap-3">
+                        <div class="flex-shrink-0">
+                            <span class="material-icons text-red-500">group_off</span>
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="text-sm font-bold text-red-800 dark:text-red-200">Ada {{ $totalBelumAbsen }} Siswa Belum Absen</h4>
+                            <p class="text-xs text-red-700 dark:text-red-300/80 mt-1">
+                                Mohon ingatkan siswa-siswa ini untuk segera melakukan presensi hari ini.
+                            </p>
+                            <button @click="showAbsentModal = true" class="mt-3 text-xs font-semibold text-red-700 hover:text-red-900 dark:text-red-300 dark:hover:text-red-100 underline decoration-red-500/30 underline-offset-4 focus:outline-none transition-colors">
+                                Lihat Daftar Siswa &rarr;
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Modal Daftar Siswa Belum Absen --}}
+                    <div x-show="showAbsentModal" 
+                         style="display: none;"
+                         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 dark:bg-opacity-80 transition-opacity"
+                         x-transition:enter="ease-out duration-300"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="ease-in duration-200"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0">
+                         
+                        <div @click.away="showAbsentModal = false" 
+                             class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all"
+                             x-transition:enter="ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                             x-transition:leave="ease-in duration-200"
+                             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                             
+                            <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                    <span class="material-icons text-red-500">group_off</span>
+                                    Daftar Siswa Belum Absen
+                                </h3>
+                                <button @click="showAbsentModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none transition-colors">
+                                    <span class="material-icons">close</span>
+                                </button>
+                            </div>
+                            <div class="px-6 py-4 max-h-96 overflow-y-auto no-scrollbar">
+                                @if(isset($absentStudents) && $absentStudents->count() > 0)
+                                    <ul class="divide-y divide-gray-100 dark:divide-slate-700/50">
+                                        @foreach($absentStudents as $student)
+                                            <li class="py-3 flex items-center gap-3">
+                                                <div class="flex-shrink-0 h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-sm shadow-sm">
+                                                    {{ substr($student->name, 0, 1) }}
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                                        {{ $student->name }}
+                                                    </p>
+                                                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                                        NIS: {{ $student->nis }}
+                                                    </p>
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <div class="text-center py-6 flex flex-col items-center">
+                                        <span class="material-icons text-green-500 text-4xl mb-2">check_circle</span>
+                                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Semua siswa sudah absen hari ini.</p>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50 dark:bg-slate-800/50 flex justify-end border-t border-gray-200 dark:border-slate-700">
+                                <button @click="showAbsentModal = false" type="button" class="inline-flex justify-center rounded-lg border border-gray-300 dark:border-slate-600 px-4 py-2 bg-white dark:bg-slate-700 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- === KONTEN DINAMIS === --}}
             <div class="space-y-6">
                  @if($currentView === 'wali_kelas' && $isHomeroomTeacher)

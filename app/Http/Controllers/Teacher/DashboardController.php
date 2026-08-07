@@ -142,6 +142,16 @@ class DashboardController extends Controller
             ->whereNotIn('status', ['izin', 'sakit', 'alpa', 'izin_keluar'])
             ->get();
 
+        $presentStudentIds = $attendancesToday->keys();
+        $absentStudents = $studentsInClass->whereNotIn('id', $presentStudentIds)->values();
+        $totalBelumAbsen = $absentStudents->count();
+
+        // Check if today is an effective school day
+        $isWeekend = $today->isWeekend();
+        $holidaysToday = \App\Models\Calendar::getHolidaysInRange($today, $today);
+        $isHoliday = \App\Models\Calendar::isDateInHolidays($today, $holidaysToday);
+        $isEffectiveSchoolDay = !$isWeekend && !$isHoliday;
+
         $startDate = now()->subDays(6)->startOfDay();
         $endDate = now()->endOfDay();
         $period = CarbonPeriod::create($startDate, $endDate);
@@ -188,7 +198,10 @@ class DashboardController extends Controller
             'chartLabels' => $chartLabels,
             'chartData' => $chartData,
             'studentsOnPermit' => $studentsOnPermit,
-            'studentsNotCheckedOut' => $studentsNotCheckedOut
+            'studentsNotCheckedOut' => $studentsNotCheckedOut,
+            'absentStudents' => $absentStudents,
+            'totalBelumAbsen' => $totalBelumAbsen,
+            'isEffectiveSchoolDay' => $isEffectiveSchoolDay,
         ];
     }
 
