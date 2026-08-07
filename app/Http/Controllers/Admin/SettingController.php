@@ -81,12 +81,6 @@ class SettingController extends Controller
             ]);
             
             $attendanceKeys = ['jam_masuk', 'jam_pulang', 'jam_masuk_guru', 'jam_pulang_guru'];
-            $selectedYear = $request->input('effective_year', date('Y'));
-            for ($i = 1; $i <= 12; $i++) {
-                $monthKey = 'effective_days_' . $selectedYear . '_' . $i;
-                $rules[$monthKey] = 'nullable|integer|min:0|max:31';
-                $attendanceKeys[] = $monthKey;
-            }
 
             $settingsToUpdate = array_merge($settingsToUpdate, $request->only($attendanceKeys));
             // PERBAIKAN: Logika untuk menangani checkbox notifikasi alpa

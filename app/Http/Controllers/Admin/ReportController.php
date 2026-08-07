@@ -135,6 +135,10 @@ class ReportController extends Controller
             }
             $effDays = $effectiveDaysSetting !== null ? (int)$effectiveDaysSetting : 0;
             
+            if ($effDays <= 0) {
+                $effDays = $workdays->count();
+            }
+            
             $totalStudentsCount = count($students);
             $maxPossible = $effDays * $totalStudentsCount;
             
@@ -309,6 +313,18 @@ class ReportController extends Controller
             if ($effectiveDays === null) {
                 $effectiveDays = Setting::where('key', 'effective_days_' . $m)->value('value');
             }
+            
+            if (empty($effectiveDays) || $effectiveDays == 0) {
+                $startDate = Carbon::create($year, $m, 1)->startOfMonth();
+                $endDate = $startDate->copy()->endOfMonth();
+                $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+                $period = CarbonPeriod::create($startDate, $endDate);
+                $workdays = collect($period)->filter(function ($d) use ($holidays) {
+                    return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
+                });
+                $effectiveDays = $workdays->count();
+            }
+
             $trimesterMap[$m] = [
                 'name' => $monthNames[$m],
                 'effective_days' => $effectiveDays !== null ? (int)$effectiveDays : 0

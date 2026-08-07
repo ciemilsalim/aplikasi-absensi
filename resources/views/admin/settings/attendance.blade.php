@@ -9,7 +9,6 @@
         @csrf
         {{-- Input tersembunyi untuk menandai form mana yang disubmit --}}
         <input type="hidden" name="form_type" value="attendance">
-        <input type="hidden" name="effective_year" value="{{ $selectedYear }}">
 
         <div class="bg-white dark:bg-slate-800 shadow-sm sm:rounded-lg">
               <div class="p-6">
@@ -62,37 +61,7 @@
                     </div>
                 </label>
 
-                {{-- Pengaturan Hari Efektif Belajar --}}
-                <div class="border-t border-gray-200 dark:border-slate-700 pt-6">
-                    <div class="flex flex-col sm:flex-row items-center justify-between mb-4">
-                        <div>
-                            <h4 class="text-md font-medium text-gray-900 dark:text-gray-200">Pengaturan Hari Efektif Sekolah</h4>
-                            <p class="text-sm text-gray-500 mt-1">Masukkan jumlah hari efektif per bulan untuk kalkulasi persentase pada Laporan Kelas Triwulan. Pastikan tahun sesuai.</p>
-                        </div>
-                        <div class="mt-4 sm:mt-0">
-                            <select onchange="window.location.href='?year=' + this.value" class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-semibold cursor-pointer">
-                                @for($y = date('Y') - 1; $y <= date('Y') + 2; $y++)
-                                    <option value="{{ $y }}" {{ $selectedYear == $y ? 'selected' : '' }}>Tahun {{ $y }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        @php
-                            $months = [
-                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                            ];
-                        @endphp
-                        @foreach($months as $monthNum => $monthName)
-                            <div>
-                                <x-input-label for="effective_days_{{ $selectedYear }}_{{ $monthNum }}" :value="__($monthName)" />
-                                <x-text-input id="effective_days_{{ $selectedYear }}_{{ $monthNum }}" class="block mt-1 w-full" type="number" min="0" max="31" name="effective_days_{{ $selectedYear }}_{{ $monthNum }}" :value="old('effective_days_'.$selectedYear.'_'.$monthNum, $settings['effective_days_'.$selectedYear.'_'.$monthNum] ?? 0)" />
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+
               </div>
               <div class="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-end">
                   <x-primary-button type="submit">Simpan Pengaturan</x-primary-button>
