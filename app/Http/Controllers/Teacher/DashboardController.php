@@ -32,6 +32,18 @@ class DashboardController extends Controller
     /**
      * Menampilkan dasbor guru berdasarkan peran yang dimiliki.
      */
+    private function checkEffectiveDaysSet()
+    {
+        $currentYear = date('Y');
+        $currentMonth = date('n');
+        
+        $effectiveDays = Setting::where('key', 'effective_days_' . $currentYear . '_' . $currentMonth)->value('value');
+        if ($effectiveDays === null) {
+            $effectiveDays = Setting::where('key', 'effective_days_' . $currentMonth)->value('value');
+        }
+        return !empty($effectiveDays) && $effectiveDays > 0;
+    }
+
     public function index(Request $request)
     {
         $teacher = Auth::user()->teacher;
@@ -63,6 +75,7 @@ class DashboardController extends Controller
         $viewData['isSubjectTeacher'] = $isSubjectTeacher;
         $viewData['isExtracurricularCoach'] = $isExtracurricularCoach;
         $viewData['currentView'] = $currentView;
+        $viewData['isEffectiveDaysSet'] = $this->checkEffectiveDaysSet();
 
         if ($currentView === 'wali_kelas' && $isHomeroomTeacher) {
             $viewData = array_merge($viewData, $this->getHomeroomData($teacher));

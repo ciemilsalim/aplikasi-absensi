@@ -12,6 +12,18 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    private function checkEffectiveDaysSet()
+    {
+        $currentYear = date('Y');
+        $currentMonth = date('n');
+        
+        $effectiveDays = \App\Models\Setting::where('key', 'effective_days_' . $currentYear . '_' . $currentMonth)->value('value');
+        if ($effectiveDays === null) {
+            $effectiveDays = \App\Models\Setting::where('key', 'effective_days_' . $currentMonth)->value('value');
+        }
+        return !empty($effectiveDays) && $effectiveDays > 0;
+    }
+
     public function index(Request $request)
     {
         $request->validate([
@@ -100,6 +112,7 @@ class DashboardController extends Controller
             'classAttendanceStats' => $classAttendanceStats,
             'studentsOnPermit' => $studentsOnPermit,
             'studentsNotCheckedOut' => $studentsNotCheckedOut, // Kirim data baru ke view
+            'isEffectiveDaysSet' => $this->checkEffectiveDaysSet(),
         ]);
     }
 }

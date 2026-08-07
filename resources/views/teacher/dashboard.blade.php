@@ -89,6 +89,26 @@
                 </div>
             @endif
 
+            {{-- === PERINGATAN HARI EFEKTIF === --}}
+            @if(isset($isEffectiveDaysSet) && !$isEffectiveDaysSet)
+                <div class="bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm">
+                    <div class="flex gap-3">
+                        <div class="flex-shrink-0">
+                            <span class="material-icons text-amber-500">warning</span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-amber-800 dark:text-amber-200">Perhatian: Hari Efektif Belajar Belum Diatur</h4>
+                            <p class="text-xs text-amber-700 dark:text-amber-300/80 mt-1">
+                                Jumlah hari efektif sekolah untuk bulan ini belum diisi oleh Administrator. Kalkulasi persentase kehadiran pada grafik mungkin menggunakan nilai estimasi.
+                            </p>
+                            <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-2 font-medium">
+                                Silakan hubungi Administrator untuk mengatur Hari Efektif di aplikasi SIPADA (Pangkalan Data).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- === KONTEN DINAMIS === --}}
             <div class="space-y-6">
                  @if($currentView === 'wali_kelas' && $isHomeroomTeacher)
