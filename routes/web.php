@@ -262,6 +262,10 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::post('/subject-attendance/report/update', [SubjectAttendanceController::class, 'updateReportAttendance'])->name('subject.attendance.update_report');
     // 4. Tampilkan halaman cetak (diakses dari halaman preview)
     Route::get('/subject-attendance/report/print', [SubjectAttendanceController::class, 'printReport'])->name('subject.attendance.print');
+    
+    // 5. Analitik Grafis Mapel
+    Route::get('/subject-attendance/charts', [SubjectAttendanceController::class, 'charts'])->name('subject.attendance.charts');
+    Route::post('/subject-attendance/charts/data', [SubjectAttendanceController::class, 'chartData'])->name('subject.attendance.charts.data');
 
     // == RUTE ABSENSI GURU (WAJAH & LOKASI) ==
     Route::get('/attendance/dashboard', [\App\Http\Controllers\Teacher\TeacherAttendanceController::class, 'index'])->name('attendance.dashboard');

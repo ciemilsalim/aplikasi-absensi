@@ -549,4 +549,182 @@ class SubjectAttendanceController extends Controller
             'schoolIdentity'
         ));
     }
+
+    /**
+     * [BARU] Menampilkan halaman UI untuk Grafik Analitik Mapel.
+     */
+    public function charts()
+    {
+        $teacher = Auth::user()->teacher;
+
+        $assignments = TeachingAssignment::with(['schoolClass.students', 'subject'])
+            ->where('teacher_id', $teacher->id)
+            ->get();
+
+        $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->unique();
+        $subjects = $assignments->pluck('subject.name', 'subject.id')->unique();
+        
+        $studentsMap = [];
+        foreach ($assignments as $assignment) {
+            if ($assignment->schoolClass) {
+                $studentsMap[$assignment->schoolClass->id] = $assignment->schoolClass->students->select('id', 'name')->toArray();
+            }
+        }
+
+        return view('teacher.subject_charts', compact('classes', 'subjects', 'studentsMap'));
+    }
+
+    /**
+     * [BARU] Memproses data dan mengembalikan JSON untuk Chart.js.
+     */
+    public function chartData(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'school_class_id' => 'required|exists:school_classes,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'period' => 'required|in:weekly,monthly'
+        ]);
+
+        $teacher = Auth::user()->teacher;
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+        $schoolClassId = $request->school_class_id;
+        $subjectId = $request->subject_id;
+        $studentId = $request->student_id; // 'all' atau ID siswa
+        $periodType = $request->period;
+
+        $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('school_class_id', $schoolClassId)
+            ->where('subject_id', $subjectId)
+            ->first();
+
+        if (!$assignment) {
+            return response()->json(['error' => 'Jadwal mengajar tidak ditemukan.'], 404);
+        }
+
+        $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
+            ->pluck('day_of_week')
+            ->unique()
+            ->toArray();
+
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+
+        $validDays = collect(CarbonPeriod::create($startDate, $endDate))->filter(function ($date) use ($scheduleDays, $holidays) {
+            return in_array($date->dayOfWeekIso, $scheduleDays) && !\App\Models\Calendar::isDateInHolidays($date, $holidays) && $date->startOfDay() <= now()->startOfDay();
+        });
+
+        $query = SubjectAttendance::where('teacher_id', $teacher->id)
+            ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->whereHas('schedule.teachingAssignment', function ($q) use ($schoolClassId, $subjectId) {
+                $q->where('school_class_id', $schoolClassId)->where('subject_id', $subjectId);
+            });
+
+        if ($studentId && $studentId !== 'all') {
+            $query->where('student_id', $studentId);
+            $studentsCount = 1;
+        } else {
+            $studentsCount = Student::where('school_class_id', $schoolClassId)->count();
+        }
+
+        $attendances = $query->get();
+
+        // Data untuk Pie Chart (Summary dari range yang dipilih)
+        $totalHadir = $attendances->where('status', 'hadir')->count();
+        $totalSakit = $attendances->where('status', 'sakit')->count();
+        $totalIzin = $attendances->where('status', 'izin')->count();
+        $totalAlpaTercatat = $attendances->whereIn('status', ['alpa', 'bolos'])->count();
+
+        $maxPossible = $validDays->count() * $studentsCount;
+        
+        $p_hadir = 0; $p_sakit = 0; $p_izin = 0; $p_alpa = 0;
+        if ($maxPossible > 0) {
+            $p_hadir = round(($totalHadir / $maxPossible) * 100, 1);
+            $p_sakit = round(($totalSakit / $maxPossible) * 100, 1);
+            $p_izin  = round(($totalIzin / $maxPossible) * 100, 1);
+            
+            $recorded = $totalHadir + $totalSakit + $totalIzin + $totalAlpaTercatat;
+            $unrecorded = $maxPossible - $recorded;
+            $totalAlpa = $totalAlpaTercatat + ($unrecorded > 0 ? $unrecorded : 0);
+            
+            $p_alpa  = round(($totalAlpa / $maxPossible) * 100, 1);
+        }
+
+        $summaryData = [
+            'hadir' => $p_hadir,
+            'sakit' => $p_sakit,
+            'izin' => $p_izin,
+            'alpa' => $p_alpa,
+        ];
+
+        // Data untuk Bar Chart (Tren per minggu/bulan)
+        $trendLabels = [];
+        $trendData = [
+            'hadir' => [],
+            'sakit' => [],
+            'izin' => [],
+            'alpa' => []
+        ];
+
+        // Kelompokkan validDays berdasarkan periode
+        $groupedDays = [];
+        foreach ($validDays as $day) {
+            if ($periodType === 'weekly') {
+                // Minggu ke-berapa di bulan ini
+                $label = 'Minggu ' . $day->weekOfMonth . ' ' . $day->translatedFormat('F');
+            } else {
+                // Bulanan
+                $label = $day->translatedFormat('F Y');
+            }
+            if (!isset($groupedDays[$label])) {
+                $groupedDays[$label] = [];
+            }
+            $groupedDays[$label][] = $day->format('Y-m-d');
+        }
+
+        foreach ($groupedDays as $label => $days) {
+            $trendLabels[] = $label;
+            
+            $maxPossGroup = count($days) * $studentsCount;
+            if ($maxPossGroup == 0) {
+                $trendData['hadir'][] = 0;
+                $trendData['sakit'][] = 0;
+                $trendData['izin'][] = 0;
+                $trendData['alpa'][] = 0;
+                continue;
+            }
+
+            $groupHadir = 0; $groupSakit = 0; $groupIzin = 0; $groupAlpa = 0;
+            foreach ($attendances as $att) {
+                if (in_array(Carbon::parse($att->created_at)->format('Y-m-d'), $days)) {
+                    if ($att->status == 'hadir') $groupHadir++;
+                    elseif ($att->status == 'sakit') $groupSakit++;
+                    elseif ($att->status == 'izin') $groupIzin++;
+                    elseif (in_array($att->status, ['alpa', 'bolos'])) $groupAlpa++;
+                }
+            }
+
+            $t_hadir = round(($groupHadir / $maxPossGroup) * 100, 1);
+            $t_sakit = round(($groupSakit / $maxPossGroup) * 100, 1);
+            $t_izin = round(($groupIzin / $maxPossGroup) * 100, 1);
+            
+            $g_recorded = $groupHadir + $groupSakit + $groupIzin + $groupAlpa;
+            $g_unrecorded = $maxPossGroup - $g_recorded;
+            $t_alpa_total = $groupAlpa + ($g_unrecorded > 0 ? $g_unrecorded : 0);
+            
+            $t_alpa = round(($t_alpa_total / $maxPossGroup) * 100, 1);
+
+            $trendData['hadir'][] = $t_hadir;
+            $trendData['sakit'][] = $t_sakit;
+            $trendData['izin'][] = $t_izin;
+            $trendData['alpa'][] = $t_alpa;
+        }
+
+        return response()->json([
+            'summary' => $summaryData,
+            'trendLabels' => $trendLabels,
+            'trendData' => $trendData
+        ]);
+    }
 }
