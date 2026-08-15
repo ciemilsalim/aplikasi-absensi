@@ -268,8 +268,7 @@
                             @forelse($studentsWithoutNotice as $student)
                                 <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors student-item" 
                                      id="student-no-notice-{{ $student->id }}"
-                                     data-student-name="{{ strtolower($student->name) }}"
-                                     x-show="search === '' || '{{ strtolower($student->name) }}'.includes(search.toLowerCase())">
+                                     x-show="search === '' || {{ json_encode(mb_strtolower($student->name)) }}.includes(search.toLowerCase())">
                                     <div class="flex items-center gap-2.5 min-w-0">
                                         <img class="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-sm"
                                              src="{{ $student->photo_url }}" 
@@ -310,8 +309,7 @@
                         <div x-show="listTab === 'attended'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800" id="attended-list" style="display: none;">
                             @forelse($attendedStudents as $attendance)
                                 <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors"
-                                     data-student-name="{{ strtolower($attendance->student->name) }}"
-                                     x-show="search === '' || '{{ strtolower($attendance->student->name) }}'.includes(search.toLowerCase())">
+                                     x-show="search === '' || {{ json_encode(mb_strtolower($attendance->student->name)) }}.includes(search.toLowerCase())">
                                     <div class="flex items-center gap-2.5 min-w-0">
                                         <div class="relative shrink-0">
                                             <img class="w-8 h-8 rounded-full object-cover border-2 border-emerald-500 shadow-sm"
@@ -340,8 +338,7 @@
                         <div x-show="listTab === 'leave'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800" id="leave-list" style="display: none;">
                             @forelse($studentsOnLeave as $subjectAttendance)
                                 <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors"
-                                     data-student-name="{{ strtolower($subjectAttendance->student->name) }}"
-                                     x-show="search === '' || '{{ strtolower($subjectAttendance->student->name) }}'.includes(search.toLowerCase())">
+                                     x-show="search === '' || {{ json_encode(mb_strtolower($subjectAttendance->student->name)) }}.includes(search.toLowerCase())">
                                     <div class="flex items-center gap-2.5 min-w-0">
                                         <div class="relative shrink-0">
                                             <img class="w-8 h-8 rounded-full object-cover border-2 border-amber-500 shadow-sm"
