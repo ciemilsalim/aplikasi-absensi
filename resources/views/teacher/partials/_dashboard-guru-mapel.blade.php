@@ -14,17 +14,6 @@
             </div>
         </div>
 
-        <!-- Performa Kehadiran per Kelas -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Performa Kehadiran per Kelas</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Rata-rata kehadiran dalam 30 hari terakhir.</p>
-                <div class="h-64">
-                    <canvas id="classPerformanceChart"></canvas>
-                </div>
-            </div>
-        </div>
-
         <!-- Jadwal Mengajar -->
         <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg" x-data="{ activeTab: 'today' }">
             <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -123,6 +112,17 @@
                             </div>
                         </div>
                     @endforelse
+                </div>
+            </div>
+        </div>
+
+        <!-- Performa Kehadiran per Kelas -->
+        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Performa Kehadiran per Kelas</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Rata-rata kehadiran dalam 30 hari terakhir.</p>
+                <div class="h-64">
+                    <canvas id="classPerformanceChart"></canvas>
                 </div>
             </div>
         </div>
