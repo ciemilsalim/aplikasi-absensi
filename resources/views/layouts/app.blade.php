@@ -235,7 +235,7 @@
                 </header>
 
                 <!-- Page Main Container -->
-                <main class="flex-1 py-6 sm:py-8">
+                <main class="flex-1 py-6 sm:py-8 pb-24 lg:pb-8">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                         @if (isset($header))
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
@@ -247,8 +247,8 @@
                     </div>
                 </main>
 
-                <!-- Footer Desktop & Mobile -->
-                <footer class="mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/50 py-4 px-4 sm:px-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                <!-- Footer Desktop (Hidden on Mobile to eliminate clutter with bottom dock) -->
+                <footer class="mt-auto hidden lg:block border-t border-slate-200/80 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/50 py-4 px-4 sm:px-6 text-center text-xs text-slate-500 dark:text-slate-400">
                     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
                         <div class="flex items-center gap-1.5 justify-center">
                             <span class="font-semibold text-slate-700 dark:text-slate-300">{{ config('app.name', 'Presensi') }}</span>
@@ -598,6 +598,14 @@
                                          <span class="text-xs font-bold">Keluar / Logout</span>
                                      </button>
                                  </div>
+                             </div>
+
+                             <!-- Mobile Drawer Footer Info -->
+                             <div class="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+                                 <a href="{{ route('about') }}" @click="mobileMenuOpen = false" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors">
+                                     Tentang Aplikasi & Fitur
+                                 </a>
+                                 <span>{{ config('app.name', 'Presensi') }} v2.5</span>
                              </div>
                          </div>
                     </div>

@@ -10,7 +10,7 @@
                 </h1>
             </div>
             
-            <div class="flex items-center gap-2">
+            <div class="hidden sm:flex items-center gap-2">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-300 shadow-2xs">
                     <span class="material-icons text-sky-500 text-base">person</span>
                     <span>{{ Auth::user()->name }}</span>

@@ -76,9 +76,9 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" class="px-6 py-3">{!! sortable_link('Nama Guru', 'name', $sortBy, $sortDirection) !!}</th>
-                                    <th scope="col" class="px-6 py-3">{!! sortable_link('NIP', 'nip', $sortBy, $sortDirection) !!}</th>
-                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Email Login', 'email', $sortBy, $sortDirection) !!}</th>
-                                    <th scope="col" class="px-6 py-3">Mata Pelajaran</th> <!-- UBAH INI -->
+                                    <th scope="col" class="px-6 py-3 hidden sm:table-cell">{!! sortable_link('NIP', 'nip', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3 hidden md:table-cell">{!! sortable_link('Email Login', 'email', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3 hidden lg:table-cell">Mata Pelajaran</th>
                                     <th scope="col" class="px-6 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -88,13 +88,15 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                     <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                         <div class="flex items-center">
                                             <span id="status-dot-{{ $teacher->user_id }}" class="h-2.5 w-2.5 rounded-full bg-gray-400 mr-3 transition-colors duration-500" title="Offline"></span>
-                                            {{ $teacher->name }}
+                                            <div>
+                                                <div>{{ $teacher->name }}</div>
+                                                <div class="text-xs text-slate-500 dark:text-slate-400 font-normal sm:hidden">NIP: {{ $teacher->nip ?? '-' }} • {{ $teacher->user->email }}</div>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4">{{ $teacher->nip ?? '-' }}</td>
-                                    <td class="px-6 py-4">{{ $teacher->user->email }}</td>
-                                    <!-- TAMBAHKAN BAGIAN INI -->
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 hidden sm:table-cell">{{ $teacher->nip ?? '-' }}</td>
+                                    <td class="px-6 py-4 hidden md:table-cell">{{ $teacher->user->email }}</td>
+                                    <td class="px-6 py-4 hidden lg:table-cell">
                                         <div class="flex flex-wrap gap-1">
                                             @forelse($teacher->subjects as $subject)
                                                 <span class="px-2 py-1 text-xs font-medium text-sky-800 bg-sky-100 dark:bg-sky-900 dark:text-sky-300 rounded-full">
@@ -105,7 +107,6 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                             @endforelse
                                         </div>
                                     </td>
-                                    <!-- AKHIR BAGIAN TAMBAHAN -->
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-4">
                                             <a href="{{ route('admin.teachers.edit', $teacher) }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>

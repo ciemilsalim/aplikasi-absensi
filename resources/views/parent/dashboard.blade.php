@@ -10,7 +10,7 @@
                 </h1>
             </div>
             
-            <div class="flex items-center gap-2">
+            <div class="hidden sm:flex items-center gap-2">
                 <a href="{{ route('parent.guide') }}" 
                    class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                     <span class="material-icons text-sky-500 text-base">auto_stories</span>

@@ -142,8 +142,8 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                 <tr>
                                     <th scope="col" class="p-4"><input type="checkbox" @click="toggleAll($event)" class="rounded border-gray-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500"></th>
                                     <th scope="col" class="px-6 py-3">{!! sortable_link('Nama Siswa', 'name', $sortBy, $sortDirection) !!}</th>
-                                    <th scope="col" class="px-6 py-3">{!! sortable_link('NIS', 'nis', $sortBy, $sortDirection) !!}</th>
-                                    <th scope="col" class="px-6 py-3">{!! sortable_link('Kelas', 'class_name', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3 hidden sm:table-cell">{!! sortable_link('NIS', 'nis', $sortBy, $sortDirection) !!}</th>
+                                    <th scope="col" class="px-6 py-3 hidden sm:table-cell">{!! sortable_link('Kelas', 'class_name', $sortBy, $sortDirection) !!}</th>
                                     <th scope="col" class="px-6 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -151,13 +151,14 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                 @forelse ($students as $student)
                                     <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600">
                                         <td class="p-4"><input type="checkbox" name="student_ids[]" x-model="selectedStudents" value="{{ $student->id }}" class="rounded border-gray-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500"></td>
-                                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                            {{ $student->name }}
+                                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                            <div>{{ $student->name }}</div>
+                                            <div class="text-xs text-slate-500 dark:text-slate-400 font-normal sm:hidden">NIS: {{ $student->nis }} • {{ $student->schoolClass->name ?? '-' }}</div>
                                         </th>
-                                        <td class="px-6 py-4">
+                                        <td class="px-6 py-4 hidden sm:table-cell">
                                             {{ $student->nis }}
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-6 py-4 hidden sm:table-cell">
                                             {{ $student->schoolClass->name ?? '-' }}
                                         </td>
                                         <td class="px-6 py-4">
