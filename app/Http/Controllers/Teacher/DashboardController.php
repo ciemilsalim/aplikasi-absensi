@@ -377,11 +377,23 @@ class DashboardController extends Controller
             }
             $attendance->save();
         } else {
-            Attendance::create([
+            $attendance = Attendance::create([
                 'student_id' => $request->student_id,
                 'status' => $status,
                 'attendance_time' => $date,
             ]);
+        }
+
+        // Tandai dibaca notifikasi belum absen untuk orang tua siswa ini jika status telah ditetapkan (selain alpa atau saat diupdate)
+        if ($status !== 'alpa') {
+            foreach ($student->parents as $parent) {
+                if ($parent->user_id) {
+                    \App\Models\Notification::where('user_id', $parent->user_id)
+                        ->where('is_read', false)
+                        ->where('title', 'like', '%' . $student->name . '%')
+                        ->update(['is_read' => true]);
+                }
+            }
         }
 
         return back()->with('success', 'Riwayat absensi berhasil diperbarui.');

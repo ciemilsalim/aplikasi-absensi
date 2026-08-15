@@ -42,11 +42,28 @@ class DashboardController extends Controller
                                      ->take(3)
                                      ->get();
         
-        // Ambil notifikasi yang belum dibaca
+        // Ambil notifikasi yang belum dibaca & saring notifikasi kehadiran jika status siswa sudah ditetapkan oleh guru
         $unreadNotifications = Notification::where('user_id', $user->id)
                                            ->where('is_read', false)
                                            ->latest()
-                                           ->get();
+                                           ->get()
+                                           ->reject(function ($notification) use ($students) {
+                                               if (str_contains($notification->title, 'Informasi Kehadiran')) {
+                                                   foreach ($students as $student) {
+                                                       if (str_contains($notification->title, $student->name)) {
+                                                           $todayAttendance = $student->attendances->first(function ($att) {
+                                                               return \Carbon\Carbon::parse($att->attendance_time)->isToday();
+                                                           });
+                                                           
+                                                           if ($todayAttendance && $todayAttendance->status !== 'alpa') {
+                                                               $notification->update(['is_read' => true]);
+                                                               return true;
+                                                           }
+                                                       }
+                                                   }
+                                               }
+                                               return false;
+                                           });
 
         return view('parent.dashboard', compact('students', 'announcements', 'unreadNotifications'));
     }

@@ -17,22 +17,39 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Pantau kehadiran real-time putra/putri Anda dan ajukan izin ketidakhadiran secara mudah dari sini.</p>
                 </div>
 
-                {{-- Notifikasi Internal untuk Siswa Alpa --}}
+                {{-- Notifikasi Internal untuk Siswa Belum Absen --}}
                 @if($unreadNotifications->isNotEmpty())
                     @foreach($unreadNotifications as $notification)
-                    <div x-data="{ show: true }" x-show="show" x-transition class="bg-yellow-100 dark:bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 p-4 rounded-r-lg" role="alert">
-                        <div class="flex">
-                            <div class="py-1"><svg class="h-6 w-6 text-yellow-500 mr-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg></div>
-                            <div class="flex-grow">
-                                <p class="font-bold">{{ $notification->title }}</p>
-                                <p class="text-sm">{{ $notification->message }}</p>
+                    <div x-data="{ show: true }" x-show="show" x-transition class="bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 p-4 rounded-xl shadow-sm" role="alert">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-300 rounded-lg flex-shrink-0">
+                                <span class="material-icons text-xl">warning_amber</span>
                             </div>
-                            <form action="{{ route('notifications.read', $notification) }}" method="POST">
-                                @csrf
-                                <button @click="show = false" type="submit" class="ml-4 text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-200" title="Tandai sudah dibaca">
-                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                                </button>
-                            </form>
+                            <div class="flex-grow min-w-0">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 class="font-bold text-amber-900 dark:text-amber-100 text-sm sm:text-base">{{ $notification->title }}</h4>
+                                    <form action="{{ route('notifications.read', $notification) }}" method="POST" class="flex-shrink-0">
+                                        @csrf
+                                        <button @click="show = false" type="submit" class="text-amber-500 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-200 p-1 rounded-md transition-colors" title="Tandai sudah dibaca">
+                                            <span class="material-icons text-lg">close</span>
+                                        </button>
+                                    </form>
+                                </div>
+                                <p class="text-xs sm:text-sm text-amber-800 dark:text-amber-200/90 mt-1 leading-relaxed">{{ $notification->message }}</p>
+                                
+                                <!-- Tombol Pintas Aksi Langsung Konfirmasi / Chat -->
+                                <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-amber-200 dark:border-amber-800/60">
+                                    <a href="{{ route('parent.leave-requests.create') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors">
+                                        <span class="material-icons text-sm">assignment</span> Ajukan Izin / Sakit
+                                    </a>
+                                    <a href="{{ route('chat.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-slate-700 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 text-xs font-semibold rounded-lg transition-colors">
+                                        <span class="material-icons text-sm text-amber-600 dark:text-amber-400">forum</span> Chat Wali Kelas
+                                    </a>
+                                    <a href="{{ route('chat.admin') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-slate-700 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 text-xs font-semibold rounded-lg transition-colors">
+                                        <span class="material-icons text-sm text-sky-600 dark:text-sky-400">support_agent</span> Chat Admin
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     @endforeach
