@@ -305,8 +305,8 @@
 
                             <button @click="mobileMenuOpen = true"
                                 class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
-                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">widgets</span>
-                                <span class="text-[10px] font-medium mt-0.5">Menu</span>
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">more_horiz</span>
+                                <span class="text-[10px] font-medium mt-0.5">Lainnya</span>
                             </button>
 
                         <!-- Role: Guru (Teacher) -->
@@ -357,8 +357,8 @@
 
                             <button @click="mobileMenuOpen = true"
                                 class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
-                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">widgets</span>
-                                <span class="text-[10px] font-medium mt-0.5">Menu</span>
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">more_horiz</span>
+                                <span class="text-[10px] font-medium mt-0.5">Lainnya</span>
                             </button>
 
                         <!-- Role: Orang Tua (Parent) -->
@@ -398,8 +398,8 @@
 
                             <button @click="mobileMenuOpen = true"
                                 class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
-                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">widgets</span>
-                                <span class="text-[10px] font-medium mt-0.5">Menu</span>
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">more_horiz</span>
+                                <span class="text-[10px] font-medium mt-0.5">Lainnya</span>
                             </button>
                         @endif
 
