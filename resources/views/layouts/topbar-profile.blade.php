@@ -96,10 +96,7 @@
             </select>
         </form>
     </div>
-    <div class="hidden sm:block sm:h-6 sm:w-px sm:bg-gray-200 dark:sm:bg-slate-700 mx-2" aria-hidden="true"></div>
     @endif
-    
-    <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200 dark:lg:bg-slate-700" aria-hidden="true"></div>
 
     @auth
         <div x-data="{ open: false }" class="relative">
