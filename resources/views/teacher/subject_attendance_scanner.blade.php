@@ -1,14 +1,14 @@
 @extends('layouts.public')
 
-@section('title', 'Pemindai Kehadiran Mapel')
+@section('title', 'Pemindai Kehadiran Mapel - ' . ($schedule->teachingAssignment->subject->name ?? 'Presensi'))
 
 @push('styles')
     <style>
-        /* Mengatasi UI bawaan html5-qrcode agar lebih rapi */
+        /* UI html5-qrcode kustom */
         #reader {
             border: none !important;
             background: transparent !important;
-            border-radius: 0.75rem;
+            border-radius: 1rem;
             overflow: hidden;
         }
 
@@ -16,245 +16,350 @@
             object-fit: cover !important;
             width: 100% !important;
             height: 100% !important;
-            border-radius: 0.75rem !important;
+            border-radius: 1rem !important;
         }
 
-        /* Sembunyikan tulisan text bawaan qr scanner */
         #reader__dashboard_section_csr span,
-        #reader__dashboard_section_swaplink {
+        #reader__dashboard_section_swaplink,
+        #reader__status_span {
             display: none !important;
         }
 
         #reader__scan_region {
             background: transparent !important;
         }
+
+        /* Animasi garis laser scan */
+        @keyframes scanline {
+            0% { transform: translateY(-100%); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(1000%); opacity: 0; }
+        }
+
+        .animate-scanline {
+            animation: scanline 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
     </style>
 @endpush
 
 @section('content')
-    <div class="relative min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 py-12">
-        <div class="w-full max-w-7xl mx-auto">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Pemindai Kehadiran Mata Pelajaran</h1>
-                <p class="text-slate-600 dark:text-slate-400">Arahkan kamera ke QR Code siswa untuk mencatat kehadiran.</p>
+    <div class="min-h-screen bg-slate-100 dark:bg-slate-950 py-6 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+
+            <!-- Top Header & Navigation Bar -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('teacher.dashboard') }}" 
+                       class="inline-flex items-center justify-center p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                       title="Kembali ke Dasbor">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                        </svg>
+                    </a>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h1 class="text-xl font-bold text-slate-800 dark:text-white tracking-tight">Presensi Kelas</h1>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                                {{ $schedule->teachingAssignment->schoolClass->name }}
+                            </span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                {{ $schedule->teachingAssignment->subject->name }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Jadwal: {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }} WITA
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Date Filter Control -->
+                <div class="flex items-center gap-2 self-start md:self-auto bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="material-icons text-slate-400 text-sm ml-2">calendar_today</span>
+                    <label for="attendance-date" class="text-xs font-semibold text-slate-600 dark:text-slate-300">Tanggal:</label>
+                    <input type="date" id="attendance-date" name="date" value="{{ $selectedDate->format('Y-m-d') }}" 
+                           class="border-0 bg-transparent text-slate-800 dark:text-white focus:ring-0 text-xs font-semibold py-1 px-2 cursor-pointer">
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Interactive Workspace -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-                <div class="lg:col-span-2 space-y-6">
-                    <!-- Informasi Jadwal -->
-                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg p-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 dark:border-slate-700 pb-4 mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Informasi Pembelajaran</h3>
-                            <div class="mt-2 sm:mt-0 flex items-center gap-2">
-                                <label for="attendance-date" class="text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal Absen:</label>
-                                <input type="date" id="attendance-date" name="date" value="{{ $selectedDate->format('Y-m-d') }}" 
-                                    class="border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm text-xs py-1 px-2">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                            <div>
-                                <p class="text-gray-500 dark:text-gray-400">Mata Pelajaran</p>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ $schedule->teachingAssignment->subject->name }}
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-gray-500 dark:text-gray-400">Kelas</p>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ $schedule->teachingAssignment->schoolClass->name }}
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-gray-500 dark:text-gray-400">Waktu</p>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} -
-                                    {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pemindai Kamera -->
-                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg p-6">
-                        <!-- Scanner Type Tabs -->
-                        <div class="flex space-x-4 mb-4 justify-center">
+                <!-- Left Column: Camera Viewport & Controls (5 Cols) -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-5 overflow-hidden">
+                        
+                        <!-- Mode Tab Switcher -->
+                        <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-4">
                             <button id="tab-qr"
-                                class="px-4 py-2 text-sm font-medium text-white bg-sky-600 rounded-md shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
+                                    class="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-white bg-sky-600 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" />
+                                </svg>
                                 Scan QR Code
                             </button>
                             <button id="tab-face"
-                                class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-600">
-                                Scan Wajah
+                                    class="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                </svg>
+                                Scan Wajah AI
                             </button>
                         </div>
 
-                        <div id="qr-scanner-container">
-                            <div id="reader"
-                                class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden">
-                            </div>
-                            <div id="camera-switch-container" class="mt-4 text-center hidden">
-                                <button id="camera-switch-button"
-                                    class="text-sm text-sky-600 dark:text-sky-400 hover:underline">Ganti Kamera</button>
-                            </div>
-                        </div>
-
-                        <div id="face-scanner-container" class="hidden">
-                            <div
-                                class="relative w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden">
-                                <video id="face-video" class="w-full h-full object-cover" autoplay muted
-                                    playsinline></video>
-                                <canvas id="face-canvas" class="absolute inset-0 w-full h-full"></canvas>
-
-                                <!-- Face Guide Frame -->
-                                <div class="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
-                                    <div class="w-full h-full max-w-[250px] max-h-[250px] relative opacity-50">
-                                        <!-- Sudut Kiri Atas -->
-                                        <div
-                                            class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-sky-400 rounded-tl-lg animate-pulse">
-                                        </div>
-                                        <!-- Sudut Kanan Atas -->
-                                        <div
-                                            class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-sky-400 rounded-tr-lg animate-pulse">
-                                        </div>
-                                        <!-- Sudut Kiri Bawah -->
-                                        <div
-                                            class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-sky-400 rounded-bl-lg animate-pulse">
-                                        </div>
-                                        <!-- Sudut Kanan Bawah -->
-                                        <div
-                                            class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-sky-400 rounded-br-lg animate-pulse">
-                                        </div>
-
-                                        <!-- Frame Tengah -->
-                                        <div class="absolute inset-4 border-2 border-dashed border-white/40 rounded-[100%]">
-                                        </div>
+                        <!-- QR Scanner Viewport -->
+                        <div id="qr-scanner-container" class="relative">
+                            <div class="relative w-full aspect-square max-w-[340px] mx-auto bg-slate-900 rounded-2xl overflow-hidden shadow-inner border-2 border-slate-700 flex items-center justify-center">
+                                <div id="reader" class="w-full h-full"></div>
+                                
+                                <!-- Futuristic Cyber Overlay -->
+                                <div class="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between">
+                                    <div class="flex justify-between">
+                                        <div class="w-7 h-7 border-t-4 border-l-4 border-sky-400 rounded-tl-lg"></div>
+                                        <div class="w-7 h-7 border-t-4 border-r-4 border-sky-400 rounded-tr-lg"></div>
+                                    </div>
+                                    <!-- Animated Laser Line -->
+                                    <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-sky-400 to-transparent shadow-[0_0_12px_#38bdf8] animate-scanline"></div>
+                                    <div class="flex justify-between">
+                                        <div class="w-7 h-7 border-b-4 border-l-4 border-sky-400 rounded-bl-lg"></div>
+                                        <div class="w-7 h-7 border-b-4 border-r-4 border-sky-400 rounded-br-lg"></div>
                                     </div>
                                 </div>
-
-                                <!-- Loading overlay -->
-                                <div id="face-loading-overlay"
-                                    class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-20 hidden">
-                                    <svg class="animate-spin h-10 w-10 text-sky-500 mb-4" xmlns="http://www.w3.org/2000/svg"
-                                        fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                    <div class="w-3/4 bg-slate-700 rounded-full h-2.5 mb-2 overflow-hidden">
-                                        <div id="face-loading-bar"
-                                            class="bg-sky-500 h-2.5 rounded-full transition-all duration-300 w-0"></div>
-                                    </div>
-                                    <p id="face-loading-text" class="text-white font-medium">Memuat Model: 0%</p>
-                                </div>
                             </div>
-                            <p id="face-status" class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
-                                Menyiapkan kamera...</p>
-                            <div id="face-camera-switch-container" class="mt-4 text-center">
-                                <button id="face-camera-switch-button"
-                                    class="text-sm text-sky-600 dark:text-sky-400 hover:underline flex items-center justify-center mx-auto gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                    </svg>
+
+                            <!-- Camera Switcher -->
+                            <div id="camera-switch-container" class="mt-3 text-center hidden">
+                                <button id="camera-switch-button" type="button"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 transition-colors">
+                                    <span class="material-icons text-sm">cameraswitch</span>
                                     Ganti Kamera
                                 </button>
                             </div>
                         </div>
 
-                        <div id="reader-error" class="text-red-500 text-sm mt-4 text-center hidden"></div>
+                        <!-- Face Scanner Viewport -->
+                        <div id="face-scanner-container" class="relative hidden">
+                            <div class="relative w-full aspect-square max-w-[340px] mx-auto bg-slate-900 rounded-2xl overflow-hidden shadow-inner border-2 border-slate-700 flex items-center justify-center">
+                                <video id="face-video" class="w-full h-full object-cover" autoplay muted playsinline></video>
+                                <canvas id="face-canvas" class="absolute inset-0 w-full h-full"></canvas>
+
+                                <!-- Face Target Overlay -->
+                                <div class="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
+                                    <div class="w-full h-full max-w-[220px] max-h-[220px] relative">
+                                        <div class="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-sky-400 rounded-tl-lg animate-pulse"></div>
+                                        <div class="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-sky-400 rounded-tr-lg animate-pulse"></div>
+                                        <div class="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-sky-400 rounded-bl-lg animate-pulse"></div>
+                                        <div class="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-sky-400 rounded-br-lg animate-pulse"></div>
+                                        <div class="absolute inset-3 border-2 border-dashed border-white/40 rounded-full"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Loading Model Overlay -->
+                                <div id="face-loading-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm z-20 hidden p-6">
+                                    <svg class="animate-spin h-8 w-8 text-sky-400 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <div class="w-full max-w-[180px] bg-slate-700 rounded-full h-2 mb-2 overflow-hidden">
+                                        <div id="face-loading-bar" class="bg-sky-500 h-2 rounded-full transition-all duration-300 w-0"></div>
+                                    </div>
+                                    <p id="face-loading-text" class="text-xs text-white font-semibold">Memuat Model AI...</p>
+                                </div>
+                            </div>
+
+                            <p id="face-status" class="mt-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                Menyiapkan modul pengenal wajah...
+                            </p>
+
+                            <div id="face-camera-switch-container" class="mt-2 text-center">
+                                <button id="face-camera-switch-button" type="button"
+                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 transition-colors">
+                                    <span class="material-icons text-sm">cameraswitch</span>
+                                    Ganti Kamera
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Scanner Error Alert -->
+                        <div id="reader-error" class="text-rose-600 dark:text-rose-400 text-xs mt-3 text-center font-medium bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-xl border border-rose-200 dark:border-rose-900 hidden"></div>
+
+                        <!-- Scanner Instruction Footer -->
+                        <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                            <span class="flex items-center gap-1.5 font-medium">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                                Kamera Aktif
+                            </span>
+                            <span class="font-medium">Jarak Ideal: 20-40 cm</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="lg:col-span-1 space-y-6">
-                    <!-- Daftar Hadir -->
-                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Hadir (<span
-                                    id="attended-count">{{ $attendedStudents->count() }}</span>)</h3>
+                <!-- Right Column: Live Roster & Quick Actions (7 Cols) -->
+                <div class="lg:col-span-7 space-y-4">
+
+                    <!-- Metric Ribbon Cards -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-emerald-100 dark:border-emerald-950/50 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Hadir</p>
+                                <p class="text-xl font-extrabold text-slate-800 dark:text-white" id="attended-count">{{ $attendedStudents->count() }}</p>
+                            </div>
+                            <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                                H
+                            </div>
                         </div>
-                        <div class="border-t border-gray-200 dark:border-slate-700">
-                            <ul id="attended-list"
-                                class="divide-y divide-gray-200 dark:divide-slate-700 max-h-[60vh] overflow-y-auto">
-                                @forelse($attendedStudents as $attendance)
-                                    <li class="p-4 flex items-center justify-between">
-                                        <span
-                                            class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $attendance->student->name }}</span>
-                                        <span
-                                            class="text-xs text-gray-500 dark:text-gray-400">{{ $attendance->created_at->format('H:i:s') }}</span>
-                                    </li>
-                                @empty
-                                    <li id="no-students-yet" class="p-4 text-center text-sm text-gray-500 italic">
-                                        Belum ada siswa yang diabsen hadir.
-                                    </li>
-                                @endforelse
-                            </ul>
+
+                        <div class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-amber-100 dark:border-amber-950/50 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Izin / Sakit</p>
+                                <p class="text-xl font-extrabold text-slate-800 dark:text-white" id="leave-count">{{ $studentsOnLeave->count() }}</p>
+                            </div>
+                            <div class="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center font-bold text-sm">
+                                I/S
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-rose-100 dark:border-rose-950/50 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Belum Hadir</p>
+                                <p class="text-xl font-extrabold text-slate-800 dark:text-white" id="no-notice-count">{{ $studentsWithoutNotice->count() }}</p>
+                            </div>
+                            <div class="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center font-bold text-sm">
+                                ?
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Panel Siswa Izin/Sakit -->
-                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Izin/Sakit</h3>
-                        </div>
-                        <div class="border-t border-gray-200 dark:border-slate-700">
-                            <ul id="leave-list"
-                                class="divide-y divide-gray-200 dark:divide-slate-700 max-h-[30vh] overflow-y-auto">
-                                @forelse($studentsOnLeave as $subjectAttendance)
-                                    <li class="p-4 flex items-center justify-between">
-                                        <span
-                                            class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $subjectAttendance->student->name }}</span>
-                                        <span
-                                            class="px-2 py-1 text-xs font-semibold rounded-full 
-                                                                                                @if($subjectAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 @endif
-                                                                                                @if($subjectAttendance->status == 'izin') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @endif
-                                                                                            ">{{ ucfirst($subjectAttendance->status) }}</span>
-                                    </li>
-                                @empty
-                                    <li id="no-students-on-leave" class="p-4 text-center text-sm text-gray-500 italic">
-                                        Tidak ada siswa yang izin/sakit.
-                                    </li>
-                                @endforelse
-                            </ul>
-                        </div>
-                    </div>
+                    <!-- Attendance Tabs & Interactive List -->
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden" x-data="{ listTab: 'unmarked', search: '' }">
+                        
+                        <!-- List Navigation & Search -->
+                        <div class="p-4 border-b border-slate-200 dark:border-slate-800 space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                                    <button @click="listTab = 'unmarked'" 
+                                            :class="listTab === 'unmarked' ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+                                            class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all">
+                                        Belum Absen
+                                    </button>
+                                    <button @click="listTab = 'attended'" 
+                                            :class="listTab === 'attended' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+                                            class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all">
+                                        Sudah Hadir
+                                    </button>
+                                    <button @click="listTab = 'leave'" 
+                                            :class="listTab === 'leave' ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+                                            class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all">
+                                        Izin/Sakit
+                                    </button>
+                                </div>
 
-                    <!-- Panel Siswa Tanpa Keterangan -->
-                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Siswa Tanpa Keterangan (<span
-                                    id="no-notice-count">{{ $studentsWithoutNotice->count() }}</span>)</h3>
+                                <div class="relative w-full sm:w-48">
+                                    <input type="text" x-model="search" placeholder="Cari nama siswa..." 
+                                           class="w-full text-xs py-1.5 pl-8 pr-3 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-sky-500 focus:border-sky-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
-                        <div class="border-t border-gray-200 dark:border-slate-700">
-                            <ul id="no-notice-list"
-                                class="divide-y divide-gray-200 dark:divide-slate-700 max-h-[30vh] overflow-y-auto">
-                                @forelse($studentsWithoutNotice as $student)
-                                    <li class="p-4 flex items-center justify-between" id="student-no-notice-{{$student->id}}">
-                                        <span
-                                            class="font-medium text-sm text-gray-800 dark:text-gray-200">{{ $student->name }}</span>
-                                        <div class="flex items-center gap-1">
-                                            <button data-student-id="{{ $student->id }}" data-status="hadir"
-                                                class="manual-mark-btn px-2 py-1 text-xs font-medium text-emerald-800 bg-emerald-100 hover:bg-emerald-200 rounded-full" title="Hadir">H</button>
-                                            <button data-student-id="{{ $student->id }}" data-status="sakit"
-                                                class="manual-mark-btn px-2 py-1 text-xs font-medium text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-full" title="Sakit">S</button>
-                                            <button data-student-id="{{ $student->id }}" data-status="izin"
-                                                class="manual-mark-btn px-2 py-1 text-xs font-medium text-purple-800 bg-purple-100 hover:bg-purple-200 rounded-full">I</button>
-                                            <button data-student-id="{{ $student->id }}" data-status="alpa"
-                                                class="manual-mark-btn px-2 py-1 text-xs font-medium text-red-800 bg-red-100 hover:bg-red-200 rounded-full">A</button>
-                                            <button data-student-id="{{ $student->id }}" data-status="bolos"
-                                                class="manual-mark-btn px-2 py-1 text-xs font-medium text-gray-800 bg-gray-200 hover:bg-gray-300 rounded-full">B</button>
+
+                        <!-- 1. TAB: BELUM ABSEN (Daftar Siswa dengan Tombol 1-Klik Cepat) -->
+                        <div x-show="listTab === 'unmarked'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800" id="no-notice-list">
+                            @forelse($studentsWithoutNotice as $student)
+                                <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors student-item" 
+                                     id="student-no-notice-{{ $student->id }}"
+                                     data-student-name="{{ strtolower($student->name) }}"
+                                     x-show="search === '' || '{{ strtolower($student->name) }}'.includes(search.toLowerCase())">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">
+                                            {{ substr($student->name, 0, 1) }}
                                         </div>
-                                    </li>
-                                @empty
-                                    <li id="no-missing-students" class="p-4 text-center text-sm text-gray-500 italic">
-                                        Semua siswa telah memiliki keterangan.
-                                    </li>
-                                @endforelse
-                            </ul>
+                                        <div class="truncate">
+                                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{{ $student->name }}</p>
+                                            <p class="text-[11px] text-slate-400">NIS: {{ $student->nis ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                    <!-- Quick Manual Actions -->
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button data-student-id="{{ $student->id }}" data-status="hadir"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 transition-all" 
+                                                title="Tandai Hadir">H</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="sakit"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 transition-all" 
+                                                title="Tandai Sakit">S</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="izin"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white border border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 transition-all" 
+                                                title="Tandai Izin">I</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="alpa"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 transition-all" 
+                                                title="Tandai Alpa">A</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="bolos"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-orange-50 text-orange-700 hover:bg-orange-600 hover:text-white border border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800 transition-all" 
+                                                title="Tandai Bolos">B</button>
+                                    </div>
+                                </div>
+                            @empty
+                                <div id="no-missing-students" class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
+                                    Semua siswa di kelas ini telah memiliki data absensi hari ini.
+                                </div>
+                            @endforelse
                         </div>
+
+                        <!-- 2. TAB: SUDAH HADIR -->
+                        <div x-show="listTab === 'attended'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800" id="attended-list" style="display: none;">
+                            @forelse($attendedStudents as $attendance)
+                                <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors"
+                                     data-student-name="{{ strtolower($attendance->student->name) }}"
+                                     x-show="search === '' || '{{ strtolower($attendance->student->name) }}'.includes(search.toLowerCase())">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold shrink-0">
+                                            ✓
+                                        </div>
+                                        <div class="truncate">
+                                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{{ $attendance->student->name }}</p>
+                                            <p class="text-[11px] text-slate-400">NIS: {{ $attendance->student->nis ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                        {{ $attendance->created_at->format('H:i') }}
+                                    </span>
+                                </div>
+                            @empty
+                                <div id="no-students-yet" class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
+                                    Belum ada siswa yang diabsen hadir.
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- 3. TAB: SISWA IZIN / SAKIT -->
+                        <div x-show="listTab === 'leave'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800" id="leave-list" style="display: none;">
+                            @forelse($studentsOnLeave as $subjectAttendance)
+                                <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors"
+                                     data-student-name="{{ strtolower($subjectAttendance->student->name) }}"
+                                     x-show="search === '' || '{{ strtolower($subjectAttendance->student->name) }}'.includes(search.toLowerCase())">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold shrink-0">
+                                            {{ strtoupper(substr($subjectAttendance->status, 0, 1)) }}
+                                        </div>
+                                        <div class="truncate">
+                                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{{ $subjectAttendance->student->name }}</p>
+                                            <p class="text-[11px] text-slate-400">NIS: {{ $subjectAttendance->student->nis ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase
+                                        @if($subjectAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800 @endif
+                                        @if($subjectAttendance->status == 'izin') bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-200 dark:border-sky-800 @endif
+                                    ">
+                                        {{ ucfirst($subjectAttendance->status) }}
+                                    </span>
+                                </div>
+                            @empty
+                                <div id="no-students-on-leave" class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
+                                    Tidak ada siswa yang izin atau sakit hari ini.
+                                </div>
+                            @endforelse
+                        </div>
+
                     </div>
                 </div>
 
@@ -262,17 +367,16 @@
         </div>
     </div>
 
-    <!-- Modal Pop-up -->
+    <!-- Modal Notifikasi Hasil Scan Presensi -->
     <div id="attendance-modal"
-        class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 hidden z-50">
+         class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 hidden z-50">
         <div id="modal-content"
-            class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform scale-95 transition-all duration-300">
-            <div id="modal-icon-container" class="mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5">
-                <svg id="modal-icon-svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor"></svg>
+             class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm p-6 text-center transform scale-95 transition-all duration-300 border border-slate-100 dark:border-slate-800">
+            <div id="modal-icon-container" class="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl mb-4">
+                <svg id="modal-icon-svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"></svg>
             </div>
-            <h2 id="modal-title" class="text-2xl font-bold text-slate-800 dark:text-white mb-2"></h2>
-            <p id="modal-message" class="text-md text-slate-500 dark:text-slate-400 mb-6"></p>
+            <h2 id="modal-title" class="text-xl font-bold text-slate-900 dark:text-white mb-1"></h2>
+            <p id="modal-message" class="text-xs text-slate-500 dark:text-slate-400 font-medium"></p>
         </div>
     </div>
 @endsection
@@ -283,7 +387,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             let lastScanTime = 0;
-            const scanCooldown = 3000;
+            const scanCooldown = 2500;
             const scheduleId = {{ $schedule->id }};
 
             // Face Recognition Variables
@@ -304,6 +408,7 @@
             const noStudentsYet = document.getElementById('no-students-yet');
             const noNoticeList = document.getElementById('no-notice-list');
             const noNoticeCount = document.getElementById('no-notice-count');
+            const leaveCount = document.getElementById('leave-count');
             const noMissingStudents = document.getElementById('no-missing-students');
             const leaveList = document.getElementById('leave-list');
             const noStudentsOnLeave = document.getElementById('no-students-on-leave');
@@ -330,7 +435,7 @@
             let cameras = [];
             let currentCameraIndex = 0;
 
-            // === TABS LOGIC ===
+            // === TABS SWITCH LOGIC ===
             tabQr.addEventListener('click', () => switchMode('qr'));
             tabFace.addEventListener('click', () => switchMode('face'));
 
@@ -340,35 +445,27 @@
                 readerError.classList.add('hidden');
 
                 if (mode === 'qr') {
-                    // Update UI
-                    tabQr.classList.remove('bg-white', 'text-slate-700', 'border', 'border-slate-300');
-                    tabQr.classList.add('text-white', 'bg-sky-600');
-                    tabFace.classList.remove('text-white', 'bg-sky-600');
-                    tabFace.classList.add('bg-white', 'text-slate-700', 'border', 'border-slate-300');
+                    tabQr.className = 'flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-white bg-sky-600 shadow-sm';
+                    tabFace.className = 'flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white';
 
                     faceScannerContainer.classList.add('hidden');
                     qrScannerContainer.classList.remove('hidden');
 
-                    // Stop Face, Start QR
                     stopFaceScanner();
                     startQrScanner();
                 } else {
-                    // Update UI
-                    tabFace.classList.remove('bg-white', 'text-slate-700', 'border', 'border-slate-300');
-                    tabFace.classList.add('text-white', 'bg-sky-600');
-                    tabQr.classList.remove('text-white', 'bg-sky-600');
-                    tabQr.classList.add('bg-white', 'text-slate-700', 'border', 'border-slate-300');
+                    tabFace.className = 'flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-white bg-sky-600 shadow-sm';
+                    tabQr.className = 'flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white';
 
                     qrScannerContainer.classList.add('hidden');
                     faceScannerContainer.classList.remove('hidden');
 
-                    // Stop QR, Start Face
                     stopQrScanner();
                     startFaceScanner();
                 }
             }
 
-            // === FACE RECOGNITION LOGIC ===
+            // === FACE RECOGNITION ===
             async function loadFaceModels() {
                 if (isModelsLoaded) return true;
 
@@ -377,9 +474,8 @@
                 const text = document.getElementById('face-loading-text');
                 if (overlay) overlay.classList.remove('hidden');
 
-                faceStatus.textContent = 'Memuat model wajah...';
+                faceStatus.textContent = 'Memuat model AI wajah...';
                 try {
-                    // Memuat model dari penyimpanan lokal (menghindari lambat/diblokir oleh CDN)
                     const MODEL_URL = '{{ asset('models') }}';
 
                     let progress = 0;
@@ -387,8 +483,8 @@
                         progress += Math.random() * 15;
                         if (progress > 90) progress = 90;
                         if (bar) bar.style.width = `${progress}%`;
-                        if (text) text.textContent = `Memuat Model: ${Math.round(progress)}%`;
-                    }, 500);
+                        if (text) text.textContent = `Memuat AI: ${Math.round(progress)}%`;
+                    }, 400);
 
                     await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
                     if (bar) bar.style.width = `33%`;
@@ -398,18 +494,18 @@
 
                     clearInterval(interval);
                     if (bar) bar.style.width = `100%`;
-                    if (text) text.textContent = `Memuat Model: 100%`;
+                    if (text) text.textContent = `AI Siap Digunakan`;
 
                     setTimeout(() => {
                         if (overlay) overlay.classList.add('hidden');
-                    }, 500);
+                    }, 400);
 
                     isModelsLoaded = true;
                     return true;
                 } catch (error) {
                     if (typeof interval !== 'undefined') clearInterval(interval);
                     console.error('Error loading face models:', error);
-                    faceStatus.textContent = 'Gagal memuat model wajah. Periksa interent.';
+                    faceStatus.textContent = 'Gagal memuat model wajah. Periksa koneksi jaringan.';
                     if (overlay) overlay.classList.add('hidden');
                     return false;
                 }
@@ -419,38 +515,38 @@
                 if (!await loadFaceModels()) return;
 
                 if (!faceMatcher) {
-                    faceStatus.textContent = 'Memproses data wajah... (Mohon tunggu)';
+                    faceStatus.textContent = 'Memproses data foto kelas...';
                     try {
                         const labeledDescriptors = await loadLabeledImages();
                         if (labeledDescriptors.length === 0) {
-                            faceStatus.textContent = 'Tidak ada data wajah valid yang dapat dimuat. Pastikan foto kelas ini jelas.';
+                            faceStatus.textContent = 'Tidak ada data foto wajah siswa yang valid pada kelas ini.';
                             return;
                         }
                         faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
                     } catch (error) {
-                        faceStatus.textContent = 'Terjadi kesalahan sistem saat memproses wajah.';
+                        faceStatus.textContent = 'Gagal memproses data wajah.';
                         console.error(error);
                         return;
                     }
                 }
 
-                faceStatus.textContent = 'Menyalakan kamera...';
+                faceStatus.textContent = 'Menyalakan kamera wajah...';
                 navigator.mediaDevices.getUserMedia({
                     video: { facingMode: currentFacingMode }
                 })
-                    .then(stream => {
-                        faceVideo.srcObject = stream;
-                    })
-                    .catch(err => {
-                        console.error("Gagal akses kamera:", err);
-                        readerError.textContent = "Gagal mengakses kamera. Cek izin browser.";
-                        readerError.classList.remove('hidden');
+                .then(stream => {
+                    faceVideo.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error("Gagal akses kamera:", err);
+                    readerError.textContent = "Gagal mengakses kamera. Berikan izin akses kamera di browser Anda.";
+                    readerError.classList.remove('hidden');
 
-                        if (currentFacingMode !== 'user') {
-                            currentFacingMode = 'user';
-                            startFaceScanner();
-                        }
-                    });
+                    if (currentFacingMode !== 'user') {
+                        currentFacingMode = 'user';
+                        startFaceScanner();
+                    }
+                });
             }
 
             faceSwitchButton.addEventListener('click', () => {
@@ -483,7 +579,6 @@
                     studentsWithPhotos.map(async student => {
                         return new Promise(async (resolve) => {
                             try {
-                                // JIKA SUDAH ADA DESCRIPTOR DI DATABASE, GUNAKAN LANGSUNG (CEPAT!)
                                 if (student.face_descriptor) {
                                     try {
                                         const descArray = JSON.parse(student.face_descriptor);
@@ -491,11 +586,10 @@
                                         resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [floatArray]));
                                         return;
                                     } catch (e) {
-                                        console.warn("Gagal parsing descriptor untuk student:", student.name, e);
+                                        console.warn("Gagal parsing descriptor:", student.name, e);
                                     }
                                 }
 
-                                // JIKA BELUM ADA, PROSES SEPERTI BIASA (LAMBAT)
                                 const img = new Image();
                                 img.crossOrigin = 'anonymous';
                                 img.src = student.photo_url;
@@ -505,12 +599,10 @@
                                         const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 });
                                         const detections = await faceapi.detectSingleFace(img, options).withFaceLandmarks().withFaceDescriptor();
                                         if (!detections) {
-                                            console.warn(`Wajah tidak terdeteksi pada foto profil: ${student.name}`);
                                             resolve(null);
                                             return;
                                         }
 
-                                        // SIMPAN KE DATABASE SECARA ASYNCHRONOUS UNTUK PENGGUNAAN BERIKUTNYA
                                         const descriptorStr = JSON.stringify(Array.from(detections.descriptor));
                                         fetch("{{ route('attendance.save_descriptor') }}", {
                                             method: 'POST',
@@ -527,17 +619,12 @@
 
                                         resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [detections.descriptor]));
                                     } catch (e) {
-                                        console.error(`Gagal deteksi AI foto ${student.name}:`, e);
                                         resolve(null);
                                     }
                                 };
 
-                                img.onerror = () => {
-                                    console.error(`Gagal memuat URL foto untuk ${student.name} (CORS/URL Tdk Valid)`);
-                                    resolve(null);
-                                };
+                                img.onerror = () => resolve(null);
                             } catch (err) {
-                                console.error(`Error kritis proses foto ${student.name}:`, err);
                                 resolve(null);
                             }
                         });
@@ -566,7 +653,7 @@
                         const bestMatch = faceMatcher.findBestMatch(detections[0].descriptor);
                         if (bestMatch.label !== 'unknown') {
                             consecutiveMatches++;
-                            faceStatus.textContent = `Wajah dikenali! Tahan posisi... (${consecutiveMatches}/3)`;
+                            faceStatus.textContent = `Wajah Dikenali! Tahan sebentar... (${consecutiveMatches}/3)`;
 
                             if (consecutiveMatches >= 3 && Date.now() - lastScanTime > scanCooldown) {
                                 lastScanTime = Date.now();
@@ -575,31 +662,32 @@
                             }
                         } else {
                             consecutiveMatches = 0;
-                            faceStatus.textContent = 'Arahkan wajah ke kamera...';
+                            faceStatus.textContent = 'Arahkan wajah ke dalam lingkaran...';
                         }
                     } else {
                         consecutiveMatches = 0;
                         if (faceStatus.textContent !== 'Menyiapkan kamera...') {
-                            faceStatus.textContent = 'Arahkan wajah ke kamera...';
+                            faceStatus.textContent = 'Arahkan wajah ke dalam lingkaran...';
                         }
                     }
                 }, 500);
             });
 
-
-            // === QR SCANNER LOGIC ===
+            // === QR SCANNER ===
             function startQrScanner() {
                 Html5Qrcode.getCameras().then(devices => {
                     if (devices && devices.length) {
                         cameras = devices;
-                        let backCameraIndex = cameras.findIndex(camera => camera.label.toLowerCase().includes('back')); // Prioritize back camera
+                        let backCameraIndex = cameras.findIndex(camera => camera.label.toLowerCase().includes('back'));
                         currentCameraIndex = backCameraIndex !== -1 ? backCameraIndex : 0;
 
                         startScannerWithCamera(cameras[currentCameraIndex].id);
                         if (cameras.length > 1) {
                             switchContainer.classList.remove('hidden');
                         }
-                    } else { throw new Error("Tidak ada kamera ditemukan."); }
+                    } else { 
+                        throw new Error("Tidak ada kamera yang terdeteksi."); 
+                    }
                 }).catch(err => {
                     readerError.textContent = "Gagal mengakses kamera: " + err.message;
                     readerError.classList.remove('hidden');
@@ -608,7 +696,7 @@
 
             function stopQrScanner() {
                 if (html5QrCode && html5QrCode.isScanning) {
-                    html5QrCode.stop().catch(err => console.error("Found dead QR scanner", err));
+                    html5QrCode.stop().catch(err => console.error("Dead QR scanner", err));
                 }
             }
 
@@ -621,7 +709,7 @@
                     const audio = new Audio(soundFile);
                     audio.play();
                 } catch (e) {
-                    console.error("Gagal memutar suara:", e);
+                    console.error("Gagal memutar audio:", e);
                 }
             }
 
@@ -659,73 +747,100 @@
             function removeStudentFromNoNoticeList(studentId) {
                 const studentRow = document.getElementById(`student-no-notice-${studentId}`);
                 if (studentRow) {
-                    studentRow.style.transition = 'opacity 0.5s';
+                    studentRow.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                     studentRow.style.opacity = '0';
+                    studentRow.style.transform = 'scale(0.95)';
                     setTimeout(() => {
                         studentRow.remove();
-                        noNoticeCount.textContent = parseInt(noNoticeCount.textContent) - 1;
-                        if (noNoticeList.children.length === 0 && noMissingStudents) {
-                            noMissingStudents.classList.remove('hidden');
+                        if (noNoticeCount) {
+                            noNoticeCount.textContent = Math.max(0, parseInt(noNoticeCount.textContent) - 1);
                         }
-                    }, 500);
+                    }, 300);
                 }
             }
 
             function addStudentToList(name, time) {
-                if (noStudentsYet) {
-                    noStudentsYet.classList.add('hidden');
-                }
-                const listItem = document.createElement('li');
-                listItem.className = 'p-4 flex items-center justify-between animate-[fade-in_0.5s]';
-                listItem.innerHTML = `<span class="font-medium text-sm text-gray-800 dark:text-gray-200">${name}</span>
-                                                          <span class="text-xs text-gray-500 dark:text-gray-400">${time}</span>`;
+                if (noStudentsYet) noStudentsYet.classList.add('hidden');
+                
+                const listItem = document.createElement('div');
+                listItem.className = 'p-3.5 flex items-center justify-between gap-3 bg-emerald-50/40 dark:bg-emerald-950/20 transition-colors animate-[pulse_1s_ease-out]';
+                listItem.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 flex items-center justify-center text-xs font-bold shrink-0">
+                            ✓
+                        </div>
+                        <div class="truncate">
+                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">${name}</p>
+                            <p class="text-[11px] text-slate-400">Presensi Berhasil</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        ${time}
+                    </span>
+                `;
                 attendedList.prepend(listItem);
-                attendedCount.textContent = parseInt(attendedCount.textContent) + 1;
+                if (attendedCount) {
+                    attendedCount.textContent = parseInt(attendedCount.textContent) + 1;
+                }
             }
 
             function addStudentToLeaveList(name, status) {
                 if (noStudentsOnLeave) noStudentsOnLeave.classList.add('hidden');
 
                 const statusClass = status === 'sakit'
-                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300'
-                    : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                    : 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border-sky-200 dark:border-sky-800';
 
                 const statusText = status.charAt(0).toUpperCase() + status.slice(1);
 
-                const listItem = document.createElement('li');
-                listItem.className = 'p-4 flex items-center justify-between animate-[fade-in_0.5s]';
-                listItem.innerHTML = `<span class="font-medium text-sm text-gray-800 dark:text-gray-200">${name}</span>
-                                                          <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span>`;
+                const listItem = document.createElement('div');
+                listItem.className = 'p-3.5 flex items-center justify-between gap-3 bg-amber-50/40 dark:bg-amber-950/20 transition-colors';
+                listItem.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-300 flex items-center justify-center text-xs font-bold shrink-0">
+                            ${status.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="truncate">
+                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">${name}</p>
+                            <p class="text-[11px] text-slate-400">Status Khusus</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase border ${statusClass}">
+                        ${statusText}
+                    </span>
+                `;
                 leaveList.prepend(listItem);
+                if (leaveCount) {
+                    leaveCount.textContent = parseInt(leaveCount.textContent) + 1;
+                }
             }
 
             function showModal(isSuccess, data) {
                 playSound(isSuccess);
-                modal.iconContainer.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5';
+                modal.iconContainer.className = 'mx-auto flex items-center justify-center h-16 w-16 rounded-2xl mb-4';
                 modal.iconSvg.innerHTML = '';
 
                 if (isSuccess) {
-                    modal.iconContainer.classList.add('bg-green-100', 'dark:bg-green-900');
-                    modal.iconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />`;
-                    modal.iconSvg.classList.add('text-green-600', 'dark:text-green-400');
-                    modal.title.textContent = 'Berhasil';
+                    modal.iconContainer.classList.add('bg-emerald-100', 'dark:bg-emerald-950/70');
+                    modal.iconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />`;
+                    modal.iconSvg.className = 'h-8 w-8 text-emerald-600 dark:text-emerald-400';
+                    modal.title.textContent = 'Presensi Berhasil';
                     if (data.student) {
-                        // Logika untuk memindahkan siswa ke daftar yang sesuai
                         if (data.student.status === 'sakit' || data.student.status === 'izin') {
                             addStudentToLeaveList(data.student.name, data.student.status);
                             removeStudentFromNoNoticeList(data.student.id);
-                        } else if (data.student.status === 'hadir') { // Update list hadir
+                        } else if (data.student.status === 'hadir') {
                             addStudentToList(data.student.name, data.student.time);
                             removeStudentFromNoNoticeList(data.student.id);
-                        } else { // Jika status lain (alpa/bolos) dari manual mark
+                        } else {
                             removeStudentFromNoNoticeList(data.student.id);
                         }
                     }
                 } else {
-                    modal.iconContainer.classList.add('bg-red-100', 'dark:bg-red-900');
+                    modal.iconContainer.classList.add('bg-rose-100', 'dark:bg-rose-950/70');
                     modal.iconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />`;
-                    modal.iconSvg.classList.add('text-red-600', 'dark:text-red-400');
-                    modal.title.textContent = 'Gagal';
+                    modal.iconSvg.className = 'h-8 w-8 text-rose-600 dark:text-rose-400';
+                    modal.title.textContent = 'Presensi Gagal';
                 }
 
                 modal.message.textContent = data.message;
@@ -736,7 +851,7 @@
                     modal.content.classList.remove('scale-95');
                 }, 10);
 
-                setTimeout(hideModal, scanCooldown - 500);
+                setTimeout(hideModal, scanCooldown - 400);
             }
 
             function hideModal() {
@@ -747,27 +862,28 @@
                     if (currentMode === 'qr' && html5QrCode && html5QrCode.isScanning) {
                         html5QrCode.resume();
                     }
-                    // No resume need for face scanner as it runs on interval
-                }, 300);
+                }, 250);
             }
 
             function startScannerWithCamera(cameraId) {
                 html5QrCode.start(
                     cameraId,
-                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    { fps: 15, qrbox: { width: 220, height: 220 } },
                     onScanSuccess,
                     (errorMessage) => { }
                 ).catch((err) => {
-                    readerError.textContent = "Gagal memulai kamera. Pastikan Anda memberikan izin akses kamera.";
+                    readerError.textContent = "Gagal memulai kamera. Pastikan Anda mengizinkan akses kamera di browser.";
                     readerError.classList.remove('hidden');
                 });
             }
 
             function handleManualMark(event) {
-                const button = event.target;
+                const button = event.currentTarget;
                 const studentId = button.dataset.studentId;
                 const status = button.dataset.status;
                 const selectedDate = document.getElementById('attendance-date').value;
+
+                button.classList.add('animate-spin');
 
                 fetch("{{ route('teacher.subject.attendance.mark_manual') }}", {
                     method: 'POST',
@@ -783,9 +899,11 @@
                         date: selectedDate
                     })
                 }).then(response => response.json().then(data => ({ status: response.status, body: data })))
-                    .then(({ status, body }) => {
+                    .then(({ status: httpStatus, body }) => {
+                        button.classList.remove('animate-spin');
                         showModal(body.success, body);
                     }).catch(error => {
+                        button.classList.remove('animate-spin');
                         showModal(false, { message: 'Tidak dapat terhubung ke server.' });
                     });
             }
@@ -794,7 +912,7 @@
                 button.addEventListener('click', handleManualMark);
             });
 
-            // Start with QR Scanner
+            // Start QR Scanner
             startQrScanner();
 
             switchButton.addEventListener('click', () => {
@@ -806,7 +924,6 @@
                 }
             });
 
-            // Event listener untuk reload halaman ketika tanggal diubah
             const dateInput = document.getElementById('attendance-date');
             dateInput.addEventListener('change', function() {
                 window.location.href = `?date=${this.value}`;
