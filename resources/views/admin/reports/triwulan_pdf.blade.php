@@ -297,7 +297,7 @@
 
     <!-- ================= 2. JUDUL DOKUMEN & METADATA ================= -->
     <div class="doc-title-box">
-        <h2 class="doc-title">FORM VERIFIKASI KOMITMEN PENDIDIKAN &bull; REKAPITULASI KEHADIRAN SISWA</h2>
+        <h2 class="doc-title">REKAPITULASI KEHADIRAN SISWA</h2>
         <div class="doc-subtitle">
             TRIWULAN {{ $trimester }} TAHUN {{ $year }} &bull; PERIODE {{ $trimesterMap[$months[0]]['name'] }} &ndash; {{ $trimesterMap[$months[2]]['name'] }} {{ $year }}
         </div>
@@ -327,11 +327,10 @@
         <thead>
             <tr>
                 <th rowspan="2" class="th-main" style="width: 2.5%;">NO</th>
-                <th rowspan="2" class="th-main" style="width: 8%;">NIS/NISN</th>
-                <th rowspan="2" class="th-main text-left" style="width: 19%;">NAMA LENGKAP SISWA</th>
-                <th rowspan="2" class="th-main" style="width: 4%;">KELAS</th>
+                <th rowspan="2" class="th-main" style="width: 7.5%;">NIS/NISN</th>
+                <th rowspan="2" class="th-main text-left" style="width: 23%;">NAMA LENGKAP SISWA</th>
                 @foreach($months as $m)
-                    <th colspan="5" class="th-main" style="width: 17%;">
+                    <th colspan="5" class="th-main" style="width: 16%;">
                         {{ $trimesterMap[$m]['name'] }}<br>
                         <span style="font-weight: normal; font-size: 5.8pt; text-transform: none; color: #475569;">(Efektif: {{ $trimesterMap[$m]['effective_days'] }} Hari)</span>
                     </th>
@@ -340,15 +339,15 @@
                     REKAP TRIWULAN {{ $trimester }}<br>
                     <span style="font-weight: normal; font-size: 5.8pt; text-transform: none; color: #334155;">(Total: {{ $totalTrimesterEffectiveDays }} Hari)</span>
                 </th>
-                <th rowspan="2" class="th-main" style="width: 4.5%;">KET</th>
+                <th rowspan="2" class="th-main" style="width: 4%;">KET</th>
             </tr>
             <tr>
                 @foreach($months as $m)
-                    <th class="th-sub" style="width: 3.4%; color: #dc2626;">A</th>
-                    <th class="th-sub" style="width: 3.4%; color: #0284c7;">I</th>
-                    <th class="th-sub" style="width: 3.4%; color: #9333ea;">S</th>
-                    <th class="th-sub" style="width: 3.4%; font-weight: 800;">JML</th>
-                    <th class="th-sub" style="width: 3.4%; font-weight: 800; background-color: #f1f5f9;">%</th>
+                    <th class="th-sub" style="width: 3.2%; color: #dc2626;">A</th>
+                    <th class="th-sub" style="width: 3.2%; color: #0284c7;">I</th>
+                    <th class="th-sub" style="width: 3.2%; color: #9333ea;">S</th>
+                    <th class="th-sub" style="width: 3.2%; font-weight: 800;">JML</th>
+                    <th class="th-sub" style="width: 3.2%; font-weight: 800; background-color: #f1f5f9;">%</th>
                 @endforeach
                 {{-- Rekap Total Triwulan --}}
                 <th class="th-sub" style="width: 3%; color: #dc2626; background-color: #f1f5f9;">A</th>
@@ -378,7 +377,6 @@
                     <td>{{ $index + 1 }}</td>
                     <td style="font-family: monospace; font-size: 6.5pt;">{{ $student->nis ?? '-' }}</td>
                     <td class="text-left font-bold">{{ $student->name }}</td>
-                    <td>{{ explode(' ', $className)[0] ?? $className }}</td>
                     
                     @foreach($months as $m)
                         @php 
@@ -416,7 +414,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ 4 + (count($months) * 5) + 6 }}" style="padding: 12px; color: #64748b;">
+                    <td colspan="{{ 3 + (count($months) * 5) + 6 }}" style="padding: 12px; color: #64748b;">
                         Tidak ada data siswa atau absensi untuk kelas dan periode triwulan ini.
                     </td>
                 </tr>
@@ -425,13 +423,17 @@
         @if(count($reportData) > 0)
             <tfoot>
                 <tr>
-                    <th colspan="4" style="text-align: right; padding-right: 8px;">TOTAL REKAPITULASI KELAS:</th>
+                    <th colspan="3" style="text-align: right; padding-right: 8px;">TOTAL REKAPITULASI KELAS:</th>
                     @foreach($months as $m)
+                        @php
+                            $totalClassEffMonth = count($reportData) * ($trimesterMap[$m]['effective_days'] ?? 0);
+                            $monthAvgPersen = $totalClassEffMonth > 0 ? round((($totalClassEffMonth - $sumMonthJml[$m]) / $totalClassEffMonth) * 100, 0) . '%' : '0%';
+                        @endphp
                         <th style="color: #dc2626;">{{ $sumMonthA[$m] }}</th>
                         <th style="color: #0284c7;">{{ $sumMonthI[$m] }}</th>
                         <th style="color: #9333ea;">{{ $sumMonthS[$m] }}</th>
                         <th style="font-weight: 900;">{{ $sumMonthJml[$m] }}</th>
-                        <th style="background-color: #cbd5e1;">-</th>
+                        <th style="background-color: #cbd5e1; font-weight: 800;">{{ $monthAvgPersen }}</th>
                     @endforeach
                     <th style="color: #dc2626;">{{ $sumTotalA }}</th>
                     <th style="color: #0284c7;">{{ $sumTotalI }}</th>
