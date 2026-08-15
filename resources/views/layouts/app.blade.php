@@ -37,7 +37,7 @@
     <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192x192.png') }}">
 
     <script>
-        const serverDarkModeEnabled = @json($darkModeEnabled ?? false);
+        var serverDarkModeEnabled = @json($darkModeEnabled ?? false);
         if (localStorage.getItem('darkMode') === 'on' || (!('darkMode' in localStorage) && serverDarkModeEnabled)) {
             document.documentElement.classList.add('dark');
         } else {

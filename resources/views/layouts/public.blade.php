@@ -36,7 +36,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <script>
-        const serverDarkModeEnabled = @json($darkModeEnabled ?? false);
+        var serverDarkModeEnabled = @json($darkModeEnabled ?? false);
         if (localStorage.getItem('darkMode') === 'on' || (!('darkMode' in localStorage) && serverDarkModeEnabled)) {
             document.documentElement.classList.add('dark');
         } else {

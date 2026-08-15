@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AboutController extends Controller
 {
@@ -13,7 +14,10 @@ class AboutController extends Controller
      */
     public function index()
     {
-        // Anda bisa menambahkan logika lain di sini jika diperlukan
-        return view('about');
+        if (Auth::check()) {
+            return view('about');
+        }
+
+        return view('about_public');
     }
 }

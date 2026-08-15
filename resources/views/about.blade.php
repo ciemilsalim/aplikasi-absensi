@@ -1,4 +1,3 @@
-@auth
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
@@ -31,14 +30,3 @@
         @include('partials._about-content')
     </div>
 </x-app-layout>
-@else
-@extends('layouts.public')
-
-@section('title', 'Tentang Aplikasi - ' . config('app.name', 'Presensi Siswa'))
-
-@section('content')
-<div class="py-8 sm:py-16">
-    @include('partials._about-content')
-</div>
-@endsection
-@endauth
