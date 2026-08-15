@@ -54,7 +54,17 @@
                                                 <p class="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0">{{ \Carbon\Carbon::parse($conv->last_message_at)->diffForHumans() }}</p>
                                             @endif
                                         </div>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400">Siswa: {{ $conv->student->name }}</p>
+                                        @if(Auth::user()->role === 'parent')
+                                            @php
+                                                $className = $conv->teacher?->homeroomClass?->name ?? $conv->student?->schoolClass?->name;
+                                            @endphp
+                                            <p class="text-xs font-medium text-sky-600 dark:text-sky-400">
+                                                Wali kelas {{ $className ?? '' }}
+                                            </p>
+                                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Siswa: {{ $conv->student->name }}</p>
+                                        @else
+                                            <p class="text-xs text-slate-500 dark:text-slate-400">Siswa: {{ $conv->student->name }}</p>
+                                        @endif
                                     </div>
                                     @if($conv->unread_messages_count > 0)
                                         <span class="ml-auto text-xs bg-red-500 text-white font-bold rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0">{{ $conv->unread_messages_count }}</span>
@@ -104,7 +114,18 @@
                                             @endif
                                         </p>
                                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                                            @if(!request()->routeIs('chat.admin')) Percakapan mengenai {{ $activeConversation->student->name }} @else Hubungan Administrasi @endif
+                                            @if(!request()->routeIs('chat.admin')) 
+                                                @if(Auth::user()->role === 'parent')
+                                                    @php
+                                                        $activeClassName = $activeConversation->teacher?->homeroomClass?->name ?? $activeConversation->student?->schoolClass?->name;
+                                                    @endphp
+                                                    Wali kelas {{ $activeClassName ?? '' }} • Siswa: {{ $activeConversation->student->name }}
+                                                @else
+                                                    Percakapan mengenai {{ $activeConversation->student->name }}
+                                                @endif
+                                            @else 
+                                                Hubungan Administrasi 
+                                            @endif
                                         </p>
                                     </div>
                                 </div>

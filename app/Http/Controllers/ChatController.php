@@ -151,7 +151,7 @@ class ChatController extends Controller
         }
 
         return Conversation::whereIn('id', $conversationIds)
-            ->with(['student', 'teacher.user', 'parent.user'])
+            ->with(['student.schoolClass', 'teacher.user', 'teacher.homeroomClass', 'parent.user'])
             ->addSelect(['*', 'last_message_at' => Message::select('created_at')
                 ->whereColumn('conversation_id', 'conversations.id')
                 ->orderByDesc('created_at')
