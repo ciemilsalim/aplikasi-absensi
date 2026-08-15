@@ -29,37 +29,65 @@ class Student extends Model
     /**
      * Accessor untuk mendapatkan URL lengkap foto siswa.
      * Mendukung foto yang diunggah dari Aplikasi Absensi maupun dari Portal Data SIPADA.
-     * Kompatibel penuh dengan cPanel (subdomain terpisah maupun folder berdampingan).
+     * Kompatibel penuh dengan cPanel (subdomain terpisah, config:cache, dan penamaan berbasis NIS).
      */
     public function getPhotoUrlAttribute()
     {
-        if (empty($this->photo)) {
-            return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
-        }
+        // Menggunakan config() agar aman dari php artisan config:cache di cPanel
+        $sipadaUrl = rtrim(config('services.sipada.url', env('SIPADA_URL', 'http://localhost:8000')), '/');
+        $defaultAvatar = 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
 
-        if (Str::startsWith($this->photo, ['http://', 'https://'])) {
-            return $this->photo;
-        }
+        // 1. Jika kolom photo di database terisi
+        if (!empty($this->photo)) {
+            if (Str::startsWith($this->photo, ['http://', 'https://'])) {
+                return $this->photo;
+            }
 
-        // 1. Cek jika file fisik ada di storage publik aplikasi-absensi (lokal / symlink)
-        if (file_exists(public_path('storage/' . $this->photo))) {
+            // A. Cek file fisik di storage aplikasi-absensi (lokal / symlink)
+            if (file_exists(public_path('storage/' . $this->photo))) {
+                return asset('storage/' . $this->photo);
+            }
+
+            // B. Cek file fisik di direktori SIPADA (jika diletakkan di server/cPanel berdampingan)
+            $sipadaStoragePath = env('SIPADA_STORAGE_DIR', base_path('../sistem-pangkalan-data/storage/app/public'));
+            if (file_exists($sipadaStoragePath . '/' . $this->photo)) {
+                return $sipadaUrl . '/storage/' . $this->photo;
+            }
+
+            // C. Fallback cPanel (subdomain terpisah): arahkan langsung ke domain SIPADA
+            if (Str::startsWith($this->photo, ['student_photos/', 'students/photos/'])) {
+                return $sipadaUrl . '/storage/' . $this->photo;
+            }
+
             return asset('storage/' . $this->photo);
         }
 
-        // 2. Cek jika file fisik ada di direktori SIPADA di server/cPanel (opsional via env SIPADA_STORAGE_DIR)
-        $sipadaStoragePath = env('SIPADA_STORAGE_DIR', base_path('../sistem-pangkalan-data/storage/app/public'));
-        if (file_exists($sipadaStoragePath . '/' . $this->photo)) {
-            $sipadaUrl = rtrim(env('SIPADA_URL', 'http://localhost:8000'), '/');
-            return $sipadaUrl . '/storage/' . $this->photo;
+        // 2. Jika kolom photo di database kosong, cek apakah foto SIPADA menggunakan nama NIS (contoh: student_photos/12345.jpg)
+        if (!empty($this->nis)) {
+            $extensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+            // Cek file fisik NIS di storage absensi
+            foreach ($extensions as $ext) {
+                $relativePath = 'student_photos/' . $this->nis . '.' . $ext;
+                if (file_exists(public_path('storage/' . $relativePath))) {
+                    return asset('storage/' . $relativePath);
+                }
+            }
+
+            // Cek file fisik NIS di storage SIPADA
+            $sipadaStoragePath = env('SIPADA_STORAGE_DIR', base_path('../sistem-pangkalan-data/storage/app/public'));
+            foreach ($extensions as $ext) {
+                $relativePath = 'student_photos/' . $this->nis . '.' . $ext;
+                if (file_exists($sipadaStoragePath . '/' . $relativePath)) {
+                    return $sipadaUrl . '/storage/' . $relativePath;
+                }
+            }
+
+            // Fallback cPanel: Coba muat foto dari domain SIPADA berdasarkan NIS
+            return $sipadaUrl . '/storage/student_photos/' . $this->nis . '.jpg';
         }
 
-        // 3. Fallback cPanel: Untuk foto yang diunggah via SIPADA ('student_photos/...'), arahkan ke URL domain SIPADA
-        if (Str::startsWith($this->photo, 'student_photos/')) {
-            $sipadaUrl = rtrim(env('SIPADA_URL', 'http://localhost:8000'), '/');
-            return $sipadaUrl . '/storage/' . $this->photo;
-        }
-
-        return asset('storage/' . $this->photo);
+        return $defaultAvatar;
     }
 
     public function user()

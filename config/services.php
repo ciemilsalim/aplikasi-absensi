@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'sipada' => [
+        'url' => env('SIPADA_URL', 'http://localhost:8000'),
+    ],
+
 ];

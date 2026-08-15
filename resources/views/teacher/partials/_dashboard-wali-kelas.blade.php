@@ -126,6 +126,7 @@
                                     <div class="relative group flex-shrink-0">
                                         <img class="h-11 w-11 rounded-full object-cover border-2 border-slate-200 dark:border-slate-600 shadow-sm" 
                                              src="{{ $student->photo_url }}" 
+                                             onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=7F9CF5&background=EBF4FF';"
                                              alt="{{ $student->name }}">
                                         
                                         <!-- Tombol Ubah Foto -->
@@ -287,6 +288,7 @@
                                             <div class="relative group">
                                                 <img class="h-10 w-10 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700" 
                                                      src="{{ $student->photo_url }}" 
+                                                     onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=7F9CF5&background=EBF4FF';"
                                                      alt="{{ $student->name }}">
                                                 
                                                 <!-- Tombol Ubah Foto (Wali Kelas) -->
@@ -369,7 +371,7 @@
                     @forelse($studentsForAttentionWali as $student)
                     <li class="p-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-slate-700/50">
                         <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600 border border-slate-300 dark:border-slate-600">
-                            <img src="{{ $student->photo_url }}" class="h-full w-full object-cover" alt="{{ $student->name }}">
+                            <img src="{{ $student->photo_url }}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=7F9CF5&background=EBF4FF';" class="h-full w-full object-cover" alt="{{ $student->name }}">
                         </span>
                         <div>
                             <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $student->name }}</p>
@@ -433,7 +435,7 @@
                     <li class="p-4 flex items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
                             <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600 border border-slate-300 dark:border-slate-600">
-                                <img src="{{ $attendance->student->photo_url }}" class="h-full w-full object-cover" alt="{{ $attendance->student->name }}">
+                                <img src="{{ $attendance->student->photo_url }}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($attendance->student->name) }}&color=7F9CF5&background=EBF4FF';" class="h-full w-full object-cover" alt="{{ $attendance->student->name }}">
                             </span>
                             <div>
                                 <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $attendance->student->name }}</p>
