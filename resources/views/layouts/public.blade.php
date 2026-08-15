@@ -329,8 +329,12 @@
                                  @endif
                              </div>
                          @elseif(auth()->user()->role === 'parent')
-                             <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Lainnya</div>
+                             <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Bantuan & Lainnya</div>
                              <div class="grid grid-cols-2 gap-3">
+                                 <a href="{{ route('parent.guide') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center justify-center p-4 bg-sky-50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-900/50 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-2xl transition text-sky-700 dark:text-sky-300 col-span-2">
+                                     <span class="material-icons text-sky-600 dark:text-sky-400 text-3xl mb-1.5">auto_stories</span>
+                                     <span class="text-xs font-bold">Panduan Penggunaan Aplikasi</span>
+                                 </a>
                                  <a href="{{ route('parent.dashboard') }}#ekskul" @click="mobileMenuOpen = false" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
                                      <span class="material-icons text-purple-600 dark:text-purple-400 text-3xl mb-1.5">star</span>
                                      <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Kegiatan Ekstrakurikuler</span>

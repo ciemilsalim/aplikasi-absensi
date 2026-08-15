@@ -215,6 +215,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 // == GRUP RUTE ORANG TUA ==
 Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(function () {
     Route::get('/dashboard', [ParentDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/guide', [ParentDashboardController::class, 'guide'])->name('guide');
     Route::resource('leave-requests', ParentLeaveRequestController::class)->only(['index', 'create', 'store']);
 });
 

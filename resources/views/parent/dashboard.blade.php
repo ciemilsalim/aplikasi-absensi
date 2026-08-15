@@ -12,9 +12,14 @@
             
             <!-- Welcome & Notifikasi -->
             <div class="space-y-4">
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Selamat Datang di Portal Presensi Orang Tua, {{ Auth::user()->name }}!</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Pantau kehadiran real-time putra/putri Anda dan ajukan izin ketidakhadiran secara mudah dari sini.</p>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Selamat Datang di Portal Presensi Orang Tua, {{ Auth::user()->name }}!</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Pantau kehadiran real-time putra/putri Anda dan ajukan izin ketidakhadiran secara mudah dari sini.</p>
+                    </div>
+                    <a href="{{ route('parent.guide') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200 dark:border-sky-800 rounded-lg text-xs font-bold transition-colors flex-shrink-0">
+                        <span class="material-icons text-base">auto_stories</span> Panduan Penggunaan
+                    </a>
                 </div>
 
                 {{-- Notifikasi Internal untuk Siswa Belum Absen --}}

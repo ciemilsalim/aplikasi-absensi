@@ -67,4 +67,12 @@ class DashboardController extends Controller
 
         return view('parent.dashboard', compact('students', 'announcements', 'unreadNotifications'));
     }
+
+    /**
+     * Menampilkan halaman panduan penggunaan aplikasi untuk orang tua.
+     */
+    public function guide()
+    {
+        return view('parent.guide');
+    }
 }
