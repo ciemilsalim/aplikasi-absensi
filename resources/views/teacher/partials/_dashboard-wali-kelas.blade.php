@@ -84,7 +84,7 @@
             <div class="flex flex-col sm:flex-row gap-2.5 sm:items-center w-full sm:w-auto">
                 <!-- Input Cari Nama -->
                 <div class="relative flex-1 sm:w-64">
-                    <span class="material-icons absolute left-3 top-2.5 text-gray-400 text-base">search</span>
+                    <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
                     <input type="text" x-model="search" placeholder="Cari nama siswa..." 
                            class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
                 </div>
