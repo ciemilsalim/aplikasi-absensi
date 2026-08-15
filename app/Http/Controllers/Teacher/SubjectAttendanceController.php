@@ -378,16 +378,55 @@ class SubjectAttendanceController extends Controller
 
         $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
 
-        $period = CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays, $holidays) {
+        $period = collect(CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays, $holidays) {
             // dayOfWeekIso returns 1 for Monday and 7 for Sunday
             return in_array($date->dayOfWeekIso, $scheduleDays) && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
-        });
+        }));
 
         $attendanceData = [];
         foreach ($attendances as $attendance) {
             $date = Carbon::parse($attendance->created_at)->format('Y-m-d');
             $attendanceData[$attendance->student_id][$date] = $attendance->status;
         }
+
+        $totalEffDays = $period->count();
+        $attendanceSummary = [];
+        $totalHadir = 0;
+        $totalSakit = 0;
+        $totalIzin = 0;
+        $totalAlpa = 0;
+        $totalBolos = 0;
+
+        foreach ($students as $student) {
+            $h = 0; $s = 0; $i = 0; $a = 0; $b = 0;
+            if (isset($attendanceData[$student->id])) {
+                foreach ($period as $date) {
+                    $dStr = $date->format('Y-m-d');
+                    $st = $attendanceData[$student->id][$dStr] ?? null;
+                    if ($st === 'hadir') $h++;
+                    elseif ($st === 'sakit') $s++;
+                    elseif ($st === 'izin') $i++;
+                    elseif ($st === 'alpa') $a++;
+                    elseif ($st === 'bolos') $b++;
+                }
+            }
+            $attendanceSummary[$student->id] = [
+                'hadir' => $h,
+                'sakit' => $s,
+                'izin' => $i,
+                'alpa' => $a,
+                'bolos' => $b,
+                'persen' => $totalEffDays > 0 ? round(($h / $totalEffDays) * 100, 0) : 0,
+            ];
+            $totalHadir += $h;
+            $totalSakit += $s;
+            $totalIzin += $i;
+            $totalAlpa += $a;
+            $totalBolos += $b;
+        }
+
+        $totalPossible = count($students) * $totalEffDays;
+        $classAvgPercent = $totalPossible > 0 ? round(($totalHadir / $totalPossible) * 100, 1) : 0;
 
         $classInfo = SchoolClass::find($schoolClassId);
         $subjectInfo = Subject::find($subjectId);
@@ -398,6 +437,14 @@ class SubjectAttendanceController extends Controller
             'students',
             'period',
             'attendanceData',
+            'attendanceSummary',
+            'totalEffDays',
+            'totalHadir',
+            'totalSakit',
+            'totalIzin',
+            'totalAlpa',
+            'totalBolos',
+            'classAvgPercent',
             'classInfo',
             'subjectInfo',
             'startDate',
