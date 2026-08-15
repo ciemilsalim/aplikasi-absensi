@@ -1,12 +1,14 @@
 <x-guest-layout>
     <div class="flex min-h-screen">
         <!-- Panel Kiri (Gambar) - Tersembunyi di mobile -->
-        <div class="relative hidden w-0 flex-1 lg:block">
-            <img class="absolute inset-0 h-full w-full object-cover" src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2940&auto=format&fit=crop" alt="Sekelompok siswa sedang belajar bersama">
-            <div class="absolute inset-0 bg-sky-900/40"></div>
-             <div class="absolute bottom-0 left-0 p-12 text-white">
-                 <h2 class="text-3xl font-bold leading-snug">Jangan Khawatir, Kami Siap Membantu.</h2>
-                 <p class="mt-2 text-sky-200/80">Cukup masukkan email Anda dan kami akan mengirimkan link untuk mereset password Anda.</p>
+        <div class="relative hidden w-0 flex-1 lg:block bg-sky-50 dark:bg-slate-800 overflow-hidden group">
+             <div class="absolute inset-0 flex items-center justify-center">
+                 <img class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out group-hover:scale-110" src="{{ asset('images/forgot-password-illustration.png') }}" alt="Ilustrasi reset password aplikasi presensi">
+             </div>
+             <div class="absolute inset-0 bg-gradient-to-t from-sky-900/80 via-sky-900/20 to-transparent"></div>
+             <div class="absolute bottom-0 left-0 p-12 text-white z-10">
+                  <h2 class="text-3xl font-bold drop-shadow-md">Jangan Khawatir, Kami Siap Membantu.</h2>
+                  <p class="mt-2 text-sky-100 drop-shadow">Cukup masukkan email Anda dan kami akan mengirimkan instruksi untuk mengatur ulang password Anda.</p>
              </div>
         </div>
 
