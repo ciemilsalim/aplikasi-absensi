@@ -603,7 +603,7 @@
                 </td>
                 <td style="width: 10%;"></td>
                 <td style="width: 45%;">
-                    {{ $schoolCity ?? '..................' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
+                    {{ !empty($schoolCity) ? $schoolCity : 'Buol' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
                     <strong>Wali Kelas {{ $class->name }}</strong><br>
                     <div class="signature-name">{{ $homeroomTeacherName ?? '_________________________' }}</div>
                     <div class="signature-nip">NIP. {{ $homeroomTeacherNip ?? '_________________________' }}</div>

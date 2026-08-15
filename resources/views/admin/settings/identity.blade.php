@@ -23,6 +23,10 @@
                     <x-input-label for="school_address" :value="__('Alamat Sekolah')" />
                     <textarea id="school_address" name="school_address" rows="3" class="block w-full mt-1 border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">{{ old('school_address', $settings['school_address'] ?? '') }}</textarea>
                 </div>
+                <div>
+                    <x-input-label for="school_city" :value="__('Kota / Kabupaten (Untuk Titimangsa Tanda Tangan Laporan)')" />
+                    <x-text-input id="school_city" class="block mt-1 w-full" type="text" name="school_city" :value="old('school_city', $settings['school_city'] ?? 'Buol')" placeholder="Contoh: Buol" />
+                </div>
                 {{-- Added Headmaster Info Fields --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>

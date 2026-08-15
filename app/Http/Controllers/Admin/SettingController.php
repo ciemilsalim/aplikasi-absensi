@@ -51,6 +51,7 @@ class SettingController extends Controller
             $rules = [
                 'school_name' => 'required|string|max:255',
                 'school_address' => 'nullable|string|max:500',
+                'school_city' => 'nullable|string|max:100',
                 'school_latitude' => 'required|numeric',
                 'school_longitude' => 'required|numeric',
                 'attendance_radius' => 'required|integer|min:10',

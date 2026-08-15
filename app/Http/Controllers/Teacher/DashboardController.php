@@ -593,7 +593,7 @@ class DashboardController extends Controller
             'settings' => $settings,
             'schoolName' => $settings->get('school_name', config('app.name')),
             'schoolAddress' => $settings->get('school_address'),
-            'schoolCity' => $settings->get('school_city', '..................'),
+            'schoolCity' => $settings->get('school_city', 'Buol'),
             'logoBase64' => $logoBase64,
             'class' => $class,
             'students' => $students,
@@ -795,7 +795,7 @@ class DashboardController extends Controller
         $pdfData = [
             'schoolName' => $settings->get('school_name', config('app.name')),
             'schoolAddress' => $settings->get('school_address'),
-            'schoolCity' => $settings->get('school_city', '..................'),
+            'schoolCity' => $settings->get('school_city', 'Buol'),
             'logoBase64' => $logoBase64,
             'appName' => config('app.name', 'SIASEK'),
             'printDate' => now()->translatedFormat('d F Y, H:i:s'),
