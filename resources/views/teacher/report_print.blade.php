@@ -300,17 +300,23 @@
 
         <!-- Structured Metadata Table -->
         <table class="meta-table">
+            <colgroup>
+                <col style="width: 110px;">
+                <col style="width: auto;">
+                <col style="width: 80px;">
+                <col style="width: 260px;">
+            </colgroup>
             <tr>
                 <td class="meta-label">Mata Pelajaran</td>
                 <td class="meta-val">: {{ $subjectInfo->name }}</td>
-                <td class="meta-label" style="text-align: right; padding-right: 6px;">Kelas :</td>
-                <td class="meta-val" style="width: 140px;">{{ $classInfo->name }}</td>
+                <td class="meta-label" style="text-align: right; padding-right: 8px;">Kelas :</td>
+                <td class="meta-val" style="white-space: nowrap;">{{ $classInfo->name }}</td>
             </tr>
             <tr>
                 <td class="meta-label">Guru Pengampu</td>
                 <td class="meta-val">: {{ Auth::user()->name }}</td>
-                <td class="meta-label" style="text-align: right; padding-right: 6px;">Periode :</td>
-                <td class="meta-val">{{ $startDate->isoFormat('D MMM Y') }} s/d {{ $endDate->isoFormat('D MMM Y') }}</td>
+                <td class="meta-label" style="text-align: right; padding-right: 8px;">Periode :</td>
+                <td class="meta-val" style="white-space: nowrap;">{{ $startDate->isoFormat('D MMM Y') }} s/d {{ $endDate->isoFormat('D MMM Y') }}</td>
             </tr>
         </table>
 
