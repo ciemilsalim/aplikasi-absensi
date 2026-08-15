@@ -528,15 +528,23 @@ class SubjectAttendanceController extends Controller
         $classInfo = SchoolClass::find($schoolClassId);
         $subjectInfo = Subject::find($subjectId);
 
-        // PERBAIKAN: Mengambil data identitas sekolah dengan kunci yang benar
-        $settings = Setting::whereIn('key', ['app_logo', 'school_name', 'school_address', 'school_phone', 'school_email'])->get();
+        // Mengambil data identitas sekolah lengkap
+        $settings = Setting::whereIn('key', [
+            'app_logo', 'school_name', 'school_address', 'school_phone', 
+            'school_email', 'school_headmaster_name', 'school_headmaster_nip'
+        ])->get();
+        
         $schoolIdentity = [
             'logo' => $settings->firstWhere('key', 'app_logo')->value ?? null,
             'name' => $settings->firstWhere('key', 'school_name')->value ?? null,
             'address' => $settings->firstWhere('key', 'school_address')->value ?? null,
             'phone' => $settings->firstWhere('key', 'school_phone')->value ?? null,
             'email' => $settings->firstWhere('key', 'school_email')->value ?? null,
+            'headmaster_name' => $settings->firstWhere('key', 'school_headmaster_name')->value ?? null,
+            'headmaster_nip' => $settings->firstWhere('key', 'school_headmaster_nip')->value ?? null,
         ];
+
+        $requestInputs = $request->only(['start_date', 'end_date', 'school_class_id', 'subject_id']);
 
         return view('teacher.report_print', compact(
             'students',
@@ -546,7 +554,9 @@ class SubjectAttendanceController extends Controller
             'subjectInfo',
             'startDate',
             'endDate',
-            'schoolIdentity'
+            'schoolIdentity',
+            'teacher',
+            'requestInputs'
         ));
     }
 
