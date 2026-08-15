@@ -204,7 +204,6 @@
         .signature-name {
             font-weight: 800;
             text-decoration: underline;
-            text-transform: uppercase;
             color: #0f172a;
         }
     </style>
