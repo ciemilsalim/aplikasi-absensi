@@ -76,10 +76,23 @@
             @forelse($students as $student)
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ $student->name }}</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Kelas: {{ $student->schoolClass->name ?? 'Belum ada kelas' }}</p>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="flex-shrink-0">
+                                    <img class="h-14 w-14 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700 shadow-sm" 
+                                         src="{{ $student->photo_url }}" 
+                                         onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=7F9CF5&background=EBF4FF';"
+                                         alt="{{ $student->name }}">
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ $student->name }}</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        Kelas: {{ $student->schoolClass->name ?? 'Belum ada kelas' }}
+                                        @if($student->nis)
+                                            <span class="mx-1.5">•</span> NIS: {{ $student->nis }}
+                                        @endif
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         
