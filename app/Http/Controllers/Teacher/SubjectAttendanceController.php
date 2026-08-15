@@ -181,7 +181,9 @@ class SubjectAttendanceController extends Controller
             'student' => [
                 'id' => $student->id,
                 'name' => $student->name,
-                'time' => $attendance->created_at->format('H:i:s')
+                'status' => 'hadir',
+                'time' => $attendance->created_at->format('H:i'),
+                'photo_url' => $student->photo_url,
             ]
         ]);
     }
@@ -308,7 +310,8 @@ class SubjectAttendanceController extends Controller
                 'id' => $student->id,
                 'name' => $student->name,
                 'status' => $request->status,
-                'time' => $attendanceDateTime->format('H:i')
+                'time' => $attendanceDateTime->format('H:i'),
+                'photo_url' => $student->photo_url,
             ]
         ]);
     }

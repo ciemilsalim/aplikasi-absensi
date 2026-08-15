@@ -271,9 +271,10 @@
                                      data-student-name="{{ strtolower($student->name) }}"
                                      x-show="search === '' || '{{ strtolower($student->name) }}'.includes(search.toLowerCase())">
                                     <div class="flex items-center gap-2.5 min-w-0">
-                                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">
-                                            {{ substr($student->name, 0, 1) }}
-                                        </div>
+                                        <img class="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-sm"
+                                             src="{{ $student->photo_url }}" 
+                                             alt="{{ $student->name }}"
+                                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=7F9CF5&background=EBF4FF'">
                                         <div class="truncate">
                                             <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{{ $student->name }}</p>
                                             <p class="text-[11px] text-slate-400">NIS: {{ $student->nis ?? '-' }}</p>
@@ -312,8 +313,12 @@
                                      data-student-name="{{ strtolower($attendance->student->name) }}"
                                      x-show="search === '' || '{{ strtolower($attendance->student->name) }}'.includes(search.toLowerCase())">
                                     <div class="flex items-center gap-2.5 min-w-0">
-                                        <div class="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold shrink-0">
-                                            ✓
+                                        <div class="relative shrink-0">
+                                            <img class="w-8 h-8 rounded-full object-cover border-2 border-emerald-500 shadow-sm"
+                                                 src="{{ $attendance->student->photo_url }}" 
+                                                 alt="{{ $attendance->student->name }}"
+                                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($attendance->student->name) }}&color=7F9CF5&background=EBF4FF'">
+                                            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[7px] text-white font-bold">✓</span>
                                         </div>
                                         <div class="truncate">
                                             <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{{ $attendance->student->name }}</p>
@@ -338,8 +343,14 @@
                                      data-student-name="{{ strtolower($subjectAttendance->student->name) }}"
                                      x-show="search === '' || '{{ strtolower($subjectAttendance->student->name) }}'.includes(search.toLowerCase())">
                                     <div class="flex items-center gap-2.5 min-w-0">
-                                        <div class="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold shrink-0">
-                                            {{ strtoupper(substr($subjectAttendance->status, 0, 1)) }}
+                                        <div class="relative shrink-0">
+                                            <img class="w-8 h-8 rounded-full object-cover border-2 border-amber-500 shadow-sm"
+                                                 src="{{ $subjectAttendance->student->photo_url }}" 
+                                                 alt="{{ $subjectAttendance->student->name }}"
+                                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=7F9CF5&background=EBF4FF'">
+                                            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-amber-500 border border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[7px] text-white font-bold">
+                                                {{ strtoupper(substr($subjectAttendance->status, 0, 1)) }}
+                                            </span>
                                         </div>
                                         <div class="truncate">
                                             <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{{ $subjectAttendance->student->name }}</p>
@@ -759,23 +770,28 @@
                 }
             }
 
-            function addStudentToList(name, time) {
+            function addStudentToList(student) {
                 if (noStudentsYet) noStudentsYet.classList.add('hidden');
                 
+                const photoUrl = student.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&color=7F9CF5&background=EBF4FF`;
                 const listItem = document.createElement('div');
                 listItem.className = 'p-3.5 flex items-center justify-between gap-3 bg-emerald-50/40 dark:bg-emerald-950/20 transition-colors animate-[pulse_1s_ease-out]';
                 listItem.innerHTML = `
                     <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 flex items-center justify-center text-xs font-bold shrink-0">
-                            ✓
+                        <div class="relative shrink-0">
+                            <img class="w-8 h-8 rounded-full object-cover border-2 border-emerald-500 shadow-sm"
+                                 src="${photoUrl}" 
+                                 alt="${student.name}"
+                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&color=7F9CF5&background=EBF4FF'">
+                            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[7px] text-white font-bold">✓</span>
                         </div>
                         <div class="truncate">
-                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">${name}</p>
+                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">${student.name}</p>
                             <p class="text-[11px] text-slate-400">Presensi Berhasil</p>
                         </div>
                     </div>
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                        ${time}
+                        ${student.time}
                     </span>
                 `;
                 attendedList.prepend(listItem);
@@ -784,7 +800,7 @@
                 }
             }
 
-            function addStudentToLeaveList(name, status) {
+            function addStudentToLeaveList(student, status) {
                 if (noStudentsOnLeave) noStudentsOnLeave.classList.add('hidden');
 
                 const statusClass = status === 'sakit'
@@ -792,16 +808,23 @@
                     : 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border-sky-200 dark:border-sky-800';
 
                 const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+                const photoUrl = student.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&color=7F9CF5&background=EBF4FF`;
 
                 const listItem = document.createElement('div');
                 listItem.className = 'p-3.5 flex items-center justify-between gap-3 bg-amber-50/40 dark:bg-amber-950/20 transition-colors';
                 listItem.innerHTML = `
                     <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-300 flex items-center justify-center text-xs font-bold shrink-0">
-                            ${status.charAt(0).toUpperCase()}
+                        <div class="relative shrink-0">
+                            <img class="w-8 h-8 rounded-full object-cover border-2 border-amber-500 shadow-sm"
+                                 src="${photoUrl}" 
+                                 alt="${student.name}"
+                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&color=7F9CF5&background=EBF4FF'">
+                            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-amber-500 border border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[7px] text-white font-bold">
+                                ${status.charAt(0).toUpperCase()}
+                            </span>
                         </div>
                         <div class="truncate">
-                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">${name}</p>
+                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">${student.name}</p>
                             <p class="text-[11px] text-slate-400">Status Khusus</p>
                         </div>
                     </div>
@@ -827,10 +850,10 @@
                     modal.title.textContent = 'Presensi Berhasil';
                     if (data.student) {
                         if (data.student.status === 'sakit' || data.student.status === 'izin') {
-                            addStudentToLeaveList(data.student.name, data.student.status);
+                            addStudentToLeaveList(data.student, data.student.status);
                             removeStudentFromNoNoticeList(data.student.id);
                         } else if (data.student.status === 'hadir') {
-                            addStudentToList(data.student.name, data.student.time);
+                            addStudentToList(data.student);
                             removeStudentFromNoNoticeList(data.student.id);
                         } else {
                             removeStudentFromNoNoticeList(data.student.id);
