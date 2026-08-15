@@ -632,11 +632,23 @@ class DashboardController extends Controller
             ->orderBy('name')
             ->get();
 
+        $totalTrimesterEffectiveDays = 0;
+        foreach ($months as $m) {
+            $totalTrimesterEffectiveDays += $trimesterMap[$m]['effective_days'];
+        }
+
         $reportData = $students->map(function ($student) use ($months, $trimesterMap, $year) {
             $studentData = [
                 'name' => $student->name,
                 'nis' => $student->nis,
-                'monthly_data' => []
+                'monthly_data' => [],
+                'total_alpa' => 0,
+                'total_izin' => 0,
+                'total_sakit' => 0,
+                'total_jml' => 0,
+                'total_effective_days' => 0,
+                'total_persen' => '0%',
+                'total_persen_num' => 0
             ];
 
             foreach ($months as $m) {
@@ -693,9 +705,31 @@ class DashboardController extends Controller
                     'jml' => $jml,
                     'persen' => $persenStr
                 ];
+
+                $studentData['total_alpa'] += $alpa;
+                $studentData['total_izin'] += $izin;
+                $studentData['total_sakit'] += $sakit;
+                $studentData['total_jml'] += $jml;
+                $studentData['total_effective_days'] += $effDays;
             }
+
+            if ($studentData['total_effective_days'] > 0) {
+                $totPersen = (($studentData['total_effective_days'] - $studentData['total_jml']) / $studentData['total_effective_days']) * 100;
+                $studentData['total_persen'] = round($totPersen, 0) . '%';
+                $studentData['total_persen_num'] = $totPersen;
+            } else {
+                $studentData['total_persen'] = '0%';
+                $studentData['total_persen_num'] = 0;
+            }
+
             return (object)$studentData;
         });
+
+        // Summary Statistics for the Class
+        $totalStudents = $reportData->count();
+        $classAverageAttendance = $totalStudents > 0 ? round($reportData->avg('total_persen_num'), 1) : 0;
+        $perfectAttendanceCount = $reportData->filter(function($s) { return $s->total_persen_num >= 100; })->count();
+        $needsAttentionCount = $reportData->filter(function($s) { return $s->total_persen_num < 85; })->count();
 
         // Common PDF Data similar to Admin
         $settings = Setting::pluck('value', 'key');
@@ -708,13 +742,16 @@ class DashboardController extends Controller
             } catch (\Exception $e) { }
         }
 
+        $paperSize = strtolower($request->input('paper_size', 'a4'));
+
         $pdfData = [
             'schoolName' => $settings->get('school_name', config('app.name')),
             'schoolAddress' => $settings->get('school_address'),
+            'schoolCity' => $settings->get('school_city', '..................'),
             'logoBase64' => $logoBase64,
             'appName' => config('app.name', 'SIASEK'),
             'printDate' => now()->translatedFormat('d F Y, H:i:s'),
-            'userRole' => Auth::check() ? ucfirst(Auth::user()->role) : 'Tamu',
+            'userRole' => Auth::check() ? ucfirst(Auth::user()->role) : 'Wali Kelas',
             'headmasterName' => $settings->get('school_headmaster_name', '-'),
             'headmasterNip' => $settings->get('school_headmaster_nip', '-'),
             'reportData' => $reportData,
@@ -723,14 +760,29 @@ class DashboardController extends Controller
             'year' => $year,
             'trimesterMap' => $trimesterMap,
             'months' => $months,
+            'totalTrimesterEffectiveDays' => $totalTrimesterEffectiveDays,
+            'totalStudents' => $totalStudents,
+            'classAverageAttendance' => $classAverageAttendance,
+            'perfectAttendanceCount' => $perfectAttendanceCount,
+            'needsAttentionCount' => $needsAttentionCount,
             'homeroomTeacherName' => $teacher->name ?? null,
             'homeroomTeacherNip' => $teacher->nip ?? null,
+            'paperSize' => $paperSize
         ];
 
         $pdf = Pdf::loadView('admin.reports.triwulan_pdf', $pdfData);
-        $pdf->setPaper('A4', 'landscape');
+        
+        // Pilihan Kertas A4 / Folio (F4) Landscape
+        if (in_array($paperSize, ['folio', 'f4'])) {
+            // Ukuran Folio / F4 Landscape: 330mm x 215mm = 935.43pt x 609.45pt
+            $pdf->setPaper([0, 0, 935.43, 609.45], 'landscape');
+        } else {
+            $pdf->setPaper('a4', 'landscape');
+        }
+
         return $pdf->stream('laporan-triwulan-' . $class->name . '-T' . $trimester . '-' . $year . '.pdf');
     }
+
 
     /**
      * Menangani permintaan ekspor ke Excel.

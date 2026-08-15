@@ -401,6 +401,12 @@ class ReportController extends Controller
                     $persenStr = '0%';
                 }
 
+                $studentData['total_alpa'] = ($studentData['total_alpa'] ?? 0) + $alpa;
+                $studentData['total_izin'] = ($studentData['total_izin'] ?? 0) + $izin;
+                $studentData['total_sakit'] = ($studentData['total_sakit'] ?? 0) + $sakit;
+                $studentData['total_jml'] = ($studentData['total_jml'] ?? 0) + $jml;
+                $studentData['total_effective_days'] = ($studentData['total_effective_days'] ?? 0) + $effDays;
+
                 $studentData['monthly_data'][$m] = [
                     'alpa' => $alpa,
                     'izin' => $izin,
@@ -409,8 +415,28 @@ class ReportController extends Controller
                     'persen' => $persenStr
                 ];
             }
+
+            if (($studentData['total_effective_days'] ?? 0) > 0) {
+                $totPersen = (($studentData['total_effective_days'] - $studentData['total_jml']) / $studentData['total_effective_days']) * 100;
+                $studentData['total_persen'] = round($totPersen, 0) . '%';
+                $studentData['total_persen_num'] = $totPersen;
+            } else {
+                $studentData['total_persen'] = '0%';
+                $studentData['total_persen_num'] = 0;
+            }
+
             return (object)$studentData;
         });
+
+        $totalTrimesterEffectiveDays = 0;
+        foreach ($months as $m) {
+            $totalTrimesterEffectiveDays += $trimesterMap[$m]['effective_days'];
+        }
+
+        $totalStudents = $reportData->count();
+        $classAverageAttendance = $totalStudents > 0 ? round($reportData->avg('total_persen_num'), 1) : 0;
+        $perfectAttendanceCount = $reportData->filter(function($s) { return ($s->total_persen_num ?? 0) >= 100; })->count();
+        $needsAttentionCount = $reportData->filter(function($s) { return ($s->total_persen_num ?? 0) < 85; })->count();
 
         $pdfData = $this->getCommonPdfData();
         $pdfData['reportData'] = $reportData;
@@ -419,16 +445,30 @@ class ReportController extends Controller
         $pdfData['year'] = $year;
         $pdfData['trimesterMap'] = $trimesterMap;
         $pdfData['months'] = $months;
+        $pdfData['totalTrimesterEffectiveDays'] = $totalTrimesterEffectiveDays;
+        $pdfData['totalStudents'] = $totalStudents;
+        $pdfData['classAverageAttendance'] = $classAverageAttendance;
+        $pdfData['perfectAttendanceCount'] = $perfectAttendanceCount;
+        $pdfData['needsAttentionCount'] = $needsAttentionCount;
 
         // Ambil nama wali kelas jika ada
         $homeroomTeacher = $class->homeroomTeacher;
         $pdfData['homeroomTeacherName'] = $homeroomTeacher->name ?? null;
         $pdfData['homeroomTeacherNip'] = $homeroomTeacher->nip ?? null;
 
+        $paperSize = strtolower($request->input('paper_size', 'a4'));
+        $pdfData['paperSize'] = $paperSize;
+
         $pdf = Pdf::loadView('admin.reports.triwulan_pdf', $pdfData);
-        $pdf->setPaper('A4', 'landscape');
+        if (in_array($paperSize, ['folio', 'f4'])) {
+            $pdf->setPaper([0, 0, 935.43, 609.45], 'landscape');
+        } else {
+            $pdf->setPaper('a4', 'landscape');
+        }
+
         return $pdf->stream('laporan-triwulan-' . $class->name . '-T' . $trimester . '-' . $year . '.pdf');
     }
+
 
     /**
      * Membuat laporan detail kehadiran per siswa.

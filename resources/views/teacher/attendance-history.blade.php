@@ -74,22 +74,31 @@
                 <!-- Trimester Print -->
                 <form method="GET" action="{{ route('teacher.attendance.print_trimester') }}" class="flex flex-wrap items-center gap-2 pt-3 lg:pt-0 lg:border-l lg:pl-5 border-slate-200 dark:border-slate-800" target="_blank">
                     <div class="flex items-center gap-1.5">
-                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Triwulan:</span>
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">TW:</span>
                         <select name="trimester" id="trimester" 
                                 class="text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 p-2 focus:ring-sky-500">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
+                            <option value="1">TW 1 (Jan-Mar)</option>
+                            <option value="2">TW 2 (Apr-Jun)</option>
+                            <option value="3">TW 3 (Jul-Sep)</option>
+                            <option value="4">TW 4 (Okt-Des)</option>
                         </select>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <input type="number" name="year" id="year" value="{{ date('Y') }}" 
-                               class="w-20 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 p-2 focus:ring-sky-500" required>
+                               class="w-18 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 p-2 focus:ring-sky-500" required>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <select name="paper_size" id="paper_size" 
+                                class="text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 p-2 focus:ring-sky-500"
+                                title="Pilihan Ukuran Kertas Cetak">
+                            <option value="a4">A4</option>
+                            <option value="folio">Folio / F4</option>
+                        </select>
                     </div>
                     <button type="submit" 
-                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/40 font-bold text-xs transition-colors">
-                        <span class="material-icons text-sm text-indigo-600">print</span>
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-sm shadow-indigo-600/20 transition-all active:scale-95"
+                            title="Cetak Rekap Kehadiran Triwulan (PDF Landscape)">
+                        <span class="material-icons text-sm">print</span>
                         <span>Cetak TW</span>
                     </button>
                 </form>

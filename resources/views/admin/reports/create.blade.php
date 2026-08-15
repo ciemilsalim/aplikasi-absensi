@@ -142,7 +142,7 @@
                                            x-bind:disabled="reportType !== 'class_monthly'" />
                                 </div>
 
-                                <div x-show="reportType === 'class_trimester'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div x-show="reportType === 'class_trimester'" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
                                         <label for="trimester" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                                             Pilih Triwulan <span class="text-rose-500">*</span>
@@ -167,6 +167,16 @@
                                                value="{{ date('Y') }}" 
                                                x-bind:required="reportType === 'class_trimester'" 
                                                x-bind:disabled="reportType !== 'class_trimester'" />
+                                    </div>
+                                    <div>
+                                        <label for="paper_size" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                                            Ukuran Kertas <span class="text-rose-500">*</span>
+                                        </label>
+                                        <select id="paper_size" name="paper_size" 
+                                                class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-3 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15">
+                                            <option value="a4" selected>A4 Landscape (297 x 210 mm)</option>
+                                            <option value="folio">Folio / F4 Landscape (330 x 215 mm)</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
