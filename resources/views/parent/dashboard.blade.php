@@ -122,7 +122,14 @@
                                             <p class="font-semibold">{{ $attendance->attendance_time->translatedFormat('l, d F Y') }}</p>
                                             <p class="text-xs text-gray-600 dark:text-gray-400">
                                                 @if(!in_array($attendance->status, ['izin', 'sakit', 'alpa']))
-                                                    Masuk: {{ $attendance->attendance_time->format('H:i') }} | Pulang: {{ $attendance->checkout_time ? $attendance->checkout_time->format('H:i') : '-' }}
+                                                    Masuk: {{ $attendance->attendance_time->format('H:i') }} | Pulang: 
+                                                    @if($attendance->checkout_time)
+                                                        {{ $attendance->checkout_time->format('H:i') }}
+                                                    @elseif($attendance->attendance_time->isToday())
+                                                        <span class="text-rose-600 dark:text-rose-400 font-medium">belum absen pulang</span>
+                                                    @else
+                                                        <span class="text-rose-600 dark:text-rose-400 font-medium">tidak absen pulang</span>
+                                                    @endif
                                                 @else
                                                     Keterangan: <span class="capitalize">{{ $attendance->status }}</span>
                                                 @endif
