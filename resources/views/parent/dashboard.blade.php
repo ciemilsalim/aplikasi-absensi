@@ -81,14 +81,6 @@
             </div>
             @endif
 
-            <!-- Tombol Aksi Utama -->
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
-                <a href="{{ route('parent.leave-requests.create') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 text-sm font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    Ajukan Izin atau Sakit
-                </a>
-            </div>
-
             <!-- Kartu Data Siswa -->
             @forelse($students as $student)
                 <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -208,5 +200,13 @@
                     </div>
                  </div>
             @endforelse
+
+            <!-- Tombol Aksi Utama (Ajukan Izin atau Sakit) -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm">
+                <a href="{{ route('parent.leave-requests.create') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700 text-sm font-semibold shadow-sm transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    Ajukan Izin atau Sakit
+                </a>
+            </div>
         </div>
 </x-app-layout>

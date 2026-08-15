@@ -218,20 +218,15 @@
                             <span class="material-icons">home</span>
                             <span class="text-[10px] mt-0.5">Beranda</span>
                         </a>
-                        <a href="{{ route('parent.leave-requests.index') }}"
-                            class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                            <span class="material-icons">assignment_turned_in</span>
-                            <span class="text-[10px] mt-0.5">Izin/Sakit</span>
-                        </a>
                         <a href="{{ route('chat.index') }}"
                             class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
                             <span class="material-icons">chat</span>
                             <span class="text-[10px] mt-0.5">Obrolan</span>
                         </a>
-                        <a href="{{ route('profile.edit') }}"
+                        <a href="{{ route('parent.leave-requests.index') }}"
                             class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                            <span class="material-icons">account_circle</span>
-                            <span class="text-[10px] mt-0.5">Profil</span>
+                            <span class="material-icons">assignment_turned_in</span>
+                            <span class="text-[10px] mt-0.5">Izin Sakit</span>
                         </a>
                         <button @click="mobileMenuOpen = true"
                             class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200 text-gray-500 dark:text-gray-400">
