@@ -161,9 +161,10 @@
                                     <ul class="divide-y divide-gray-100 dark:divide-slate-700/50">
                                         @foreach($absentStudents as $student)
                                             <li class="py-3 flex items-center gap-3">
-                                                <div class="flex-shrink-0 h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-sm shadow-sm">
-                                                    {{ substr($student->name, 0, 1) }}
-                                                </div>
+                                                <img class="flex-shrink-0 h-9 w-9 rounded-full object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
+                                                     src="{{ $student->photo_url }}" 
+                                                     alt="{{ $student->name }}"
+                                                     onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=7F9CF5&background=EBF4FF';">
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
                                                         {{ $student->name }}

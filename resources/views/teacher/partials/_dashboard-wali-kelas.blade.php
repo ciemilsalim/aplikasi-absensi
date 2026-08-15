@@ -106,7 +106,7 @@
             @forelse($studentsInClass as $student)
                 @php $attendance = $attendancesToday->get($student->id); @endphp
                 <div class="bg-gray-50 dark:bg-slate-700/60 border border-gray-200 dark:border-slate-700 rounded-xl p-4 transition-all duration-200 shadow-sm"
-                     x-show="(search === '' || '{{ strtolower(addslashes($student->name)) }}'.includes(search.toLowerCase())) && (statusFilter === 'all' || (statusFilter === 'belum_hadir' && {{ $attendance ? 'false' : 'true' }}) || (statusFilter === 'hadir' && ['tepat_waktu','terlambat'].includes('{{ $attendance->status ?? '' }}')) || (statusFilter === 'sakit' && '{{ $attendance->status ?? '' }}' === 'sakit') || (statusFilter === 'izin' && ['izin','izin_keluar'].includes('{{ $attendance->status ?? '' }}')) || (statusFilter === 'alpa' && '{{ $attendance->status ?? '' }}' === 'alpa'))">
+                     x-show="(search === '' || {{ json_encode(mb_strtolower($student->name)) }}.includes(search.toLowerCase())) && (statusFilter === 'all' || (statusFilter === 'belum_hadir' && {{ $attendance ? 'false' : 'true' }}) || (statusFilter === 'hadir' && ['tepat_waktu','terlambat'].includes('{{ $attendance->status ?? '' }}')) || (statusFilter === 'sakit' && '{{ $attendance->status ?? '' }}' === 'sakit') || (statusFilter === 'izin' && ['izin','izin_keluar'].includes('{{ $attendance->status ?? '' }}')) || (statusFilter === 'alpa' && '{{ $attendance->status ?? '' }}' === 'alpa'))">
                     
                     <!-- Header Kartu: Foto, Nama & Status Badge -->
                     <div class="flex items-center justify-between gap-3 pb-3 border-b border-gray-200 dark:border-slate-600">
@@ -270,7 +270,7 @@
                     @forelse($studentsInClass as $student)
                         @php $attendance = $attendancesToday->get($student->id); @endphp
                         <tr class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-                            x-show="(search === '' || '{{ strtolower(addslashes($student->name)) }}'.includes(search.toLowerCase())) && (statusFilter === 'all' || (statusFilter === 'belum_hadir' && {{ $attendance ? 'false' : 'true' }}) || (statusFilter === 'hadir' && ['tepat_waktu','terlambat'].includes('{{ $attendance->status ?? '' }}')) || (statusFilter === 'sakit' && '{{ $attendance->status ?? '' }}' === 'sakit') || (statusFilter === 'izin' && ['izin','izin_keluar'].includes('{{ $attendance->status ?? '' }}')) || (statusFilter === 'alpa' && '{{ $attendance->status ?? '' }}' === 'alpa'))">
+                            x-show="(search === '' || {{ json_encode(mb_strtolower($student->name)) }}.includes(search.toLowerCase())) && (statusFilter === 'all' || (statusFilter === 'belum_hadir' && {{ $attendance ? 'false' : 'true' }}) || (statusFilter === 'hadir' && ['tepat_waktu','terlambat'].includes('{{ $attendance->status ?? '' }}')) || (statusFilter === 'sakit' && '{{ $attendance->status ?? '' }}' === 'sakit') || (statusFilter === 'izin' && ['izin','izin_keluar'].includes('{{ $attendance->status ?? '' }}')) || (statusFilter === 'alpa' && '{{ $attendance->status ?? '' }}' === 'alpa'))">
                             <td class="px-5 py-3.5 font-medium text-gray-900 dark:text-white">
                                 <div class="flex items-center gap-3">
                                     <div class="relative group flex-shrink-0">
