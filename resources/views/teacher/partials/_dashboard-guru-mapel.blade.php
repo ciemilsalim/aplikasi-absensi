@@ -25,6 +25,31 @@
             </div>
         </div>
 
+        <!-- Fast Actions (Scan Datang/Pulang Siswa & Scan Izin Keluar) -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+            <a href="{{ route('scanner') }}" 
+               class="group p-4 sm:p-4.5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
+                    <span class="material-icons text-2xl">qr_code_scanner</span>
+                </div>
+                <div class="min-w-0">
+                    <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Absen Datang/Pulang</h4>
+                    <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">Scan Masuk & Pulang Siswa</p>
+                </div>
+            </a>
+
+            <a href="{{ route('permit.scanner') }}" 
+               class="group p-4 sm:p-4.5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
+                    <span class="material-icons text-2xl">assignment</span>
+                </div>
+                <div class="min-w-0">
+                    <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Scan Izin Keluar</h4>
+                    <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">Izin Tinggalkan Sekolah</p>
+                </div>
+            </a>
+        </div>
+
         <!-- Jadwal Mengajar Timeline & Tabs -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden" x-data="{ activeTab: 'today' }">
             <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

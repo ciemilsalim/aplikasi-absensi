@@ -510,6 +510,28 @@
                                      </a>
                                  </div>
 
+                                 <!-- Pemindai Kiosk Siswa & Izin Keluar -->
+                                 <div>
+                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Pemindai & Kiosk Siswa</div>
+                                     <div class="grid grid-cols-2 gap-2.5 mb-3">
+                                         <a href="{{ route('scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-sky-50 dark:hover:bg-slate-800 transition-all group">
+                                             <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                                 <span class="material-icons text-xl">qr_code_scanner</span>
+                                             </div>
+                                             <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Masuk/Pulang</span>
+                                             <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Absensi Harian Siswa</span>
+                                         </a>
+
+                                         <a href="{{ route('permit.scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all group">
+                                             <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                                 <span class="material-icons text-xl">assignment</span>
+                                             </div>
+                                             <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Izin Keluar</span>
+                                             <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Izin Tinggalkan Sekolah</span>
+                                         </a>
+                                     </div>
+                                 </div>
+
                                  <div>
                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Menu Mengajar & Wali Kelas</div>
                                      <div class="grid grid-cols-2 gap-2.5">

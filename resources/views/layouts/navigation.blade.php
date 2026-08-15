@@ -47,6 +47,16 @@
                                 <span class="material-icons text-base">dashboard</span>
                                 <span>Dasbor Guru</span>
                             </a>
+                            <a href="{{ route('scanner') }}" 
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('scanner') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                <span class="material-icons text-base">qr_code_scanner</span>
+                                <span>Scan Masuk/Pulang</span>
+                            </a>
+                            <a href="{{ route('permit.scanner') }}" 
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('permit.scanner') ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                <span class="material-icons text-base">assignment</span>
+                                <span>Scan Izin Keluar</span>
+                            </a>
                             @if(Auth::user()->teacher && Auth::user()->teacher->homeroomClass)
                                 <a href="{{ route('teacher.leave_requests.index') }}" 
                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('teacher.leave_requests.*') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
@@ -155,6 +165,14 @@
                     <a href="{{ route('teacher.dashboard') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
                         <span class="material-icons text-base text-sky-500">dashboard</span>
                         <span>Dasbor Guru</span>
+                    </a>
+                    <a href="{{ route('scanner') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-sky-500">qr_code_scanner</span>
+                        <span>Scan Masuk/Pulang</span>
+                    </a>
+                    <a href="{{ route('permit.scanner') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-indigo-500">assignment</span>
+                        <span>Scan Izin Keluar</span>
                     </a>
                     @if(Auth::user()->teacher && Auth::user()->teacher->homeroomClass)
                         <a href="{{ route('teacher.leave_requests.index') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">

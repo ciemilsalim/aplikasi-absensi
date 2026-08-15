@@ -1,38 +1,61 @@
-@extends('layouts.public')
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+            <div>
+                <x-breadcrumb :breadcrumbs="[
+                    ['title' => 'Dasbor', 'url' => route('dashboard')],
+                    ['title' => 'Pemindai Izin Keluar', 'url' => route('permit.scanner')]
+                ]" />
+                <div class="flex items-center gap-2 flex-wrap mt-1">
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                        Pemindai Izin Keluar Siswa
+                    </h1>
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                        Validasi Surat Izin
+                    </span>
+                </div>
+            </div>
 
-@section('title', 'Pemindai Izin Keluar/Kembali')
+            <div class="flex items-center gap-2">
+                <a href="{{ route('dashboard') }}" 
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shadow-2xs">
+                    <span class="material-icons text-sm">arrow_back</span>
+                    <span>Kembali ke Dasbor</span>
+                </a>
+            </div>
+        </div>
+    </x-slot>
 
-@push('styles')
-    <style>
-        /* Mengatasi UI bawaan html5-qrcode agar lebih rapi */
-        #reader {
-            border: none !important;
-            background: transparent !important;
-            border-radius: 0.75rem;
-            overflow: hidden;
-        }
+    @push('styles')
+        <style>
+            /* Mengatasi UI bawaan html5-qrcode agar lebih rapi */
+            #reader {
+                border: none !important;
+                background: transparent !important;
+                border-radius: 0.75rem;
+                overflow: hidden;
+            }
 
-        #reader video {
-            object-fit: cover !important;
-            width: 100% !important;
-            height: 100% !important;
-            border-radius: 0.75rem !important;
-        }
+            #reader video {
+                object-fit: cover !important;
+                width: 100% !important;
+                height: 100% !important;
+                border-radius: 0.75rem !important;
+            }
 
-        /* Sembunyikan tulisan text bawaan qr scanner */
-        #reader__dashboard_section_csr span,
-        #reader__dashboard_section_swaplink {
-            display: none !important;
-        }
+            /* Sembunyikan tulisan text bawaan qr scanner */
+            #reader__dashboard_section_csr span,
+            #reader__dashboard_section_swaplink {
+                display: none !important;
+            }
 
-        #reader__scan_region {
-            background: transparent !important;
-        }
-    </style>
-@endpush
+            #reader__scan_region {
+                background: transparent !important;
+            }
+        </style>
+    @endpush
 
-@section('content')
-    <div class="relative min-h-[calc(100vh-140px)] flex items-center justify-center overflow-hidden px-4 py-8">
+    <div class="relative min-h-[calc(100vh-220px)] flex items-center justify-center overflow-hidden py-4 sm:py-6">
         <!-- Modern Background Glows -->
         <div class="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
             <div class="absolute -top-32 -left-32 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl"></div>
@@ -245,10 +268,8 @@
             </div>
 
             <p id="result-modal-student-name" class="text-base font-bold text-sky-600 dark:text-sky-400"></p>
-            <p id="result-modal-message" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
         </div>
     </div>
-@endsection
 
 
 @push('scripts')
@@ -811,3 +832,4 @@
         });
     </script>
 @endpush
+</x-app-layout>
