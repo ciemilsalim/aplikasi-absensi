@@ -100,21 +100,37 @@
     </div>
 
     <div id="page-content">
-        <div x-data="{ sidebarOpen: false, mobileMenuOpen: false }" class="relative h-full">
+        <div x-data="{ 
+            sidebarOpen: false, 
+            mobileMenuOpen: false,
+            sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+            toggleSidebar() {
+                this.sidebarCollapsed = !this.sidebarCollapsed;
+                localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
+            }
+        }" class="relative h-full">
 
-            <div class="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-72 lg:flex-col">
+            <div class="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:flex-col transition-all duration-300 ease-in-out"
+                 :class="sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'">
                 @include('layouts.sidebar')
             </div>
 
-            <div class="lg:pl-72">
-                <div
-                    class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+            <div class="transition-all duration-300 ease-in-out" :class="sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'">
+                <div class="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-x-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
                     <div class="flex items-center gap-2 lg:hidden">
                         <x-application-logo class="h-8 w-auto text-sky-600 dark:text-sky-500" />
                         <span class="font-bold text-lg text-slate-800 dark:text-white tracking-tight leading-tight">
                             {{ config('app.name', 'Presensi') }}
                         </span>
                     </div>
+
+                    <!-- Tombol Sakelar Ciutkan / Perluas Sidebar Desktop -->
+                    <button @click="toggleSidebar()" type="button" 
+                            class="hidden lg:flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            :title="sidebarCollapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'">
+                        <span class="material-icons text-xl" x-text="sidebarCollapsed ? 'menu_open' : 'menu'"></span>
+                    </button>
+
                     <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 justify-end">
                         @include('layouts.topbar-profile')
                     </div>
@@ -133,7 +149,7 @@
                 </main>
             </div>
 
-            <footer class="lg:pl-72">
+            <footer class="transition-all duration-300 ease-in-out" :class="sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'">
                 <div class="py-4 text-center text-xs text-slate-500 dark:text-slate-400 border-t dark:border-slate-700">
                     &copy; {{ date('Y') }} {{ config('app.name') }} v2.0.<br>
                     Dikembangkan oleh <a href="https://www.zahradev.online" target="_blank"
