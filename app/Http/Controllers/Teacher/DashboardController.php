@@ -471,6 +471,14 @@ class DashboardController extends Controller
             $attendanceSummary[$student->id] = $summary;
         }
 
+        $totalClassHadir = array_sum(array_column($attendanceSummary, 'hadir'));
+        $totalClassSakit = array_sum(array_column($attendanceSummary, 'sakit'));
+        $totalClassIzin = array_sum(array_column($attendanceSummary, 'izin'));
+        $totalClassAlpa = array_sum(array_column($attendanceSummary, 'alpa'));
+        $totalEffectiveWorkdays = $period->count();
+        $totalPossible = count($students) * $totalEffectiveWorkdays;
+        $classAvgPercent = $totalPossible > 0 ? round(($totalClassHadir / $totalPossible) * 100, 1) : 0;
+
         return view('teacher.attendance-history', compact(
             'teacher',
             'class',
@@ -479,7 +487,13 @@ class DashboardController extends Controller
             'period',
             'selectedDate',
             'attendanceSummary',
-            'selfStudyDays'
+            'selfStudyDays',
+            'totalClassHadir',
+            'totalClassSakit',
+            'totalClassIzin',
+            'totalClassAlpa',
+            'totalEffectiveWorkdays',
+            'classAvgPercent'
         ));
     }
 
