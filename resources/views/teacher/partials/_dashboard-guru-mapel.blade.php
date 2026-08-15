@@ -1,31 +1,50 @@
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Kolom Utama: Jadwal Mengajar & Grafik -->
-    <div class="lg:col-span-2 space-y-6">
-        <!-- Welcome Section -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 flex items-center gap-6">
-                <div class="flex-shrink-0">
-                    <img class="h-16 w-16 rounded-full object-cover" src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ Auth::user()->name }}">
-                </div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Kolom Utama: Jadwal Mengajar & Grafik (8 cols) -->
+    <div class="lg:col-span-8 space-y-6">
+        
+        <!-- Welcome Hero Banner -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-850 to-sky-950 text-white p-6 sm:p-7 shadow-lg border border-slate-800/80">
+            <div class="absolute -right-10 -bottom-10 w-60 h-60 rounded-full bg-sky-500/10 blur-3xl pointer-events-none"></div>
+            
+            <div class="relative z-10 flex items-center gap-4">
+                <img class="h-16 w-16 rounded-2xl object-cover ring-4 ring-white/10 bg-slate-800 shrink-0" 
+                     src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=0284c7&background=e0f2fe' }}" 
+                     alt="{{ Auth::user()->name }}">
                 <div>
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Selamat Datang di Portal Presensi Guru, {{ $teacher->name }}!</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mt-1">Kelola presensi kelas mata pelajaran Anda hari ini, {{ now()->translatedFormat('l, d F Y') }}.</p>
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/20 text-[10px] font-bold text-sky-300 border border-sky-400/20 mb-1">
+                        <span class="material-icons text-xs">menu_book</span>
+                        <span>Guru Mata Pelajaran</span>
+                    </div>
+                    <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight leading-snug">
+                        Selamat Bertugas, {{ $teacher->name }}!
+                    </h2>
+                    <p class="text-xs text-slate-300 mt-0.5">
+                        Kelola presensi per jam pelajaran dan pantau kedisiplinan siswa pada setiap sesi mengajar.
+                    </p>
                 </div>
             </div>
         </div>
 
-        <!-- Jadwal Mengajar -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg" x-data="{ activeTab: 'today' }">
-            <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <!-- Jadwal Mengajar Timeline & Tabs -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden" x-data="{ activeTab: 'today' }">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Jadwal Mengajar Anda</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Kelola dan lakukan absensi untuk kelas mengajar Anda.</p>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="material-icons text-sky-500 text-lg">calendar_today</span>
+                        Jadwal Jam Mengajar
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pilih jadwal untuk membuka sesi presensi kelas mata pelajaran</p>
                 </div>
-                <div class="flex bg-gray-100 dark:bg-slate-900 p-1 rounded-lg self-start sm:self-auto">
-                    <button @click="activeTab = 'today'" :class="activeTab === 'today' ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'" class="px-4 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 focus:outline-none">
+                
+                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl self-start sm:self-auto border border-slate-200/60 dark:border-slate-700/60">
+                    <button @click="activeTab = 'today'" 
+                            :class="activeTab === 'today' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-300 shadow-xs' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'" 
+                            class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all">
                         Hari Ini
                     </button>
-                    <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'" class="px-4 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 focus:outline-none">
+                    <button @click="activeTab = 'all'" 
+                            :class="activeTab === 'all' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-300 shadow-xs' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'" 
+                            class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all">
                         Semua Jadwal
                     </button>
                 </div>
@@ -33,83 +52,92 @@
             
             <div class="p-6">
                 <!-- Tab Jadwal Hari Ini -->
-                <div x-show="activeTab === 'today'" class="relative border-l border-gray-200 dark:border-slate-700 ml-4">
+                <div x-show="activeTab === 'today'" class="space-y-4">
                     @forelse($schedulesToday as $schedule)
-                        <div class="mb-10 ml-8">
-                            <span class="absolute flex items-center justify-center w-8 h-8 {{ now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time)) ? 'bg-green-100 dark:bg-green-900' : 'bg-sky-100 dark:bg-sky-900' }} rounded-full -left-4 ring-8 ring-white dark:ring-slate-800">
-                                <i class="fas fa-chalkboard-teacher {{ now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time)) ? 'text-green-600 dark:text-green-400' : 'text-sky-600 dark:text-sky-400' }}"></i>
-                            </span>
-                            <div class="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
-                                <time class="mb-1 text-sm font-normal leading-none text-gray-500 dark:text-gray-400">
-                                    {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
-                                </time>
-                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {{ $schedule->teachingAssignment->subject->name }}
-                                </h4>
-                                <p class="text-base font-normal text-gray-600 dark:text-gray-300">
-                                    Kelas: {{ $schedule->teachingAssignment->schoolClass->name }}
-                                </p>
-                                <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" class="inline-flex items-center px-4 py-2 mt-4 text-sm font-medium text-white bg-sky-600 rounded-lg hover:bg-sky-700 focus:ring-4 focus:outline-none focus:ring-sky-300 dark:focus:ring-sky-800">
-                                    <i class="fas fa-qrcode mr-2"></i>
-                                    Ambil Absensi
-                                </a>
+                        @php
+                            $isOngoing = now()->between(Carbon\Carbon::parse($schedule->start_time), Carbon\Carbon::parse($schedule->end_time));
+                        @endphp
+                        <div class="p-4 sm:p-5 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 {{ $isOngoing ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800 shadow-xs' : 'bg-slate-50 dark:bg-slate-850/60 border-slate-200/80 dark:border-slate-800' }}">
+                            <div class="flex items-start gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 {{ $isOngoing ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400' }}">
+                                    <span class="material-icons text-2xl">school</span>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold {{ $isOngoing ? 'bg-sky-200 dark:bg-sky-900 text-sky-800 dark:text-sky-200' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300' }}">
+                                            {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
+                                        </span>
+                                        @if($isOngoing)
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Sedang Berlangsung
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white mt-1.5">
+                                        {{ $schedule->teachingAssignment->subject->name }}
+                                    </h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        Kelas: <span class="font-semibold text-slate-700 dark:text-slate-300">{{ $schedule->teachingAssignment->schoolClass->name }}</span>
+                                    </p>
+                                </div>
                             </div>
+
+                            <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" 
+                               class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white text-xs font-bold shadow-md shadow-sky-600/25 transition-all shrink-0">
+                                <span class="material-icons text-base">qr_code_scanner</span>
+                                <span>Buka Sesi Presensi</span>
+                            </a>
                         </div>
                     @empty
-                        <div class="ml-4">
-                             <div class="text-center py-10 px-6">
-                                <i class="fas fa-calendar-check fa-3x text-gray-400 dark:text-gray-500"></i>
-                                <p class="mt-4 text-gray-600 dark:text-gray-300">Tidak ada jadwal mengajar untuk Anda hari ini.</p>
+                        <div class="text-center py-10 px-6">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center mb-2">
+                                <span class="material-icons text-2xl">event_busy</span>
                             </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Tidak ada jadwal mengajar untuk Anda hari ini.</p>
                         </div>
                     @endforelse
                 </div>
 
                 <!-- Tab Semua Jadwal -->
-                <div x-show="activeTab === 'all'" class="relative border-l border-gray-200 dark:border-slate-700 ml-4" style="display: none;">
+                <div x-show="activeTab === 'all'" class="space-y-3" style="display: none;">
                     @php
                         $dayNames = [
-                            1 => 'Senin',
-                            2 => 'Selasa',
-                            3 => 'Rabu',
-                            4 => 'Kamis',
-                            5 => 'Jumat',
-                            6 => 'Sabtu',
-                            7 => 'Minggu',
+                            1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu',
                         ];
                     @endphp
                     @forelse($allSchedules as $schedule)
-                        <div class="mb-10 ml-8">
-                            <span class="absolute flex items-center justify-center w-8 h-8 bg-slate-100 dark:bg-slate-700 rounded-full -left-4 ring-8 ring-white dark:ring-slate-800">
-                                <i class="fas fa-calendar text-slate-500 dark:text-slate-300"></i>
-                            </span>
-                            <div class="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
-                                <div class="flex flex-wrap items-center gap-2 mb-1">
-                                    <span class="px-2 py-0.5 text-xs font-semibold text-sky-700 bg-sky-50 dark:bg-sky-950/40 dark:text-sky-300 rounded border border-sky-100 dark:border-sky-900/30">
-                                        {{ $dayNames[$schedule->day_of_week] ?? 'Hari Lain' }}
-                                    </span>
-                                    <time class="text-sm font-normal leading-none text-gray-500 dark:text-gray-400">
-                                        {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
-                                    </time>
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center shrink-0">
+                                    <span class="material-icons text-xl">event_note</span>
                                 </div>
-                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {{ $schedule->teachingAssignment->subject->name }}
-                                </h4>
-                                <p class="text-base font-normal text-gray-600 dark:text-gray-300">
-                                    Kelas: {{ $schedule->teachingAssignment->schoolClass->name }}
-                                </p>
-                                <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" class="inline-flex items-center px-4 py-2 mt-4 text-sm font-medium text-white bg-sky-600 rounded-lg hover:bg-sky-700 focus:ring-4 focus:outline-none focus:ring-sky-300 dark:focus:ring-sky-800">
-                                    <i class="fas fa-qrcode mr-2"></i>
-                                    Ambil Absensi
-                                </a>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300">
+                                            {{ $dayNames[$schedule->day_of_week] ?? 'Hari Lain' }}
+                                        </span>
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                                            {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}
+                                        </span>
+                                    </div>
+                                    <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-1">
+                                        {{ $schedule->teachingAssignment->subject->name }} — <span class="font-normal text-slate-500 dark:text-slate-400">{{ $schedule->teachingAssignment->schoolClass->name }}</span>
+                                    </h4>
+                                </div>
                             </div>
+
+                            <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" 
+                               class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-bold transition-all shrink-0">
+                                <span class="material-icons text-sm text-sky-500">qr_code_2</span>
+                                <span>Buka Presensi</span>
+                            </a>
                         </div>
                     @empty
-                        <div class="ml-4">
-                             <div class="text-center py-10 px-6">
-                                <i class="fas fa-calendar-times fa-3x text-gray-400 dark:text-gray-500"></i>
-                                <p class="mt-4 text-gray-600 dark:text-gray-300">Anda belum memiliki jadwal mengajar terdaftar.</p>
+                        <div class="text-center py-10 px-6">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center mb-2">
+                                <span class="material-icons text-2xl">event_busy</span>
                             </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Anda belum memiliki jadwal mengajar terdaftar.</p>
                         </div>
                     @endforelse
                 </div>
@@ -117,85 +145,125 @@
         </div>
 
         <!-- Performa Kehadiran per Kelas -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Performa Kehadiran per Kelas</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Rata-rata kehadiran dalam 30 hari terakhir.</p>
-                <div class="h-64">
-                    <canvas id="classPerformanceChart"></canvas>
-                </div>
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-800">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1">
+                <span class="material-icons text-sky-500 text-lg">bar_chart</span>
+                Performa Kehadiran per Kelas
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Rata-rata persentase kehadiran mapel Anda dalam 30 hari terakhir</p>
+            <div class="h-64 w-full">
+                <canvas id="classPerformanceChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Kolom Samping -->
-    <div class="lg:col-span-1 space-y-6">
-        <!-- PANEL BARU: Catatan Pribadi -->
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+    <!-- Kolom Samping (4 cols) -->
+    <div class="lg:col-span-4 space-y-6">
+        
+        <!-- Catatan Pribadi -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
             <form id="note-form" action="{{ route('teacher.notes.update') }}" method="POST">
                 @csrf
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Catatan Pribadi</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Catatan ini hanya terlihat oleh Anda.</p>
-                    <textarea id="teacher-note-content" name="content" rows="6" class="w-full border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 focus:border-sky-500 focus:ring-sky-500 rounded-md shadow-sm" placeholder="Tulis pengingat atau catatan penting di sini...">{{ $teacherNote->content ?? '' }}</textarea>
-                    <div id="note-status" class="text-xs text-green-600 dark:text-green-400 mt-2 h-4 opacity-0 transition-opacity duration-300">
-                        Catatan disimpan!
+                <div class="p-5">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span class="material-icons text-amber-500 text-lg">edit_note</span>
+                            Catatan Pribadi Guru
+                        </h3>
+                        <div id="note-status" class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 opacity-0 transition-opacity">
+                            Tersimpan
+                        </div>
                     </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">Hanya terlihat oleh Anda (tersimpan otomatis)</p>
+                    
+                    <textarea id="teacher-note-content" name="content" rows="5" 
+                              class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 rounded-2xl text-xs p-3 transition-all" 
+                              placeholder="Tulis pengingat tugas, materi, atau catatan kelas di sini...">{{ $teacherNote->content ?? '' }}</textarea>
                 </div>
             </form>
         </div>
 
+        <!-- Ringkasan Absensi Terakhir -->
         @if($lastAttendanceSummary)
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 border-b border-gray-200 dark:border-slate-700">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Absensi Terakhir</h3>
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-icons text-sky-500 text-lg">history</span>
+                    Presensi Sesi Terakhir
+                </h3>
             </div>
-            <div class="p-6 space-y-3">
+            <div class="p-5 space-y-3">
                 <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Sesi terakhir Anda:</p>
-                    <p class="font-bold text-lg text-sky-600 dark:text-sky-400">{{ $lastAttendanceSummary['schedule']->teachingAssignment->subject->name }}</p>
-                    <p class="text-gray-700 dark:text-gray-300">Kelas {{ $lastAttendanceSummary['schedule']->teachingAssignment->schoolClass->name }}</p>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran & Kelas</span>
+                    <h4 class="font-bold text-sm text-sky-600 dark:text-sky-400">{{ $lastAttendanceSummary['schedule']->teachingAssignment->subject->name }}</h4>
+                    <p class="text-xs text-slate-600 dark:text-slate-400">Kelas {{ $lastAttendanceSummary['schedule']->teachingAssignment->schoolClass->name }}</p>
                 </div>
-                <div class="border-t border-gray-200 dark:border-slate-700 pt-3">
-                    <div class="grid grid-cols-3 gap-2 text-center">
-                        <div class="bg-green-50 dark:bg-green-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-green-700 dark:text-green-400">{{ $lastAttendanceSummary['hadir'] }}</span><p class="text-xs text-green-600 dark:text-green-500">Hadir</p></div>
-                        <div class="bg-yellow-50 dark:bg-yellow-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-yellow-700 dark:text-yellow-400">{{ $lastAttendanceSummary['sakit'] }}</span><p class="text-xs text-yellow-600 dark:text-yellow-500">Sakit</p></div>
-                        <div class="bg-blue-50 dark:bg-blue-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-blue-700 dark:text-blue-400">{{ $lastAttendanceSummary['izin'] }}</span><p class="text-xs text-blue-600 dark:text-blue-500">Izin</p></div>
-                        <div class="bg-red-50 dark:bg-red-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-red-700 dark:text-red-400">{{ $lastAttendanceSummary['alpa'] }}</span><p class="text-xs text-red-600 dark:text-red-500">Alpa</p></div>
-                        <div class="bg-orange-50 dark:bg-orange-900/50 p-2 rounded-lg"><span class="font-bold text-lg text-orange-700 dark:text-orange-400">{{ $lastAttendanceSummary['bolos'] }}</span><p class="text-xs text-orange-600 dark:text-orange-500">Bolos</p></div>
+                
+                <div class="grid grid-cols-5 gap-1.5 pt-2 text-center">
+                    <div class="bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+                        <span class="font-extrabold text-xs text-emerald-700 dark:text-emerald-300 block">{{ $lastAttendanceSummary['hadir'] }}</span>
+                        <span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">Hadir</span>
+                    </div>
+                    <div class="bg-amber-50 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-100 dark:border-amber-900/40">
+                        <span class="font-extrabold text-xs text-amber-700 dark:text-amber-300 block">{{ $lastAttendanceSummary['sakit'] }}</span>
+                        <span class="text-[9px] font-bold text-amber-600 dark:text-amber-400">Sakit</span>
+                    </div>
+                    <div class="bg-purple-50 dark:bg-purple-950/40 p-2 rounded-xl border border-purple-100 dark:border-purple-900/40">
+                        <span class="font-extrabold text-xs text-purple-700 dark:text-purple-300 block">{{ $lastAttendanceSummary['izin'] }}</span>
+                        <span class="text-[9px] font-bold text-purple-600 dark:text-purple-400">Izin</span>
+                    </div>
+                    <div class="bg-red-50 dark:bg-red-950/40 p-2 rounded-xl border border-red-100 dark:border-red-900/40">
+                        <span class="font-extrabold text-xs text-red-700 dark:text-red-300 block">{{ $lastAttendanceSummary['alpa'] }}</span>
+                        <span class="text-[9px] font-bold text-red-600 dark:text-red-400">Alpa</span>
+                    </div>
+                    <div class="bg-orange-50 dark:bg-orange-950/40 p-2 rounded-xl border border-orange-100 dark:border-orange-900/40">
+                        <span class="font-extrabold text-xs text-orange-700 dark:text-orange-300 block">{{ $lastAttendanceSummary['bolos'] }}</span>
+                        <span class="text-[9px] font-bold text-orange-600 dark:text-orange-400">Bolos</span>
                     </div>
                 </div>
             </div>
         </div>
         @endif
         
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 border-b border-gray-200 dark:border-slate-700">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Siswa Butuh Perhatian</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Berdasarkan absensi semester ini.</p>
+        <!-- Siswa Butuh Perhatian (Mapel) -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-icons text-rose-500 text-lg">priority_high</span>
+                    Siswa Butuh Perhatian
+                </h3>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Berdasarkan ketidakhadiran di mapel Anda semester ini</p>
             </div>
-            <div class="p-6">
-                <ul class="divide-y divide-gray-200 dark:divide-slate-700">
-                    {{-- PERBAIKAN: Menggunakan variabel $studentsForAttentionMapel --}}
-                    @forelse($studentsForAttentionMapel as $data)
-                        @if($data->student)
-                        <li class="py-3 flex justify-between items-center">
-                            <div>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200">{{ $data->student->name }}</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $data->student->schoolClass->name ?? '' }}</p>
-                            </div>
-                            <div class="text-right flex-shrink-0">
-                                @if($data->alpa_count > 0)<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Alpa: {{ $data->alpa_count }}</span>@endif
-                                @if($data->bolos_count > 0)<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 ml-2">Bolos: {{ $data->bolos_count }}</span>@endif
-                            </div>
-                        </li>
-                        @endif
-                    @empty
-                        <li class="py-10 text-center text-gray-500 dark:text-gray-400"><i class="fas fa-user-check text-3xl text-gray-300 dark:text-gray-600"></i><p class="mt-3">Tidak ada siswa yang perlu perhatian khusus.</p></li>
-                    @endforelse
-                </ul>
+            <div class="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-60 overflow-y-auto no-scrollbar">
+                @forelse($studentsForAttentionMapel as $data)
+                    @if($data->student)
+                    <div class="p-3.5 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
+                        <div>
+                            <p class="font-bold text-xs text-slate-800 dark:text-white">{{ $data->student->name }}</p>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ $data->student->schoolClass->name ?? '' }}</p>
+                        </div>
+                        <div class="text-right flex items-center gap-1.5 shrink-0">
+                            @if($data->alpa_count > 0)
+                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300">
+                                    Alpa: {{ $data->alpa_count }}
+                                </span>
+                            @endif
+                            @if($data->bolos_count > 0)
+                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                                    Bolos: {{ $data->bolos_count }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+                @empty
+                    <div class="p-6 text-center text-xs text-slate-400 italic">
+                        Tidak ada siswa yang perlu perhatian khusus.
+                    </div>
+                @endforelse
             </div>
         </div>
+
     </div>
 </div>
 
@@ -215,9 +283,11 @@
                 datasets: [{
                     label: 'Kehadiran Rata-rata (%)',
                     data: data,
-                    backgroundColor: 'rgba(14, 165, 233, 0.5)',
-                    borderColor: 'rgba(14, 165, 233, 1)',
-                    borderWidth: 1
+                    backgroundColor: isDarkMode ? 'rgba(56, 189, 248, 0.7)' : 'rgba(2, 132, 199, 0.75)',
+                    hoverBackgroundColor: isDarkMode ? 'rgba(56, 189, 248, 0.95)' : 'rgba(2, 132, 199, 0.95)',
+                    borderWidth: 0,
+                    borderRadius: 6,
+                    maxBarThickness: 28
                 }]
             },
             options: {
@@ -228,40 +298,51 @@
                     x: {
                         beginAtZero: true,
                         max: 100,
-                        ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' },
-                        grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
+                        ticks: { 
+                            callback: (v) => v + '%',
+                            color: isDarkMode ? '#94a3b8' : '#64748b',
+                            font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
+                        },
+                        grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' }
                     },
                     y: {
-                         ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' },
+                         ticks: { 
+                             color: isDarkMode ? '#94a3b8' : '#64748b',
+                             font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
+                         },
                          grid: { display: false }
                     }
                 },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: isDarkMode ? '#1e293b' : '#0f172a',
+                        titleFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12, weight: 'bold' },
+                        bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12 },
+                        padding: 12,
+                        cornerRadius: 12,
                         callbacks: {
-                            label: (context) => ' Kehadiran: ' + context.parsed.x + '%'
+                            label: (context) => ' Kehadiran Rata-rata: ' + context.parsed.x + '%'
                         }
                     }
                 }
             }
         });
 
-        // --- JAVASCRIPT BARU UNTUK CATATAN PRIBADI ---
+        // Auto-save teacher notes logic
         const noteForm = document.getElementById('note-form');
         const noteContent = document.getElementById('teacher-note-content');
         const noteStatus = document.getElementById('note-status');
         let saveTimeout;
 
-        noteContent.addEventListener('input', () => {
-            // Hapus timeout yang ada jika pengguna mengetik lagi
-            clearTimeout(saveTimeout);
-            
-            // Atur timeout baru untuk menyimpan setelah 1.5 detik tidak ada ketikan
-            saveTimeout = setTimeout(() => {
-                saveNote();
-            }, 1500);
-        });
+        if (noteContent) {
+            noteContent.addEventListener('input', () => {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    saveNote();
+                }, 1500);
+            });
+        }
 
         function saveNote() {
             const formData = new FormData(noteForm);
@@ -277,12 +358,10 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Tampilkan pesan "Tersimpan"
-                    noteStatus.textContent = 'Catatan disimpan!';
-                    noteStatus.classList.remove('text-red-600');
-                    noteStatus.classList.add('text-green-600');
+                    noteStatus.textContent = 'Tersimpan!';
+                    noteStatus.classList.remove('text-rose-600');
+                    noteStatus.classList.add('text-emerald-600');
                     noteStatus.style.opacity = '1';
-                    // Sembunyikan lagi setelah 2 detik
                     setTimeout(() => {
                         noteStatus.style.opacity = '0';
                     }, 2000);
@@ -291,11 +370,12 @@
             .catch(error => {
                 console.error('Error:', error);
                 noteStatus.textContent = 'Gagal menyimpan.';
-                noteStatus.classList.remove('text-green-600');
-                noteStatus.classList.add('text-red-600');
+                noteStatus.classList.remove('text-emerald-600');
+                noteStatus.classList.add('text-rose-600');
                 noteStatus.style.opacity = '1';
             });
         }
     });
 </script>
 @endpush
+

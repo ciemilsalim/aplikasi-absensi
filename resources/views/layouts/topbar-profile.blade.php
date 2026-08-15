@@ -1,4 +1,3 @@
-{{-- PERBAIKAN: Menambahkan state 'showLogoutConfirm' untuk modal --}}
 <div x-data="{
     darkMode: localStorage.getItem('darkMode') === 'on' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
     toggleDarkMode() {
@@ -12,106 +11,151 @@
         }
     },
     showLogoutConfirm: false
-}" @keydown.escape.window="showLogoutConfirm = false" class="flex items-center gap-x-4 lg:gap-x-6">
+}" @keydown.escape.window="showLogoutConfirm = false" class="flex items-center gap-x-2 sm:gap-x-3.5">
     
-    {{-- Tombol Notifikasi & Dark Mode --}}
-    <div class="flex items-center gap-x-2">
-        {{-- Notifikasi untuk Admin --}}
-        @if(auth()->user()->role === 'admin')
-            <a href="{{ route('admin.leave_requests.index') }}" class="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" title="Pengajuan Izin">
-                <span class="sr-only">Lihat notifikasi pengajuan izin</span>
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                </svg>
-                {{-- Variabel dari LogoServiceProvider --}}
-                @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
-                <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">{{ $pendingLeaveRequestsCount }}</span>
-                @endif
-            </a>
-            <a href="{{ route('admin.chat.index') }}" class="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" title="Pesan Ortu">
-                <span class="sr-only">Lihat notifikasi obrolan</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.397 48.397 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>
-                {{-- Variabel dari LogoServiceProvider --}}
-                @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
-                <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">{{ $totalUnreadMessagesCount }}</span>
-                @endif
-            </a>
-            <button @click="toggleDarkMode()" type="button" class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
-                <span class="sr-only">Ganti Tema</span>
-                <svg x-show="!darkMode" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>
-                <svg x-show="darkMode" style="display: none;" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.95-4.223-1.591 1.591M5.25 12H3m4.223-4.95L6.343 6.343M12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z" /></svg>
-            </button>
-        @endif
-        
-        {{-- Notifikasi untuk Guru (Wali Kelas) & Ortu --}}
-        @if(auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass || auth()->user()->role === 'parent')
-            
-            {{-- IKON UNTUK ORANG TUA: Membuat pengajuan izin --}}
-            @if(auth()->user()->role === 'parent')
-            <a href="{{ route('parent.leave-requests.create') }}" class="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" title="Buat Pengajuan Izin">
-                <span class="sr-only">Buat Pengajuan Izin</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
-            </a>
-            @endif
-
-            {{-- IKON UNTUK GURU WALI KELAS: Melihat pengajuan izin --}}
-            @if(auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass)
-            <a href="{{ route('teacher.leave_requests.index') }}" class="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" title="Pengajuan Izin Masuk">
-                <span class="sr-only">Lihat notifikasi pengajuan izin</span>
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                </svg>
-                {{-- MENGGUNAKAN VARIABEL YANG BENAR DARI LogoServiceProvider --}}
-                @if(isset($teacherPendingLeaveRequestsCount) && $teacherPendingLeaveRequestsCount > 0)
-                <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">{{ $teacherPendingLeaveRequestsCount }}</span>
-                @endif
-            </a>
-            @endif
-
-            {{-- IKON OBROLAN (Chat) --}}
-            <a href="{{ route('chat.index') }}" class="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" title="Obrolan">
-                <span class="sr-only">Lihat notifikasi obrolan</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.397 48.397 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>
-                {{-- Variabel dari LogoServiceProvider --}}
-                @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
-                <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">{{ $totalUnreadMessagesCount }}</span>
-                @endif
-            </a>
-        @endif
-    </div>
-    
-    {{-- Global Academic Period Switcher --}}
+    {{-- Global Academic Period Pill Switcher --}}
     @if(isset($globalSemesters) && $globalSemesters->count() > 0)
     <div class="hidden sm:flex items-center">
         <form action="{{ route('set-academic-period') }}" method="POST" id="global-switcher-form" class="m-0">
             @csrf
-            <select name="semester_id" onchange="document.getElementById('global-switcher-form').submit()" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-xs sm:leading-6 dark:bg-slate-800 dark:text-white dark:ring-slate-600 font-medium">
-                @foreach($globalSemesters as $semester)
-                    <option value="{{ $semester->id }}" {{ (isset($globalActiveSemesterId) && $globalActiveSemesterId == $semester->id) ? 'selected' : '' }}>
-                        TA. {{ $semester->academicYear->name ?? '' }} - {{ $semester->name }}
-                    </option>
-                @endforeach
-            </select>
+            <div class="relative flex items-center">
+                <span class="material-icons absolute left-2.5 text-slate-400 dark:text-slate-500 text-sm pointer-events-none">event_note</span>
+                <select name="semester_id" onchange="document.getElementById('global-switcher-form').submit()" 
+                        class="block w-full rounded-xl border border-slate-200 dark:border-slate-700/80 py-1.5 pl-8 pr-7 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all cursor-pointer shadow-2xs">
+                    @foreach($globalSemesters as $semester)
+                        <option value="{{ $semester->id }}" {{ (isset($globalActiveSemesterId) && $globalActiveSemesterId == $semester->id) ? 'selected' : '' }}>
+                            TA. {{ $semester->academicYear->name ?? '' }} - {{ $semester->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
         </form>
     </div>
     @endif
 
+    {{-- Action & Notification Icon Buttons --}}
+    <div class="flex items-center gap-x-1 sm:gap-x-1.5">
+        
+        {{-- Notifications for Admin / Staff --}}
+        @if(auth()->user()->role === 'admin')
+            <a href="{{ route('admin.leave_requests.index') }}" 
+               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               title="Persetujuan Izin Siswa">
+                <span class="material-icons text-xl">assignment_turned_in</span>
+                @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
+                    <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold shadow-xs animate-pulse">{{ $pendingLeaveRequestsCount }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('admin.chat.index') }}" 
+               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               title="Pesan Orang Tua">
+                <span class="material-icons text-xl">chat</span>
+                @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
+                    <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold shadow-xs">{{ $totalUnreadMessagesCount }}</span>
+                @endif
+            </a>
+        @endif
+        
+        {{-- Notifications for Teacher & Parent --}}
+        @if(auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass || auth()->user()->role === 'parent')
+            
+            {{-- Quick Create Leave Request (Parent) --}}
+            @if(auth()->user()->role === 'parent')
+            <a href="{{ route('parent.leave-requests.create') }}" 
+               class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200/60 dark:border-amber-900/40 text-xs font-bold transition-all shadow-2xs" 
+               title="Buat Pengajuan Izin Baru">
+                <span class="material-icons text-base text-amber-600 dark:text-amber-400">add_circle_outline</span>
+                <span>Izin / Sakit</span>
+            </a>
+            @endif
+
+            {{-- Homeroom Teacher Leave Approvals --}}
+            @if(auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass)
+            <a href="{{ route('teacher.leave_requests.index') }}" 
+               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               title="Pengajuan Izin Masuk">
+                <span class="material-icons text-xl">assignment_turned_in</span>
+                @if(isset($teacherPendingLeaveRequestsCount) && $teacherPendingLeaveRequestsCount > 0)
+                    <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold shadow-xs animate-pulse">{{ $teacherPendingLeaveRequestsCount }}</span>
+                @endif
+            </a>
+            @endif
+
+            {{-- Chat Notification --}}
+            <a href="{{ route('chat.index') }}" 
+               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               title="Obrolan">
+                <span class="material-icons text-xl">chat</span>
+                @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
+                    <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold shadow-xs">{{ $totalUnreadMessagesCount }}</span>
+                @endif
+            </a>
+        @endif
+
+        {{-- Dark Mode Toggle Button --}}
+        <button @click="toggleDarkMode()" type="button" 
+                class="inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                title="Ganti Mode Terang / Gelap">
+            <span class="sr-only">Ganti Tema</span>
+            <span x-show="!darkMode" class="material-icons text-xl text-amber-500">dark_mode</span>
+            <span x-show="darkMode" style="display: none;" class="material-icons text-xl text-sky-400">light_mode</span>
+        </button>
+    </div>
+    
+    <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
+
+    {{-- User Profile Pill Trigger & Dropdown --}}
     @auth
         <div x-data="{ open: false }" class="relative">
-            <button @click="open = !open" class="-m-1.5 flex items-center p-1.5">
-                <!-- GANTI DARI SVG KE IMG UNTUK FOTO PROFIL -->
-                <img class="h-8 w-8 rounded-full object-cover bg-slate-200 dark:bg-slate-700" src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ Auth::user()->name }}">
+            <button @click="open = !open" 
+                    class="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                <div class="relative">
+                    <img class="h-8 w-8 rounded-full object-cover ring-2 ring-sky-500/20 bg-slate-200 dark:bg-slate-700" 
+                         src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=0284c7&background=e0f2fe' }}" 
+                         alt="{{ Auth::user()->name }}">
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"></span>
+                </div>
 
-                <span class="hidden lg:flex lg:items-center">
-                    <span class="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-white" aria-hidden="true">{{ Auth::user()->name }}</span>
-                    <svg class="ml-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
-                </span>
+                <div class="hidden md:flex flex-col text-left leading-tight">
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate max-w-[120px]">{{ Auth::user()->name }}</span>
+                    <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400 capitalize">{{ Auth::user()->role }}</span>
+                </div>
+                
+                <span class="material-icons text-slate-400 text-base hidden sm:inline-block transition-transform duration-200" :class="{ 'rotate-180': open }">expand_more</span>
             </button>
-            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 z-10 mt-2.5 w-48 origin-top-right rounded-md bg-white dark:bg-slate-700 py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none" style="display: none;">
-                <a href="{{ route('profile.edit') }}" class="block px-3 py-1 text-sm leading-6 text-gray-900 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-600">Profil Anda</a>
-                <a href="#" @click.prevent="showLogoutConfirm = true" class="block px-3 py-1 text-sm leading-6 text-gray-900 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-600">Log out</a>
+
+            <!-- Dropdown Menu -->
+            <div x-show="open" @click.away="open = false" x-transition 
+                 class="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-2xl bg-white dark:bg-slate-850 p-2 shadow-xl ring-1 ring-slate-900/10 dark:ring-slate-800 focus:outline-none border border-slate-100 dark:border-slate-800" 
+                 style="display: none;">
+                
+                <div class="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800 mb-1">
+                    <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ Auth::user()->name }}</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ Auth::user()->email }}</p>
+                </div>
+
+                <div class="space-y-0.5">
+                    <a href="{{ route('profile.edit') }}" 
+                       class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <span class="material-icons text-base text-slate-400">manage_accounts</span>
+                        Profil & Akun
+                    </a>
+
+                    @if(auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.settings.appearance') }}" 
+                           class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                            <span class="material-icons text-base text-slate-400">palette</span>
+                            Tema & Logo
+                        </a>
+                    @endif
+
+                    <a href="#" @click.prevent="open = false; showLogoutConfirm = true" 
+                       class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors">
+                        <span class="material-icons text-base text-rose-500">logout</span>
+                        Keluar
+                    </a>
+                </div>
             </div>
         </div>
     @endauth
@@ -121,28 +165,57 @@
         @csrf
     </form>
 
-    {{-- Modal Konfirmasi Logout --}}
-    <div x-show="showLogoutConfirm" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" style="display: none;">
-        <div @click.away="showLogoutConfirm = false" x-show="showLogoutConfirm" x-transition class="w-full max-w-md p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
-            <div class="text-center">
-                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
+    {{-- Modal Konfirmasi Logout (Teleported to body for precise full-screen centering) --}}
+    <template x-teleport="body">
+        <div x-show="showLogoutConfirm" 
+             x-cloak
+             style="display: none;" 
+             class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            
+            <!-- Backdrop Overlay -->
+            <div class="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity" 
+                 x-show="showLogoutConfirm"
+                 x-transition:enter="ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @click="showLogoutConfirm = false"></div>
+
+            <!-- Modal Content Box -->
+            <div @click.away="showLogoutConfirm = false" 
+                 x-show="showLogoutConfirm" 
+                 x-transition:enter="ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                 class="relative w-full max-w-sm p-6 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 text-center z-10 transform transition-all">
+                
+                <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 mb-4 ring-8 ring-rose-500/10">
+                    <span class="material-icons text-3xl">logout</span>
                 </div>
-                <h3 class="mt-5 text-lg font-medium text-gray-900 dark:text-white">Konfirmasi Log Out</h3>
-                <div class="mt-2">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Apakah Anda yakin ingin keluar dari sesi ini?
-                    </p>
+                
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Konfirmasi Keluar</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                    Apakah Anda yakin ingin mengakhiri sesi login ini?
+                </p>
+
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    <button type="button" @click="showLogoutConfirm = false" 
+                            class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" @click="$refs.logoutForm.submit()" 
+                            class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/25 transition-all active:scale-95">
+                        Ya, Keluar
+                    </button>
                 </div>
-            </div>
-            <div class="mt-6 flex justify-center gap-4">
-                <x-secondary-button @click="showLogoutConfirm = false">
-                    Batal
-                </x-secondary-button>
-                <x-danger-button @click="$refs.logoutForm.submit()">
-                    Ya, Log Out
-                </x-danger-button>
             </div>
         </div>
-    </div>
+    </template>
 </div>
+
+

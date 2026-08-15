@@ -1,95 +1,212 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-breadcrumb :breadcrumbs="[
-            ['title' => 'Pengajuan Izin', 'url' => route('admin.leave_requests.index')]
-        ]" class="mb-4" />
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Manajemen Pengajuan Izin & Sakit') }}
-        </h2>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+            <div>
+                <x-breadcrumb :breadcrumbs="[
+                    ['title' => 'Pengajuan Izin', 'url' => route('admin.leave_requests.index')]
+                ]" />
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
+                    Persetujuan Izin & Sakit Siswa
+                </h1>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 text-xs font-bold text-amber-700 dark:text-amber-300">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 {{ $pendingRequests->count() > 0 ? 'animate-ping' : '' }}"></span>
+                    <span>{{ $pendingRequests->count() }} Perlu Diproses</span>
+                </span>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6">
 
-            <!-- Bagian Pengajuan yang Perlu Diproses -->
-            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h3 class="text-lg font-medium mb-6">Pengajuan Perlu Diproses ({{ $pendingRequests->count() }})</h3>
-                    
-                    @if (session('success'))
-                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert"><p>{{ session('success') }}</p></div>
-                    @endif
-                    @if (session('error'))
-                         <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert"><p>{{ session('error') }}</p></div>
-                    @endif
+        @if (session('success'))
+            <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2" role="alert">
+                <span class="material-icons text-base">check_circle</span>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-center gap-2" role="alert">
+                <span class="material-icons text-base">error_outline</span>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
 
-                    <div class="relative overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3">Siswa</th>
-                                    <th scope="col" class="px-6 py-3">Tanggal</th>
-                                    <th scope="col" class="px-6 py-3">Detail</th>
-                                    <th scope="col" class="px-6 py-3 text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($pendingRequests as $request)
-                                <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600">
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $request->student->name }} <br><span class="text-xs text-gray-500">Kelas: {{ $request->student->schoolClass->name ?? '-' }}</span></td>
-                                    <td class="px-6 py-4">{{ $request->start_date->format('d M Y') }} - {{ $request->end_date->format('d M Y') }}</td>
-                                    <td class="px-6 py-4"><p class="font-semibold capitalize">{{ $request->type }}</p><p class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{{ $request->reason }}</p>@if($request->attachment)<a href="{{ asset('storage/' . $request->attachment) }}" target="_blank" class="text-xs text-sky-600 hover:underline">Lihat Lampiran</a>@endif</td>
-                                    {{-- PERBAIKAN: Menambahkan 'relative' agar pop-up Tolak berada di posisi yang benar --}}
-                                    <td class="px-6 py-4 relative">
-                                        <div class="flex items-center justify-center gap-2" x-data="{ showRejectForm: false }">
-                                            <form action="{{ route('admin.leave_requests.approve', $request) }}" method="POST" onsubmit="return confirm('Anda yakin ingin menyetujui pengajuan ini?');">@csrf<button type="submit" class="font-medium text-green-600 dark:text-green-500 hover:underline">Setujui</button></form>
-                                            <button @click="showRejectForm = !showRejectForm" class="font-medium text-red-600 dark:text-red-500 hover:underline">Tolak</button>
-                                            <div x-show="showRejectForm" @click.away="showRejectForm = false" class="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-700 p-4 rounded-lg shadow-lg border dark:border-slate-600 z-10" style="display: none;"><form action="{{ route('admin.leave_requests.reject', $request) }}" method="POST">@csrf<label for="rejection_reason_{{ $request->id }}" class="text-sm font-medium">Alasan Penolakan</label><x-text-input type="text" name="rejection_reason" id="rejection_reason_{{ $request->id }}" class="w-full mt-1 text-sm" required/><div class="flex justify-end gap-2 mt-2"><button type="button" @click="showRejectForm = false" class="text-xs">Batal</button><x-primary-button type="submit" class="!py-1 !px-2 !text-xs">Kirim</x-primary-button></div></form></div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr><td colspan="4" class="px-6 py-4 text-center">Tidak ada pengajuan yang perlu diproses.</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+        <!-- 1. Bagian Pengajuan yang Perlu Diproses -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="material-icons text-amber-500 text-lg">pending_actions</span>
+                        Pengajuan Menunggu Persetujuan
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tinjau dan proses permohonan izin dari orang tua siswa</p>
                 </div>
             </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-600 dark:text-slate-300">
+                    <thead class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/75 dark:bg-slate-850/50 border-b border-slate-100 dark:border-slate-800">
+                        <tr>
+                            <th scope="col" class="px-6 py-3.5">Siswa & Kelas</th>
+                            <th scope="col" class="px-6 py-3.5">Rentang Tanggal</th>
+                            <th scope="col" class="px-6 py-3.5">Keterangan & Bukti</th>
+                            <th scope="col" class="px-6 py-3.5 text-center">Keputusan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        @forelse ($pendingRequests as $request)
+                        <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-300 font-bold flex items-center justify-center shrink-0 border border-sky-100 dark:border-sky-900/40">
+                                        {{ strtoupper(substr($request->student->name, 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{{ $request->student->name }}</p>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Kelas: <span class="font-semibold text-slate-700 dark:text-slate-300">{{ $request->student->schoolClass->name ?? '-' }}</span></p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                                    <span class="material-icons text-xs text-slate-400">date_range</span>
+                                    <span>{{ $request->start_date->format('d M Y') }} - {{ $request->end_date->format('d M Y') }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase {{ $request->type == 'sakit' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300' }}">
+                                        {{ $request->type }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 max-w-sm">{{ $request->reason }}</p>
+                                @if($request->attachment)
+                                    <a href="{{ asset('storage/' . $request->attachment) }}" target="_blank" 
+                                       class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline mt-1.5">
+                                        <span class="material-icons text-xs">attachment</span>
+                                        <span>Lihat Dokumen / Surat Dokter</span>
+                                    </a>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 relative text-center">
+                                <div class="flex items-center justify-center gap-2" x-data="{ showRejectForm: false }">
+                                    <form action="{{ route('admin.leave_requests.approve', $request) }}" method="POST" onsubmit="return confirm('Anda yakin ingin menyetujui pengajuan izin ini?');">
+                                        @csrf
+                                        <button type="submit" 
+                                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs transition-all active:scale-95">
+                                            <span class="material-icons text-sm">check</span>
+                                            <span>Setujui</span>
+                                        </button>
+                                    </form>
+                                    
+                                    <button @click="showRejectForm = !showRejectForm" 
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-900/40 text-xs font-bold transition-all active:scale-95">
+                                        <span class="material-icons text-sm">close</span>
+                                        <span>Tolak</span>
+                                    </button>
 
-            <!-- Bagian Riwayat Pengajuan -->
-             <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h3 class="text-lg font-medium mb-6">Riwayat Pengajuan</h3>
-                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-700 dark:text-gray-400">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3">Siswa</th>
-                                    <th scope="col" class="px-6 py-3">Tanggal</th>
-                                    <th scope="col" class="px-6 py-3">Status</th>
-                                    <th scope="col" class="px-6 py-3">Diproses Oleh</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($processedRequests as $request)
-                                <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700">
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $request->student->name }}</td>
-                                    <td class="px-6 py-4">{{ $request->start_date->format('d M Y') }}</td>
-                                    <td class="px-6 py-4">
-                                        @if ($request->status == 'approved')<span class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">Disetujui</span>@elseif ($request->status == 'rejected')<span class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">Ditolak</span>@endif
-                                    </td>
-                                    <td class="px-6 py-4">{{ $request->approver->name ?? '-' }}</td>
-                                </tr>
-                                @empty
-                                <tr><td colspan="4" class="px-6 py-4 text-center">Belum ada riwayat pengajuan.</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">{{ $processedRequests->links() }}</div>
-                </div>
+                                    <!-- Rejection Form Popup -->
+                                    <div x-show="showRejectForm" @click.away="showRejectForm = false" 
+                                         class="absolute right-6 top-12 w-72 bg-white dark:bg-slate-850 p-4 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-30 text-left" 
+                                         style="display: none;" x-transition>
+                                        <form action="{{ route('admin.leave_requests.reject', $request) }}" method="POST">
+                                            @csrf
+                                            <label for="rejection_reason_{{ $request->id }}" class="text-xs font-bold text-slate-800 dark:text-white block mb-1">
+                                                Alasan Penolakan
+                                            </label>
+                                            <input type="text" name="rejection_reason" id="rejection_reason_{{ $request->id }}" 
+                                                   class="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500" 
+                                                   placeholder="Tulis alasan singkat..." required />
+                                            <div class="flex justify-end gap-2 mt-3">
+                                                <button type="button" @click="showRejectForm = false" 
+                                                        class="px-2.5 py-1 text-xs font-bold text-slate-500 hover:text-slate-700">
+                                                    Batal
+                                                </button>
+                                                <button type="submit" 
+                                                        class="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-xs">
+                                                    Kirim Tolak
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-10 text-center text-xs text-slate-400 italic">
+                                Tidak ada pengajuan izin yang sedang menunggu proses saat ini.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
+        </div>
+
+        <!-- 2. Bagian Riwayat Pengajuan Selesai -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-icons text-sky-500 text-lg">history</span>
+                    Riwayat Keputusan Izin
+                </h3>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-600 dark:text-slate-300">
+                    <thead class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/75 dark:bg-slate-850/50 border-b border-slate-100 dark:border-slate-800">
+                        <tr>
+                            <th scope="col" class="px-6 py-3.5">Nama Siswa</th>
+                            <th scope="col" class="px-6 py-3.5">Tanggal Izin</th>
+                            <th scope="col" class="px-6 py-3.5">Status Akhir</th>
+                            <th scope="col" class="px-6 py-3.5">Diproses Oleh</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        @forelse ($processedRequests as $request)
+                        <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors">
+                            <td class="px-6 py-3.5 font-bold text-slate-900 dark:text-white">
+                                {{ $request->student->name }}
+                            </td>
+                            <td class="px-6 py-3.5 font-semibold">
+                                {{ $request->start_date->format('d M Y') }}
+                            </td>
+                            <td class="px-6 py-3.5">
+                                @if ($request->status == 'approved')
+                                    <span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Disetujui
+                                    </span>
+                                @elseif ($request->status == 'rejected')
+                                    <span class="inline-flex items-center gap-1 bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Ditolak
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-3.5 text-slate-500 dark:text-slate-400 font-medium">
+                                {{ $request->approver->name ?? '-' }}
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-xs text-slate-400 italic">
+                                Belum ada riwayat pengajuan izin yang diproses.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if($processedRequests->hasPages())
+                <div class="p-4 border-t border-slate-100 dark:border-slate-800">
+                    {{ $processedRequests->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>
+

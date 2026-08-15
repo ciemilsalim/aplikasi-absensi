@@ -21,9 +21,9 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Presensi') }} - Sistem Presensi Digital</title>
 
     @if (isset($appLogoPath) && $appLogoPath)
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $appLogoPath) }}">
@@ -32,6 +32,8 @@
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="{{ asset('/manifest.json') }}">
     <meta name="theme-color" content="#0284c7" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192x192.png') }}">
 
     <script>
@@ -42,11 +44,17 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
-    <!-- Fonts -->
+
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+    <!-- Tailwind CDN with Extended Design Tokens -->
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <script>
         tailwind.config = {
@@ -54,92 +62,183 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif']
+                        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+                        display: ['"Plus Jakarta Sans"', 'sans-serif']
                     },
                     colors: {
-                        sky: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49' }
+                        sky: { 
+                            50: '#f0f9ff', 
+                            100: '#e0f2fe', 
+                            200: '#bae6fd', 
+                            300: '#7dd3fc', 
+                            400: '#38bdf8', 
+                            500: '#0ea5e9', 
+                            600: '#0284c7', 
+                            700: '#0369a1', 
+                            800: '#075985', 
+                            900: '#0c4a6e', 
+                            950: '#082f49' 
+                        },
+                        slate: {
+                            750: '#293548',
+                            850: '#172033',
+                            900: '#0f172a',
+                            950: '#0a0f1d'
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
+                        'glow': '0 0 20px -5px rgba(2, 132, 199, 0.4)',
+                        'glow-lg': '0 0 35px -5px rgba(2, 132, 199, 0.5)'
+                    },
+                    borderRadius: {
+                        'xl': '0.875rem',
+                        '2xl': '1.25rem',
+                        '3xl': '1.75rem'
                     }
                 }
             }
         }
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     @stack('styles')
 
-    <style type="text/tailwindcss">
-        body { @apply font-sans; } 
+    <style>
+        /* Custom subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.35);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.6);
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.4);
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.7);
+        }
+
+        /* Page Loader & Animations */
         .loader-container {
-            @apply fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-slate-900;
-            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+        }
+        .dark .loader-container {
+            background: #0f172a;
         }
         .loader-hidden {
-            @apply opacity-0 invisible;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
         }
         .content-wrapper {
-            @apply opacity-0;
-            transition: opacity 0.5s ease-in-out;
+            opacity: 0;
+            transition: opacity 0.35s ease-out;
         }
         .content-visible {
-            @apply opacity-100;
+            opacity: 1;
+        }
+
+        /* Custom utility classes */
+        .glass-header {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dock-shadow {
+            box-shadow: 0 -4px 20px -2px rgba(0, 0, 0, 0.06), 0 -2px 6px -1px rgba(0, 0, 0, 0.04);
+        }
+        .dark .dock-shadow {
+            box-shadow: 0 -4px 25px -2px rgba(0, 0, 0, 0.35), 0 -2px 8px -1px rgba(0, 0, 0, 0.25);
         }
     </style>
 </head>
-{{-- PERBAIKAN: Menambahkan padding bawah untuk mengakomodasi bottom nav di mobile --}}
 
-<body class="h-full antialiased bg-slate-50 dark:bg-slate-900 pb-16 lg:pb-0">
+<body class="h-full antialiased bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans selection:bg-sky-500 selection:text-white pb-20 lg:pb-0">
+    
+    <!-- Page Loader -->
     <div id="page-loader" class="loader-container">
-        <svg class="w-16 h-16 animate-spin text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-            </path>
-        </svg>
+        <div class="flex flex-col items-center gap-3">
+            <div class="relative flex items-center justify-center">
+                <div class="w-14 h-14 rounded-full border-3 border-sky-100 dark:border-slate-800 border-t-sky-600 dark:border-t-sky-500 animate-spin"></div>
+                <span class="material-icons absolute text-sky-600 dark:text-sky-400 text-2xl">qr_code_scanner</span>
+            </div>
+            <p class="text-xs font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Memuat Presensi...</p>
+        </div>
     </div>
 
-    <div id="page-content">
+    <div id="page-content" class="content-wrapper">
         <div x-data="{ 
             sidebarOpen: false, 
             mobileMenuOpen: false,
+            showMobileLogoutConfirm: false,
             sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
             toggleSidebar() {
                 this.sidebarCollapsed = !this.sidebarCollapsed;
                 localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
             }
-        }" class="relative h-full">
+        }" class="relative min-h-screen flex flex-col">
 
-            <div class="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:flex-col transition-all duration-300 ease-in-out"
+
+            <!-- Sidebar Desktop (Fixed Left) -->
+            <aside class="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:flex-col transition-all duration-300 ease-in-out"
                  :class="sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'">
                 @include('layouts.sidebar')
-            </div>
+            </aside>
 
-            <div class="transition-all duration-300 ease-in-out" :class="sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'">
-                <div class="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-x-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-                    <div class="flex items-center gap-2 lg:hidden">
-                        <x-application-logo class="h-8 w-auto text-sky-600 dark:text-sky-500" />
-                        <span class="font-bold text-lg text-slate-800 dark:text-white tracking-tight leading-tight">
-                            {{ config('app.name', 'Presensi') }}
-                        </span>
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out" :class="sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'">
+                
+                <!-- Sticky Top Navigation Bar -->
+                <header class="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-x-4 border-b border-slate-200/80 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 glass-header px-4 sm:px-6 lg:px-8 shadow-xs">
+                    
+                    <!-- Mobile Brand Logo -->
+                    <div class="flex items-center gap-3 lg:hidden">
+                        <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="flex items-center gap-2.5">
+                            <x-application-logo class="h-8 w-auto text-sky-600 dark:text-sky-500" />
+                            <div class="leading-tight">
+                                <span class="font-bold text-base text-slate-900 dark:text-white tracking-tight block">
+                                    {{ config('app.name', 'Presensi') }}
+                                </span>
+                                <span class="text-[10px] text-slate-500 dark:text-slate-400 block -mt-0.5 truncate max-w-[150px]">
+                                    {{ $appName ?? 'Portal Absensi' }}
+                                </span>
+                            </div>
+                        </a>
                     </div>
 
-                    <!-- Tombol Sakelar Ciutkan / Perluas Sidebar Desktop -->
+                    <!-- Desktop Sidebar Toggle Button -->
                     <button @click="toggleSidebar()" type="button" 
-                            class="hidden lg:flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            class="hidden lg:inline-flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             :title="sidebarCollapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'">
-                        <span class="material-icons text-xl" x-text="sidebarCollapsed ? 'menu_open' : 'menu'"></span>
+                        <span class="material-icons text-2xl" x-text="sidebarCollapsed ? 'menu_open' : 'menu'"></span>
                     </button>
 
-                    <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 justify-end">
+                    <!-- Topbar Profile, Academic Period & Utilities -->
+                    <div class="flex flex-1 gap-x-3 sm:gap-x-4 self-stretch items-center justify-end">
                         @include('layouts.topbar-profile')
                     </div>
-                </div>
+                </header>
 
-                <main class="py-10">
-                    <div class="px-4 sm:px-6 lg:px-8">
+                <!-- Page Main Container -->
+                <main class="flex-1 py-6 sm:py-8">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                         @if (isset($header))
-                            <div class="mb-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
                                 {{ $header }}
                             </div>
                         @endif
@@ -147,131 +246,165 @@
                         {{ $slot }}
                     </div>
                 </main>
+
+                <!-- Footer Desktop & Mobile -->
+                <footer class="mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/50 py-4 px-4 sm:px-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+                        <div class="flex items-center gap-1.5 justify-center">
+                            <span class="font-semibold text-slate-700 dark:text-slate-300">{{ config('app.name', 'Presensi') }}</span>
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">v2.5</span>
+                            <span>&copy; {{ date('Y') }}</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-[11px]">
+                            <a href="{{ route('about') }}" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Tentang Sistem</a>
+                            <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+                            <a href="https://www.zahradev.online" target="_blank" class="hover:text-sky-600 dark:hover:text-sky-400 font-medium transition-colors">ZahraDev</a>
+                        </div>
+                    </div>
+                </footer>
             </div>
 
-            <footer class="transition-all duration-300 ease-in-out" :class="sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'">
-                <div class="py-4 text-center text-xs text-slate-500 dark:text-slate-400 border-t dark:border-slate-700">
-                    &copy; {{ date('Y') }} {{ config('app.name') }} v2.0.<br>
-                    Dikembangkan oleh <a href="https://www.zahradev.online" target="_blank"
-                        class="font-semibold text-sky-600 hover:underline">ZahraDev</a>.
-                    <a href="{{ route('about') }}" class="hover:underline ml-2">Tentang Aplikasi</a><br>
-                    Kontak: <a href="mailto:emilsalimramadhan@gmail.com"
-                        class="font-semibold text-sky-600 hover:underline">emilsalimramadhan@gmail.com</a>
-                </div>
-            </footer>
-
-            {{-- PERBAIKAN: Bottom Navigation Bar dipindahkan ke sini --}}
+            <!-- Mobile Floating Bottom Navigation Dock -->
             @auth
-                <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 z-50 px-2 lg:hidden">
-                    <div class="flex justify-around items-center max-w-7xl mx-auto h-16 pb-1">
-                        @if(in_array(auth()->user()->role, ['admin', 'operator']))
+                <nav class="fixed bottom-0 inset-x-0 bg-white/95 dark:bg-slate-900/95 glass-header border-t border-slate-200/90 dark:border-slate-800 z-40 px-2 sm:px-4 lg:hidden dock-shadow safe-area-pb">
+                    <div class="flex justify-around items-center max-w-lg mx-auto h-16">
+                        
+                        <!-- Role: Admin / Operator / Satpam -->
+                        @if(in_array(auth()->user()->role, ['admin', 'operator', 'satpam']))
                             <a href="{{ route('admin.dashboard') }}"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                                <span class="material-icons">home</span>
-                                <span class="text-[10px] mt-0.5">Beranda</span>
-                            </a>
-                            <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                                <span class="material-icons">swap_horiz</span>
-                                <span class="text-[10px] mt-0.5">SIPADA</span>
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">dashboard</span>
+                                <span class="text-[10px] font-medium mt-0.5">Dasbor</span>
                             </a>
                             
-                            <!-- Tombol Scan QR Tengah (Diperbesar) -->
-                            <div class="relative -mt-6 flex flex-col items-center justify-center w-full">
+                            <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard"
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">swap_horiz</span>
+                                <span class="text-[10px] font-medium mt-0.5">SIPADA</span>
+                            </a>
+                            
+                            <!-- Elevated Scan QR Button -->
+                            <div class="relative -mt-6 flex flex-col items-center justify-center">
                                 <a href="{{ route('scanner') }}"
-                                    class="flex items-center justify-center h-14 w-14 rounded-full bg-sky-600 hover:bg-sky-700 text-white shadow-lg border-4 border-white dark:border-slate-800 transition transform hover:scale-105 active:scale-95">
+                                    class="flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-600/30 border-4 border-slate-50 dark:border-slate-950 transition-all transform hover:scale-105 active:scale-95">
                                     <span class="material-icons text-2xl">qr_code_scanner</span>
                                 </a>
-                                <span class="text-[9px] font-semibold mt-1 text-slate-500 dark:text-gray-400">Scan QR</span>
+                                <span class="text-[9px] font-bold mt-1 text-slate-700 dark:text-slate-300">Scan QR</span>
                             </div>
 
                             <a href="{{ route('admin.chat.index') }}"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                                <span class="material-icons">chat</span>
-                                <span class="text-[10px] mt-0.5">Pesan</span>
-                            </a>
-                            <button @click="mobileMenuOpen = true"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200 text-gray-500 dark:text-gray-400">
-                                <span class="material-icons">menu</span>
-                                <span class="text-[10px] mt-0.5">Lainnya</span>
-                            </button>
-                        @elseif(auth()->user()->role === 'teacher')
-                            <a href="{{ route('teacher.dashboard') }}"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                                <span class="material-icons">home</span>
-                                <span class="text-[10px] mt-0.5">Beranda</span>
-                            </a>
-                            <a href="{{ route('teacher.attendance.dashboard') }}"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                                <span class="material-icons">person_pin</span>
-                                <span class="text-[10px] mt-0.5">Absen Saya</span>
+                                class="nav-item group relative flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">chat</span>
+                                @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
+                                    <span class="absolute top-0 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-xs">{{ $totalUnreadMessagesCount }}</span>
+                                @endif
+                                <span class="text-[10px] font-medium mt-0.5">Pesan</span>
                             </a>
 
-                            <!-- Tombol Scan QR Tengah (Diperbesar) -->
-                            <div class="relative -mt-6 flex flex-col items-center justify-center w-full">
+                            <button @click="mobileMenuOpen = true"
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">widgets</span>
+                                <span class="text-[10px] font-medium mt-0.5">Menu</span>
+                            </button>
+
+                        <!-- Role: Guru (Teacher) -->
+                        @elseif(auth()->user()->role === 'teacher')
+                            <a href="{{ route('teacher.dashboard') }}"
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">dashboard</span>
+                                <span class="text-[10px] font-medium mt-0.5">Dasbor</span>
+                            </a>
+
+                            <a href="{{ route('teacher.attendance.dashboard') }}"
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">person_pin</span>
+                                <span class="text-[10px] font-medium mt-0.5">Absen Guru</span>
+                            </a>
+
+                            <!-- Elevated Scan QR Button -->
+                            <div class="relative -mt-6 flex flex-col items-center justify-center">
                                 @if(auth()->user()->teacher?->homeroomClass)
                                     <a href="{{ route('scanner') }}"
-                                        class="flex items-center justify-center h-14 w-14 rounded-full bg-sky-600 hover:bg-sky-700 text-white shadow-lg border-4 border-white dark:border-slate-800 transition transform hover:scale-105 active:scale-95">
+                                        class="flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-600/30 border-4 border-slate-50 dark:border-slate-950 transition-all transform hover:scale-105 active:scale-95">
                                         <span class="material-icons text-2xl">qr_code_scanner</span>
                                     </a>
                                 @else
                                     @if($teacherScheduleId)
                                         <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $teacherScheduleId]) }}"
-                                            class="flex items-center justify-center h-14 w-14 rounded-full bg-sky-600 hover:bg-sky-700 text-white shadow-lg border-4 border-white dark:border-slate-800 transition transform hover:scale-105 active:scale-95">
+                                            class="flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-600/30 border-4 border-slate-50 dark:border-slate-950 transition-all transform hover:scale-105 active:scale-95">
                                             <span class="material-icons text-2xl">qr_code_scanner</span>
                                         </a>
                                     @else
                                         <button @click="alert('Tidak ada jadwal mengajar aktif hari ini untuk melakukan presensi mata pelajaran.')"
-                                            class="flex items-center justify-center h-14 w-14 rounded-full bg-gray-400 dark:bg-slate-700 text-white shadow-lg border-4 border-white dark:border-slate-800 transition">
+                                            class="flex items-center justify-center h-14 w-14 rounded-full bg-slate-400 dark:bg-slate-700 text-white shadow-lg border-4 border-slate-50 dark:border-slate-950 transition-all">
                                             <span class="material-icons text-2xl">qr_code_scanner</span>
                                         </button>
                                     @endif
                                 @endif
-                                <span class="text-[9px] font-semibold mt-1 text-slate-500 dark:text-gray-400">Scan QR</span>
+                                <span class="text-[9px] font-bold mt-1 text-slate-700 dark:text-slate-300">Scan QR</span>
                             </div>
 
                             <a href="{{ route('teacher.subject.attendance.report') }}"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                                <span class="material-icons">assessment</span>
-                                <span class="text-[10px] mt-0.5">Rekap Mapel</span>
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">assessment</span>
+                                <span class="text-[10px] font-medium mt-0.5">Rekap Mapel</span>
                             </a>
+
                             <button @click="mobileMenuOpen = true"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200 text-gray-500 dark:text-gray-400">
-                                <span class="material-icons">menu</span>
-                                <span class="text-[10px] mt-0.5">Lainnya</span>
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">widgets</span>
+                                <span class="text-[10px] font-medium mt-0.5">Menu</span>
                             </button>
+
+                        <!-- Role: Orang Tua (Parent) -->
                         @elseif(auth()->user()->role === 'parent')
                             <a href="{{ route('parent.dashboard') }}"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                                <span class="material-icons">home</span>
-                                <span class="text-[10px] mt-0.5">Beranda</span>
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">dashboard</span>
+                                <span class="text-[10px] font-medium mt-0.5">Dasbor</span>
                             </a>
-                            <a href="{{ route('chat.index') }}"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                                <span class="material-icons">chat</span>
-                                <span class="text-[10px] mt-0.5">Obrolan</span>
-                            </a>
+
                             <a href="{{ route('parent.leave-requests.index') }}"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200">
-                                <span class="material-icons">assignment_turned_in</span>
-                                <span class="text-[10px] mt-0.5">Izin Sakit</span>
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">assignment_turned_in</span>
+                                <span class="text-[10px] font-medium mt-0.5">Izin/Sakit</span>
                             </a>
+
+                            <!-- Elevated Action: Ajukan Izin Cepat -->
+                            <div class="relative -mt-6 flex flex-col items-center justify-center">
+                                <a href="{{ route('parent.leave-requests.create') }}"
+                                    class="flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 border-4 border-slate-50 dark:border-slate-950 transition-all transform hover:scale-105 active:scale-95">
+                                    <span class="material-icons text-2xl">add</span>
+                                </a>
+                                <span class="text-[9px] font-bold mt-1 text-slate-700 dark:text-slate-300">Buat Izin</span>
+                            </div>
+
+                            <a href="{{ route('chat.index') }}"
+                                class="nav-item group relative flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">chat</span>
+                                @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
+                                    <span class="absolute top-0 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-xs">{{ $totalUnreadMessagesCount }}</span>
+                                @endif
+                                <span class="text-[10px] font-medium mt-0.5">Obrolan</span>
+                            </a>
+
                             <button @click="mobileMenuOpen = true"
-                                class="nav-item flex flex-col items-center justify-center text-center py-2 w-full transition-colors duration-200 text-gray-500 dark:text-gray-400">
-                                <span class="material-icons">menu</span>
-                                <span class="text-[10px] mt-0.5">Lainnya</span>
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">widgets</span>
+                                <span class="text-[10px] font-medium mt-0.5">Menu</span>
                             </button>
                         @endif
                     </div>
                 </nav>
 
-                <!-- Mobile Menu Bottom Sheet -->
+                <!-- Modern Mobile Menu Bottom Sheet Drawer -->
                 <div x-show="mobileMenuOpen" class="relative z-50 lg:hidden" style="display: none;" x-transition>
-                    <!-- Backdrop -->
-                    <div class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 transition-opacity" @click="mobileMenuOpen = false"></div>
+                    
+                    <!-- Backdrop Overlay -->
+                    <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" @click="mobileMenuOpen = false"></div>
 
-                    <!-- Bottom Sheet Container -->
-                    <div class="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-3xl bg-white dark:bg-slate-800 p-6 shadow-2xl transition-transform duration-300"
+                    <!-- Bottom Sheet Card -->
+                    <div class="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border-t border-slate-200 dark:border-slate-800 transition-transform duration-300"
                          x-show="mobileMenuOpen"
                          x-transition:enter="transform transition ease-out duration-300"
                          x-transition:enter-start="translate-y-full"
@@ -280,141 +413,259 @@
                          x-transition:leave-start="translate-y-0"
                          x-transition:leave-end="translate-y-full">
                          
-                         <!-- Drag handle indicator -->
-                         <div class="mx-auto h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-600 mb-5"></div>
+                         <!-- Drag Handle -->
+                         <div class="mx-auto h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-700 mb-4"></div>
 
-                         <!-- Title / Close -->
-                         <div class="flex items-center justify-between mb-6 pb-2 border-b border-gray-100 dark:border-slate-700">
-                             <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                 <span class="material-icons text-sky-500">grid_view</span>
-                                 Menu Aplikasi
-                             </h3>
-                             <button @click="mobileMenuOpen = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                                 <span class="material-icons">close</span>
+                         <!-- Header -->
+                         <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-100 dark:border-slate-800">
+                             <div class="flex items-center gap-2.5">
+                                 <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                                     <span class="material-icons text-lg">grid_view</span>
+                                 </div>
+                                 <div>
+                                     <h3 class="text-sm font-bold text-slate-900 dark:text-white leading-tight">Menu Navigasi</h3>
+                                     <p class="text-[11px] text-slate-500 dark:text-slate-400">Pilih modul yang ingin diakses</p>
+                                 </div>
+                             </div>
+                             <button @click="mobileMenuOpen = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                 <span class="material-icons text-xl">close</span>
                              </button>
                          </div>
 
-                         <!-- Scrollable items -->
-                         <div class="overflow-y-auto pb-8 space-y-6">
-                             @if(in_array(auth()->user()->role, ['admin', 'operator']))
-                                 <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Pemindai & Laporan</div>
-                                 <div class="grid grid-cols-2 gap-3">
-                                     <a href="{{ route('admin.leave_requests.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
-                                         <span class="material-icons text-amber-600 dark:text-amber-400 text-3xl mb-1.5">assignment_turned_in</span>
-                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Persetujuan Izin Siswa</span>
-                                     </a>
-                                     <a href="{{ route('scanner') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
-                                         <span class="material-icons text-sky-600 dark:text-sky-400 text-3xl mb-1.5">qr_code_scanner</span>
-                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pemindai Hadir</span>
-                                     </a>
-                                     <a href="{{ route('permit.scanner') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
-                                         <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">assignment</span>
-                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pemindai Izin</span>
-                                     </a>
-                                     <a href="{{ route('admin.reports.create') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
-                                         <span class="material-icons text-emerald-600 dark:text-emerald-400 text-3xl mb-1.5">bar_chart</span>
-                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Laporan Siswa</span>
-                                     </a>
-                                     <a href="{{ route('admin.reports.teacher.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
-                                         <span class="material-icons text-teal-600 dark:text-teal-400 text-3xl mb-1.5">analytics</span>
-                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Laporan Guru</span>
-                                     </a>
+                         <!-- Menu Grid Items -->
+                         <div class="overflow-y-auto pb-8 space-y-5 no-scrollbar">
+                             
+                             <!-- Admin / Operator Section -->
+                             @if(in_array(auth()->user()->role, ['admin', 'operator', 'satpam']))
+                                 <div>
+                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Pemindai & Persetujuan</div>
+                                     <div class="grid grid-cols-2 gap-2.5">
+                                         <a href="{{ route('admin.leave_requests.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all col-span-2">
+                                             <div class="p-2 bg-amber-500 text-white rounded-xl shadow-xs">
+                                                 <span class="material-icons text-lg">assignment_turned_in</span>
+                                             </div>
+                                             <div class="flex-1 min-w-0">
+                                                 <div class="text-xs font-bold truncate">Persetujuan Izin Siswa</div>
+                                                 <div class="text-[10px] text-amber-700/80 dark:text-amber-300/80">Tindak lanjuti permohonan</div>
+                                             </div>
+                                             @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
+                                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white">{{ $pendingLeaveRequestsCount }}</span>
+                                             @endif
+                                         </a>
+
+                                         <a href="{{ route('scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-sky-50 dark:hover:bg-slate-800 transition-all group">
+                                             <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                                 <span class="material-icons text-xl">qr_code_scanner</span>
+                                             </div>
+                                             <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Masuk/Pulang</span>
+                                             <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Absensi Harian</span>
+                                         </a>
+
+                                         <a href="{{ route('permit.scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all group">
+                                             <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                                 <span class="material-icons text-xl">assignment</span>
+                                             </div>
+                                             <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Izin Keluar</span>
+                                             <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Izin Meninggalkan Sekolah</span>
+                                         </a>
+                                     </div>
                                  </div>
+
+                                 <div>
+                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Laporan & Rekap</div>
+                                     <div class="grid grid-cols-2 gap-2.5">
+                                         <a href="{{ route('admin.reports.create') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-emerald-50 dark:hover:bg-slate-800 transition-all">
+                                             <span class="material-icons text-emerald-600 dark:text-emerald-400 text-xl">bar_chart</span>
+                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Laporan Siswa</span>
+                                         </a>
+                                         <a href="{{ route('admin.reports.teacher.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-teal-50 dark:hover:bg-slate-800 transition-all">
+                                             <span class="material-icons text-teal-600 dark:text-teal-400 text-xl">analytics</span>
+                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Laporan Guru</span>
+                                         </a>
+                                     </div>
+                                 </div>
+
+                             <!-- Teacher Section -->
                              @elseif(auth()->user()->role === 'teacher')
-                                  <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Pemindai & Menu Guru</div>
-                                  <div class="grid grid-cols-2 gap-3">
-                                      <a href="{{ route('sso.lms') }}" class="flex flex-col items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-2xl transition col-span-2 text-indigo-600 dark:text-indigo-400">
-                                          <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">school</span>
-                                          <span class="text-xs font-bold">LMS Mokopani</span>
-                                      </a>
-                                      <a href="{{ route('teacher.subject.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
-                                          <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">history_edu</span>
-                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Riwayat Presensi Mapel</span>
+                                 <div>
+                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Aplikasi Terintegrasi</div>
+                                     <a href="{{ route('sso.lms') }}" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all mb-3">
+                                         <div class="p-2 bg-white/20 rounded-xl backdrop-blur-xs">
+                                             <span class="material-icons text-xl text-white">school</span>
+                                         </div>
+                                         <div>
+                                             <h4 class="text-xs font-bold">LMS Mokopani</h4>
+                                             <p class="text-[10px] text-indigo-100">Buka ruang kelas daring & tugas</p>
+                                         </div>
+                                         <span class="material-icons text-sm ml-auto opacity-75">open_in_new</span>
                                      </a>
-                                     <a href="{{ route('scanner') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
-                                         <span class="material-icons text-sky-600 dark:text-sky-400 text-3xl mb-1.5">qr_code_scanner</span>
-                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pemindai Hadir</span>
-                                     </a>
-                                     <a href="{{ route('permit.scanner') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
-                                         <span class="material-icons text-indigo-600 dark:text-indigo-400 text-3xl mb-1.5">assignment</span>
-                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Pemindai Izin</span>
-                                     </a>
-                                     @if(auth()->user()->teacher?->homeroomClass)
-                                         <a href="{{ route('teacher.leave_requests.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
-                                             <span class="material-icons text-amber-600 dark:text-amber-400 text-3xl mb-1.5">assignment_turned_in</span>
-                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Persetujuan Izin Wali Kelas</span>
-                                         </a>
-                                         <a href="{{ route('teacher.attendance.history') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
-                                             <span class="material-icons text-blue-600 dark:text-blue-400 text-3xl mb-1.5">history</span>
-                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Riwayat Kehadiran</span>
-                                         </a>
-                                         <a href="{{ route('chat.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition">
-                                             <span class="material-icons text-pink-600 dark:text-pink-400 text-3xl mb-1.5">chat</span>
-                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Obrolan Ortu</span>
-                                         </a>
-                                     @endif
-                                     @if(auth()->user()->teacher?->coachingExtracurriculars()->exists())
-                                         <a href="{{ route('teacher.extracurricular-attendance.index') }}" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
-                                             <span class="material-icons text-rose-600 dark:text-rose-400 text-3xl mb-1.5">star</span>
-                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Absensi Ekskul</span>
-                                         </a>
-                                     @endif
                                  </div>
+
+                                 <div>
+                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Menu Mengajar & Wali Kelas</div>
+                                     <div class="grid grid-cols-2 gap-2.5">
+                                         <a href="{{ route('teacher.subject.attendance.history') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all col-span-2">
+                                             <span class="material-icons text-indigo-600 dark:text-indigo-400 text-xl">history_edu</span>
+                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Riwayat Presensi Mapel</span>
+                                         </a>
+
+                                         @if(auth()->user()->teacher?->homeroomClass)
+                                             <a href="{{ route('teacher.leave_requests.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all col-span-2">
+                                                 <span class="material-icons text-amber-600 dark:text-amber-400 text-xl">assignment_turned_in</span>
+                                                 <div class="flex-1 min-w-0">
+                                                     <div class="text-xs font-bold text-amber-900 dark:text-amber-200 truncate">Izin Siswa Binaan</div>
+                                                 </div>
+                                                 @if(isset($teacherPendingLeaveRequestsCount) && $teacherPendingLeaveRequestsCount > 0)
+                                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white">{{ $teacherPendingLeaveRequestsCount }}</span>
+                                                 @endif
+                                             </a>
+                                             <a href="{{ route('teacher.attendance.history') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                                 <span class="material-icons text-blue-600 dark:text-blue-400 text-xl">history</span>
+                                                 <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Riwayat Harian</span>
+                                             </a>
+                                             <a href="{{ route('chat.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                                 <span class="material-icons text-pink-600 dark:text-pink-400 text-xl">chat</span>
+                                                 <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Obrolan Ortu</span>
+                                             </a>
+                                         @endif
+
+                                         @if(auth()->user()->teacher?->coachingExtracurriculars()->exists())
+                                             <a href="{{ route('teacher.extracurricular-attendance.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-rose-50 dark:hover:bg-slate-800 transition-all col-span-2">
+                                                 <span class="material-icons text-rose-600 dark:text-rose-400 text-xl">star</span>
+                                                 <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Presensi Ekstrakurikuler</span>
+                                             </a>
+                                         @endif
+                                     </div>
+                                 </div>
+
+                             <!-- Parent Section -->
                              @elseif(auth()->user()->role === 'parent')
-                                 <div class="text-xs font-bold uppercase text-gray-400 tracking-wider">Bantuan & Lainnya</div>
-                                 <div class="grid grid-cols-2 gap-3">
-                                     <a href="{{ route('parent.guide') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center justify-center p-4 bg-sky-50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-900/50 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-2xl transition text-sky-700 dark:text-sky-300 col-span-2">
-                                         <span class="material-icons text-sky-600 dark:text-sky-400 text-3xl mb-1.5">auto_stories</span>
-                                         <span class="text-xs font-bold">Panduan Penggunaan Aplikasi</span>
-                                     </a>
-                                     <a href="{{ route('parent.dashboard') }}#ekskul" @click="mobileMenuOpen = false" class="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 rounded-2xl transition col-span-2">
-                                         <span class="material-icons text-purple-600 dark:text-purple-400 text-3xl mb-1.5">star</span>
-                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Kegiatan Ekstrakurikuler</span>
-                                     </a>
+                                 <div>
+                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Bantuan & Kegiatan</div>
+                                     <div class="grid grid-cols-1 gap-2.5">
+                                         <a href="{{ route('parent.guide') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-200 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-all">
+                                             <div class="p-2 bg-sky-600 text-white rounded-xl shadow-xs">
+                                                 <span class="material-icons text-lg">auto_stories</span>
+                                             </div>
+                                             <div>
+                                                 <div class="text-xs font-bold">Panduan Penggunaan Aplikasi</div>
+                                                 <div class="text-[10px] text-sky-600 dark:text-sky-400">Petunjuk izin & pemantauan kehadiran</div>
+                                             </div>
+                                         </a>
+
+                                         <a href="{{ route('parent.dashboard') }}#ekskul" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                                             <div class="p-2 bg-purple-500 text-white rounded-xl shadow-xs">
+                                                 <span class="material-icons text-lg">star</span>
+                                             </div>
+                                             <div>
+                                                 <div class="text-xs font-bold">Kegiatan Ekstrakurikuler</div>
+                                                 <div class="text-[10px] text-slate-500 dark:text-slate-400">Jadwal & absensi ekskul putra/putri</div>
+                                             </div>
+                                         </a>
+                                     </div>
                                  </div>
                              @endif
 
-                             <!-- Akun & Keluar -->
-                             <div class="text-xs font-bold uppercase text-gray-400 tracking-wider pt-2">Pengaturan Akun</div>
-                             <div class="space-y-2">
-                                 <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-                                     <span class="material-icons text-slate-600 dark:text-slate-400">manage_accounts</span>
-                                     <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Edit Profil Saya</span>
-                                 </a>
-                                 @if(auth()->user()->role === 'admin')
-                                     <a href="{{ route('admin.settings.appearance') }}" class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-                                         <span class="material-icons text-slate-600 dark:text-slate-400">palette</span>
-                                         <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Tampilan & Logo</span>
+                             <!-- Account & Settings Menu -->
+                             <div class="pt-2">
+                                 <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Akun & Pengaturan</div>
+                                 <div class="space-y-2">
+                                     <a href="{{ route('profile.edit') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                         <span class="material-icons text-slate-500 dark:text-slate-400 text-xl">manage_accounts</span>
+                                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Profil & Keamanan Akun</span>
                                      </a>
-                                 @endif
-                                 <form method="POST" action="{{ route('logout') }}">
-                                     @csrf
-                                     <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-950/40 transition">
-                                         <span class="material-icons">logout</span>
-                                         <span class="text-sm font-semibold">Keluar / Logout</span>
+
+                                     @if(auth()->user()->role === 'admin')
+                                         <a href="{{ route('admin.settings.appearance') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                             <span class="material-icons text-slate-500 dark:text-slate-400 text-xl">palette</span>
+                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Tema & Logo Sekolah</span>
+                                         </a>
+                                     @endif
+
+                                     <button type="button" 
+                                             @click="mobileMenuOpen = false; showMobileLogoutConfirm = true" 
+                                             class="w-full flex items-center gap-3 px-4 py-3 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors text-left">
+                                         <span class="material-icons text-xl">logout</span>
+                                         <span class="text-xs font-bold">Keluar / Logout</span>
                                      </button>
-                                 </form>
+                                 </div>
                              </div>
                          </div>
                     </div>
                 </div>
+
+                {{-- Form Logout Mobile Tersembunyi --}}
+                <form method="POST" action="{{ route('logout') }}" x-ref="mobileLogoutForm" class="hidden">
+                    @csrf
+                </form>
+
+                {{-- Modal Konfirmasi Logout Mobile (Teleported to body for precise full-screen centering) --}}
+                <template x-teleport="body">
+                    <div x-show="showMobileLogoutConfirm" 
+                         x-cloak
+                         style="display: none;" 
+                         class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+                        
+                        <!-- Backdrop Overlay -->
+                        <div class="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity" 
+                             x-show="showMobileLogoutConfirm"
+                             x-transition:enter="ease-out duration-200" 
+                             x-transition:enter-start="opacity-0" 
+                             x-transition:enter-end="opacity-100" 
+                             x-transition:leave="ease-in duration-150" 
+                             x-transition:leave-start="opacity-100" 
+                             x-transition:leave-end="opacity-0" 
+                             @click="showMobileLogoutConfirm = false"></div>
+                        
+                        <!-- Modal Content Box -->
+                        <div @click.away="showMobileLogoutConfirm = false" 
+                             x-show="showMobileLogoutConfirm" 
+                             x-transition:enter="ease-out duration-200" 
+                             x-transition:enter-start="opacity-0 scale-95 translate-y-2" 
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0" 
+                             x-transition:leave="ease-in duration-150" 
+                             x-transition:leave-start="opacity-100 scale-100 translate-y-0" 
+                             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                             class="relative bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200/80 dark:border-slate-800 max-w-sm w-full text-center z-10 transform transition-all">
+                            
+                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 mb-4 ring-8 ring-rose-500/10">
+                                <span class="material-icons text-3xl">logout</span>
+                            </div>
+                            
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white">Konfirmasi Keluar</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                                Apakah Anda yakin ingin keluar dari sesi akun ini?
+                            </p>
+
+                            <div class="mt-6 flex items-center justify-center gap-3">
+                                <button @click="showMobileLogoutConfirm = false" type="button" 
+                                        class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                                    Batal
+                                </button>
+                                <button @click="$refs.mobileLogoutForm.submit()" type="button" 
+                                        class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-600/25 transition-all active:scale-95">
+                                    Ya, Keluar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             @endauth
         </div>
     </div>
 
+    <!-- Back to Top Floating Button -->
     <div x-data="{ show: false }" @scroll.window="show = (window.pageYOffset > 300)"
-        class="fixed bottom-5 right-5 z-50 hidden lg:block">
+        class="fixed bottom-6 right-6 z-40 hidden lg:block">
         <button x-show="show" @click="window.scrollTo({ top: 0, behavior: 'smooth' })" x-transition
-            class="p-3 rounded-full bg-sky-600 text-white shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+            class="p-3 rounded-full bg-slate-900/80 dark:bg-slate-800/90 text-white backdrop-blur-sm shadow-lg hover:bg-sky-600 dark:hover:bg-sky-600 focus:outline-none transition-all transform hover:scale-105 active:scale-95"
             aria-label="Kembali ke atas" style="display: none;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-6 w-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-            </svg>
+            <span class="material-icons text-xl">arrow_upward</span>
         </button>
     </div>
 
     @stack('scripts')
+    
     <script>
         window.addEventListener('load', () => {
             const loader = document.getElementById('page-loader');
@@ -442,7 +693,7 @@
         }
     </script>
 
-    {{-- PERBAIKAN: Skrip untuk navigasi aktif dipindahkan ke sini --}}
+    <!-- Active Mobile Tab Highlighting -->
     @auth
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -460,11 +711,11 @@
                         }
                         
                         if (currentPath === itemPath || (itemPath !== '/' && currentPath.startsWith(itemPath))) {
-                            item.classList.add('text-sky-500', 'dark:text-sky-400');
-                            item.classList.remove('text-gray-500', 'dark:text-gray-400');
+                            item.classList.add('text-sky-600', 'dark:text-sky-400');
+                            item.classList.remove('text-slate-500', 'dark:text-slate-400');
                         } else {
-                            item.classList.add('text-gray-500', 'dark:text-gray-400');
-                            item.classList.remove('text-sky-500', 'dark:text-sky-400');
+                            item.classList.add('text-slate-500', 'dark:text-slate-400');
+                            item.classList.remove('text-sky-600', 'dark:text-sky-400');
                         }
                     } catch (e) {
                         // Ignored

@@ -7,10 +7,10 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <script>
-        // Menerapkan dark mode berdasarkan preferensi yang tersimpan
         if (localStorage.getItem('darkMode') === 'on' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
@@ -24,29 +24,36 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'] },
                 }
             }
         }
     </script>
-    
 </head>
-<body class="antialiased font-sans h-full">
-    <main class="grid min-h-full place-items-center bg-white dark:bg-slate-900 px-6 py-24 sm:py-32 lg:px-8">
-        <div class="text-center">
-            <img src="https://img.freepik.com/free-vector/404-error-with-landscape-concept-illustration_114360-7898.jpg?w=996" 
-                 alt="Ilustrasi halaman 404 tidak ditemukan" 
-                 class="mx-auto h-64 w-auto mb-8"
-                 onerror="this.style.display='none'">
-            <p class="text-base font-semibold text-sky-600 dark:text-sky-400">404</p>
-            <h1 class="mt-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">Halaman tidak ditemukan</h1>
-            <p class="mt-6 text-base leading-7 text-gray-600 dark:text-gray-300">Maaf, kami tidak dapat menemukan halaman yang Anda cari.</p>
-            <div class="mt-10 flex items-center justify-center gap-x-6">
-                <a href="{{ route('login') }}" class="rounded-md bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
-                    Kembali ke Beranda
-                </a>
-            </div>
+<body class="antialiased font-sans h-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex items-center justify-center min-h-screen p-6">
+    <div class="max-w-md w-full text-center bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-10 shadow-xl border border-slate-200/80 dark:border-slate-800">
+        <div class="w-16 h-16 rounded-3xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto mb-5 shadow-inner">
+            <span class="material-icons text-3xl">sentiment_dissatisfied</span>
         </div>
-    </main>
+        
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
+            Error 404
+        </span>
+
+        <h1 class="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            Halaman Tidak Ditemukan
+        </h1>
+        <p class="mt-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+            Halaman atau tautan yang Anda tuju mungkin sudah dipindahkan, dihapus, atau tidak tersedia.
+        </p>
+
+        <div class="mt-8">
+            <a href="{{ url('/') }}" class="inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                <span class="material-icons text-base">home</span>
+                <span>Kembali ke Halaman Utama</span>
+            </a>
+        </div>
+    </div>
 </body>
 </html>
+

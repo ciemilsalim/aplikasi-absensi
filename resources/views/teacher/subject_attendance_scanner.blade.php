@@ -43,41 +43,39 @@
 @endpush
 
 @section('content')
-    <div class="min-h-screen bg-slate-100 dark:bg-slate-950 py-6 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-slate-50 dark:bg-slate-950 py-6 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto space-y-6">
 
             <!-- Top Header & Navigation Bar -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
                     <a href="{{ route('teacher.dashboard') }}" 
-                       class="inline-flex items-center justify-center p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                       class="inline-flex items-center justify-center w-11 h-11 rounded-2xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors shrink-0"
                        title="Kembali ke Dasbor">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                        </svg>
+                        <span class="material-icons text-xl">arrow_back</span>
                     </a>
                     <div>
                         <div class="flex items-center gap-2 flex-wrap">
-                            <h1 class="text-xl font-bold text-slate-800 dark:text-white tracking-tight">Presensi Kelas</h1>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                            <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Sesi Presensi Mengajar</h1>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
                                 {{ $schedule->teachingAssignment->schoolClass->name }}
                             </span>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                                 {{ $schedule->teachingAssignment->subject->name }}
                             </span>
                         </div>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            Jadwal: {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }} WITA
+                            Jam Belajar: <strong class="text-slate-700 dark:text-slate-300">{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}</strong> WITA
                         </p>
                     </div>
                 </div>
 
                 <!-- Date Filter Control -->
-                <div class="flex items-center gap-2 self-start md:self-auto bg-slate-50 dark:bg-slate-800/80 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center gap-2 self-start md:self-auto bg-slate-50 dark:bg-slate-850 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-750">
                     <span class="material-icons text-slate-400 text-sm ml-2">calendar_today</span>
-                    <label for="attendance-date" class="text-xs font-semibold text-slate-600 dark:text-slate-300">Tanggal:</label>
+                    <label for="attendance-date" class="text-xs font-bold text-slate-600 dark:text-slate-300">Tanggal:</label>
                     <input type="date" id="attendance-date" name="date" value="{{ $selectedDate->format('Y-m-d') }}" 
-                           class="border-0 bg-transparent text-slate-800 dark:text-white focus:ring-0 text-xs font-semibold py-1 px-2 cursor-pointer">
+                           class="border-0 bg-transparent text-slate-800 dark:text-white focus:ring-0 text-xs font-bold py-1 px-2 cursor-pointer">
                 </div>
             </div>
 
@@ -86,42 +84,38 @@
 
                 <!-- Left Column: Camera Viewport & Controls (5 Cols) -->
                 <div class="lg:col-span-5 space-y-4">
-                    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-5 overflow-hidden">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-5 overflow-hidden">
                         
                         <!-- Mode Tab Switcher -->
-                        <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-4">
+                        <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4 border border-slate-200/60 dark:border-slate-700/60">
                             <button id="tab-qr"
-                                    class="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-white bg-sky-600 shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0 1 3.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 0 1-1.875-1.875v-4.5z" />
-                                </svg>
-                                Scan QR Code
+                                    class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-white bg-sky-600 shadow-sm">
+                                <span class="material-icons text-base">qr_code_scanner</span>
+                                <span>Scan QR Code</span>
                             </button>
                             <button id="tab-face"
-                                    class="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                </svg>
-                                Scan Wajah AI
+                                    class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                                <span class="material-icons text-base">face</span>
+                                <span>Scan Wajah AI</span>
                             </button>
                         </div>
 
                         <!-- QR Scanner Viewport -->
                         <div id="qr-scanner-container" class="relative">
-                            <div class="relative w-full aspect-square max-w-[340px] mx-auto bg-slate-900 rounded-2xl overflow-hidden shadow-inner border-2 border-slate-700 flex items-center justify-center">
+                            <div class="relative w-full aspect-square max-w-[340px] mx-auto bg-slate-950 rounded-3xl overflow-hidden shadow-inner border-2 border-sky-500/40 flex items-center justify-center">
                                 <div id="reader" class="w-full h-full"></div>
                                 
                                 <!-- Futuristic Cyber Overlay -->
                                 <div class="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between">
                                     <div class="flex justify-between">
-                                        <div class="w-7 h-7 border-t-4 border-l-4 border-sky-400 rounded-tl-lg"></div>
-                                        <div class="w-7 h-7 border-t-4 border-r-4 border-sky-400 rounded-tr-lg"></div>
+                                        <div class="w-7 h-7 border-t-4 border-l-4 border-sky-400 rounded-tl-xl"></div>
+                                        <div class="w-7 h-7 border-t-4 border-r-4 border-sky-400 rounded-tr-xl"></div>
                                     </div>
                                     <!-- Animated Laser Line -->
                                     <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-sky-400 to-transparent shadow-[0_0_12px_#38bdf8] animate-scanline"></div>
                                     <div class="flex justify-between">
-                                        <div class="w-7 h-7 border-b-4 border-l-4 border-sky-400 rounded-bl-lg"></div>
-                                        <div class="w-7 h-7 border-b-4 border-r-4 border-sky-400 rounded-br-lg"></div>
+                                        <div class="w-7 h-7 border-b-4 border-l-4 border-sky-400 rounded-bl-xl"></div>
+                                        <div class="w-7 h-7 border-b-4 border-r-4 border-sky-400 rounded-br-xl"></div>
                                     </div>
                                 </div>
                             </div>
@@ -129,40 +123,37 @@
                             <!-- Camera Switcher -->
                             <div id="camera-switch-container" class="mt-3 text-center hidden">
                                 <button id="camera-switch-button" type="button"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 transition-colors">
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 transition-colors">
                                     <span class="material-icons text-sm">cameraswitch</span>
-                                    Ganti Kamera
+                                    <span>Ganti Kamera</span>
                                 </button>
                             </div>
                         </div>
 
                         <!-- Face Scanner Viewport -->
                         <div id="face-scanner-container" class="relative hidden">
-                            <div class="relative w-full aspect-square max-w-[340px] mx-auto bg-slate-900 rounded-2xl overflow-hidden shadow-inner border-2 border-slate-700 flex items-center justify-center">
+                            <div class="relative w-full aspect-square max-w-[340px] mx-auto bg-slate-950 rounded-3xl overflow-hidden shadow-inner border-2 border-emerald-500/40 flex items-center justify-center">
                                 <video id="face-video" class="w-full h-full object-cover" autoplay muted playsinline></video>
                                 <canvas id="face-canvas" class="absolute inset-0 w-full h-full"></canvas>
 
                                 <!-- Face Target Overlay -->
                                 <div class="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
                                     <div class="w-full h-full max-w-[220px] max-h-[220px] relative">
-                                        <div class="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-sky-400 rounded-tl-lg animate-pulse"></div>
-                                        <div class="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-sky-400 rounded-tr-lg animate-pulse"></div>
-                                        <div class="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-sky-400 rounded-bl-lg animate-pulse"></div>
-                                        <div class="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-sky-400 rounded-br-lg animate-pulse"></div>
-                                        <div class="absolute inset-3 border-2 border-dashed border-white/40 rounded-full"></div>
+                                        <div class="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl"></div>
+                                        <div class="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl"></div>
+                                        <div class="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl"></div>
+                                        <div class="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-xl"></div>
+                                        <div class="absolute inset-3 border-2 border-dashed border-white/40 rounded-full animate-pulse"></div>
                                     </div>
                                 </div>
 
                                 <!-- Loading Model Overlay -->
-                                <div id="face-loading-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm z-20 hidden p-6">
-                                    <svg class="animate-spin h-8 w-8 text-sky-400 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <div class="w-full max-w-[180px] bg-slate-700 rounded-full h-2 mb-2 overflow-hidden">
-                                        <div id="face-loading-bar" class="bg-sky-500 h-2 rounded-full transition-all duration-300 w-0"></div>
+                                <div id="face-loading-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm z-20 hidden p-6">
+                                    <div class="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                                    <div class="w-full max-w-[180px] bg-slate-800 rounded-full h-2 mb-2 overflow-hidden">
+                                        <div id="face-loading-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300 w-0"></div>
                                     </div>
-                                    <p id="face-loading-text" class="text-xs text-white font-semibold">Memuat Model AI...</p>
+                                    <p id="face-loading-text" class="text-xs text-white font-bold">Memuat Model AI...</p>
                                 </div>
                             </div>
 
@@ -172,12 +163,207 @@
 
                             <div id="face-camera-switch-container" class="mt-2 text-center">
                                 <button id="face-camera-switch-button" type="button"
-                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 transition-colors">
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 transition-colors">
                                     <span class="material-icons text-sm">cameraswitch</span>
-                                    Ganti Kamera
+                                    <span>Ganti Kamera</span>
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Scanner Error Alert -->
+                        <div id="reader-error" class="text-rose-600 dark:text-rose-400 text-xs mt-3 text-center font-bold bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-2xl border border-rose-200 dark:border-rose-900 hidden"></div>
+
+                        <!-- Scanner Instruction Footer -->
+                        <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                            <span class="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Kamera Siap
+                            </span>
+                            <span class="font-medium text-slate-400">Jarak Ideal: 20-40 cm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live Roster & Quick Actions (7 Cols) -->
+                <div class="lg:col-span-7 space-y-4">
+
+                    <!-- Metric Ribbon Cards -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-emerald-100 dark:border-emerald-950/50 shadow-2xs flex items-center justify-between">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Hadir</p>
+                                <p class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white" id="attended-count">{{ $attendedStudents->count() }}</p>
+                            </div>
+                            <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-xs">
+                                H
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-amber-100 dark:border-amber-950/50 shadow-2xs flex items-center justify-between">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Izin / Sakit</p>
+                                <p class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white" id="leave-count">{{ $studentsOnLeave->count() }}</p>
+                            </div>
+                            <div class="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center font-bold text-xs">
+                                I/S
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-rose-100 dark:border-rose-950/50 shadow-2xs flex items-center justify-between">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Belum Hadir</p>
+                                <p class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white" id="no-notice-count">{{ $studentsWithoutNotice->count() }}</p>
+                            </div>
+                            <div class="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center font-bold text-xs">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Tabs & Interactive List -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden" x-data="{ listTab: 'unmarked', search: '' }">
+                        
+                        <!-- List Navigation & Search -->
+                        <div class="p-4 border-b border-slate-100 dark:border-slate-800 space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                                    <button @click="listTab = 'unmarked'" 
+                                            :class="listTab === 'unmarked' ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-white shadow-2xs' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+                                            class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all">
+                                        Belum Absen
+                                    </button>
+                                    <button @click="listTab = 'attended'" 
+                                            :class="listTab === 'attended' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-white shadow-2xs' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+                                            class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all">
+                                        Sudah Hadir
+                                    </button>
+                                    <button @click="listTab = 'leave'" 
+                                            :class="listTab === 'leave' ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-white shadow-2xs' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+                                            class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all">
+                                        Izin/Sakit
+                                    </button>
+                                </div>
+
+                                <div class="relative w-full sm:w-48">
+                                    <span class="material-icons absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">search</span>
+                                    <input type="text" x-model="search" placeholder="Cari nama siswa..." 
+                                           class="w-full text-xs py-1.5 pl-8 pr-3 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 1. TAB: BELUM ABSEN (Daftar Siswa dengan Tombol 1-Klik Cepat) -->
+                        <div x-show="listTab === 'unmarked'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="no-notice-list">
+                            @forelse($studentsWithoutNotice as $student)
+                                <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors student-item" 
+                                     id="student-no-notice-{{ $student->id }}"
+                                     x-show="search === '' || {{ json_encode(mb_strtolower($student->name)) }}.includes(search.toLowerCase())">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <img class="w-8 h-8 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs"
+                                             src="{{ $student->photo_url }}" 
+                                             alt="{{ $student->name }}"
+                                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe'">
+                                        <div class="truncate">
+                                            <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ $student->name }}</p>
+                                            <p class="text-[10px] text-slate-400">NIS: {{ $student->nis ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                    <!-- Quick Manual Actions -->
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button data-student-id="{{ $student->id }}" data-status="hadir"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 transition-all active:scale-95" 
+                                                title="Tandai Hadir">H</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="sakit"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 transition-all active:scale-95" 
+                                                title="Tandai Sakit">S</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="izin"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white border border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800 transition-all active:scale-95" 
+                                                title="Tandai Izin">I</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="alpa"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 transition-all active:scale-95" 
+                                                title="Tandai Alpa">A</button>
+                                        <button data-student-id="{{ $student->id }}" data-status="bolos"
+                                                class="manual-mark-btn w-7 h-7 rounded-lg font-bold text-xs bg-orange-50 text-orange-700 hover:bg-orange-600 hover:text-white border border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800 transition-all active:scale-95" 
+                                                title="Tandai Bolos">B</button>
+                                    </div>
+                                </div>
+                            @empty
+                                <div id="no-missing-students" class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
+                                    Semua siswa di kelas ini telah memiliki data absensi hari ini.
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- 2. TAB: SUDAH HADIR -->
+                        <div x-show="listTab === 'attended'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="attended-list" style="display: none;">
+                            @forelse($attendedStudents as $attendance)
+                                <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors"
+                                     x-show="search === '' || {{ json_encode(mb_strtolower($attendance->student->name)) }}.includes(search.toLowerCase())">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="relative shrink-0">
+                                            <img class="w-8 h-8 rounded-xl object-cover border-2 border-emerald-500 shadow-2xs"
+                                                 src="{{ $attendance->student->photo_url }}" 
+                                                 alt="{{ $attendance->student->name }}"
+                                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($attendance->student->name) }}&color=0284c7&background=e0f2fe'">
+                                            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[7px] text-white font-bold">✓</span>
+                                        </div>
+                                        <div class="truncate">
+                                            <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ $attendance->student->name }}</p>
+                                            <p class="text-[10px] text-slate-400">NIS: {{ $attendance->student->nis ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                        {{ $attendance->created_at->format('H:i') }}
+                                    </span>
+                                </div>
+                            @empty
+                                <div id="no-students-yet" class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
+                                    Belum ada siswa yang diabsen hadir.
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- 3. TAB: SISWA IZIN / SAKIT -->
+                        <div x-show="listTab === 'leave'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="leave-list" style="display: none;">
+                            @forelse($studentsOnLeave as $subjectAttendance)
+                                <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors"
+                                     x-show="search === '' || {{ json_encode(mb_strtolower($subjectAttendance->student->name)) }}.includes(search.toLowerCase())">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="relative shrink-0">
+                                            <img class="w-8 h-8 rounded-xl object-cover border-2 border-amber-500 shadow-2xs"
+                                                 src="{{ $subjectAttendance->student->photo_url }}" 
+                                                 alt="{{ $subjectAttendance->student->name }}"
+                                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'">
+                                            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-amber-500 border border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[7px] text-white font-bold">
+                                                {{ strtoupper(substr($subjectAttendance->status, 0, 1)) }}
+                                            </span>
+                                        </div>
+                                        <div class="truncate">
+                                            <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ $subjectAttendance->student->name }}</p>
+                                            <p class="text-[10px] text-slate-400">NIS: {{ $subjectAttendance->student->nis ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase
+                                        @if($subjectAttendance->status == 'sakit') bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800 @endif
+                                        @if($subjectAttendance->status == 'izin') bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800 @endif
+                                    ">
+                                        {{ ucfirst($subjectAttendance->status) }}
+                                    </span>
+                                </div>
+                            @empty
+                                <div id="no-students-on-leave" class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
+                                    Tidak ada siswa yang izin atau sakit hari ini.
+                                </div>
+                            @endforelse
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 
                         <!-- Scanner Error Alert -->
                         <div id="reader-error" class="text-rose-600 dark:text-rose-400 text-xs mt-3 text-center font-medium bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-xl border border-rose-200 dark:border-rose-900 hidden"></div>

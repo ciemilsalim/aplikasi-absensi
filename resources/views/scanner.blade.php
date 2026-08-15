@@ -32,198 +32,185 @@
 @endpush
 
 @section('content')
-    <div class="relative min-h-[calc(100vh-128px)] flex items-center justify-center overflow-hidden px-4">
-        <!-- Latar Belakang Abstrak -->
-        <div class="absolute inset-0 -z-10">
-            <div class="absolute inset-0 bg-white dark:bg-slate-900"></div>
-            <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-slate-50 dark:bg-slate-800/50"
-                style="clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 100%);"></div>
-            <div
-                class="absolute top-0 left-1/4 w-96 h-96 bg-sky-200/50 dark:bg-sky-900/50 rounded-full blur-3xl animate-pulse">
-            </div>
-            <div
-                class="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-200/50 dark:bg-indigo-900/50 rounded-full blur-3xl animate-pulse [animation-delay:-2s]">
-            </div>
+    <div class="relative min-h-[calc(100vh-140px)] flex items-center justify-center overflow-hidden px-4 py-8">
+        <!-- Modern Background Glows -->
+        <div class="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+            <div class="absolute -top-32 -left-32 w-96 h-96 bg-sky-500/10 dark:bg-sky-500/15 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl"></div>
         </div>
 
         <div class="w-full max-w-xl text-center">
-            <!-- Jam Digital dan Tanggal -->
-            <div class="mb-6 animate-[fade-in-up_0.8s_ease-out_forwards]">
-                <p id="current-date" class="text-lg text-slate-600 dark:text-slate-400"></p>
-                <p id="current-time" class="text-5xl font-bold text-sky-600 dark:text-sky-400 tracking-tight"></p>
+            <!-- Jam Digital dan Tanggal Kiosk -->
+            <div class="mb-6">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-100 dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 shadow-2xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="current-date">Memuat tanggal...</span>
+                </div>
+                <p id="current-time" class="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight font-mono">
+                    --:--:--
+                </p>
             </div>
 
-            <div class="bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 animate-[fade-in-up_0.8s_ease-out_forwards]"
-                style="animation-delay: 0.4s;">
+            <!-- Main Scanner Card Container -->
+            <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200/80 dark:border-slate-800 transition-all">
 
+                <!-- 1. Selection Screen -->
                 <div id="scanner-choice">
-                    <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">Pilih Tipe Pemindai</h1>
-                    <p class="text-slate-600 dark:text-slate-400 mb-8">Pilih metode yang akan Anda gunakan untuk mencatat
-                        kehadiran.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 mb-3">
+                        <span class="material-icons text-2xl">qr_code_scanner</span>
+                    </div>
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Pilih Tipe Pemindai</h1>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 mb-6">Pilih metode yang akan digunakan untuk mencatat kehadiran siswa.</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <button id="use-camera-button"
-                            class="w-full inline-flex flex-col items-center justify-center p-6 border border-transparent text-base font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 transition-all duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-10 h-10 mb-2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.776 48.776 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                            </svg>
-                            Pindai dengan Kamera
+                            class="group flex flex-col items-center justify-center p-5 rounded-2xl bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 text-white shadow-lg shadow-sky-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center">
+                            <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                                <span class="material-icons text-2xl">photo_camera</span>
+                            </div>
+                            <span class="font-extrabold text-sm tracking-tight">Pindai Kamera (QR)</span>
+                            <span class="text-[11px] text-sky-100 mt-0.5 opacity-90">Gunakan kartu QR code siswa</span>
                         </button>
+
                         <button id="use-manual-button"
-                            class="w-full inline-flex flex-col items-center justify-center p-6 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-10 h-10 mb-2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M13.5 15.75h4.5a1.875 1.875 0 011.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 01-.937-.938v-3.375c0-.517.42-.938.938-.938z" />
-                            </svg>
-                            Input Manual / Eksternal
+                            class="group flex flex-col items-center justify-center p-5 rounded-2xl bg-gradient-to-b from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-lg shadow-indigo-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center">
+                            <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                                <span class="material-icons text-2xl">keyboard</span>
+                            </div>
+                            <span class="font-extrabold text-sm tracking-tight">Input Manual / Barcode</span>
+                            <span class="text-[11px] text-indigo-100 mt-0.5 opacity-90">Ketik ID atau barcode scanner</span>
                         </button>
+
                         <button id="use-face-button"
-                            class="w-full inline-flex flex-col items-center justify-center p-6 border border-transparent text-base font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 transition-all duration-300 md:col-span-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-10 h-10 mb-2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
-                            </svg>
-                            Pindai dengan Wajah
+                            class="group sm:col-span-2 flex flex-row items-center justify-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white shadow-lg shadow-emerald-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-left">
+                            <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                <span class="material-icons text-2xl">face</span>
+                            </div>
+                            <div>
+                                <span class="font-extrabold text-sm tracking-tight block">Pindai dengan Wajah (Face Recognition)</span>
+                                <span class="text-[11px] text-emerald-100 opacity-90 block">Deteksi kehadiran otomatis menggunakan kamera & AI</span>
+                            </div>
                         </button>
                     </div>
                 </div>
 
+                <!-- 2. Camera QR Scanner View -->
                 <div id="camera-scanner" class="hidden">
-                    <div id="reader"
-                        class="w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden">
+                    <div class="relative w-full max-w-sm mx-auto aspect-square bg-slate-900 rounded-3xl overflow-hidden border-2 border-sky-500/40 shadow-inner">
+                        <div id="reader" class="w-full h-full object-cover"></div>
                     </div>
+                    
                     <div id="camera-switch-container" class="mt-4 text-center hidden">
                         <button id="camera-switch-button"
-                            class="text-sm text-sky-600 dark:text-sky-400 hover:underline">Ganti Kamera</button>
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors">
+                            <span class="material-icons text-base text-sky-500">cameraswitch</span>
+                            <span>Ganti Kamera</span>
+                        </button>
                     </div>
                 </div>
 
+                <!-- 3. Manual ID Input View -->
                 <div id="manual-scanner" class="hidden">
-                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">Input ID Manual</h2>
-                    <p class="text-slate-600 dark:text-slate-400 mb-6">Arahkan pemindai eksternal ke kolom di bawah atau
-                        ketik ID siswa.</p>
-                    <form id="manual-form" onsubmit="return false;">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mx-auto flex items-center justify-center mb-3">
+                        <span class="material-icons text-2xl">keyboard</span>
+                    </div>
+                    <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Input ID Siswa</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-5">Arahkan barcode scanner eksternal atau ketik nomor ID / NIS siswa lalu tekan Enter.</p>
+                    
+                    <form id="manual-form" onsubmit="return false;" class="max-w-sm mx-auto">
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor" class="w-5 h-5 text-slate-400">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875-1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 15.75h4.5a1.875 1.875 0 011.875 1.875v3.375c0 .517-.42.938-.938.938h-2.925a.938.938 0 01-.937-.938v-3.375c0-.517.42-.938.938-.938z" />
-                                </svg>
-                            </div>
-                            <x-text-input id="manual_input_id" class="block w-full text-center text-lg pl-10" type="text"
-                                name="manual_input_id" placeholder="ID Siswa" required autofocus />
+                            <span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none">pin</span>
+                            <input id="manual_input_id" 
+                                   type="text" 
+                                   name="manual_input_id" 
+                                   class="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-850 border border-slate-300 dark:border-slate-700 rounded-2xl text-center text-lg font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15 transition-all shadow-xs" 
+                                   placeholder="Contoh: 1029384" 
+                                   required autofocus />
                         </div>
                     </form>
                 </div>
 
+                <!-- 4. Face Recognition Scanner View -->
                 <div id="face-scanner" class="hidden">
-                    <div
-                        class="relative w-full max-w-sm mx-auto aspect-square bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden">
+                    <div class="relative w-full max-w-sm mx-auto aspect-square bg-slate-950 rounded-3xl overflow-hidden border-2 border-emerald-500/40 shadow-inner">
                         <video id="face-video" class="w-full h-full object-cover" autoplay muted playsinline></video>
-                        <canvas id="face-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                        <canvas id="face-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
-                        <!-- Face Guide Frame -->
+                        <!-- Futuristic Face Guide Frame -->
                         <div class="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
-                            <div class="w-full h-full max-w-[250px] max-h-[250px] relative opacity-50">
-                                <!-- Sudut Kiri Atas -->
-                                <div
-                                    class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-sky-400 rounded-tl-lg animate-pulse">
-                                </div>
-                                <!-- Sudut Kanan Atas -->
-                                <div
-                                    class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-sky-400 rounded-tr-lg animate-pulse">
-                                </div>
-                                <!-- Sudut Kiri Bawah -->
-                                <div
-                                    class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-sky-400 rounded-bl-lg animate-pulse">
-                                </div>
-                                <!-- Sudut Kanan Bawah -->
-                                <div
-                                    class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-sky-400 rounded-br-lg animate-pulse">
-                                </div>
-
-                                <!-- Frame Tengah -->
-                                <div class="absolute inset-4 border-2 border-dashed border-white/40 rounded-[100%]"></div>
+                            <div class="w-full h-full max-w-[240px] max-h-[240px] relative">
+                                <div class="absolute top-0 left-0 w-7 h-7 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl"></div>
+                                <div class="absolute top-0 right-0 w-7 h-7 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl"></div>
+                                <div class="absolute bottom-0 left-0 w-7 h-7 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl"></div>
+                                <div class="absolute bottom-0 right-0 w-7 h-7 border-b-4 border-r-4 border-emerald-400 rounded-br-xl"></div>
+                                <div class="absolute inset-3 border border-emerald-400/30 rounded-full animate-pulse"></div>
                             </div>
                         </div>
 
                         <!-- Loading overlay -->
                         <div id="face-loading-overlay"
-                            class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-20 hidden">
-                            <svg class="animate-spin h-10 w-10 text-sky-500 mb-4" xmlns="http://www.w3.org/2000/svg"
-                                fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                                </circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                            <div class="w-3/4 bg-slate-700 rounded-full h-2.5 mb-2 overflow-hidden">
-                                <div id="face-loading-bar"
-                                    class="bg-sky-500 h-2.5 rounded-full transition-all duration-300 w-0"></div>
+                            class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm z-20 hidden p-6">
+                            <div class="w-10 h-10 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                            <div class="w-full bg-slate-800 rounded-full h-2 mb-2 overflow-hidden">
+                                <div id="face-loading-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-300 w-0"></div>
                             </div>
-                            <p id="face-loading-text" class="text-white font-medium">Memuat Model: 0%</p>
+                            <p id="face-loading-text" class="text-xs text-white font-bold">Memuat Model: 0%</p>
                         </div>
                     </div>
-                    <p id="face-status" class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">Menyiapkan
-                        kamera...</p>
-                    <div id="face-camera-switch-container" class="mt-4 text-center">
+
+                    <p id="face-status" class="mt-3 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        Menyiapkan kamera...
+                    </p>
+
+                    <div id="face-camera-switch-container" class="mt-3 text-center">
                         <button id="face-camera-switch-button"
-                            class="text-sm text-sky-600 dark:text-sky-400 hover:underline flex items-center justify-center mx-auto gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="size-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                            </svg>
-                            Ganti Kamera
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors mx-auto">
+                            <span class="material-icons text-base text-emerald-500">cameraswitch</span>
+                            <span>Ganti Kamera</span>
                         </button>
                     </div>
                 </div>
 
-                <div id="reader-error" class="text-red-500 text-sm mt-4 text-center hidden"></div>
-                <button id="back-to-choice" class="mt-4 text-sm text-slate-500 dark:text-slate-400 hover:underline hidden">
-                    &larr; Kembali ke Pilihan
+                <div id="reader-error" class="text-rose-500 text-xs font-bold mt-4 text-center hidden"></div>
+                
+                <button id="back-to-choice" 
+                        class="mt-6 inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors hidden">
+                    <span class="material-icons text-sm">arrow_back</span>
+                    <span>Kembali ke Pilihan Pemindai</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Pop-up -->
+    <!-- Modal Feedback Pop-up -->
     <div id="attendance-modal"
-        class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 hidden z-50">
+        class="fixed inset-0 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 hidden z-50">
         <div id="modal-content"
-            class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform scale-95 transition-all duration-300">
-            <div id="modal-icon-container" class="mx-auto flex items-center justify-center h-20 w-20 rounded-full mb-5">
-                <svg id="modal-icon-svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor"></svg>
+            class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm p-7 text-center transform scale-95 transition-all duration-300 border border-slate-200/80 dark:border-slate-800">
+            
+            <div id="modal-icon-container" class="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl mb-4 shadow-md">
+                <svg id="modal-icon-svg" class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"></svg>
             </div>
-            <h2 id="modal-title" class="text-2xl font-bold text-slate-800 dark:text-white mb-2"></h2>
-            <div class="mt-4 mb-4">
+
+            <h2 id="modal-title" class="text-lg font-extrabold text-slate-900 dark:text-white mb-2"></h2>
+            
+            <div class="mt-3 mb-4">
                 <span id="modal-student-image-container"
-                    class="inline-block h-24 w-24 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700">
+                    class="inline-block h-20 w-20 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 ring-4 ring-slate-100 dark:ring-slate-800">
                     <img id="modal-student-image" src="" alt="Foto Siswa" class="h-full w-full object-cover hidden">
-                    <svg id="modal-student-placeholder" class="h-full w-full text-slate-300 dark:text-slate-500"
+                    <svg id="modal-student-placeholder" class="h-full w-full text-slate-300 dark:text-slate-600 p-2"
                         fill="currentColor" viewBox="0 0 24 24">
-                        <path
-                            d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                        <path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                 </span>
             </div>
-            <p id="modal-student-name" class="text-xl font-semibold text-sky-700 dark:text-sky-400"></p>
-            <p id="modal-student-nis" class="text-md text-slate-500 dark:text-slate-400 mb-6"></p>
+
+            <p id="modal-student-name" class="text-base font-bold text-sky-600 dark:text-sky-400"></p>
+            <p id="modal-student-nis" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
         </div>
     </div>
 @endsection
+
 
 @push('scripts')
     {{-- Library untuk Face Recognition --}}

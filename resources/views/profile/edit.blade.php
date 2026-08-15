@@ -1,29 +1,35 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Profil Saya') }}
-        </h2>
+        <div>
+            <x-breadcrumb :breadcrumbs="[
+                ['title' => 'Dasbor', 'url' => route('dashboard')],
+                ['title' => 'Profil Pengguna', 'url' => route('profile.edit')]
+            ]" />
+            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
+                Pengaturan Profil & Akun
+            </h1>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            {{-- PERBAIKAN: Menambahkan kelas dark mode --}}
-            <div class="p-4 sm:p-8 bg-white dark:bg-slate-800 shadow-sm sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
+    <div class="space-y-6 max-w-4xl">
+        <!-- Informasi Profil Card -->
+        <div class="p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800">
+            <div class="max-w-xl">
+                @include('profile.partials.update-profile-information-form')
             </div>
+        </div>
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-slate-800 shadow-sm sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
+        <!-- Update Kata Sandi Card -->
+        <div class="p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800">
+            <div class="max-w-xl">
+                @include('profile.partials.update-password-form')
             </div>
+        </div>
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-slate-800 shadow-sm sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
+        <!-- Hapus Akun Card -->
+        <div class="p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800">
+            <div class="max-w-xl">
+                @include('profile.partials.delete-user-form')
             </div>
         </div>
     </div>

@@ -1,86 +1,164 @@
 <x-guest-layout>
     <div class="flex min-h-screen">
-        <!-- Panel Kiri (Gambar) -->
-        <div class="relative hidden w-0 flex-1 lg:block bg-sky-50 dark:bg-slate-800 overflow-hidden group">
+        <!-- Panel Kiri (Hero Showcase - Hidden on Mobile) -->
+        <div class="relative hidden w-0 flex-1 lg:flex flex-col justify-between bg-slate-900 p-12 overflow-hidden group">
+            <!-- Background Image with Gradient Overlay -->
             <div class="absolute inset-0 flex items-center justify-center">
-                <img class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out group-hover:scale-110" src="{{ asset('images/login-illustration.png?v=3') }}" alt="Ilustrasi siswa SMP sedang presensi">
+                <img class="absolute inset-0 h-full w-full object-cover transition-transform duration-[7000ms] ease-out group-hover:scale-105 opacity-50" 
+                     src="{{ asset('images/login-illustration.png?v=3') }}" 
+                     alt="Ilustrasi Presensi Siswa">
             </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-sky-900/80 via-sky-900/20 to-transparent"></div>
-             <div class="absolute bottom-0 left-0 p-12 text-white z-10">
-                 <h2 class="text-3xl font-bold leading-snug drop-shadow-md">Presensi Lebih Mudah, Data Lebih Akurat.</h2>
-                 <p class="mt-2 text-sky-100 drop-shadow">Selamat datang kembali di platform presensi andalan Anda.</p>
-             </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-sky-950/40"></div>
+            
+            <!-- Top Branding -->
+            <div class="relative z-10 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-sky-500/20 backdrop-blur-md border border-sky-400/30 flex items-center justify-center text-sky-400 shadow-lg">
+                    <span class="material-icons text-xl">school</span>
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-lg text-white tracking-tight leading-tight">{{ config('app.name', 'Presensi Siswa') }}</h3>
+                    <p class="text-xs text-sky-300/80 font-medium">{{ $appName ?? 'Portal Kehadiran Digital' }}</p>
+                </div>
+            </div>
+
+            <!-- Bottom Showcase Text -->
+            <div class="relative z-10 max-w-lg">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500/10 border border-sky-400/20 text-sky-300 text-xs font-semibold mb-4 backdrop-blur-sm">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Sistem Presensi Real-Time & Terpadu</span>
+                </div>
+                <h2 class="text-3xl xl:text-4xl font-extrabold text-white leading-tight tracking-tight drop-shadow-sm">
+                    Presensi Lebih Cepat, Data Lebih Akurat.
+                </h2>
+                <p class="mt-3 text-sm text-slate-300 leading-relaxed">
+                    Akses pemindaian QR code instan, monitoring kehadiran wali kelas, serta pengajuan izin digital dalam satu genggaman.
+                </p>
+
+                <div class="mt-8 pt-6 border-t border-white/10 flex items-center gap-6 text-xs text-slate-400">
+                    <div class="flex items-center gap-2">
+                        <span class="material-icons text-base text-sky-400">qr_code_scanner</span>
+                        <span>Scanner Kiosk</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="material-icons text-base text-emerald-400">verified_user</span>
+                        <span>Multi-Role Auth</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="material-icons text-base text-amber-400">insights</span>
+                        <span>Visual Analytics</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Panel Kanan (Form) -->
-        <div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-white dark:bg-slate-900">
-            <div class="mx-auto w-full max-w-sm lg:w-96">
-                <div>
-                       {{-- PERBAIKAN: Menampilkan nama aplikasi dan nama sekolah --}}
-                     <a href="{{ route('login') }}" class="flex items-center gap-3">
-                        <x-application-logo class="h-12 w-auto text-sky-600 dark:text-sky-500" />
+        <!-- Panel Kanan (Form Login) -->
+        <div class="flex flex-1 flex-col justify-center px-6 py-12 sm:px-12 lg:flex-none lg:px-20 xl:px-24 bg-white dark:bg-slate-900">
+            <div class="mx-auto w-full max-w-sm sm:w-96">
+                
+                <!-- Brand Mobile / Form Header -->
+                <div class="text-left">
+                    <div class="flex items-center gap-3 mb-6">
+                        <x-application-logo class="h-11 w-auto text-sky-600 dark:text-sky-400" />
                         <div>
-                            <p class="font-bold text-xl text-slate-800 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'Presensi') }}</p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">{{ $appName ?? 'Nama Sekolah Anda' }}</p>
+                            <p class="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight leading-tight">{{ config('app.name', 'Presensi') }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">{{ $appName ?? 'Portal Kehadiran Digital' }}</p>
                         </div>
-                    </a>
-                    <h2 class="mt-8 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Selamat Datang Kembali</h2>
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Belum punya akun?
-                        <a href="{{ route('register') }}" class="font-medium text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300">Daftar di sini</a>
+                    </div>
+                    
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                        Masuk ke Akun Anda
+                    </h2>
+                    <p class="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        Belum memiliki akun?
+                        <a href="{{ route('register') }}" class="font-bold text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300 transition-colors">Daftar sekarang</a>
                     </p>
                 </div>
 
-                <div class="mt-10">
+                <div class="mt-8" x-data="{ showPass: false }">
                     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-                    <form method="POST" action="{{ route('login') }}" class="space-y-6">
+                    <form method="POST" action="{{ route('login') }}" class="space-y-4">
                         @csrf
+                        
                         <!-- Alamat Email -->
                         <div>
-                            <x-input-label for="email" :value="__('Email')" />
-                            <div class="mt-2">
-                                <x-text-input id="email" class="block w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+                            <label for="email" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                                Alamat Email
+                            </label>
+                            <div class="relative">
+                                <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">mail_outline</span>
+                                <input id="email" 
+                                       type="email" 
+                                       name="email" 
+                                       value="{{ old('email') }}" 
+                                       required 
+                                       autofocus 
+                                       autocomplete="username"
+                                       class="w-full text-xs font-semibold pl-10 pr-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15"
+                                       placeholder="nama@sekolah.sch.id" />
                             </div>
-                            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
                         </div>
 
                         <!-- Password -->
                         <div>
-                            <x-input-label for="password" :value="__('Password')" />
-                            <div class="mt-2">
-                                <x-text-input id="password" class="block w-full" type="password" name="password" required autocomplete="current-password" />
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label for="password" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                                    Kata Sandi
+                                </label>
+                                @if (Route::has('password.request'))
+                                    <a href="{{ route('password.request') }}" class="text-[11px] font-bold text-sky-600 hover:text-sky-500 dark:text-sky-400 transition-colors">
+                                        Lupa sandi?
+                                    </a>
+                                @endif
                             </div>
-                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                            <div class="relative">
+                                <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">lock_outline</span>
+                                <input id="password" 
+                                       :type="showPass ? 'text' : 'password'" 
+                                       name="password" 
+                                       required 
+                                       autocomplete="current-password"
+                                       class="w-full text-xs font-semibold pl-10 pr-11 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15"
+                                       placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" />
+                                <button type="button" 
+                                        @click="showPass = !showPass" 
+                                        class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none">
+                                    <span class="material-icons text-sm" x-text="showPass ? 'visibility_off' : 'visibility'"></span>
+                                </button>
+                            </div>
+                            <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
                         </div>
 
-                        <!-- Ingat Saya & Lupa Password -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <input id="remember_me" name="remember" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-600 dark:bg-slate-800 dark:border-slate-600">
-                                <label for="remember_me" class="ml-3 block text-sm leading-6 text-gray-900 dark:text-gray-300">Ingat saya</label>
-                            </div>
-                            @if (Route::has('password.request'))
-                                <div class="text-sm">
-                                    <a href="{{ route('password.request') }}" class="font-semibold text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300">Lupa password?</a>
-                                </div>
-                            @endif
+                        <!-- Ingat Saya -->
+                        <div class="flex items-center pt-1">
+                            <label class="relative flex items-center gap-2.5 cursor-pointer select-none">
+                                <input id="remember_me" name="remember" type="checkbox" 
+                                       class="w-4 h-4 rounded-lg border-slate-300 dark:border-slate-700 text-sky-600 focus:ring-sky-500 dark:bg-slate-850">
+                                <span class="text-xs font-medium text-slate-600 dark:text-slate-300">Ingat saya di perangkat ini</span>
+                            </label>
                         </div>
 
                         <!-- Tombol Submit -->
-                        <div>
-                            <button type="submit" class="flex w-full justify-center rounded-md bg-sky-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 transition">
-                                Login
+                        <div class="pt-2">
+                            <button type="submit" 
+                                    class="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-lg shadow-sky-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                                <span>Masuk ke Akun</span>
+                                <span class="material-icons text-base">login</span>
                             </button>
                         </div>
                     </form>
                 </div>
-                 <div class="mt-8 text-center">
-                    <a href="{{ route('login') }}" class="text-sm font-medium text-slate-600 hover:text-sky-500 dark:text-slate-400 dark:hover:text-sky-400">
-                        &larr; Kembali ke Beranda
+
+                <!-- Footer Link -->
+                <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+                    <a href="{{ url('/') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition-colors">
+                        <span class="material-icons text-xs">arrow_back</span>
+                        <span>Kembali ke Halaman Beranda</span>
                     </a>
                 </div>
             </div>
         </div>
     </div>
 </x-guest-layout>
+

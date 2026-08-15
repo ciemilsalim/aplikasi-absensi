@@ -1,8 +1,22 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Analitik Grafis Kehadiran Mapel') }}
-        </h2>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+            <div>
+                <x-breadcrumb :breadcrumbs="[
+                    ['title' => 'Laporan Mengajar', 'url' => route('teacher.subject.attendance.report')],
+                    ['title' => 'Analitik Grafis', 'url' => route('teacher.subject.attendance.charts')]
+                ]" />
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
+                    Analitik Visual Kehadiran Mapel
+                </h1>
+            </div>
+
+            <a href="{{ route('teacher.subject.attendance.report') }}" 
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shrink-0">
+                <span class="material-icons text-base text-slate-500">table_chart</span>
+                <span>Matriks Rekap Tabel</span>
+            </a>
+        </div>
     </x-slot>
 
     @push('styles')
@@ -11,106 +25,120 @@
         </style>
     @endpush
 
-    <div class="py-12" x-data="subjectChartAnalytics()" x-init="initData()">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6" x-data="subjectChartAnalytics()" x-init="initData()">
+        
+        <!-- Filter Controls Container -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-6">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="material-icons text-indigo-500 text-lg">tune</span>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Parameter Analisis Mengajar</h3>
+            </div>
             
-            <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h3 class="text-lg font-medium mb-4">Pengaturan Filter Grafik</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        
-                        <!-- Pilihan Kelas & Mata Pelajaran -->
-                        <div>
-                            <x-input-label value="Kelas" />
-                            <select x-model="filters.school_class_id" @change="updateStudents()" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">
-                                <option value="">-- Pilih Kelas --</option>
-                                @foreach($classes as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <x-input-label value="Mata Pelajaran" />
-                            <select x-model="filters.subject_id" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">
-                                <option value="">-- Pilih Mata Pelajaran --</option>
-                                @foreach($subjects as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
+                
+                <!-- Pilihan Kelas -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Kelas</label>
+                    <select x-model="filters.school_class_id" @change="updateStudents()" 
+                            class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
+                        <option value="">-- Pilih Kelas --</option>
+                        @foreach($classes as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <!-- Pilihan Mapel -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Mata Pelajaran</label>
+                    <select x-model="filters.subject_id" 
+                            class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
+                        <option value="">-- Pilih Mapel --</option>
+                        @foreach($subjects as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-                        <div>
-                            <x-input-label value="Tampilan Tren" />
-                            <select x-model="filters.period" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">
-                                <option value="weekly">Mingguan</option>
-                                <option value="monthly">Bulanan</option>
-                            </select>
-                        </div>
+                <!-- Tampilan Tren -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Agregasi</label>
+                    <select x-model="filters.period" 
+                            class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
+                        <option value="weekly">Mingguan</option>
+                        <option value="monthly">Bulanan</option>
+                    </select>
+                </div>
 
-                        <!-- Pilihan Rentang Waktu -->
-                        <div>
-                            <x-input-label value="Tanggal Mulai" />
-                            <input type="date" x-model="filters.start_date" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">
-                        </div>
-                        
-                        <div>
-                            <x-input-label value="Tanggal Selesai" />
-                            <input type="date" x-model="filters.end_date" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">
-                        </div>
+                <!-- Pilihan Rentang Waktu -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Dari Tanggal</label>
+                    <input type="date" x-model="filters.start_date" 
+                           class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Sampai Tanggal</label>
+                    <input type="date" x-model="filters.end_date" 
+                           class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
+                </div>
 
-                        <!-- Target Evaluasi -->
-                        <div>
-                            <x-input-label value="Target Evaluasi" />
-                            <select x-model="filters.target_type" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">
-                                <option value="class">Seluruh Kelas</option>
-                                <option value="student">Siswa Tertentu</option>
-                            </select>
-                        </div>
-                        
-                        <div x-show="filters.target_type === 'student'" x-cloak class="lg:col-span-3">
-                            <x-input-label value="Pilih Siswa" />
-                            <select x-model="filters.student_id" class="mt-1 block w-full lg:w-1/3 border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-sky-500 rounded-md shadow-sm">
-                                <option value="all">-- Pilih Siswa --</option>
-                                <template x-for="student in currentStudents" :key="student.id">
-                                    <option :value="student.id" x-text="student.name"></option>
-                                </template>
-                            </select>
-                        </div>
-
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <button @click="generateChart()" :disabled="isLoading" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 disabled:opacity-50">
-                            <span x-text="isLoading ? 'Memproses...' : 'Tampilkan Analitik'"></span>
-                        </button>
-                    </div>
+                <!-- Target Evaluasi -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Target</label>
+                    <select x-model="filters.target_type" 
+                            class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
+                        <option value="class">Seluruh Kelas</option>
+                        <option value="student">Siswa Tertentu</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Error State -->
-            <div x-show="errorMsg" x-cloak class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Perhatian!</strong>
-                <span class="block sm:inline" x-text="errorMsg"></span>
+            <!-- Pilih Siswa (Conditional) -->
+            <div x-show="filters.target_type === 'student'" x-cloak class="mt-3.5 pt-3.5 border-t border-slate-100 dark:border-slate-800">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Pilih Siswa Spesifik</label>
+                <select x-model="filters.student_id" 
+                        class="w-full sm:w-1/2 md:w-1/3 text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
+                    <option value="all">-- Pilih Siswa --</option>
+                    <template x-for="student in currentStudents" :key="student.id">
+                        <option :value="student.id" x-text="student.name"></option>
+                    </template>
+                </select>
             </div>
 
-            <!-- Chart Results -->
-            <div x-show="hasData" x-cloak class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Pie Chart Summary -->
-                <div class="col-span-1 bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-col items-center">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 text-center">Komposisi Kehadiran Total</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 text-center">Berdasarkan rentang tanggal terpilih</p>
-                    <div class="relative w-full flex justify-center" style="max-width: 300px;">
-                        <canvas id="pieChart"></canvas>
-                    </div>
-                </div>
+            <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                <button @click="generateChart()" :disabled="isLoading" 
+                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50">
+                    <span class="material-icons text-base" x-show="!isLoading">insights</span>
+                    <span x-text="isLoading ? 'Memproses Data...' : 'Tampilkan Analitik'"></span>
+                </button>
+            </div>
+        </div>
 
-                <!-- Bar Chart Timeline -->
-                <div class="col-span-1 lg:col-span-2 bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Tren Perbandingan Status</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Berdasarkan rentang tanggal terpilih (Tampilan: <span x-text="filters.period === 'weekly' ? 'Mingguan' : 'Bulanan'"></span>)</p>
-                    <div class="relative w-full h-72">
-                        <canvas id="barChart"></canvas>
-                    </div>
+        <!-- Error State -->
+        <div x-show="errorMsg" x-cloak 
+             class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-center gap-2" role="alert">
+            <span class="material-icons text-base">error_outline</span>
+            <span x-text="errorMsg"></span>
+        </div>
+
+        <!-- Chart Results -->
+        <div x-show="hasData" x-cloak class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Pie Chart Summary -->
+            <div class="lg:col-span-4 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-6 flex flex-col items-center justify-center">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1 text-center">Komposisi Kehadiran Total</h3>
+                <p class="text-[11px] text-slate-400 mb-4 text-center">Rata-rata persentase periode terpilih</p>
+                <div class="relative w-full aspect-square max-w-[280px] flex items-center justify-center">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Bar Chart Timeline -->
+            <div class="lg:col-span-8 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-6">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">Tren Perbandingan Status</h3>
+                <p class="text-[11px] text-slate-400 mb-4">Visualisasi tren (Tampilan: <span class="font-bold text-slate-700 dark:text-slate-300" x-text="filters.period === 'weekly' ? 'Mingguan' : 'Bulanan'"></span>)</p>
+                <div class="relative w-full h-80">
+                    <canvas id="barChart"></canvas>
                 </div>
             </div>
         </div>
@@ -139,7 +167,6 @@
                 barChartInst: null,
 
                 initData() {
-                    // pre-select first class & subject if available
                     const classSelect = document.querySelector('select[x-model="filters.school_class_id"]');
                     if (classSelect && classSelect.options.length > 1) {
                         this.filters.school_class_id = classSelect.options[1].value;
@@ -204,19 +231,22 @@
                 },
 
                 renderCharts(data) {
-                    const isDarkMode = document.documentElement.classList.contains('dark');
-                    const textColor = isDarkMode ? '#e2e8f0' : '#1e293b';
-                    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-
                     if (this.pieChartInst) this.pieChartInst.destroy();
                     if (this.barChartInst) this.barChartInst.destroy();
+
+                    const colors = {
+                        hadir: '#0284c7', // sky-600
+                        sakit: '#f59e0b', // amber-500
+                        izin: '#8b5cf6',  // purple-500
+                        alpa: '#ef4444'   // rose-500
+                    };
 
                     // Pie Chart
                     const ctxPie = document.getElementById('pieChart').getContext('2d');
                     this.pieChartInst = new Chart(ctxPie, {
                         type: 'doughnut',
                         data: {
-                            labels: ['Hadir', 'Sakit', 'Izin', 'Alpa/Tanpa Ket.'],
+                            labels: ['Hadir', 'Sakit', 'Izin', 'Alpa / Tanpa Ket.'],
                             datasets: [{
                                 data: [
                                     data.summary.hadir,
@@ -224,10 +254,9 @@
                                     data.summary.izin,
                                     data.summary.alpa
                                 ],
-                                backgroundColor: [
-                                    '#22c55e', '#eab308', '#3b82f6', '#ef4444'
-                                ],
-                                borderWidth: 0
+                                backgroundColor: Object.values(colors),
+                                borderWidth: 0,
+                                borderRadius: 4
                             }]
                         },
                         options: {
@@ -236,7 +265,7 @@
                             plugins: {
                                 legend: {
                                     position: 'bottom',
-                                    labels: { color: textColor }
+                                    labels: { boxWidth: 12, padding: 14 }
                                 },
                                 tooltip: {
                                     callbacks: { label: (context) => ' ' + context.label + ': ' + context.parsed + '%' }
@@ -255,25 +284,25 @@
                                 {
                                     label: 'Hadir (%)',
                                     data: data.trendData.hadir,
-                                    backgroundColor: '#22c55e',
+                                    backgroundColor: colors.hadir,
                                     borderRadius: 4
                                 },
                                 {
                                     label: 'Sakit (%)',
                                     data: data.trendData.sakit,
-                                    backgroundColor: '#eab308',
+                                    backgroundColor: colors.sakit,
                                     borderRadius: 4
                                 },
                                 {
                                     label: 'Izin (%)',
                                     data: data.trendData.izin,
-                                    backgroundColor: '#3b82f6',
+                                    backgroundColor: colors.izin,
                                     borderRadius: 4
                                 },
                                 {
                                     label: 'Alpa (%)',
                                     data: data.trendData.alpa,
-                                    backgroundColor: '#ef4444',
+                                    backgroundColor: colors.alpa,
                                     borderRadius: 4
                                 }
                             ]
@@ -284,18 +313,17 @@
                             scales: {
                                 y: {
                                     beginAtZero: true, max: 100,
-                                    ticks: { color: textColor, callback: (val) => val + '%' },
-                                    grid: { color: gridColor }
+                                    ticks: { callback: (val) => val + '%' },
+                                    grid: { color: 'rgba(148, 163, 184, 0.1)' }
                                 },
                                 x: {
-                                    ticks: { color: textColor },
                                     grid: { display: false }
                                 }
                             },
                             plugins: {
                                 legend: {
-                                    position: 'bottom',
-                                    labels: { color: textColor }
+                                    position: 'top',
+                                    labels: { boxWidth: 12, padding: 12 }
                                 },
                                 tooltip: {
                                     mode: 'index',
@@ -313,3 +341,4 @@
     </script>
     @endpush
 </x-app-layout>
+

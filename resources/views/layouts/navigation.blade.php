@@ -1,48 +1,62 @@
-{{-- Menambahkan state 'showLogoutConfirm' untuk modal konfirmasi logout --}}
-<nav x-data="{ open: false, showLogoutConfirm: false }" @keydown.escape.window="showLogoutConfirm = false" class="bg-white dark:bg-slate-800 shadow-sm border-b border-gray-100 dark:border-slate-700">
+<nav x-data="{ open: false, showLogoutConfirm: false }" @keydown.escape.window="showLogoutConfirm = false" 
+     class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
-            <div class="flex">
+            <div class="flex items-center gap-8">
                 <!-- Logo -->
-               <div class="shrink-0 flex items-center">
-                    <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="flex items-center gap-3">
-                        <x-application-logo class="block h-9 w-auto" />
-                        <span class="block font-bold text-xl text-slate-800 dark:text-white tracking-tight">
-                            {{ config('app.name', 'Presensi') }}
-                        </span>
+                <div class="shrink-0 flex items-center">
+                    <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-2xl bg-sky-500/10 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
+                            <span class="material-icons text-xl">fingerprint</span>
+                        </div>
+                        <div>
+                            <span class="block font-extrabold text-base text-slate-900 dark:text-white tracking-tight leading-none">
+                                {{ config('app.name', 'Presensi') }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-semibold leading-none">Sistem Absensi Terpadu</span>
+                        </div>
                     </a>
                 </div>
 
                 <!-- Navigation Links (Desktop) -->
-                <div class="hidden space-x-1 lg:-my-px lg:ml-10 lg:flex">
+                <div class="hidden lg:flex lg:items-center lg:gap-1.5">
                     @auth
                         @if(auth()->user()->role === 'admin')
-                            <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('admin.dashboard') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
-                                Dasbor
+                            <a href="{{ route('admin.dashboard') }}" 
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('admin.dashboard') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                <span class="material-icons text-base">dashboard</span>
+                                <span>Dasbor</span>
                             </a>
                         @endif
                         @if(auth()->user()->role === 'parent')
-                             <a href="{{ route('parent.dashboard') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('parent.dashboard') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
-                                Dasbor Anak
+                            <a href="{{ route('parent.dashboard') }}" 
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('parent.dashboard') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                <span class="material-icons text-base">family_restroom</span>
+                                <span>Dasbor Anak</span>
                             </a>
-                            <a href="{{ route('parent.leave-requests.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('parent.leave-requests.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                                Izin/Sakit
+                            <a href="{{ route('parent.leave-requests.index') }}" 
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('parent.leave-requests.*') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                <span class="material-icons text-base">event_note</span>
+                                <span>Izin & Sakit</span>
                             </a>
                         @endif
-                         @if(auth()->user()->role === 'teacher')
-                            <a href="{{ route('teacher.dashboard') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('teacher.dashboard') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">Dasbor</a>
+                        @if(auth()->user()->role === 'teacher')
+                            <a href="{{ route('teacher.dashboard') }}" 
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('teacher.dashboard') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                <span class="material-icons text-base">dashboard</span>
+                                <span>Dasbor Guru</span>
+                            </a>
                             @if(Auth::user()->teacher && Auth::user()->teacher->homeroomClass)
-                                <a href="{{ route('teacher.leave_requests.index') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('teacher.leave_requests.*') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" /></svg>
-                                    Pengajuan Izin
+                                <a href="{{ route('teacher.leave_requests.index') }}" 
+                                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('teacher.leave_requests.*') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                    <span class="material-icons text-base">assignment_turned_in</span>
+                                    <span>Persetujuan Izin</span>
                                 </a>
-                                <a href="{{ route('teacher.attendance.history') }}" class="inline-flex items-center px-4 pt-1 text-sm font-medium leading-5 transition {{ request()->routeIs('teacher.attendance.history') ? 'border-b-2 border-sky-500 text-sky-700 dark:text-sky-400' : 'text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200' }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18" /></svg>
-                                    Riwayat Kehadiran
+                                <a href="{{ route('teacher.attendance.history') }}" 
+                                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('teacher.attendance.history') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                    <span class="material-icons text-base">calendar_view_month</span>
+                                    <span>Matriks Kelas</span>
                                 </a>
                             @endif
                         @endif
@@ -50,100 +64,144 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden lg:flex lg:items-center lg:ml-6">
+            <!-- Settings Dropdown / Public Auth Buttons -->
+            <div class="hidden lg:flex lg:items-center lg:gap-3">
                 @auth
                     <div x-data="{ dropdownOpen: false }" class="relative">
-                        <button @click="dropdownOpen = !dropdownOpen" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-600 dark:text-gray-300 bg-white dark:bg-slate-800 hover:text-slate-800 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 text-slate-500 dark:text-gray-400">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
-                            <div>{{ Auth::user()->name }}</div>
-                            <div class="ml-1"><svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
-                        </button>
-                        <div x-show="dropdownOpen" @click.away="dropdownOpen = false" x-transition class="absolute right-0 mt-2 w-48 rounded-md shadow-lg origin-top-right z-50" style="display: none;">
-                            <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white dark:bg-slate-700">
-                                <a href="{{ route('profile.edit') }}" class="flex items-center w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                                    Profil
-                                </a>
-                                {{-- Mengubah link logout untuk memicu modal --}}
-                                <a href="#" @click.prevent="showLogoutConfirm = true" class="flex items-center w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 focus:outline-none focus:bg-gray-100 dark:focus:bg-slate-600 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
-                                    Log Out
-                                </a>
+                        <button @click="dropdownOpen = !dropdownOpen" 
+                                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 transition shadow-2xs">
+                            <div class="w-6 h-6 rounded-xl bg-sky-600 text-white text-[10px] font-bold flex items-center justify-center">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                             </div>
+                            <span>{{ Auth::user()->name }}</span>
+                            <span class="material-icons text-sm text-slate-400">expand_more</span>
+                        </button>
+                        <div x-show="dropdownOpen" @click.away="dropdownOpen = false" x-transition 
+                             class="absolute right-0 mt-2 w-52 rounded-2xl shadow-xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 py-1.5 z-50 text-xs font-semibold" style="display: none;">
+                            <a href="{{ route('profile.edit') }}" 
+                               class="flex items-center gap-2.5 px-4 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800 transition">
+                                <span class="material-icons text-base text-slate-400">person_outline</span>
+                                <span>Profil Pengguna</span>
+                            </a>
+                            <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
+                            <a href="#" @click.prevent="showLogoutConfirm = true; dropdownOpen = false" 
+                               class="flex items-center gap-2.5 px-4 py-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
+                                <span class="material-icons text-base text-rose-500">logout</span>
+                                <span>Keluar (Log Out)</span>
+                            </a>
                         </div>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="inline-flex items-center text-sm font-medium text-slate-600 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" /></svg>
-                        Log in
+                    <a href="{{ route('login') }}" 
+                       class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
+                        <span class="material-icons text-sm">login</span>
+                        <span>Masuk</span>
                     </a>
                     @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="ml-4 inline-flex items-center text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3.375 19.5h17.25a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H3.375c-1.24 0-2.25 1.01-2.25 2.25v10.5a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
-                            Register
+                        <a href="{{ route('register') }}" 
+                           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-sm shadow-sky-600/20 transition-all active:scale-95">
+                            <span class="material-icons text-sm">person_add</span>
+                            <span>Daftar Akun</span>
                         </a>
                     @endif
                 @endauth
             </div>
 
-            <!-- Hamburger -->
-            @guest
-                <div class="-mr-2 flex items-center lg:hidden">
-                    <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 focus:outline-none transition">
-                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /><path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-            @endguest
+            <!-- Hamburger Button (Mobile) -->
+            <div class="-mr-2 flex items-center lg:hidden">
+                <button @click="open = ! open" 
+                        class="p-2 rounded-2xl text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition">
+                    <span class="material-icons text-2xl" x-text="open ? 'close' : 'menu'"></span>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden" x-show="open" x-transition>
-        <div class="pt-2 pb-3 space-y-1">
+    <!-- Responsive Mobile Drawer Menu -->
+    <div x-show="open" x-transition class="lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 pt-3 pb-5 space-y-3">
+        <div class="space-y-1">
             @if(Auth::guest() || (Auth::check() && in_array(auth()->user()->role, ['admin', 'operator', 'teacher'])))
-                <x-responsive-nav-link :href="route('scanner')" :active="request()->routeIs('scanner')">Pemindai</x-responsive-nav-link>
+                <a href="{{ route('scanner') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                    <span class="material-icons text-base text-sky-500">qr_code_scanner</span>
+                    <span>Pemindai Kiosk</span>
+                </a>
             @endif
             @auth
                 @if(auth()->user()->role === 'admin')
-                    <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dasbor</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="env('SIPADA_URL', 'http://localhost:8000') . '/dashboard'" class="text-sky-600 dark:text-sky-400 font-semibold bg-sky-50 dark:bg-sky-950/20">Portal Data SIPADA</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.leave_requests.index')" :active="request()->routeIs('admin.leave_requests.*')">Pengajuan Izin</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.reports.create')" :active="request()->routeIs('admin.reports.*')">Laporan</x-responsive-nav-link>
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-sky-500">dashboard</span>
+                        <span>Dasbor Admin</span>
+                    </a>
+                    <a href="{{ route('admin.leave_requests.index') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-sky-500">assignment_turned_in</span>
+                        <span>Persetujuan Izin</span>
+                    </a>
+                    <a href="{{ route('admin.reports.create') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-sky-500">picture_as_pdf</span>
+                        <span>Laporan Presensi</span>
+                    </a>
                 @endif
                 @if(auth()->user()->role === 'parent')
-                    <x-responsive-nav-link :href="route('parent.dashboard')" :active="request()->routeIs('parent.dashboard')">Dasbor Anak</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('parent.leave-requests.index')" :active="request()->routeIs('parent.leave-requests.*')">Izin/Sakit</x-responsive-nav-link>
+                    <a href="{{ route('parent.dashboard') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-sky-500">family_restroom</span>
+                        <span>Dasbor Anak</span>
+                    </a>
+                    <a href="{{ route('parent.leave-requests.index') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-sky-500">event_note</span>
+                        <span>Pengajuan Izin/Sakit</span>
+                    </a>
                 @endif
                 @if(auth()->user()->role === 'teacher')
-                    <x-responsive-nav-link :href="route('teacher.dashboard')" :active="request()->routeIs('teacher.dashboard')">Dasbor</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('sso.lms')" class="text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/20 border-l-4 border-indigo-500">LMS Mokopani</x-responsive-nav-link>
+                    <a href="{{ route('teacher.dashboard') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-sky-500">dashboard</span>
+                        <span>Dasbor Guru</span>
+                    </a>
                     @if(Auth::user()->teacher && Auth::user()->teacher->homeroomClass)
-                        <x-responsive-nav-link :href="route('teacher.leave_requests.index')" :active="request()->routeIs('teacher.leave_requests.*')">Pengajuan Izin</x-responsive-nav-link>
-                        <x-responsive-nav-link :href="route('teacher.attendance.history')" :active="request()->routeIs('teacher.attendance.history')">Riwayat Kehadiran</x-responsive-nav-link>
+                        <a href="{{ route('teacher.leave_requests.index') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                            <span class="material-icons text-base text-sky-500">assignment_turned_in</span>
+                            <span>Validasi Izin Siswa</span>
+                        </a>
+                        <a href="{{ route('teacher.attendance.history') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
+                            <span class="material-icons text-base text-sky-500">calendar_view_month</span>
+                            <span>Riwayat Matriks Kelas</span>
+                        </a>
                     @endif
                 @endif
             @endauth
         </div>
 
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-slate-600">
+        <!-- Responsive User Profile / Auth Area -->
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
             @auth
-                <div class="px-4">
-                    <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
-                    <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                <div class="flex items-center gap-3 px-3 py-2">
+                    <div class="w-9 h-9 rounded-2xl bg-sky-600 text-white font-bold text-xs flex items-center justify-center">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                    <div>
+                        <div class="font-bold text-xs text-slate-900 dark:text-white">{{ Auth::user()->name }}</div>
+                        <div class="text-[11px] text-slate-400">{{ Auth::user()->email }}</div>
+                    </div>
                 </div>
-                <div class="mt-3 space-y-1">
-                    <x-responsive-nav-link :href="route('profile.edit')">Profil</x-responsive-nav-link>
-                    <x-responsive-nav-link href="#" @click.prevent="showLogoutConfirm = true">Log Out</x-responsive-nav-link>
+                <div class="mt-2 space-y-1">
+                    <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <span class="material-icons text-sm text-slate-400">person_outline</span>
+                        <span>Profil Pengguna</span>
+                    </a>
+                    <button @click="showLogoutConfirm = true; open = false" type="button" 
+                            class="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-2xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40">
+                        <span class="material-icons text-sm">logout</span>
+                        <span>Log Out</span>
+                    </button>
                 </div>
             @else
-                <div class="space-y-1">
-                    <x-responsive-nav-link :href="route('login')">Log in</x-responsive-nav-link>
+                <div class="grid grid-cols-2 gap-2 pt-2">
+                    <a href="{{ route('login') }}" class="flex items-center justify-center py-2.5 px-3 rounded-2xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Masuk
+                    </a>
                     @if (Route::has('register'))
-                        <x-responsive-nav-link :href="route('register')">Register</x-responsive-nav-link>
+                        <a href="{{ route('register') }}" class="flex items-center justify-center py-2.5 px-3 rounded-2xl bg-sky-600 text-white text-xs font-bold shadow-sm">
+                            Daftar
+                        </a>
                     @endif
                 </div>
             @endauth
@@ -155,28 +213,57 @@
         @csrf
     </form>
 
-    {{-- Modal Konfirmasi Logout --}}
-    <div x-show="showLogoutConfirm" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" style="display: none;">
-        <div @click.away="showLogoutConfirm = false" x-show="showLogoutConfirm" x-transition class="w-full max-w-md p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl">
-            <div class="text-center">
-                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
+    {{-- Modal Konfirmasi Logout (Teleported to body for precise full-screen centering) --}}
+    <template x-teleport="body">
+        <div x-show="showLogoutConfirm" 
+             x-cloak
+             style="display: none;" 
+             class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            
+            <!-- Backdrop Overlay -->
+            <div class="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity" 
+                 x-show="showLogoutConfirm"
+                 x-transition:enter="ease-out duration-200" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-150" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0"
+                 @click="showLogoutConfirm = false"></div>
+            
+            <!-- Modal Content Box -->
+            <div @click.away="showLogoutConfirm = false" 
+                 x-show="showLogoutConfirm" 
+                 x-transition:enter="ease-out duration-200" 
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-2" 
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0" 
+                 x-transition:leave="ease-in duration-150" 
+                 x-transition:leave-start="opacity-100 scale-100 translate-y-0" 
+                 x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                 class="relative bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200/80 dark:border-slate-800 max-w-sm w-full text-center z-10 transform transition-all">
+                
+                <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 mb-4 ring-8 ring-rose-500/10">
+                    <span class="material-icons text-3xl">logout</span>
                 </div>
-                <h3 class="mt-5 text-lg font-medium text-gray-900 dark:text-white">Konfirmasi Log Out</h3>
-                <div class="mt-2">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Apakah Anda yakin ingin keluar dari sesi ini?
-                    </p>
+                
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Konfirmasi Keluar</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                    Apakah Anda yakin ingin keluar dari sesi akun ini?
+                </p>
+
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    <button @click="showLogoutConfirm = false" type="button" 
+                            class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                        Batal
+                    </button>
+                    <button @click="$refs.logoutForm.submit()" type="button" 
+                            class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-600/25 transition-all active:scale-95">
+                        Ya, Keluar
+                    </button>
                 </div>
-            </div>
-            <div class="mt-6 flex justify-center gap-4">
-                <x-secondary-button @click="showLogoutConfirm = false">
-                    Batal
-                </x-secondary-button>
-                <x-danger-button @click="$refs.logoutForm.submit()">
-                    Ya, Log Out
-                </x-danger-button>
             </div>
         </div>
-    </div>
+    </template>
 </nav>
+
+
