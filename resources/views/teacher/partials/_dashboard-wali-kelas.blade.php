@@ -125,7 +125,7 @@
                                 <div class="flex items-center gap-3 min-w-0">
                                     <div class="relative group flex-shrink-0">
                                         <img class="h-11 w-11 rounded-full object-cover border-2 border-slate-200 dark:border-slate-600 shadow-sm" 
-                                             src="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) . '&color=7F9CF5&background=EBF4FF' }}" 
+                                             src="{{ $student->photo_url }}" 
                                              alt="{{ $student->name }}">
                                         
                                         <!-- Tombol Ubah Foto -->
@@ -286,7 +286,7 @@
                                         <div class="flex items-center gap-3">
                                             <div class="relative group">
                                                 <img class="h-10 w-10 rounded-full object-cover border-2 border-slate-200 dark:border-slate-700" 
-                                                     src="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) . '&color=7F9CF5&background=EBF4FF' }}" 
+                                                     src="{{ $student->photo_url }}" 
                                                      alt="{{ $student->name }}">
                                                 
                                                 <!-- Tombol Ubah Foto (Wali Kelas) -->
@@ -369,11 +369,7 @@
                     @forelse($studentsForAttentionWali as $student)
                     <li class="p-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-slate-700/50">
                         <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600 border border-slate-300 dark:border-slate-600">
-                            @if($student->photo)
-                                <img src="{{ asset('storage/' . $student->photo) }}" class="h-full w-full object-cover">
-                            @else
-                                <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                            @endif
+                            <img src="{{ $student->photo_url }}" class="h-full w-full object-cover" alt="{{ $student->name }}">
                         </span>
                         <div>
                             <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $student->name }}</p>
@@ -437,11 +433,7 @@
                     <li class="p-4 flex items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
                             <span class="inline-block h-10 w-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-600 border border-slate-300 dark:border-slate-600">
-                                @if($attendance->student->photo)
-                                    <img src="{{ asset('storage/' . $attendance->student->photo) }}" class="h-full w-full object-cover">
-                                @else
-                                    <svg class="h-full w-full text-slate-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                                @endif
+                                <img src="{{ $attendance->student->photo_url }}" class="h-full w-full object-cover" alt="{{ $attendance->student->name }}">
                             </span>
                             <div>
                                 <p class="font-semibold text-sm text-slate-800 dark:text-white">{{ $attendance->student->name }}</p>
