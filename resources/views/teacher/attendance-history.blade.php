@@ -59,17 +59,43 @@
                         <span class="material-icons text-sm">filter_alt</span>
                         <span>Filter</span>
                     </button>
-                    <a href="{{ route('teacher.attendance.print', ['month' => $selectedDate->format('Y-m')]) }}" target="_blank" 
-                       class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors">
-                        <span class="material-icons text-sm text-slate-500">print</span>
-                        <span>Cetak Bulanan</span>
-                    </a>
+                    <!-- Cetak Bulanan Dropdown (A4 / Folio) -->
+                    <div x-data="{ openPrintMonthly: false }" class="relative">
+                        <button @click="openPrintMonthly = !openPrintMonthly" type="button" 
+                                class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shadow-xs">
+                            <span class="material-icons text-sm text-slate-500">print</span>
+                            <span>Cetak Bulanan</span>
+                            <span class="material-icons text-xs text-slate-400">expand_more</span>
+                        </button>
+                        <div x-show="openPrintMonthly" @click.outside="openPrintMonthly = false" x-transition 
+                             class="absolute left-0 mt-2 w-52 rounded-2xl bg-white dark:bg-slate-850 shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-30" style="display: none;">
+                            <div class="px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pilih Ukuran Kertas</div>
+                            <a href="{{ route('teacher.attendance.print', ['month' => $selectedDate->format('Y-m'), 'paper_size' => 'a4']) }}" target="_blank" 
+                               class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
+                                <span class="material-icons text-sm text-sky-500">description</span>
+                                <div>
+                                    <div class="font-bold">Kertas A4</div>
+                                    <div class="text-[10px] text-slate-400 font-normal">Landscape (297 x 210 mm)</div>
+                                </div>
+                            </a>
+                            <a href="{{ route('teacher.attendance.print', ['month' => $selectedDate->format('Y-m'), 'paper_size' => 'folio']) }}" target="_blank" 
+                               class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                <span class="material-icons text-sm text-indigo-500">article</span>
+                                <div>
+                                    <div class="font-bold">Kertas Folio / F4</div>
+                                    <div class="text-[10px] text-slate-400 font-normal">Landscape (330 x 215 mm)</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
                     <a href="{{ route('teacher.attendance.export.excel', ['month' => $selectedDate->format('Y-m')]) }}" 
                        class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-900/40 font-bold text-xs transition-colors">
                         <span class="material-icons text-sm text-emerald-600">table_view</span>
                         <span>Excel</span>
                     </a>
                 </form>
+
                 
                 <!-- Trimester Print -->
                 <form method="GET" action="{{ route('teacher.attendance.print_trimester') }}" class="flex flex-wrap items-center gap-2 pt-3 lg:pt-0 lg:border-l lg:pl-5 border-slate-200 dark:border-slate-800" target="_blank">

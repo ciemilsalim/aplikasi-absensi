@@ -526,6 +526,8 @@ class DashboardController extends Controller
         });
 
         $attendanceSummary = [];
+        $effectiveDaysCount = $workdays->count();
+
         foreach ($students as $student) {
             $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
             $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
@@ -548,26 +550,72 @@ class DashboardController extends Controller
                 }
             }
 
+            $totalAbsen = $sakitCount + $izinCount + $alpaCount;
+            if ($effectiveDaysCount > 0) {
+                $persen = (($effectiveDaysCount - $totalAbsen) / $effectiveDaysCount) * 100;
+                $persenStr = round($persen, 0) . '%';
+            } else {
+                $persen = 0;
+                $persenStr = '0%';
+            }
+
             $summary = [
                 'hadir' => $hadirCount,
                 'sakit' => $sakitCount,
                 'izin' => $izinCount,
                 'alpa' => $alpaCount,
+                'jml' => $totalAbsen,
+                'persen' => $persen,
+                'persen_str' => $persenStr
             ];
             $attendanceSummary[$student->id] = $summary;
         }
 
+        // Summary Statistics for the Class
+        $totalStudents = $students->count();
+        $classAverageAttendance = $totalStudents > 0 ? round(collect($attendanceSummary)->avg('persen'), 1) : 0;
+        $perfectAttendanceCount = collect($attendanceSummary)->filter(function($s) { return $s['persen'] >= 100; })->count();
+        $needsAttentionCount = collect($attendanceSummary)->filter(function($s) { return $s['persen'] < 85; })->count();
+
+        // Logo Base64
+        $logoPath = $settings->get('app_logo');
+        $logoBase64 = null;
+        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
+            try {
+                $logoData = \Illuminate\Support\Facades\Storage::disk('public')->get($logoPath);
+                $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
+            } catch (\Exception $e) { }
+        }
+
+        $paperSize = strtolower($request->input('paper_size', 'a4'));
+
         return view('teacher.print.attendance-report', [
             'settings' => $settings,
+            'schoolName' => $settings->get('school_name', config('app.name')),
+            'schoolAddress' => $settings->get('school_address'),
+            'schoolCity' => $settings->get('school_city', '..................'),
+            'logoBase64' => $logoBase64,
             'class' => $class,
             'students' => $students,
             'attendances' => $attendances,
             'period' => $workdays,
             'selectedDate' => $selectedDate,
+            'effectiveDaysCount' => $effectiveDaysCount,
             'attendanceSummary' => $attendanceSummary,
-            'selfStudyDays' => $selfStudyDays
+            'selfStudyDays' => $selfStudyDays,
+            'totalStudents' => $totalStudents,
+            'classAverageAttendance' => $classAverageAttendance,
+            'perfectAttendanceCount' => $perfectAttendanceCount,
+            'needsAttentionCount' => $needsAttentionCount,
+            'headmasterName' => $settings->get('school_headmaster_name', '-'),
+            'headmasterNip' => $settings->get('school_headmaster_nip', '-'),
+            'homeroomTeacherName' => $teacher->name ?? '-',
+            'homeroomTeacherNip' => $teacher->nip ?? '-',
+            'paperSize' => $paperSize,
+            'printDate' => now()->translatedFormat('d F Y, H:i:s'),
         ]);
     }
+
 
     public function printTrimesterAttendance(Request $request)
     {
