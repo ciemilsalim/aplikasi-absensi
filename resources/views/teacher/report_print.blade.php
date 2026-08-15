@@ -465,7 +465,7 @@
                         <p style="margin: 2px 0 0 0; font-size: 8pt; color: #475569;">NIP. {{ $schoolIdentity['headmaster_nip'] ?? '......................................................' }}</p>
                     </td>
                     <td>
-                        <p style="margin: 0; color: #475569;">{{ $schoolIdentity['address'] ? (explode(',', $schoolIdentity['address'])[1] ?? 'Sekolah') : 'Sekolah' }}, {{ now()->isoFormat('D MMMM YYYY') }}</p>
+                        <p style="margin: 0; color: #475569;">Buol, {{ now()->isoFormat('D MMMM YYYY') }}</p>
                         <p style="margin: 2px 0 0 0; font-weight: 700; color: #0f172a;">Guru Mata Pelajaran,</p>
                         <div class="signature-space"></div>
                         <p class="signature-name" style="margin: 0;">{{ Auth::user()->name }}</p>
