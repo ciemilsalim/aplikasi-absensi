@@ -28,36 +28,50 @@
                     @auth
                         {{-- Dashboard: Admin / Operator / Satpam --}}
                         @if(auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
+                            @php $isActive = request()->routeIs('admin.dashboard'); @endphp
                             <li>
                                 <a href="{{ route('admin.dashboard') }}" :title="sidebarCollapsed ? 'Dasbor Utama' : ''" 
-                                   class="{{ request()->routeIs('admin.dashboard') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110">dashboard</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Dasbor Utama</span>
+                                    @if($isActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
                         
                         {{-- Dashboard: Parent --}}
                         @elseif(auth()->user()->hasRole('parent'))
+                            @php $isActive = request()->routeIs('parent.dashboard'); @endphp
                             <li>
                                 <a href="{{ route('parent.dashboard') }}" :title="sidebarCollapsed ? 'Dasbor Anak' : ''" 
-                                   class="{{ request()->routeIs('parent.dashboard') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110">dashboard</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Dasbor Anak</span>
+                                    @if($isActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
+                            
+                            @php $isActive = request()->routeIs('parent.leave-requests.*'); @endphp
                             <li>
                                 <a href="{{ route('parent.leave-requests.index') }}" :title="sidebarCollapsed ? 'Izin & Sakit' : ''" 
-                                   class="{{ request()->routeIs('parent.leave-requests.*') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110">assignment_turned_in</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Izin / Sakit</span>
+                                    @if($isActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
+                            
                             <li>
                                 <a href="{{ route('parent.dashboard') }}#ekskul" :title="sidebarCollapsed ? 'Ekstrakurikuler' : ''" 
-                                   class="text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
                                     <span class="flex gap-x-3 items-center">
                                         <span class="material-icons text-xl shrink-0 text-purple-500">star</span>
@@ -66,9 +80,11 @@
                                     <span x-show="!sidebarCollapsed" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 ml-auto">Kegiatan</span>
                                 </a>
                             </li>
+                            
+                            @php $isActive = request()->routeIs('chat.*'); @endphp
                             <li>
                                 <a href="{{ route('chat.index') }}" :title="sidebarCollapsed ? 'Obrolan' : ''" 
-                                   class="{{ request()->routeIs('chat.*') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
                                     <span class="flex gap-x-3 items-center">
                                         <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110">chat</span>
@@ -76,54 +92,80 @@
                                     </span>
                                     @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
                                         <span class="inline-flex items-center justify-center h-4.5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-xs" :class="sidebarCollapsed ? 'absolute -top-1 -right-1' : ''">{{ $totalUnreadMessagesCount }}</span>
+                                    @elseif($isActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
                                     @endif
                                 </a>
                             </li>
+                            
+                            @php $isActive = request()->routeIs('parent.guide'); @endphp
                             <li>
                                 <a href="{{ route('parent.guide') }}" :title="sidebarCollapsed ? 'Panduan Penggunaan' : ''" 
-                                   class="{{ request()->routeIs('parent.guide') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0 text-sky-500">auto_stories</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Panduan Sistem</span>
+                                    @if($isActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
 
                         {{-- Dashboard: Teacher --}}
                         @elseif(auth()->user()->hasRole('teacher'))
+                            @php $isDashboardActive = request()->routeIs('teacher.dashboard'); @endphp
                             <li>
                                 <a href="{{ route('teacher.dashboard') }}" :title="sidebarCollapsed ? 'Dasbor Guru' : ''" 
-                                   class="{{ request()->routeIs('teacher.dashboard') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isDashboardActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110">dashboard</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Dasbor Guru</span>
+                                    @if($isDashboardActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
+                            
+                            {{-- Absensi Guru (Hanya aktif untuk rute absensi mandiri guru) --}}
+                            @php $isTeacherAttendanceActive = request()->routeIs(['teacher.attendance.dashboard', 'teacher.attendance.scanner']); @endphp
                             <li>
                                 <a href="{{ route('teacher.attendance.dashboard') }}" :title="sidebarCollapsed ? 'Absensi Guru' : ''" 
-                                   class="{{ request()->routeIs('teacher.attendance.*') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isTeacherAttendanceActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110">person_pin</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Absensi Saya</span>
+                                    @if($isTeacherAttendanceActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
                         @endif
 
                         {{-- Scanner Menus for Staff & Teachers --}}
                         @if(auth()->user()->hasAnyRole(['admin', 'operator', 'teacher', 'satpam']))
+                            @php $isScannerActive = request()->routeIs('scanner'); @endphp
                             <li>
                                 <a href="{{ route('scanner') }}" :title="sidebarCollapsed ? 'Pemindai Hadir' : ''" 
-                                   class="{{ request()->routeIs('scanner') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isScannerActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110 text-sky-600 dark:text-sky-400">qr_code_scanner</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Pemindai Masuk/Pulang</span>
+                                    @if($isScannerActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
+                            
+                            @php $isPermitActive = request()->routeIs('permit.scanner'); @endphp
                             <li>
                                 <a href="{{ route('permit.scanner') }}" :title="sidebarCollapsed ? 'Pemindai Izin Keluar' : ''" 
-                                   class="{{ request()->routeIs('permit.scanner') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isPermitActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110 text-indigo-600 dark:text-indigo-400">assignment</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Pemindai Izin Keluar</span>
+                                    @if($isPermitActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
                         @endif
@@ -149,37 +191,49 @@
                         </ul>
                     </li>
 
+                    {{-- Guru Mata Pelajaran --}}
                     @if(auth()->user()->teacher?->teachingAssignments()->exists())
                     <li>
                         <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Guru Mata Pelajaran</div>
                         <ul role="list" class="mt-1.5 space-y-1">
+                            @php $isSubjectReportActive = request()->routeIs(['teacher.subject.attendance.report', 'teacher.subject.attendance.preview', 'teacher.subject.attendance.print', 'teacher.subject.attendance.charts']); @endphp
                             <li>
                                 <a href="{{ route('teacher.subject.attendance.report') }}" :title="sidebarCollapsed ? 'Rekap Absensi Mapel' : ''" 
-                                   class="{{ request()->routeIs('teacher.subject.attendance.report*') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isSubjectReportActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0">assessment</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Rekap Absensi Mapel</span>
+                                    @if($isSubjectReportActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
+                            
+                            @php $isSubjectHistoryActive = request()->routeIs(['teacher.subject.attendance.history', 'teacher.subject.attendance.scanner']); @endphp
                             <li>
                                 <a href="{{ route('teacher.subject.attendance.history') }}" :title="sidebarCollapsed ? 'Riwayat Presensi Mapel' : ''" 
-                                   class="{{ request()->routeIs('teacher.subject.attendance.history') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isSubjectHistoryActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0">history_edu</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Riwayat Presensi Mapel</span>
+                                    @if($isSubjectHistoryActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
                         </ul>
                     </li>
                     @endif
 
+                    {{-- Wali Kelas --}}
                     @if(auth()->user()->teacher?->homeroomClass)
                     <li>
                         <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Wali Kelas</div>
                         <ul role="list" class="mt-1.5 space-y-1">
+                            @php $isLeaveActive = request()->routeIs('teacher.leave_requests.*'); @endphp
                             <li>
                                 <a href="{{ route('teacher.leave_requests.index') }}" :title="sidebarCollapsed ? 'Pengajuan Izin' : ''" 
-                                   class="{{ request()->routeIs('teacher.leave_requests.*') ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold border border-amber-200/60 dark:border-amber-900/40' : 'text-slate-700 dark:text-slate-300 hover:text-amber-600 hover:bg-amber-50/50 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isLeaveActive ? 'bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300 font-bold border border-amber-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-amber-600 hover:bg-amber-50/50 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
                                     <span class="flex gap-x-3 items-center">
                                         <span class="material-icons text-xl shrink-0 text-amber-500">assignment_turned_in</span>
@@ -187,20 +241,30 @@
                                     </span>
                                     @if(isset($teacherPendingLeaveRequestsCount) && $teacherPendingLeaveRequestsCount > 0)
                                         <span x-show="!sidebarCollapsed" class="inline-flex items-center justify-center h-4.5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-xs">{{ $teacherPendingLeaveRequestsCount }}</span>
+                                    @elseif($isLeaveActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-amber-500 ml-auto shrink-0"></span>
                                     @endif
                                 </a>
                             </li>
+                            
+                            {{-- Riwayat Kelas binaan wali kelas (hanya aktif untuk attendance.history, charts, print, excel) --}}
+                            @php $isClassHistoryActive = request()->routeIs(['teacher.attendance.history', 'teacher.attendance.charts', 'teacher.attendance.print*', 'teacher.attendance.export.excel']); @endphp
                             <li>
                                 <a href="{{ route('teacher.attendance.history') }}" :title="sidebarCollapsed ? 'Riwayat Kehadiran' : ''" 
-                                   class="{{ request()->routeIs('teacher.attendance.history') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isClassHistoryActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                     <span class="material-icons text-xl shrink-0">history</span>
                                     <span x-show="!sidebarCollapsed" class="truncate">Riwayat Kelas</span>
+                                    @if($isClassHistoryActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @endif
                                 </a>
                             </li>
+                            
+                            @php $isChatActive = request()->routeIs('chat.*'); @endphp
                             <li>
                                 <a href="{{ route('chat.index') }}" :title="sidebarCollapsed ? 'Obrolan' : ''" 
-                                   class="{{ request()->routeIs('chat.*') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isChatActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
                                     <span class="flex gap-x-3 items-center">
                                         <span class="material-icons text-xl shrink-0 text-pink-500">chat</span>
@@ -208,6 +272,8 @@
                                     </span>
                                     @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
                                         <span x-show="!sidebarCollapsed" class="inline-flex items-center justify-center h-4.5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-xs">{{ $totalUnreadMessagesCount }}</span>
+                                    @elseif($isChatActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
                                     @endif
                                 </a>
                             </li>
@@ -215,19 +281,25 @@
                     </li>
                     @endif
 
+                    {{-- Pembina Ekskul --}}
                     @if(auth()->user()->teacher?->coachingExtracurriculars()->exists())
                     <li>
                         <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Pembina Ekskul</div>
                         <ul role="list" class="mt-1.5 space-y-1">
+                            @php $isEkskulActive = request()->routeIs('teacher.extracurricular-attendance.*'); @endphp
                             <li>
                                 <a href="{{ route('teacher.extracurricular-attendance.index') }}" :title="sidebarCollapsed ? 'Absensi Ekskul' : ''" 
-                                   class="{{ request()->routeIs('teacher.extracurricular-attendance.*') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   class="{{ $isEkskulActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                    :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
                                     <span class="flex gap-x-3 items-center">
                                         <span class="material-icons text-xl shrink-0 text-rose-500">star</span>
                                         <span x-show="!sidebarCollapsed" class="truncate">Presensi Ekskul</span>
                                     </span>
-                                    <span x-show="!sidebarCollapsed" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">Aktif</span>
+                                    @if($isEkskulActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @else
+                                        <span x-show="!sidebarCollapsed" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">Aktif</span>
+                                    @endif
                                 </a>
                             </li>
                         </ul>
@@ -251,9 +323,10 @@
                         </a>
                     </li>
 
+                    @php $isAdminLeaveActive = request()->routeIs('admin.leave_requests.*'); @endphp
                     <li>
                         <a href="{{ route('admin.leave_requests.index') }}" :title="sidebarCollapsed ? 'Pengajuan Izin Siswa' : ''" 
-                           class="{{ request()->routeIs('admin.leave_requests.*') ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold border border-amber-200/60 dark:border-amber-900/40' : 'text-slate-700 dark:text-slate-300 hover:text-amber-600 hover:bg-amber-50/50 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                           class="{{ $isAdminLeaveActive ? 'bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300 font-bold border border-amber-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-amber-600 hover:bg-amber-50/50 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                            :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
                             <span class="flex gap-x-3 items-center">
                                 <span class="material-icons text-xl shrink-0 text-amber-500">assignment_turned_in</span>
@@ -261,13 +334,16 @@
                             </span>
                             @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
                                 <span x-show="!sidebarCollapsed" class="inline-flex items-center justify-center h-4.5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-xs">{{ $pendingLeaveRequestsCount }}</span>
+                            @elseif($isAdminLeaveActive)
+                                <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-amber-500 ml-auto shrink-0"></span>
                             @endif
                         </a>
                     </li>
 
+                    @php $isAdminChatActive = request()->routeIs('admin.chat.*'); @endphp
                     <li>
                         <a href="{{ route('admin.chat.index') }}" :title="sidebarCollapsed ? 'Pesan Orang Tua' : ''" 
-                           class="{{ request()->routeIs('admin.chat.*') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                           class="{{ $isAdminChatActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                            :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
                             <span class="flex gap-x-3 items-center">
                                 <span class="material-icons text-xl shrink-0 text-sky-500">chat</span>
@@ -275,14 +351,21 @@
                             </span>
                             @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
                                 <span x-show="!sidebarCollapsed" class="inline-flex items-center justify-center h-4.5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-xs">{{ $totalUnreadMessagesCount }}</span>
+                            @elseif($isAdminChatActive)
+                                <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
                             @endif
                         </a>
                     </li>
 
                     {{-- Laporan Dropdown --}}
-                    <li x-data="{ open: {{ request()->routeIs(['admin.reports.*']) ? 'true' : 'false' }} }">
+                    @php 
+                        $isStudentReportActive = request()->routeIs(['admin.reports.create', 'admin.reports.charts', 'admin.reports.generate']);
+                        $isTeacherReportActive = request()->routeIs('admin.reports.teacher.*');
+                        $isReportOpen = $isStudentReportActive || $isTeacherReportActive;
+                    @endphp
+                    <li x-data="{ open: {{ $isReportOpen ? 'true' : 'false' }} }">
                         <button @click="open = !open" :title="sidebarCollapsed ? 'Laporan' : ''" 
-                                class="group flex items-center w-full rounded-xl p-2.5 text-xs transition-all duration-200 {{ request()->routeIs(['admin.reports.*']) ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }}" 
+                                class="group flex items-center w-full rounded-xl p-2.5 text-xs transition-all duration-200 {{ $isReportOpen ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }}" 
                                 :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                             <span class="material-icons text-xl shrink-0">bar_chart</span>
                             <span x-show="!sidebarCollapsed" class="truncate">Laporan Presensi</span>
@@ -290,25 +373,35 @@
                         </button>
                         <ul x-show="open && !sidebarCollapsed" x-transition class="mt-1 ml-4 pl-3 space-y-1 border-l-2 border-slate-200 dark:border-slate-700/80">
                             <li>
-                                <a href="{{ route('admin.reports.create') }}" class="{{ request()->routeIs('admin.reports.create') ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} block rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    Laporan Siswa
+                                <a href="{{ route('admin.reports.create') }}" class="{{ $isStudentReportActive ? 'text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <span>Laporan Siswa</span>
+                                    @if($isStudentReportActive)
+                                        <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                                    @endif
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.reports.teacher.index') }}" class="{{ request()->routeIs('admin.reports.teacher.*') ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} block rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    Laporan Guru
+                                <a href="{{ route('admin.reports.teacher.index') }}" class="{{ $isTeacherReportActive ? 'text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <span>Laporan Guru</span>
+                                    @if($isTeacherReportActive)
+                                        <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                                    @endif
                                 </a>
                             </li>
                         </ul>
                     </li>
 
                     @if(auth()->user()->hasRole('admin'))
+                        @php $isSettingsActive = request()->routeIs(['admin.settings.*']); @endphp
                         <li>
                             <a href="{{ route('admin.settings.appearance') }}" :title="sidebarCollapsed ? 'Tampilan & Logo' : ''" 
-                               class="{{ request()->routeIs('admin.settings.appearance') ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 font-semibold shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                               class="{{ $isSettingsActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                                :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                 <span class="material-icons text-xl shrink-0">palette</span>
                                 <span x-show="!sidebarCollapsed" class="truncate">Tampilan & Logo</span>
+                                @if($isSettingsActive)
+                                    <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                @endif
                             </a>
                         </li>
                     @endif

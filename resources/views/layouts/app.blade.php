@@ -271,10 +271,11 @@
                         
                         <!-- Role: Admin / Operator / Satpam -->
                         @if(in_array(auth()->user()->role, ['admin', 'operator', 'satpam']))
+                            @php $isAdminDash = request()->routeIs('admin.dashboard'); @endphp
                             <a href="{{ route('admin.dashboard') }}"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isAdminDash ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">dashboard</span>
-                                <span class="text-[10px] font-medium mt-0.5">Dasbor</span>
+                                <span class="text-[10px] {{ $isAdminDash ? 'font-bold' : 'font-medium' }} mt-0.5">Dasbor</span>
                             </a>
                             
                             <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard"
@@ -292,13 +293,14 @@
                                 <span class="text-[9px] font-bold mt-1 text-slate-700 dark:text-slate-300">Scan QR</span>
                             </div>
 
+                            @php $isAdminChat = request()->routeIs('admin.chat.*'); @endphp
                             <a href="{{ route('admin.chat.index') }}"
-                                class="nav-item group relative flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                class="nav-item group relative flex flex-col items-center justify-center py-1 w-full {{ $isAdminChat ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">chat</span>
                                 @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
                                     <span class="absolute top-0 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-xs">{{ $totalUnreadMessagesCount }}</span>
                                 @endif
-                                <span class="text-[10px] font-medium mt-0.5">Pesan</span>
+                                <span class="text-[10px] {{ $isAdminChat ? 'font-bold' : 'font-medium' }} mt-0.5">Pesan</span>
                             </a>
 
                             <button @click="mobileMenuOpen = true"
@@ -309,16 +311,18 @@
 
                         <!-- Role: Guru (Teacher) -->
                         @elseif(auth()->user()->role === 'teacher')
+                            @php $isTeacherDash = request()->routeIs('teacher.dashboard'); @endphp
                             <a href="{{ route('teacher.dashboard') }}"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isTeacherDash ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">dashboard</span>
-                                <span class="text-[10px] font-medium mt-0.5">Dasbor</span>
+                                <span class="text-[10px] {{ $isTeacherDash ? 'font-bold' : 'font-medium' }} mt-0.5">Dasbor</span>
                             </a>
 
+                            @php $isTeacherAtt = request()->routeIs(['teacher.attendance.dashboard', 'teacher.attendance.scanner']); @endphp
                             <a href="{{ route('teacher.attendance.dashboard') }}"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isTeacherAtt ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">person_pin</span>
-                                <span class="text-[10px] font-medium mt-0.5">Absen Guru</span>
+                                <span class="text-[10px] {{ $isTeacherAtt ? 'font-bold' : 'font-medium' }} mt-0.5">Absen Guru</span>
                             </a>
 
                             <!-- Elevated Scan QR Button -->
@@ -329,7 +333,7 @@
                                         <span class="material-icons text-2xl">qr_code_scanner</span>
                                     </a>
                                 @else
-                                    @if($teacherScheduleId)
+                                    @if(isset($teacherScheduleId) && $teacherScheduleId)
                                         <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $teacherScheduleId]) }}"
                                             class="flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-600/30 border-4 border-slate-50 dark:border-slate-950 transition-all transform hover:scale-105 active:scale-95">
                                             <span class="material-icons text-2xl">qr_code_scanner</span>
@@ -344,10 +348,11 @@
                                 <span class="text-[9px] font-bold mt-1 text-slate-700 dark:text-slate-300">Scan QR</span>
                             </div>
 
+                            @php $isSubjectRep = request()->routeIs(['teacher.subject.attendance.report', 'teacher.subject.attendance.preview', 'teacher.subject.attendance.print', 'teacher.subject.attendance.charts']); @endphp
                             <a href="{{ route('teacher.subject.attendance.report') }}"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isSubjectRep ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">assessment</span>
-                                <span class="text-[10px] font-medium mt-0.5">Rekap Mapel</span>
+                                <span class="text-[10px] {{ $isSubjectRep ? 'font-bold' : 'font-medium' }} mt-0.5">Rekap Mapel</span>
                             </a>
 
                             <button @click="mobileMenuOpen = true"
@@ -358,16 +363,18 @@
 
                         <!-- Role: Orang Tua (Parent) -->
                         @elseif(auth()->user()->role === 'parent')
+                            @php $isParentDash = request()->routeIs('parent.dashboard'); @endphp
                             <a href="{{ route('parent.dashboard') }}"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isParentDash ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">dashboard</span>
-                                <span class="text-[10px] font-medium mt-0.5">Dasbor</span>
+                                <span class="text-[10px] {{ $isParentDash ? 'font-bold' : 'font-medium' }} mt-0.5">Dasbor</span>
                             </a>
 
+                            @php $isParentLeave = request()->routeIs('parent.leave-requests.*'); @endphp
                             <a href="{{ route('parent.leave-requests.index') }}"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isParentLeave ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">assignment_turned_in</span>
-                                <span class="text-[10px] font-medium mt-0.5">Izin/Sakit</span>
+                                <span class="text-[10px] {{ $isParentLeave ? 'font-bold' : 'font-medium' }} mt-0.5">Izin/Sakit</span>
                             </a>
 
                             <!-- Elevated Action: Ajukan Izin Cepat -->
@@ -379,13 +386,14 @@
                                 <span class="text-[9px] font-bold mt-1 text-slate-700 dark:text-slate-300">Buat Izin</span>
                             </div>
 
+                            @php $isParentChat = request()->routeIs('chat.*'); @endphp
                             <a href="{{ route('chat.index') }}"
-                                class="nav-item group relative flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                class="nav-item group relative flex flex-col items-center justify-center py-1 w-full {{ $isParentChat ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">chat</span>
                                 @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
                                     <span class="absolute top-0 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-xs">{{ $totalUnreadMessagesCount }}</span>
                                 @endif
-                                <span class="text-[10px] font-medium mt-0.5">Obrolan</span>
+                                <span class="text-[10px] {{ $isParentChat ? 'font-bold' : 'font-medium' }} mt-0.5">Obrolan</span>
                             </a>
 
                             <button @click="mobileMenuOpen = true"
@@ -394,6 +402,7 @@
                                 <span class="text-[10px] font-medium mt-0.5">Menu</span>
                             </button>
                         @endif
+
                     </div>
                 </nav>
 
