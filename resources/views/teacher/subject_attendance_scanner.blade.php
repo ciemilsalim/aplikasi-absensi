@@ -63,15 +63,29 @@
                 background: transparent !important;
             }
 
-            /* Animasi garis laser scan */
-            @keyframes scanline {
-                0% { transform: translateY(-100%); opacity: 0; }
-                50% { opacity: 1; }
-                100% { transform: translateY(1000%); opacity: 0; }
+            /* Animasi garis laser scan presisi */
+            @keyframes laserSweep {
+                0% {
+                    top: 0%;
+                    opacity: 0;
+                }
+                15% {
+                    opacity: 1;
+                }
+                85% {
+                    opacity: 1;
+                }
+                100% {
+                    top: calc(100% - 2px);
+                    opacity: 0;
+                }
             }
 
-            .animate-scanline {
-                animation: scanline 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            .animate-laser {
+                position: absolute;
+                left: 0;
+                right: 0;
+                animation: laserSweep 2.4s ease-in-out infinite;
             }
         </style>
     @endpush
@@ -134,20 +148,19 @@
 
                     <!-- QR Scanner Viewport -->
                     <div id="qr-scanner-container" class="relative">
-                        <div class="relative w-full aspect-square max-w-[320px] sm:max-w-[340px] mx-auto bg-slate-950 rounded-3xl overflow-hidden shadow-inner border-2 border-sky-500/40 flex items-center justify-center">
+                        <div class="relative w-full aspect-square max-w-[320px] sm:max-w-[340px] mx-auto bg-slate-950 rounded-3xl overflow-hidden shadow-inner border border-slate-800 flex items-center justify-center">
                             <div id="reader" class="w-full h-full"></div>
                             
-                            <!-- Futuristic Cyber Overlay -->
-                            <div class="absolute inset-0 pointer-events-none p-5 sm:p-6 flex flex-col justify-between z-10">
-                                <div class="flex justify-between">
-                                    <div class="w-7 h-7 border-t-4 border-l-4 border-sky-400 rounded-tl-xl"></div>
-                                    <div class="w-7 h-7 border-t-4 border-r-4 border-sky-400 rounded-tr-xl"></div>
-                                </div>
-                                <!-- Animated Laser Line -->
-                                <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-sky-400 to-transparent shadow-[0_0_12px_#38bdf8] animate-scanline"></div>
-                                <div class="flex justify-between">
-                                    <div class="w-7 h-7 border-b-4 border-l-4 border-sky-400 rounded-bl-xl"></div>
-                                    <div class="w-7 h-7 border-b-4 border-r-4 border-sky-400 rounded-br-xl"></div>
+                            <!-- Futuristic Precision Cyber Overlay -->
+                            <div class="absolute inset-0 pointer-events-none p-4 sm:p-5 flex items-center justify-center z-10">
+                                <div class="w-full h-full relative overflow-hidden rounded-2xl border border-sky-500/20 bg-sky-500/5">
+                                    <div class="absolute top-0 left-0 w-7 h-7 border-t-3 border-l-3 border-sky-400 rounded-tl-xl"></div>
+                                    <div class="absolute top-0 right-0 w-7 h-7 border-t-3 border-r-3 border-sky-400 rounded-tr-xl"></div>
+                                    <div class="absolute bottom-0 left-0 w-7 h-7 border-b-3 border-l-3 border-sky-400 rounded-bl-xl"></div>
+                                    <div class="absolute bottom-0 right-0 w-7 h-7 border-b-3 border-r-3 border-sky-400 rounded-br-xl"></div>
+
+                                    <!-- Precision Laser Beam -->
+                                    <div class="animate-laser h-0.5 bg-gradient-to-r from-transparent via-sky-400 to-transparent shadow-[0_0_16px_#38bdf8,0_0_4px_#0284c7]"></div>
                                 </div>
                             </div>
                         </div>

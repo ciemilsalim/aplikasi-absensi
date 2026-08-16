@@ -58,13 +58,29 @@
             #reader__scan_region {
                 background: transparent !important;
             }
-            @keyframes scanline {
-                0% { transform: translateY(-100%); opacity: 0; }
-                50% { opacity: 1; }
-                100% { transform: translateY(1000%); opacity: 0; }
+            /* Animasi garis laser scan presisi */
+            @keyframes laserSweep {
+                0% {
+                    top: 0%;
+                    opacity: 0;
+                }
+                15% {
+                    opacity: 1;
+                }
+                85% {
+                    opacity: 1;
+                }
+                100% {
+                    top: calc(100% - 2px);
+                    opacity: 0;
+                }
             }
-            .animate-scanline {
-                animation: scanline 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+            .animate-laser {
+                position: absolute;
+                left: 0;
+                right: 0;
+                animation: laserSweep 2.4s ease-in-out infinite;
             }
         </style>
     @endpush
@@ -139,14 +155,23 @@
                         <div x-show="mode === 'qr'" class="relative aspect-square max-w-[360px] mx-auto rounded-3xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-800 shadow-inner">
                             <div id="reader" class="w-full h-full"></div>
                             
-                            <!-- Scanner Overlay Graphics -->
-                            <div class="absolute inset-0 pointer-events-none flex items-center justify-center p-6">
-                                <div class="w-56 h-56 sm:w-64 sm:h-64 border-2 border-amber-400/80 rounded-3xl relative overflow-hidden flex flex-col justify-between p-3">
-                                    <div class="w-full h-0.5 bg-amber-400/90 shadow-lg shadow-amber-400 animate-scanline"></div>
-                                    <div class="flex justify-between items-end text-[10px] text-amber-300 font-bold bg-slate-950/60 px-2 py-1 rounded-lg backdrop-blur-xs">
-                                        <span class="flex items-center gap-1">
+                            <!-- Scanner Precision Overlay Graphics -->
+                            <div class="absolute inset-0 pointer-events-none flex items-center justify-center p-4">
+                                <div class="w-60 h-60 sm:w-64 sm:h-64 relative overflow-hidden rounded-3xl border border-amber-500/20 bg-amber-500/5">
+                                    <!-- 4 Precision Corner HUD Brackets -->
+                                    <div class="absolute top-0 left-0 w-7 h-7 border-t-3 border-l-3 border-amber-400 rounded-tl-2xl"></div>
+                                    <div class="absolute top-0 right-0 w-7 h-7 border-t-3 border-r-3 border-amber-400 rounded-tr-2xl"></div>
+                                    <div class="absolute bottom-0 left-0 w-7 h-7 border-b-3 border-l-3 border-amber-400 rounded-bl-2xl"></div>
+                                    <div class="absolute bottom-0 right-0 w-7 h-7 border-b-3 border-r-3 border-amber-400 rounded-br-2xl"></div>
+
+                                    <!-- Precision Laser Beam with Glow -->
+                                    <div class="animate-laser h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_18px_#fbbf24,0_0_6px_#f59e0b]"></div>
+                                    
+                                    <!-- Status Pill at Bottom of Target Box -->
+                                    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[10px] text-amber-300 font-bold bg-slate-950/75 px-3 py-1.5 rounded-xl backdrop-blur-md border border-amber-400/20 shadow-md">
+                                        <span class="flex items-center gap-1.5">
                                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
-                                            QR Scanner Aktif
+                                            <span>Posisikan QR di dalam kotak</span>
                                         </span>
                                         <span class="material-icons text-xs">center_focus_strong</span>
                                     </div>
