@@ -170,13 +170,25 @@ class ExtracurricularAttendanceController extends Controller
             }
         }
 
+        $studentsWithPhotos = $students->map(function($s) {
+            return [
+                'id' => $s->id,
+                'name' => $s->name,
+                'unique_id' => $s->unique_id ?? ('STD-' . $s->id),
+                'photo_url' => $s->photo_url,
+                'face_descriptor' => $s->face_descriptor ?? null
+            ];
+        })->values()->toArray();
+
         return view('teacher.extracurricular_attendance.scanner', compact(
             'extracurricular',
             'selectedDate',
             'students',
+            'attendances',
             'studentsHadir',
             'studentsIzin',
-            'studentsBelumAbsen'
+            'studentsBelumAbsen',
+            'studentsWithPhotos'
         ));
     }
 

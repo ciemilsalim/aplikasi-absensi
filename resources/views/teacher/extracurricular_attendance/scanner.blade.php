@@ -468,16 +468,7 @@
                 let faceMatcher = null;
                 let faceInterval = null;
                 let currentFacingMode = 'user';
-
-                const studentsWithPhotos = @json($students->map(function($s) {
-                    return [
-                        'id' => $s->id,
-                        'name' => $s->name,
-                        'unique_id' => $s->unique_id ?? ('STD-' . $s->id),
-                        'photo_url' => $s->photo_url,
-                        'face_descriptor' => $s->face_descriptor ?? null
-                    ];
-                }));
+                const studentsWithPhotos = @json($studentsWithPhotos ?? []);
 
                 async function loadFaceModels() {
                     if (isFaceApiLoaded) return true;
