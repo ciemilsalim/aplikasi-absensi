@@ -28,7 +28,7 @@ class SSOController extends Controller
         }
 
         return config('services.lms.production_url') 
-            ?: env('LMS_PRODUCTION_URL', env('LMS_URL', 'https://lms-smpn1biau.zahradev.id'));
+            ?: env('LMS_PRODUCTION_URL', env('LMS_URL', 'https://mokopani-smpn1biau.zahradev.id'));
     }
 
     /**
