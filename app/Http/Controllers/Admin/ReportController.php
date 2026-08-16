@@ -23,8 +23,9 @@ class ReportController extends Controller
     {
         $classes = SchoolClass::orderBy('name')->get();
         $students = Student::with('schoolClass')->orderBy('name')->get();
+        $cocurriculars = \App\Models\Cocurricular::orderBy('title')->get();
 
-        return view('admin.reports.create', compact('classes', 'students'));
+        return view('admin.reports.create', compact('classes', 'students', 'cocurriculars'));
     }
 
     /**
@@ -186,9 +187,10 @@ class ReportController extends Controller
     public function generate(Request $request)
     {
         $request->validate([
-            'report_type' => 'required|in:class_monthly,class_trimester,student_detailed,school_lateness,school_no_checkout',
-            'month' => 'required_if:report_type,class_monthly|date_format:Y-m',
-            'school_class_id' => 'required_if:report_type,class_monthly,class_trimester|exists:school_classes,id',
+            'report_type' => 'required|in:class_monthly,class_trimester,student_detailed,school_lateness,school_no_checkout,cocurricular_monthly',
+            'month' => 'required_if:report_type,class_monthly,cocurricular_monthly|date_format:Y-m',
+            'school_class_id' => 'required_if:report_type,class_monthly,class_trimester,cocurricular_monthly|exists:school_classes,id',
+            'cocurricular_id' => 'required_if:report_type,cocurricular_monthly|exists:cocurriculars,id',
             'trimester' => 'required_if:report_type,class_trimester|in:1,2,3,4',
             'year' => 'required_if:report_type,class_trimester|integer|min:2000',
             'student_id' => 'required_if:report_type,student_detailed|exists:students,id',
@@ -200,6 +202,9 @@ class ReportController extends Controller
 
         if ($reportType === 'class_monthly') {
             return $this->generateClassMonthlyReport($request);
+        }
+        elseif ($reportType === 'cocurricular_monthly') {
+            return $this->generateCocurricularMonthlyReport($request);
         }
         elseif ($reportType === 'class_trimester') {
             return $this->generateClassTrimesterReport($request);
@@ -215,6 +220,53 @@ class ReportController extends Controller
         }
 
         return redirect()->back()->with('error', 'Jenis laporan tidak valid.');
+    }
+
+    /**
+     * Membuat laporan rekap kehadiran bulanan per kelas pada proyek kokurikuler.
+     */
+    private function generateCocurricularMonthlyReport(Request $request)
+    {
+        $class = SchoolClass::findOrFail($request->school_class_id);
+        $cocurricular = \App\Models\Cocurricular::findOrFail($request->cocurricular_id);
+        $date = Carbon::createFromFormat('Y-m', $request->month);
+        $monthName = $date->translatedFormat('F Y');
+
+        $schedules = Schedule::where('schedule_type', 'cocurricular')
+            ->where('cocurricular_id', $cocurricular->id)
+            ->where('school_class_id', $class->id)
+            ->get();
+
+        $scheduleIds = $schedules->pluck('id')->toArray();
+
+        $startDate = $date->copy()->startOfMonth();
+        $endDate = $date->copy()->endOfMonth();
+
+        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+
+        $attendances = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
+            ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->get();
+
+        $reportData = $students->map(function ($student) use ($attendances) {
+            $studentAtts = $attendances->where('student_id', $student->id);
+            return (object) [
+                'name' => $student->name,
+                'nis' => $student->nis,
+                'hadir' => $studentAtts->where('status', 'hadir')->count(),
+                'sakit' => $studentAtts->where('status', 'sakit')->count(),
+                'izin' => $studentAtts->where('status', 'izin')->count(),
+                'alpa' => $studentAtts->whereIn('status', ['alpa', 'bolos'])->count(),
+            ];
+        });
+
+        $pdfData = $this->getCommonPdfData();
+        $pdfData['reportData'] = $reportData;
+        $pdfData['className'] = $class->name . ' - Kokurikuler: ' . $cocurricular->title;
+        $pdfData['monthName'] = $monthName;
+
+        $pdf = Pdf::loadView('admin.reports.pdf', $pdfData);
+        return $pdf->stream('laporan-kokurikuler-' . $class->name . '-' . $monthName . '.pdf');
     }
 
     /**

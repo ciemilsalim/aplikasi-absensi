@@ -30,7 +30,7 @@
 
         {{-- === SWITCHER TAMPILAN PERAN GURU === --}}
         @php
-            $roleCount = ($isHomeroomTeacher ? 1 : 0) + ($isSubjectTeacher ? 1 : 0) + ($isExtracurricularCoach ? 1 : 0);
+            $roleCount = ($isHomeroomTeacher ? 1 : 0) + ($isSubjectTeacher ? 1 : 0) + ($isCocurricularFacilitator ? 1 : 0) + ($isExtracurricularCoach ? 1 : 0);
         @endphp
 
         @if($roleCount > 1)
@@ -51,6 +51,15 @@
                               {{ $currentView === 'guru_mapel' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         <span class="material-icons text-base">menu_book</span>
                         <span>Guru Mata Pelajaran</span>
+                    </a>
+                    @endif
+
+                    @if($isCocurricularFacilitator)
+                    <a href="{{ route('teacher.dashboard', ['view' => 'fasilitator_kokurikuler']) }}"
+                       class="flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                              {{ $currentView === 'fasilitator_kokurikuler' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <span class="material-icons text-base">psychology</span>
+                        <span>Fasilitator Kokurikuler</span>
                     </a>
                     @endif
 
@@ -194,6 +203,8 @@
                 @include('teacher.partials._dashboard-wali-kelas')
             @elseif($currentView === 'guru_mapel' && $isSubjectTeacher)
                 @include('teacher.partials._dashboard-guru-mapel')
+            @elseif($currentView === 'fasilitator_kokurikuler' && $isCocurricularFacilitator)
+                @include('teacher.partials._dashboard-fasilitator-kokurikuler')
             @elseif($currentView === 'pembina_ekskul' && $isExtracurricularCoach)
                 @include('teacher.partials._dashboard-pembina-ekskul')
             @endif

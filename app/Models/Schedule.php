@@ -11,16 +11,20 @@ class Schedule extends Model
 
     protected $fillable = [
         'teaching_assignment_id',
+        'cocurricular_id',
+        'schedule_type',
         'day_of_week',
         'start_time',
         'end_time',
+        'teacher_id',
+        'school_class_id',
         'semester_id',
         'academic_year_id',
     ];
 
     /**
      * Mendapatkan data penugasan (guru, mapel, kelas)
-     * yang terkait dengan jadwal ini.
+     * yang terkait dengan jadwal ini (untuk jadwal tipe regular).
      */
     public function teachingAssignment()
     {
@@ -28,11 +32,75 @@ class Schedule extends Model
     }
 
     /**
-     * Relasi baru untuk absensi per mata pelajaran.
-     * Satu jadwal pelajaran dapat memiliki banyak catatan absensi siswa.
+     * Relasi untuk absensi per mata pelajaran atau kokurikuler.
      */
     public function subjectAttendances()
     {
         return $this->hasMany(SubjectAttendance::class);
+    }
+
+    /**
+     * Mendapatkan data proyek kokurikuler yang terkait dengan jadwal ini.
+     */
+    public function cocurricular()
+    {
+        return $this->belongsTo(Cocurricular::class);
+    }
+
+    /**
+     * Mendapatkan data kelas untuk jadwal (terutama jadwal kokurikuler).
+     */
+    public function schoolClass()
+    {
+        return $this->belongsTo(SchoolClass::class, 'school_class_id');
+    }
+
+    /**
+     * Mendapatkan data guru pengampu untuk jadwal (terutama jadwal kokurikuler).
+     */
+    public function teacher()
+    {
+        return $this->belongsTo(Teacher::class, 'teacher_id');
+    }
+
+    /**
+     * Helper untuk memeriksa apakah jadwal merupakan kokurikuler.
+     */
+    public function isCocurricular(): bool
+    {
+        return $this->schedule_type === 'cocurricular';
+    }
+
+    /**
+     * Helper untuk mendapatkan objek kelas terlepas dari tipe jadwal.
+     */
+    public function getTargetClass()
+    {
+        if ($this->isCocurricular()) {
+            return $this->schoolClass;
+        }
+        return $this->teachingAssignment?->schoolClass;
+    }
+
+    /**
+     * Helper untuk mendapatkan nama mata pelajaran / proyek.
+     */
+    public function getActivityName(): string
+    {
+        if ($this->isCocurricular()) {
+            return $this->cocurricular?->title ?? 'Proyek Kokurikuler';
+        }
+        return $this->teachingAssignment?->subject?->name ?? 'Mata Pelajaran';
+    }
+
+    /**
+     * Helper untuk mendapatkan guru utama pengampu jadwal.
+     */
+    public function getAssignedTeacher()
+    {
+        if ($this->isCocurricular()) {
+            return $this->teacher;
+        }
+        return $this->teachingAssignment?->teacher;
     }
 }

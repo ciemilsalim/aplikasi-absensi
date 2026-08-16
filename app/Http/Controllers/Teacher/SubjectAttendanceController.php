@@ -11,6 +11,8 @@ use App\Models\SubjectAttendance;
 use App\Models\TeachingAssignment;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Models\Cocurricular;
+use App\Models\Teacher;
 use App\Models\Setting;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -18,7 +20,35 @@ use Carbon\CarbonPeriod;
 class SubjectAttendanceController extends Controller
 {
     /**
-     * Menampilkan halaman pemindai QR untuk absensi mata pelajaran.
+     * Memeriksa otorisasi guru terhadap jadwal (baik reguler maupun kokurikuler).
+     */
+    private function isTeacherAuthorized(Schedule $schedule, Teacher $teacher): bool
+    {
+        if ($schedule->isCocurricular()) {
+            if ($schedule->teacher_id === $teacher->id) {
+                return true;
+            }
+            $schedule->loadMissing('cocurricular.teachers');
+            return $schedule->cocurricular && $schedule->cocurricular->teachers->contains('id', $teacher->id);
+        }
+
+        $schedule->loadMissing('teachingAssignment');
+        return $schedule->teachingAssignment && $schedule->teachingAssignment->teacher_id === $teacher->id;
+    }
+
+    /**
+     * Mengambil ID kelas target dari jadwal.
+     */
+    private function getScheduleClassId(Schedule $schedule): ?int
+    {
+        if ($schedule->isCocurricular()) {
+            return $schedule->school_class_id;
+        }
+        return $schedule->teachingAssignment?->school_class_id;
+    }
+
+    /**
+     * Menampilkan halaman pemindai QR & Wajah untuk absensi mata pelajaran / kokurikuler.
      */
     public function showScanner(Request $request, Schedule $schedule)
     {
@@ -28,17 +58,17 @@ class SubjectAttendanceController extends Controller
             return redirect()->route('teacher.dashboard')->with('error', 'Data guru tidak ditemukan.');
         }
 
-        if (!$schedule->teachingAssignment) {
-            return redirect()->route('teacher.dashboard')->with('error', 'Penugasan mengajar tidak ditemukan.');
+        if (!$this->isTeacherAuthorized($schedule, $teacher)) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak berhak mengakses sesi presensi ini.');
         }
 
-        if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
-            return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak berhak mengakses halaman ini.');
+        $classId = $this->getScheduleClassId($schedule);
+        if (!$classId) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Target kelas untuk jadwal ini tidak valid.');
         }
 
         $dateStr = $request->input('date');
         $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
-        $classId = $schedule->teachingAssignment->school_class_id;
 
         $subjectAttendancesToday = SubjectAttendance::where('schedule_id', $schedule->id)
             ->whereDate('created_at', $selectedDate)
@@ -46,9 +76,7 @@ class SubjectAttendanceController extends Controller
             ->get();
 
         $attendedStudents = $subjectAttendancesToday->where('status', 'hadir');
-
         $studentsOnLeave = $subjectAttendancesToday->whereIn('status', ['sakit', 'izin']);
-
         $studentIdsWithRecord = $subjectAttendancesToday->pluck('student_id');
 
         $studentsWithoutNotice = Student::where('school_class_id', $classId)
@@ -58,22 +86,29 @@ class SubjectAttendanceController extends Controller
 
         $studentsForFaceRecognition = Student::where('school_class_id', $classId)
             ->whereNotNull('photo')
-            ->select('id', 'unique_id', 'name', 'photo', 'face_descriptor') // Tambahkan face_descriptor
+            ->select('id', 'unique_id', 'name', 'photo', 'face_descriptor')
             ->get()
             ->map(function ($student) {
                 return [
                     'unique_id' => $student->unique_id,
                     'name' => $student->name,
                     'photo_url' => asset('storage/' . $student->photo),
-                    'face_descriptor' => $student->face_descriptor, // Tambahkan ke array response
+                    'face_descriptor' => $student->face_descriptor,
                 ];
             });
 
-        return view('teacher.subject_attendance_scanner', compact('schedule', 'attendedStudents', 'studentsOnLeave', 'studentsWithoutNotice', 'studentsForFaceRecognition', 'selectedDate'));
+        return view('teacher.subject_attendance_scanner', compact(
+            'schedule', 
+            'attendedStudents', 
+            'studentsOnLeave', 
+            'studentsWithoutNotice', 
+            'studentsForFaceRecognition', 
+            'selectedDate'
+        ));
     }
 
     /**
-     * Menyimpan data absensi mata pelajaran dari hasil pemindaian.
+     * Menyimpan data absensi dari hasil pemindaian QR / Wajah.
      */
     public function store(Request $request)
     {
@@ -88,23 +123,23 @@ class SubjectAttendanceController extends Controller
             return response()->json(['success' => false, 'message' => 'Data guru tidak ditemukan.'], 403);
         }
 
-        $schedule = Schedule::with('teachingAssignment')->find($request->schedule_id);
-        if (!$schedule || !$schedule->teachingAssignment) {
-            return response()->json(['success' => false, 'message' => 'Jadwal mengajar tidak ditemukan.'], 404);
+        $schedule = Schedule::with(['teachingAssignment', 'cocurricular.teachers', 'schoolClass'])->find($request->schedule_id);
+        if (!$schedule) {
+            return response()->json(['success' => false, 'message' => 'Jadwal tidak ditemukan.'], 404);
         }
 
-        if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
+        if (!$this->isTeacherAuthorized($schedule, $teacher)) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
         }
+
+        $classId = $this->getScheduleClassId($schedule);
         
         $qrData = $request->student_unique_id;
         $parts = explode('-', $qrData, 2);
         
         if (count($parts) === 2) {
-            // Format gabungan: NIS-UNIQUE_ID
             $student = Student::where('nis', $parts[0])->where('unique_id', $parts[1])->first();
         } else {
-            // Format lama atau manual
             $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->first();
         }
 
@@ -112,7 +147,7 @@ class SubjectAttendanceController extends Controller
             return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan atau QR Code tidak valid.'], 404);
         }
 
-        if ($student->school_class_id !== $schedule->teachingAssignment->school_class_id) {
+        if ($student->school_class_id !== $classId) {
             return response()->json(['success' => false, 'message' => 'Siswa tidak terdaftar di kelas ini.'], 422);
         }
 
@@ -120,13 +155,12 @@ class SubjectAttendanceController extends Controller
         $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
         $attendanceDateTime = $selectedDate->copy()->setTimeFrom(now());
 
-        // == CEK HARI LIBUR & AKHIR PEKAN ==
-        // 1. Cek Akhir Pekan (Sabtu & Minggu)
+        // Cek Akhir Pekan
         if ($selectedDate->isWeekend()) {
             return response()->json(['success' => false, 'message' => 'Absensi tidak dapat dilakukan pada akhir pekan.'], 422);
         }
 
-        // 2. Cek Kalender Pendidikan (Hari Libur)
+        // Cek Hari Libur
         $holiday = \App\Models\Calendar::where('is_holiday', true)
             ->whereDate('start_date', '<=', $selectedDate)
             ->where(function ($query) use ($selectedDate) {
@@ -137,10 +171,9 @@ class SubjectAttendanceController extends Controller
         if ($holiday) {
             return response()->json(['success' => false, 'message' => 'Hari ini libur: ' . $holiday->title], 422);
         }
-        // ==================================
 
-        // == CEK JAM SEKOLAH / KERJA ==
-        $settings = \App\Models\Setting::pluck('value', 'key');
+        // Cek Jam Kerja
+        $settings = Setting::pluck('value', 'key');
         $jamMasuk = $settings->get('jam_masuk', '07:30');
         $jamPulang = $settings->get('jam_pulang_guru') ?: $settings->get('jam_pulang', '16:00');
         
@@ -154,7 +187,6 @@ class SubjectAttendanceController extends Controller
                 'message' => 'Absensi hanya dapat dilakukan pada jam sekolah/kerja (' . $startTime->format('H:i') . ' - ' . $endTime->format('H:i') . ').'
             ], 422);
         }
-        // ==============================
 
         $existingAttendance = SubjectAttendance::where('schedule_id', $schedule->id)
             ->where('student_id', $student->id)
@@ -189,16 +221,33 @@ class SubjectAttendanceController extends Controller
     }
 
     /**
-     * Menampilkan halaman riwayat absensi mata pelajaran.
+     * Menampilkan halaman riwayat absensi mata pelajaran & kokurikuler.
      */
     public function showHistory(Request $request)
     {
         $teacher = Auth::user()->teacher;
+        if (!$teacher) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Data guru tidak ditemukan.');
+        }
 
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+        $cocurricularIds = $teacher->cocurriculars()->pluck('cocurriculars.id');
 
-        $attendances = SubjectAttendance::with(['student', 'schedule.teachingAssignment.subject', 'schedule.teachingAssignment.schoolClass'])
-            ->where('teacher_id', $teacher->id)
+        $attendances = SubjectAttendance::with([
+            'student', 
+            'schedule.teachingAssignment.subject', 
+            'schedule.teachingAssignment.schoolClass',
+            'schedule.cocurricular',
+            'schedule.schoolClass',
+            'schedule.teacher'
+        ])
+            ->where(function ($q) use ($teacher, $cocurricularIds) {
+                $q->where('teacher_id', $teacher->id)
+                  ->orWhereHas('schedule', function ($sq) use ($teacher, $cocurricularIds) {
+                      $sq->where('teacher_id', $teacher->id)
+                         ->orWhereIn('cocurricular_id', $cocurricularIds);
+                  });
+            })
             ->whereDate('created_at', $selectedDate)
             ->get()
             ->groupBy('schedule_id');
@@ -207,7 +256,7 @@ class SubjectAttendanceController extends Controller
     }
 
     /**
-     * Menandai status siswa secara manual oleh guru mapel.
+     * Menandai status siswa secara manual oleh guru mapel / fasilitator kokurikuler.
      */
     public function markManualAttendance(Request $request)
     {
@@ -228,16 +277,17 @@ class SubjectAttendanceController extends Controller
             return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan.'], 404);
         }
 
-        $schedule = Schedule::with('teachingAssignment')->find($request->schedule_id);
-        if (!$schedule || !$schedule->teachingAssignment) {
-            return response()->json(['success' => false, 'message' => 'Jadwal mengajar tidak ditemukan.'], 404);
+        $schedule = Schedule::with(['teachingAssignment', 'cocurricular.teachers', 'schoolClass'])->find($request->schedule_id);
+        if (!$schedule) {
+            return response()->json(['success' => false, 'message' => 'Jadwal tidak ditemukan.'], 404);
         }
 
-        if ($schedule->teachingAssignment->teacher_id !== $teacher->id) {
+        if (!$this->isTeacherAuthorized($schedule, $teacher)) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
         }
 
-        if ($student->school_class_id !== $schedule->teachingAssignment->school_class_id) {
+        $classId = $this->getScheduleClassId($schedule);
+        if ($student->school_class_id !== $classId) {
             return response()->json(['success' => false, 'message' => 'Siswa tidak terdaftar di kelas ini.'], 422);
         }
         
@@ -245,13 +295,10 @@ class SubjectAttendanceController extends Controller
         $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
         $attendanceDateTime = $selectedDate->copy()->setTimeFrom(now());
 
-        // == CEK HARI LIBUR & AKHIR PEKAN ==
-        // 1. Cek Akhir Pekan (Sabtu & Minggu)
         if ($selectedDate->isWeekend()) {
             return response()->json(['success' => false, 'message' => 'Absensi tidak dapat dilakukan pada akhir pekan.'], 422);
         }
 
-        // 2. Cek Kalender Pendidikan (Hari Libur)
         $holiday = \App\Models\Calendar::where('is_holiday', true)
             ->whereDate('start_date', '<=', $selectedDate)
             ->where(function ($query) use ($selectedDate) {
@@ -262,10 +309,8 @@ class SubjectAttendanceController extends Controller
         if ($holiday) {
             return response()->json(['success' => false, 'message' => 'Hari ini libur: ' . $holiday->title], 422);
         }
-        // ==================================
 
-        // == CEK JAM SEKOLAH / KERJA ==
-        $settings = \App\Models\Setting::pluck('value', 'key');
+        $settings = Setting::pluck('value', 'key');
         $jamMasuk = $settings->get('jam_masuk', '07:30');
         $jamPulang = $settings->get('jam_pulang_guru') ?: $settings->get('jam_pulang', '16:00');
         
@@ -279,7 +324,6 @@ class SubjectAttendanceController extends Controller
                 'message' => 'Absensi hanya dapat dilakukan pada jam sekolah/kerja (' . $startTime->format('H:i') . ' - ' . $endTime->format('H:i') . ').'
             ], 422);
         }
-        // ==============================
 
         $attendance = SubjectAttendance::where('schedule_id', $schedule->id)
             ->where('student_id', $student->id)
@@ -322,64 +366,123 @@ class SubjectAttendanceController extends Controller
     public function showReportForm()
     {
         $teacher = Auth::user()->teacher;
+        if (!$teacher) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Data guru tidak ditemukan.');
+        }
 
+        // Mapel Reguler
         $assignments = TeachingAssignment::with(['schoolClass', 'subject'])
             ->where('teacher_id', $teacher->id)
             ->get();
 
-        $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->unique();
-        $subjects = $assignments->pluck('subject.name', 'subject.id')->unique();
+        $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->filter()->unique();
+        $subjects = $assignments->pluck('subject.name', 'subject.id')->filter()->unique();
 
-        return view('teacher.report_form', compact('classes', 'subjects'));
+        // Kokurikuler
+        $cocurricularIds = $teacher->cocurriculars()->pluck('cocurriculars.id');
+        $cocurricularSchedules = Schedule::with(['cocurricular', 'schoolClass'])
+            ->where('schedule_type', 'cocurricular')
+            ->where(function ($query) use ($teacher, $cocurricularIds) {
+                $query->where('teacher_id', $teacher->id)
+                      ->orWhereIn('cocurricular_id', $cocurricularIds);
+            })
+            ->get();
+
+        $cocurricularProjects = $cocurricularSchedules->pluck('cocurricular.title', 'cocurricular.id')->filter()->unique();
+        $cocurricularClasses = $cocurricularSchedules->pluck('schoolClass.name', 'schoolClass.id')->filter()->unique();
+
+        return view('teacher.report_form', compact(
+            'classes', 
+            'subjects', 
+            'cocurricularProjects', 
+            'cocurricularClasses'
+        ));
     }
 
     /**
-     * [BARU] Menampilkan halaman preview rekap absensi yang bisa diedit.
+     * Menampilkan halaman preview rekap absensi yang bisa diedit.
      */
     public function showReportPreview(Request $request)
     {
-        $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'school_class_id' => 'required|exists:school_classes,id',
-            'subject_id' => 'required|exists:subjects,id',
-        ]);
+        $activityType = $request->input('activity_type', 'regular');
+
+        if ($activityType === 'cocurricular' || $request->filled('cocurricular_id')) {
+            $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'school_class_id' => 'required|exists:school_classes,id',
+                'cocurricular_id' => 'required|exists:cocurriculars,id',
+            ]);
+        } else {
+            $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'school_class_id' => 'required|exists:school_classes,id',
+                'subject_id' => 'required|exists:subjects,id',
+            ]);
+        }
 
         $teacher = Auth::user()->teacher;
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
         $schoolClassId = $request->school_class_id;
-        $subjectId = $request->subject_id;
 
         $students = Student::where('school_class_id', $schoolClassId)->orderBy('name')->get();
+        $classInfo = SchoolClass::find($schoolClassId);
 
-        $attendances = SubjectAttendance::with('student')
-            ->where('teacher_id', $teacher->id)
-            ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
-            ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
-                $query->where('school_class_id', $schoolClassId)
-                    ->where('subject_id', $subjectId);
-            })
-            ->get();
+        if ($activityType === 'cocurricular' || $request->filled('cocurricular_id')) {
+            $cocurricularId = $request->cocurricular_id;
+            $cocurricularInfo = Cocurricular::find($cocurricularId);
+            $subjectInfo = null;
 
-        $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
-            ->where('school_class_id', $schoolClassId)
-            ->where('subject_id', $subjectId)
-            ->first();
+            $schedules = Schedule::where('schedule_type', 'cocurricular')
+                ->where('cocurricular_id', $cocurricularId)
+                ->where('school_class_id', $schoolClassId)
+                ->get();
 
-        if (!$assignment) {
-            return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
+            if ($schedules->isEmpty()) {
+                return back()->with('error', 'Jadwal kokurikuler tidak ditemukan untuk kombinasi kelas dan proyek ini.');
+            }
+
+            $scheduleIds = $schedules->pluck('id')->toArray();
+            $scheduleDays = $schedules->pluck('day_of_week')->unique()->toArray();
+
+            $attendances = SubjectAttendance::with('student')
+                ->whereIn('schedule_id', $scheduleIds)
+                ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+                ->get();
+        } else {
+            $subjectId = $request->subject_id;
+            $subjectInfo = Subject::find($subjectId);
+            $cocurricularInfo = null;
+
+            $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('school_class_id', $schoolClassId)
+                ->where('subject_id', $subjectId)
+                ->first();
+
+            if (!$assignment) {
+                return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
+            }
+
+            $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
+                ->pluck('day_of_week')
+                ->unique()
+                ->toArray();
+
+            $attendances = SubjectAttendance::with('student')
+                ->where('teacher_id', $teacher->id)
+                ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+                ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
+                    $query->where('school_class_id', $schoolClassId)
+                        ->where('subject_id', $subjectId);
+                })
+                ->get();
         }
-
-        $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
-            ->pluck('day_of_week')
-            ->unique()
-            ->toArray();
 
         $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
 
         $period = collect(CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays, $holidays) {
-            // dayOfWeekIso returns 1 for Monday and 7 for Sunday
             return in_array($date->dayOfWeekIso, $scheduleDays) && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         }));
 
@@ -391,11 +494,7 @@ class SubjectAttendanceController extends Controller
 
         $totalEffDays = $period->count();
         $attendanceSummary = [];
-        $totalHadir = 0;
-        $totalSakit = 0;
-        $totalIzin = 0;
-        $totalAlpa = 0;
-        $totalBolos = 0;
+        $totalHadir = 0; $totalSakit = 0; $totalIzin = 0; $totalAlpa = 0; $totalBolos = 0;
 
         foreach ($students as $student) {
             $h = 0; $s = 0; $i = 0; $a = 0; $b = 0;
@@ -428,10 +527,7 @@ class SubjectAttendanceController extends Controller
         $totalPossible = count($students) * $totalEffDays;
         $classAvgPercent = $totalPossible > 0 ? round(($totalHadir / $totalPossible) * 100, 1) : 0;
 
-        $classInfo = SchoolClass::find($schoolClassId);
-        $subjectInfo = Subject::find($subjectId);
-
-        $requestInputs = $request->only(['start_date', 'end_date', 'school_class_id', 'subject_id']);
+        $requestInputs = $request->only(['start_date', 'end_date', 'school_class_id', 'subject_id', 'cocurricular_id', 'activity_type']);
 
         return view('teacher.report_preview', compact(
             'students',
@@ -447,14 +543,16 @@ class SubjectAttendanceController extends Controller
             'classAvgPercent',
             'classInfo',
             'subjectInfo',
+            'cocurricularInfo',
             'startDate',
             'endDate',
-            'requestInputs'
+            'requestInputs',
+            'activityType'
         ));
     }
 
     /**
-     * [BARU] Memperbarui data kehadiran dari halaman preview rekap.
+     * Memperbarui data kehadiran dari halaman preview rekap.
      */
     public function updateReportAttendance(Request $request)
     {
@@ -463,28 +561,37 @@ class SubjectAttendanceController extends Controller
             'date' => 'required|date',
             'status' => 'required|string',
             'school_class_id' => 'required|exists:school_classes,id',
-            'subject_id' => 'required|exists:subjects,id',
+            'subject_id' => 'nullable|exists:subjects,id',
+            'cocurricular_id' => 'nullable|exists:cocurriculars,id',
         ]);
 
         $teacher = Auth::user()->teacher;
         $date = Carbon::parse($request->date);
-        $dayOfWeek = $date->dayOfWeekIso; // Gunakan dayOfWeekIso (Senin=1, Minggu=7)
+        $dayOfWeek = $date->dayOfWeekIso;
 
-        $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
-            ->where('school_class_id', $request->school_class_id)
-            ->where('subject_id', $request->subject_id)
-            ->first();
+        if ($request->filled('cocurricular_id')) {
+            $schedule = Schedule::where('schedule_type', 'cocurricular')
+                ->where('cocurricular_id', $request->cocurricular_id)
+                ->where('school_class_id', $request->school_class_id)
+                ->where('day_of_week', $dayOfWeek)
+                ->first();
+        } else {
+            $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('school_class_id', $request->school_class_id)
+                ->where('subject_id', $request->subject_id)
+                ->first();
 
-        if (!$assignment) {
-            return back()->with('error', 'Jadwal mengajar tidak ditemukan.');
+            if (!$assignment) {
+                return back()->with('error', 'Jadwal mengajar tidak ditemukan.');
+            }
+
+            $schedule = Schedule::where('teaching_assignment_id', $assignment->id)
+                ->where('day_of_week', $dayOfWeek)
+                ->first();
         }
 
-        $schedule = Schedule::where('teaching_assignment_id', $assignment->id)
-            ->where('day_of_week', $dayOfWeek)
-            ->first();
-
         if (!$schedule) {
-            return back()->with('error', 'Tidak ada jadwal pelajaran untuk hari yang dipilih. Data tidak dapat dibuat.');
+            return back()->with('error', 'Tidak ada jadwal untuk hari yang dipilih. Data tidak dapat dibuat.');
         }
 
         $attendance = SubjectAttendance::where('student_id', $request->student_id)
@@ -492,7 +599,7 @@ class SubjectAttendanceController extends Controller
             ->whereDate('created_at', $date)
             ->first();
 
-        if ($request->status == 'hapus') {
+        if ($request->status === 'hapus') {
             if ($attendance) {
                 $attendance->delete();
                 return back()->with('success', 'Data kehadiran berhasil dihapus.');
@@ -511,7 +618,7 @@ class SubjectAttendanceController extends Controller
                 'schedule_id' => $schedule->id,
                 'status' => $request->status,
                 'teacher_id' => $teacher->id,
-                'created_at' => $date, // Memastikan data dibuat pada tanggal yang benar
+                'created_at' => $date,
                 'updated_at' => $date,
             ]);
         }
@@ -519,55 +626,88 @@ class SubjectAttendanceController extends Controller
         return back()->with('success', 'Data kehadiran berhasil diperbarui.');
     }
 
-
     /**
      * Menghasilkan dan menampilkan halaman cetak rekap absensi.
      */
     public function printReport(Request $request)
     {
-        $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'school_class_id' => 'required|exists:school_classes,id',
-            'subject_id' => 'required|exists:subjects,id',
-        ]);
+        $activityType = $request->input('activity_type', 'regular');
+
+        if ($activityType === 'cocurricular' || $request->filled('cocurricular_id')) {
+            $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'school_class_id' => 'required|exists:school_classes,id',
+                'cocurricular_id' => 'required|exists:cocurriculars,id',
+            ]);
+        } else {
+            $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'school_class_id' => 'required|exists:school_classes,id',
+                'subject_id' => 'required|exists:subjects,id',
+            ]);
+        }
 
         $teacher = Auth::user()->teacher;
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
         $schoolClassId = $request->school_class_id;
-        $subjectId = $request->subject_id;
 
         $students = Student::where('school_class_id', $schoolClassId)->orderBy('name')->get();
+        $classInfo = SchoolClass::find($schoolClassId);
 
-        $attendances = SubjectAttendance::with('student')
-            ->where('teacher_id', $teacher->id)
-            ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
-            ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
-                $query->where('school_class_id', $schoolClassId)
-                    ->where('subject_id', $subjectId);
-            })
-            ->get();
+        if ($activityType === 'cocurricular' || $request->filled('cocurricular_id')) {
+            $cocurricularId = $request->cocurricular_id;
+            $cocurricularInfo = Cocurricular::find($cocurricularId);
+            $subjectInfo = null;
 
-        $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
-            ->where('school_class_id', $schoolClassId)
-            ->where('subject_id', $subjectId)
-            ->first();
+            $schedules = Schedule::where('schedule_type', 'cocurricular')
+                ->where('cocurricular_id', $cocurricularId)
+                ->where('school_class_id', $schoolClassId)
+                ->get();
 
-        if (!$assignment) {
-            return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
+            $scheduleIds = $schedules->pluck('id')->toArray();
+            $scheduleDays = $schedules->pluck('day_of_week')->unique()->toArray();
+
+            $attendances = SubjectAttendance::with('student')
+                ->whereIn('schedule_id', $scheduleIds)
+                ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+                ->get();
+        } else {
+            $subjectId = $request->subject_id;
+            $subjectInfo = Subject::find($subjectId);
+            $cocurricularInfo = null;
+
+            $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('school_class_id', $schoolClassId)
+                ->where('subject_id', $subjectId)
+                ->first();
+
+            if (!$assignment) {
+                return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
+            }
+
+            $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
+                ->pluck('day_of_week')
+                ->unique()
+                ->toArray();
+
+            $attendances = SubjectAttendance::with('student')
+                ->where('teacher_id', $teacher->id)
+                ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+                ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
+                    $query->where('school_class_id', $schoolClassId)
+                        ->where('subject_id', $subjectId);
+                })
+                ->get();
         }
-
-        $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
-            ->pluck('day_of_week')
-            ->unique()
-            ->toArray();
 
         $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
 
-        $period = CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays, $holidays) {
+        $period = collect(CarbonPeriod::create($startDate, $endDate)->filter(function ($date) use ($scheduleDays, $holidays) {
             return in_array($date->dayOfWeekIso, $scheduleDays) && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
-        });
+        }));
 
         $attendanceData = [];
         foreach ($attendances as $attendance) {
@@ -575,10 +715,6 @@ class SubjectAttendanceController extends Controller
             $attendanceData[$attendance->student_id][$date] = $attendance->status;
         }
 
-        $classInfo = SchoolClass::find($schoolClassId);
-        $subjectInfo = Subject::find($subjectId);
-
-        // Mengambil data identitas sekolah lengkap
         $settings = Setting::whereIn('key', [
             'app_logo', 'school_name', 'school_address', 'school_phone', 
             'school_email', 'school_headmaster_name', 'school_headmaster_nip'
@@ -594,7 +730,7 @@ class SubjectAttendanceController extends Controller
             'headmaster_nip' => $settings->firstWhere('key', 'school_headmaster_nip')->value ?? null,
         ];
 
-        $requestInputs = $request->only(['start_date', 'end_date', 'school_class_id', 'subject_id']);
+        $requestInputs = $request->only(['start_date', 'end_date', 'school_class_id', 'subject_id', 'cocurricular_id', 'activity_type']);
 
         return view('teacher.report_print', compact(
             'students',
@@ -602,16 +738,18 @@ class SubjectAttendanceController extends Controller
             'attendanceData',
             'classInfo',
             'subjectInfo',
+            'cocurricularInfo',
             'startDate',
             'endDate',
             'schoolIdentity',
             'teacher',
-            'requestInputs'
+            'requestInputs',
+            'activityType'
         ));
     }
 
     /**
-     * [BARU] Menampilkan halaman UI untuk Grafik Analitik Mapel.
+     * Menampilkan halaman UI untuk Grafik Analitik Mapel & Kokurikuler.
      */
     public function charts()
     {
@@ -621,8 +759,8 @@ class SubjectAttendanceController extends Controller
             ->where('teacher_id', $teacher->id)
             ->get();
 
-        $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->unique();
-        $subjects = $assignments->pluck('subject.name', 'subject.id')->unique();
+        $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->filter()->unique();
+        $subjects = $assignments->pluck('subject.name', 'subject.id')->filter()->unique();
         
         $studentsMap = [];
         foreach ($assignments as $assignment) {
@@ -631,55 +769,110 @@ class SubjectAttendanceController extends Controller
             }
         }
 
-        return view('teacher.subject_charts', compact('classes', 'subjects', 'studentsMap'));
+        // Kokurikuler
+        $cocurricularIds = $teacher->cocurriculars()->pluck('cocurriculars.id');
+        $cocurricularSchedules = Schedule::with(['cocurricular', 'schoolClass.students'])
+            ->where('schedule_type', 'cocurricular')
+            ->where(function ($query) use ($teacher, $cocurricularIds) {
+                $query->where('teacher_id', $teacher->id)
+                      ->orWhereIn('cocurricular_id', $cocurricularIds);
+            })
+            ->get();
+
+        $cocurricularProjects = $cocurricularSchedules->pluck('cocurricular.title', 'cocurricular.id')->filter()->unique();
+        $cocurricularClasses = $cocurricularSchedules->pluck('schoolClass.name', 'schoolClass.id')->filter()->unique();
+
+        foreach ($cocurricularSchedules as $sched) {
+            if ($sched->schoolClass && !isset($studentsMap[$sched->schoolClass->id])) {
+                $studentsMap[$sched->schoolClass->id] = $sched->schoolClass->students->select('id', 'name')->toArray();
+            }
+        }
+
+        return view('teacher.subject_charts', compact(
+            'classes', 
+            'subjects', 
+            'cocurricularProjects', 
+            'cocurricularClasses', 
+            'studentsMap'
+        ));
     }
 
     /**
-     * [BARU] Memproses data dan mengembalikan JSON untuk Chart.js.
+     * Memproses data dan mengembalikan JSON untuk Chart.js (Mendukung Mapel & Kokurikuler).
      */
     public function chartData(Request $request)
     {
-        $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'school_class_id' => 'required|exists:school_classes,id',
-            'subject_id' => 'required|exists:subjects,id',
-            'period' => 'required|in:weekly,monthly'
-        ]);
+        $activityType = $request->input('activity_type', 'regular');
+
+        if ($activityType === 'cocurricular' || $request->filled('cocurricular_id')) {
+            $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'school_class_id' => 'required|exists:school_classes,id',
+                'cocurricular_id' => 'required|exists:cocurriculars,id',
+                'period' => 'required|in:weekly,monthly'
+            ]);
+        } else {
+            $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'school_class_id' => 'required|exists:school_classes,id',
+                'subject_id' => 'required|exists:subjects,id',
+                'period' => 'required|in:weekly,monthly'
+            ]);
+        }
 
         $teacher = Auth::user()->teacher;
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
         $schoolClassId = $request->school_class_id;
-        $subjectId = $request->subject_id;
-        $studentId = $request->student_id; // 'all' atau ID siswa
+        $studentId = $request->student_id;
         $periodType = $request->period;
 
-        $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
-            ->where('school_class_id', $schoolClassId)
-            ->where('subject_id', $subjectId)
-            ->first();
+        if ($activityType === 'cocurricular' || $request->filled('cocurricular_id')) {
+            $cocurricularId = $request->cocurricular_id;
+            $schedules = Schedule::where('schedule_type', 'cocurricular')
+                ->where('cocurricular_id', $cocurricularId)
+                ->where('school_class_id', $schoolClassId)
+                ->get();
 
-        if (!$assignment) {
-            return response()->json(['error' => 'Jadwal mengajar tidak ditemukan.'], 404);
+            if ($schedules->isEmpty()) {
+                return response()->json(['error' => 'Jadwal kokurikuler tidak ditemukan.'], 404);
+            }
+
+            $scheduleIds = $schedules->pluck('id')->toArray();
+            $scheduleDays = $schedules->pluck('day_of_week')->unique()->toArray();
+
+            $query = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
+                ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()]);
+        } else {
+            $subjectId = $request->subject_id;
+            $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('school_class_id', $schoolClassId)
+                ->where('subject_id', $subjectId)
+                ->first();
+
+            if (!$assignment) {
+                return response()->json(['error' => 'Jadwal mengajar tidak ditemukan.'], 404);
+            }
+
+            $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
+                ->pluck('day_of_week')
+                ->unique()
+                ->toArray();
+
+            $query = SubjectAttendance::where('teacher_id', $teacher->id)
+                ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+                ->whereHas('schedule.teachingAssignment', function ($q) use ($schoolClassId, $subjectId) {
+                    $q->where('school_class_id', $schoolClassId)->where('subject_id', $subjectId);
+                });
         }
-
-        $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
-            ->pluck('day_of_week')
-            ->unique()
-            ->toArray();
 
         $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
 
         $validDays = collect(CarbonPeriod::create($startDate, $endDate))->filter(function ($date) use ($scheduleDays, $holidays) {
             return in_array($date->dayOfWeekIso, $scheduleDays) && !\App\Models\Calendar::isDateInHolidays($date, $holidays) && $date->startOfDay() <= now()->startOfDay();
         });
-
-        $query = SubjectAttendance::where('teacher_id', $teacher->id)
-            ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
-            ->whereHas('schedule.teachingAssignment', function ($q) use ($schoolClassId, $subjectId) {
-                $q->where('school_class_id', $schoolClassId)->where('subject_id', $subjectId);
-            });
 
         if ($studentId && $studentId !== 'all') {
             $query->where('student_id', $studentId);
@@ -690,7 +883,6 @@ class SubjectAttendanceController extends Controller
 
         $attendances = $query->get();
 
-        // Data untuk Pie Chart (Summary dari range yang dipilih)
         $totalHadir = $attendances->where('status', 'hadir')->count();
         $totalSakit = $attendances->where('status', 'sakit')->count();
         $totalIzin = $attendances->where('status', 'izin')->count();
@@ -718,7 +910,6 @@ class SubjectAttendanceController extends Controller
             'alpa' => $p_alpa,
         ];
 
-        // Data untuk Bar Chart (Tren per minggu/bulan)
         $trendLabels = [];
         $trendData = [
             'hadir' => [],
@@ -727,14 +918,11 @@ class SubjectAttendanceController extends Controller
             'alpa' => []
         ];
 
-        // Kelompokkan validDays berdasarkan periode
         $groupedDays = [];
         foreach ($validDays as $day) {
             if ($periodType === 'weekly') {
-                // Minggu ke-berapa di bulan ini
                 $label = 'Minggu ' . $day->weekOfMonth . ' ' . $day->translatedFormat('F');
             } else {
-                // Bulanan
                 $label = $day->translatedFormat('F Y');
             }
             if (!isset($groupedDays[$label])) {

@@ -3,11 +3,12 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
             <div>
                 <x-breadcrumb :breadcrumbs="[
-                    ['title' => 'Laporan Mengajar', 'url' => route('teacher.subject.attendance.report')],
+                    ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard')],
+                    ['title' => 'Laporan & Rekap', 'url' => route('teacher.subject.attendance.report')],
                     ['title' => 'Analitik Grafis', 'url' => route('teacher.subject.attendance.charts')]
                 ]" />
                 <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-                    Analitik Visual Kehadiran Mapel
+                    Analitik Visual Kehadiran Sesi Pembelajaran & Kokurikuler
                 </h1>
             </div>
 
@@ -31,7 +32,25 @@
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-6">
             <div class="flex items-center gap-2 mb-4">
                 <span class="material-icons text-indigo-500 text-lg">tune</span>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white">Parameter Analisis Mengajar</h3>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Parameter Analisis</h3>
+            </div>
+
+            <!-- Tipe Kegiatan Switcher Tabs -->
+            <div class="mb-4 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl flex items-center gap-1 max-w-md">
+                <button type="button" 
+                        @click="filters.activity_type = 'regular'; updateStudents()" 
+                        :class="filters.activity_type === 'regular' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-300 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" 
+                        class="flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5">
+                    <span class="material-icons text-sm">menu_book</span>
+                    <span>Mata Pelajaran</span>
+                </button>
+                <button type="button" 
+                        @click="filters.activity_type = 'cocurricular'; updateStudents()" 
+                        :class="filters.activity_type === 'cocurricular' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'" 
+                        class="flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5">
+                    <span class="material-icons text-sm">psychology</span>
+                    <span>Proyek Kokurikuler</span>
+                </button>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
@@ -42,20 +61,39 @@
                     <select x-model="filters.school_class_id" @change="updateStudents()" 
                             class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
                         <option value="">-- Pilih Kelas --</option>
-                        @foreach($classes as $id => $name)
-                            <option value="{{ $id }}">{{ $name }}</option>
-                        @endforeach
+                        <template x-if="filters.activity_type === 'regular'">
+                            <template x-for="(name, id) in regularClasses" :key="id">
+                                <option :value="id" x-text="name"></option>
+                            </template>
+                        </template>
+                        <template x-if="filters.activity_type === 'cocurricular'">
+                            <template x-for="(name, id) in cocurricularClasses" :key="id">
+                                <option :value="id" x-text="name"></option>
+                            </template>
+                        </template>
                     </select>
                 </div>
                 
-                <!-- Pilihan Mapel -->
-                <div>
+                <!-- Pilihan Mapel (Regular) -->
+                <div x-show="filters.activity_type === 'regular'">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Mata Pelajaran</label>
                     <select x-model="filters.subject_id" 
                             class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
                         <option value="">-- Pilih Mapel --</option>
                         @foreach($subjects as $id => $name)
                             <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Pilihan Proyek Kokurikuler -->
+                <div x-show="filters.activity_type === 'cocurricular'" style="display: none;">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Proyek Kokurikuler</label>
+                    <select x-model="filters.cocurricular_id" 
+                            class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-indigo-500 focus:ring-indigo-500/15">
+                        <option value="">-- Pilih Proyek --</option>
+                        @foreach($cocurricularProjects as $id => $title)
+                            <option value="{{ $id }}">{{ $title }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -149,11 +187,15 @@
     <script>
         window.subjectChartAnalytics = function() {
             return {
+                regularClasses: @json($classes),
+                cocurricularClasses: @json($cocurricularClasses ?? []),
                 studentsMap: @json($studentsMap),
                 currentStudents: [],
                 filters: {
+                    activity_type: 'regular',
                     school_class_id: '',
                     subject_id: '',
+                    cocurricular_id: '',
                     target_type: 'class',
                     student_id: 'all',
                     period: 'weekly',
@@ -167,14 +209,18 @@
                 barChartInst: null,
 
                 initData() {
-                    const classSelect = document.querySelector('select[x-model="filters.school_class_id"]');
-                    if (classSelect && classSelect.options.length > 1) {
-                        this.filters.school_class_id = classSelect.options[1].value;
+                    const classKeys = Object.keys(this.regularClasses);
+                    if (classKeys.length > 0) {
+                        this.filters.school_class_id = classKeys[0];
                         this.updateStudents();
                     }
                     const subjectSelect = document.querySelector('select[x-model="filters.subject_id"]');
                     if (subjectSelect && subjectSelect.options.length > 1) {
                         this.filters.subject_id = subjectSelect.options[1].value;
+                    }
+                    const cocurricularSelect = document.querySelector('select[x-model="filters.cocurricular_id"]');
+                    if (cocurricularSelect && cocurricularSelect.options.length > 1) {
+                        this.filters.cocurricular_id = cocurricularSelect.options[1].value;
                     }
                 },
 
@@ -190,8 +236,13 @@
                 async generateChart() {
                     this.errorMsg = '';
                     
-                    if (!this.filters.school_class_id || !this.filters.subject_id) {
+                    if (this.filters.activity_type === 'regular' && (!this.filters.school_class_id || !this.filters.subject_id)) {
                         this.errorMsg = "Silakan pilih kelas dan mata pelajaran.";
+                        return;
+                    }
+
+                    if (this.filters.activity_type === 'cocurricular' && (!this.filters.school_class_id || !this.filters.cocurricular_id)) {
+                        this.errorMsg = "Silakan pilih kelas dan proyek kokurikuler.";
                         return;
                     }
 
@@ -341,4 +392,3 @@
     </script>
     @endpush
 </x-app-layout>
-

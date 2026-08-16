@@ -109,10 +109,68 @@
                                 <span class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Tanpa Absen Pulang</span>
                                 <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Siswa hadir pagi namun tidak check-out</span>
                             </label>
+
+                            <!-- 6. Rekap Presensi Kokurikuler -->
+                            <label @click="reportType = 'cocurricular_monthly'" 
+                                   class="relative flex flex-col p-4 rounded-2xl border-2 cursor-pointer transition-all" 
+                                   :class="reportType === 'cocurricular_monthly' ? 'bg-indigo-50/70 border-indigo-500 dark:bg-indigo-950/40 dark:border-indigo-500 shadow-xs' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-850/40'">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="w-9 h-9 rounded-xl flex items-center justify-center" :class="reportType === 'cocurricular_monthly' ? 'bg-indigo-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'">
+                                        <span class="material-icons text-lg">psychology</span>
+                                    </div>
+                                    <input type="radio" name="report_type_option" value="cocurricular_monthly" x-model="reportType" class="h-4 w-4 text-indigo-600 border-slate-300 focus:ring-indigo-500">
+                                </div>
+                                <span class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Rekap Kokurikuler</span>
+                                <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Rekap presensi per proyek & kelas</span>
+                            </label>
                         </div>
                         
                         <!-- Dynamic Filter Configuration Panel -->
                         <div class="border-t border-slate-100 dark:border-slate-800 pt-6 space-y-4">
+                            
+                            {{-- Filter untuk Rekap Kokurikuler --}}
+                            <div x-show="reportType === 'cocurricular_monthly'" x-transition class="space-y-4" style="display: none;">
+                                <div>
+                                    <label for="cocurricular_id" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Pilih Proyek Kokurikuler <span class="text-rose-500">*</span>
+                                    </label>
+                                    <select id="cocurricular_id" name="cocurricular_id" 
+                                            class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-3 text-slate-800 dark:text-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15" 
+                                            x-bind:required="reportType === 'cocurricular_monthly'" 
+                                            x-bind:disabled="reportType !== 'cocurricular_monthly'">
+                                        <option value="">-- Pilih Proyek Kokurikuler --</option>
+                                        @foreach($cocurriculars ?? [] as $coc)
+                                            <option value="{{ $coc->id }}">{{ $coc->title }} ({{ $coc->level?->name ?? 'Tingkat' }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="school_class_id_cocurricular" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Pilih Kelas Target <span class="text-rose-500">*</span>
+                                    </label>
+                                    <select id="school_class_id_cocurricular" name="school_class_id" 
+                                            class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-3 text-slate-800 dark:text-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15" 
+                                            x-bind:required="reportType === 'cocurricular_monthly'" 
+                                            x-bind:disabled="reportType !== 'cocurricular_monthly'">
+                                        <option value="">-- Pilih Kelas Target --</option>
+                                        @foreach($classes as $class)
+                                            <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="month_cocurricular" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Pilih Periode Bulan <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input id="month_cocurricular" type="month" name="month" 
+                                           class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-3 text-slate-800 dark:text-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15" 
+                                           value="{{ date('Y-m') }}" 
+                                           x-bind:required="reportType === 'cocurricular_monthly'" 
+                                           x-bind:disabled="reportType !== 'cocurricular_monthly'" />
+                                </div>
+                            </div>
                             
                             {{-- Filter untuk Rekap Kelas Bulanan & Triwulan --}}
                             <div x-show="['class_monthly', 'class_trimester'].includes(reportType)" x-transition class="space-y-4">

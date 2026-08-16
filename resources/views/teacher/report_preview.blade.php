@@ -11,10 +11,10 @@
                     <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                         Preview Rekap Presensi
                     </h1>
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shadow-2xs">
-                        {{ $subjectInfo->name }}
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold {{ isset($cocurricularInfo) && $cocurricularInfo ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800' }} shadow-2xs">
+                        {{ isset($cocurricularInfo) && $cocurricularInfo ? $cocurricularInfo->title : ($subjectInfo?->name ?? 'Mata Pelajaran') }}
                     </span>
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
                         Kelas {{ $classInfo->name }}
                     </span>
                 </div>
@@ -374,15 +374,19 @@
                         <input type="hidden" name="student_id" :value="studentId">
                         <input type="hidden" name="date" :value="date">
                         <input type="hidden" name="school_class_id" value="{{ $classInfo->id }}">
-                        <input type="hidden" name="subject_id" value="{{ $subjectInfo->id }}">
+                        @if(isset($cocurricularInfo) && $cocurricularInfo)
+                            <input type="hidden" name="cocurricular_id" value="{{ $cocurricularInfo->id }}">
+                        @elseif(isset($subjectInfo) && $subjectInfo)
+                            <input type="hidden" name="subject_id" value="{{ $subjectInfo->id }}">
+                        @endif
                         
                         <div class="flex items-center gap-3 mb-4">
-                            <div class="w-11 h-11 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                            <div class="w-11 h-11 rounded-2xl {{ isset($cocurricularInfo) && $cocurricularInfo ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-sky-500/10 text-sky-600 dark:text-sky-400' }} flex items-center justify-center shrink-0">
                                 <span class="material-icons text-xl">edit_calendar</span>
                             </div>
                             <div>
                                 <h3 class="text-base font-bold text-slate-900 dark:text-white" id="modal-title">
-                                    Koreksi Presensi Mapel
+                                    {{ isset($cocurricularInfo) && $cocurricularInfo ? 'Koreksi Presensi Kokurikuler' : 'Koreksi Presensi Mapel' }}
                                 </h3>
                                 <p class="text-xs text-slate-500 dark:text-slate-400">
                                     Siswa: <strong x-text="studentName" class="text-slate-800 dark:text-slate-200"></strong>

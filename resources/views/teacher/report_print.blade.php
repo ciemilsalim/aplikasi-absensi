@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rekap Kehadiran {{ $subjectInfo->name }} - {{ $classInfo->name }}</title>
+    <title>Rekap Kehadiran {{ isset($cocurricularInfo) && $cocurricularInfo ? $cocurricularInfo->title : ($subjectInfo?->name ?? 'Kegiatan') }} - {{ $classInfo->name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @page {
@@ -307,13 +307,13 @@
                 <col style="width: 260px;">
             </colgroup>
             <tr>
-                <td class="meta-label">Mata Pelajaran</td>
-                <td class="meta-val">: {{ $subjectInfo->name }}</td>
+                <td class="meta-label">{{ isset($cocurricularInfo) && $cocurricularInfo ? 'Proyek Kokurikuler' : 'Mata Pelajaran' }}</td>
+                <td class="meta-val">: {{ isset($cocurricularInfo) && $cocurricularInfo ? $cocurricularInfo->title : ($subjectInfo?->name ?? '-') }}</td>
                 <td class="meta-label" style="text-align: right; padding-right: 8px;">Kelas :</td>
                 <td class="meta-val" style="white-space: nowrap;">{{ $classInfo->name }}</td>
             </tr>
             <tr>
-                <td class="meta-label">Guru Pengampu</td>
+                <td class="meta-label">{{ isset($cocurricularInfo) && $cocurricularInfo ? 'Fasilitator' : 'Guru Pengampu' }}</td>
                 <td class="meta-val">: {{ Auth::user()->name }}</td>
                 <td class="meta-label" style="text-align: right; padding-right: 8px;">Periode :</td>
                 <td class="meta-val" style="white-space: nowrap;">{{ $startDate->isoFormat('D MMM Y') }} s/d {{ $endDate->isoFormat('D MMM Y') }}</td>

@@ -3,25 +3,25 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
             <div>
                 <x-breadcrumb :breadcrumbs="[
-                    ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard', ['view' => 'guru_mapel'])],
-                    ['title' => 'Sesi Presensi Mengajar', 'url' => '#']
+                    ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard', ['view' => $schedule->isCocurricular() ? 'fasilitator_kokurikuler' : 'guru_mapel'])],
+                    ['title' => $schedule->isCocurricular() ? 'Sesi Presensi Kokurikuler' : 'Sesi Presensi Mengajar', 'url' => '#']
                 ]" />
                 <div class="flex items-center gap-2 flex-wrap mt-1">
                     <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                        Sesi Presensi Mengajar
+                        {{ $schedule->isCocurricular() ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar' }}
                     </h1>
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shadow-2xs">
-                        {{ $schedule->teachingAssignment->subject->name }}
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold {{ $schedule->isCocurricular() ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800' }} shadow-2xs">
+                        {{ $schedule->getActivityName() }}
                     </span>
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
-                        Kelas {{ $schedule->teachingAssignment->schoolClass->name }}
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
+                        Kelas {{ $schedule->getTargetClass()?->name ?? '-' }}
                     </span>
                 </div>
             </div>
 
             <!-- Date Filter & Back Controls -->
             <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                <a href="{{ route('teacher.dashboard', ['view' => 'guru_mapel']) }}" 
+                <a href="{{ route('teacher.dashboard', ['view' => $schedule->isCocurricular() ? 'fasilitator_kokurikuler' : 'guru_mapel']) }}" 
                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shadow-2xs">
                     <span class="material-icons text-sm">arrow_back</span>
                     <span class="hidden sm:inline">Dasbor</span>

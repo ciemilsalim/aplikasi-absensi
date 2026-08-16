@@ -54,7 +54,9 @@
                     @php
                         $firstRecord = $attendanceGroup->first();
                         $scheduleInfo = $firstRecord->schedule;
-                        $assignment = $scheduleInfo->teachingAssignment;
+                        $isCocurricular = $scheduleInfo?->isCocurricular();
+                        $activityName = $scheduleInfo?->getActivityName() ?? 'Aktivitas';
+                        $className = $scheduleInfo?->getTargetClass()?->name ?? '-';
                         $hadirCount = $attendanceGroup->where('status', 'hadir')->count();
                         $sakitCount = $attendanceGroup->where('status', 'sakit')->count();
                         $izinCount = $attendanceGroup->where('status', 'izin')->count();
@@ -65,16 +67,21 @@
                         <!-- Group Header -->
                         <div class="p-6 bg-slate-50/75 dark:bg-slate-850/50 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-11 h-11 rounded-2xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
-                                    <span class="material-icons">class</span>
+                                <div class="w-11 h-11 rounded-2xl {{ $isCocurricular ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400' : 'bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400' }} flex items-center justify-center font-bold shrink-0">
+                                    <span class="material-icons">{{ $isCocurricular ? 'psychology' : 'class' }}</span>
                                 </div>
                                 <div>
-                                    <h3 class="text-base font-bold text-slate-900 dark:text-white">
-                                        {{ $assignment->subject->name }} <span class="text-slate-400 font-normal">|</span> Kelas {{ $assignment->schoolClass->name }}
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md {{ $isCocurricular ? 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300' : 'bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300' }}">
+                                            {{ $isCocurricular ? 'Kokurikuler' : 'Mata Pelajaran' }}
+                                        </span>
+                                    </div>
+                                    <h3 class="text-base font-bold text-slate-900 dark:text-white mt-1">
+                                        {{ $activityName }} <span class="text-slate-400 font-normal">|</span> Kelas {{ $className }}
                                     </h3>
                                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5">
                                         <span class="material-icons text-xs text-slate-400">schedule</span>
-                                        <span>Pukul {{ \Carbon\Carbon::parse($scheduleInfo->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($scheduleInfo->end_time)->format('H:i') }} WIB</span>
+                                        <span>Pukul {{ \Carbon\Carbon::parse($scheduleInfo->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($scheduleInfo->end_time)->format('H:i') }} WITA</span>
                                     </p>
                                 </div>
                             </div>

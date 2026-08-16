@@ -1,5 +1,5 @@
 <?php
-// File: app/Models/Teacher.php (Diperbarui)
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,12 +33,12 @@ class Teacher extends Model
     // Relasi untuk mengecek apakah guru ini adalah wali kelas
     public function homeroomClass()
     {
-        return $this->hasOne(SchoolClass::class , 'teacher_id');
+        return $this->hasOne(SchoolClass::class, 'teacher_id');
     }
 
     public function subjects()
     {
-        return $this->belongsToMany(Subject::class , 'subject_teacher');
+        return $this->belongsToMany(Subject::class, 'subject_teacher');
     }
 
     public function teachingAssignments()
@@ -54,5 +54,21 @@ class Teacher extends Model
     public function coachingExtracurriculars()
     {
         return $this->hasMany(Extracurricular::class, 'teacher_id');
+    }
+
+    /**
+     * Relasi ke tim proyek kokurikuler yang diikuti oleh guru.
+     */
+    public function cocurriculars()
+    {
+        return $this->belongsToMany(Cocurricular::class, 'cocurricular_teacher');
+    }
+
+    /**
+     * Relasi ke jadwal sesi kokurikuler yang diampu langsung oleh guru ini.
+     */
+    public function cocurricularSchedules()
+    {
+        return $this->hasMany(Schedule::class, 'teacher_id')->where('schedule_type', 'cocurricular');
     }
 }

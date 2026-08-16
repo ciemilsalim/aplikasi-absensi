@@ -15,23 +15,17 @@ use App\Models\TeachingAssignment;
 use App\Models\TeacherNote;
 use App\Models\Extracurricular;
 use App\Models\ExtracurricularAttendance;
+use App\Models\Cocurricular;
 use App\Models\Announcement;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
-// Impor class yang dibutuhkan untuk export
 use App\Exports\AttendanceReportExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
 {
-    // ... (method lainnya tetap sama) ...
-    // index, getHomeroomData, getSubjectTeacherData, updateAttendance, showAttendanceHistory, printAttendance
-
-    /**
-     * Menampilkan dasbor guru berdasarkan peran yang dimiliki.
-     */
     private function checkEffectiveDaysSet()
     {
         $currentYear = date('Y');
@@ -56,8 +50,10 @@ class DashboardController extends Controller
         $isHomeroomTeacher = $teacher->homeroomClass()->exists();
         $isSubjectTeacher = $teacher->teachingAssignments()->exists();
         $isExtracurricularCoach = $teacher->coachingExtracurriculars()->exists();
+        $isCocurricularFacilitator = $teacher->cocurriculars()->exists() 
+            || Schedule::where('teacher_id', $teacher->id)->where('schedule_type', 'cocurricular')->exists();
 
-        if (!$isHomeroomTeacher && !$isSubjectTeacher && !$isExtracurricularCoach) {
+        if (!$isHomeroomTeacher && !$isSubjectTeacher && !$isExtracurricularCoach && !$isCocurricularFacilitator) {
             return view('teacher.dashboard-no-role', $viewData);
         }
 
@@ -66,6 +62,8 @@ class DashboardController extends Controller
             $defaultView = 'wali_kelas';
         } elseif ($isSubjectTeacher) {
             $defaultView = 'guru_mapel';
+        } elseif ($isCocurricularFacilitator) {
+            $defaultView = 'fasilitator_kokurikuler';
         } else {
             $defaultView = 'pembina_ekskul';
         }
@@ -74,6 +72,7 @@ class DashboardController extends Controller
         $viewData['isHomeroomTeacher'] = $isHomeroomTeacher;
         $viewData['isSubjectTeacher'] = $isSubjectTeacher;
         $viewData['isExtracurricularCoach'] = $isExtracurricularCoach;
+        $viewData['isCocurricularFacilitator'] = $isCocurricularFacilitator;
         $viewData['currentView'] = $currentView;
         $viewData['isEffectiveDaysSet'] = $this->checkEffectiveDaysSet();
 
@@ -83,6 +82,10 @@ class DashboardController extends Controller
 
         if ($currentView === 'guru_mapel' && $isSubjectTeacher) {
             $viewData = array_merge($viewData, $this->getSubjectTeacherData($teacher));
+        }
+
+        if ($currentView === 'fasilitator_kokurikuler' && $isCocurricularFacilitator) {
+            $viewData = array_merge($viewData, $this->getCocurricularFacilitatorData($teacher));
         }
 
         if ($currentView === 'pembina_ekskul' && $isExtracurricularCoach) {
@@ -178,25 +181,26 @@ class DashboardController extends Controller
                 'attendances as alpha_count' => fn($query) => $query->where('status', 'alpa')->where('attendance_time', '>=', $thirtyDaysAgo)
             ])
             ->having('late_count', '>', 2)
-            ->orHaving('alpha_count', '>', 1)
-            ->orderByDesc('late_count')
-            ->orderByDesc('alpha_count')
+            ->orHaving('alpha_count', '>', 2)
+            ->orderByRaw('late_count + alpha_count DESC')
             ->take(5)
             ->get();
 
+        $dailyPresencePercentage = 0;
+        if ($totalStudents > 0) {
+            $presentTodayCount = $attendancesToday->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
+            $dailyPresencePercentage = round(($presentTodayCount / $totalStudents) * 100);
+        }
+
         return [
-            'class' => $class,
+            'homeroomClass' => $class,
             'studentsInClass' => $studentsInClass,
             'attendancesToday' => $attendancesToday,
-            'onTimeCount' => $attendancesToday->where('status', 'tepat_waktu')->count(),
-            'lateCount' => $attendancesToday->where('status', 'terlambat')->count(),
-            'sickCount' => $attendancesToday->where('status', 'sakit')->count(),
-            'permitCount' => $attendancesToday->where('status', 'izin')->count(),
-            'alphaCount' => $attendancesToday->where('status', 'alpa')->count(),
-            'noRecordCount' => $totalStudents - $attendancesToday->count(),
-            'studentsForAttentionWali' => $studentsForAttention,
+            'totalStudents' => $totalStudents,
             'chartLabels' => $chartLabels,
             'chartData' => $chartData,
+            'studentsForAttention' => $studentsForAttention,
+            'dailyPresencePercentage' => $dailyPresencePercentage,
             'studentsOnPermit' => $studentsOnPermit,
             'studentsNotCheckedOut' => $studentsNotCheckedOut,
             'absentStudents' => $absentStudents,
@@ -214,6 +218,7 @@ class DashboardController extends Controller
             'teachingAssignment.schoolClass',
             'teachingAssignment.subject'
         ])
+            ->where('schedule_type', 'regular')
             ->where('day_of_week', $dayOfWeekNumber)
             ->whereHas('teachingAssignment', function ($query) use ($teacher) {
                 $query->where('teacher_id', $teacher->id);
@@ -247,6 +252,9 @@ class DashboardController extends Controller
 
         $lastAttendanceSummary = null;
         $lastAttendanceRecord = SubjectAttendance::where('teacher_id', $teacher->id)
+            ->whereHas('schedule', function ($q) {
+                $q->where('schedule_type', 'regular');
+            })
             ->latest()
             ->first();
 
@@ -282,7 +290,7 @@ class DashboardController extends Controller
             $potentialAttendance = $totalStudentsInClass * $totalSessions;
             $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
             $classPerformanceData[] = [
-                'label' => $assignment->schoolClass->name . ' - ' . $assignment->subject->name,
+                'label' => ($assignment->schoolClass?->name ?? 'Kelas') . ' - ' . ($assignment->subject?->name ?? 'Mapel'),
                 'percentage' => $percentage,
             ];
         }
@@ -291,6 +299,7 @@ class DashboardController extends Controller
             'teachingAssignment.schoolClass',
             'teachingAssignment.subject'
         ])
+            ->where('schedule_type', 'regular')
             ->whereHas('teachingAssignment', function ($query) use ($teacher) {
                 $query->where('teacher_id', $teacher->id);
             })
@@ -306,6 +315,145 @@ class DashboardController extends Controller
             'studentsForAttentionMapel' => $studentsForAttention,
             'lastAttendanceSummary' => $lastAttendanceSummary,
             'classPerformanceData' => $classPerformanceData,
+            'teacherNote' => $teacherNote,
+        ];
+    }
+
+    /**
+     * Mengambil data dasbor untuk Fasilitator Kokurikuler.
+     */
+    private function getCocurricularFacilitatorData($teacher)
+    {
+        $now = now();
+        $dayOfWeekNumber = $now->dayOfWeek; // 0=Sun, 1=Mon, ..., 6=Sat
+
+        $cocurricularIds = $teacher->cocurriculars()->pluck('cocurriculars.id');
+
+        // Jadwal hari ini
+        $schedulesToday = Schedule::with([
+            'cocurricular',
+            'schoolClass',
+            'teacher'
+        ])
+            ->where('schedule_type', 'cocurricular')
+            ->where('day_of_week', $dayOfWeekNumber)
+            ->where(function ($query) use ($teacher, $cocurricularIds) {
+                $query->where('teacher_id', $teacher->id)
+                      ->orWhereIn('cocurricular_id', $cocurricularIds);
+            })
+            ->orderBy('start_time', 'asc')
+            ->get();
+
+        // Semua jadwal mingguan
+        $allSchedules = Schedule::with([
+            'cocurricular',
+            'schoolClass',
+            'teacher'
+        ])
+            ->where('schedule_type', 'cocurricular')
+            ->where(function ($query) use ($teacher, $cocurricularIds) {
+                $query->where('teacher_id', $teacher->id)
+                      ->orWhereIn('cocurricular_id', $cocurricularIds);
+            })
+            ->orderBy('day_of_week', 'asc')
+            ->orderBy('start_time', 'asc')
+            ->get();
+
+        $cocurricularScheduleIds = $allSchedules->pluck('id');
+
+        $currentMonth = $now->month;
+        if ($currentMonth >= 7 && $currentMonth <= 12) {
+            $semesterStart = $now->copy()->setMonth(7)->startOfMonth();
+            $semesterEnd = $now->copy()->setMonth(12)->endOfMonth();
+        } else {
+            $semesterStart = $now->copy()->setMonth(1)->startOfMonth();
+            $semesterEnd = $now->copy()->setMonth(6)->endOfMonth();
+        }
+
+        // Siswa perlu perhatian khusus di kokurikuler
+        $studentsForAttention = SubjectAttendance::whereIn('schedule_id', $cocurricularScheduleIds)
+            ->whereIn('status', ['alpa', 'bolos'])
+            ->whereBetween('created_at', [$semesterStart, $semesterEnd])
+            ->with('student.schoolClass')
+            ->select(
+                'student_id',
+                DB::raw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) as alpa_count'),
+                DB::raw('SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) as bolos_count')
+            )
+            ->groupBy('student_id')
+            ->havingRaw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) + SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) > 0')
+            ->orderByRaw('SUM(CASE WHEN status = "alpa" THEN 1 ELSE 0 END) + SUM(CASE WHEN status = "bolos" THEN 1 ELSE 0 END) DESC')
+            ->take(5)
+            ->get();
+
+        // Ringkasan presensi terakhir sesi kokurikuler
+        $lastAttendanceSummary = null;
+        $lastAttendanceRecord = SubjectAttendance::whereIn('schedule_id', $cocurricularScheduleIds)
+            ->latest()
+            ->first();
+
+        if ($lastAttendanceRecord) {
+            $attendances = SubjectAttendance::where('schedule_id', $lastAttendanceRecord->schedule_id)
+                ->whereDate('created_at', $lastAttendanceRecord->created_at->toDateString())
+                ->get();
+
+            $summary = $attendances->countBy('status');
+            $lastAttendanceSummary = [
+                'schedule' => $lastAttendanceRecord->schedule,
+                'hadir' => $summary->get('hadir', 0),
+                'sakit' => $summary->get('sakit', 0),
+                'izin' => $summary->get('izin', 0),
+                'alpa' => $summary->get('alpa', 0),
+                'bolos' => $summary->get('bolos', 0),
+            ];
+        }
+
+        // Performa Kehadiran Kelas Kokurikuler 30 Hari Terakhir
+        $classPerformanceData = [];
+        $thirtyDaysAgo = now()->subDays(30);
+
+        $distinctPairs = $allSchedules->unique(function ($item) {
+            return $item->cocurricular_id . '-' . $item->school_class_id;
+        });
+
+        foreach ($distinctPairs as $item) {
+            $pairScheduleIds = Schedule::where('schedule_type', 'cocurricular')
+                ->where('cocurricular_id', $item->cocurricular_id)
+                ->where('school_class_id', $item->school_class_id)
+                ->pluck('id');
+
+            if ($pairScheduleIds->isEmpty()) continue;
+
+            $totalSessions = SubjectAttendance::whereIn('schedule_id', $pairScheduleIds)
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->distinct(DB::raw('DATE(created_at)'))
+                ->count();
+
+            $totalHadir = SubjectAttendance::whereIn('schedule_id', $pairScheduleIds)
+                ->where('status', 'hadir')
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->count();
+
+            $totalStudentsInClass = Student::where('school_class_id', $item->school_class_id)->count();
+            $potentialAttendance = $totalStudentsInClass * $totalSessions;
+            $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
+
+            $classPerformanceData[] = [
+                'label' => ($item->schoolClass?->name ?? 'Kelas') . ' - ' . ($item->cocurricular?->title ?? 'Kokurikuler'),
+                'percentage' => $percentage,
+            ];
+        }
+
+        $myProjects = $teacher->cocurriculars()->with(['level', 'teachers'])->get();
+        $teacherNote = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
+
+        return [
+            'schedulesTodayKokurikuler' => $schedulesToday,
+            'allSchedulesKokurikuler' => $allSchedules,
+            'studentsForAttentionKokurikuler' => $studentsForAttention,
+            'lastAttendanceSummaryKokurikuler' => $lastAttendanceSummary,
+            'classPerformanceDataKokurikuler' => $classPerformanceData,
+            'myCocurricularProjects' => $myProjects,
             'teacherNote' => $teacherNote,
         ];
     }
@@ -384,7 +532,6 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Tandai dibaca notifikasi belum absen untuk orang tua siswa ini jika status telah ditetapkan (selain alpa atau saat diupdate)
         if ($status !== 'alpa') {
             foreach ($student->parents as $parent) {
                 if ($parent->user_id) {
@@ -449,52 +596,27 @@ class DashboardController extends Controller
                 $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
                     return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
                 });
-                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
                 
-                if ($isSelfStudy) {
-                    $hadirCount++;
+                if ($attendanceRecord) {
+                    if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
+                    elseif ($attendanceRecord->status === 'sakit') $sakitCount++;
+                    elseif (in_array($attendanceRecord->status, ['izin', 'izin_keluar'])) $izinCount++;
+                    elseif ($attendanceRecord->status === 'alpa') $alpaCount++;
                 } else {
-                    $status = $attendanceRecord ? $attendanceRecord->status : null;
-                    if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
-                    elseif ($status === 'sakit') $sakitCount++;
-                    elseif ($status === 'izin') $izinCount++;
-                    elseif ($status === 'alpa') $alpaCount++;
+                    if ($date->isPast() && !$date->isToday()) {
+                        $alpaCount++;
+                    }
                 }
             }
-
-            $summary = [
+            $attendanceSummary[$student->id] = [
                 'hadir' => $hadirCount,
                 'sakit' => $sakitCount,
                 'izin' => $izinCount,
                 'alpa' => $alpaCount,
             ];
-            $attendanceSummary[$student->id] = $summary;
         }
 
-        $totalClassHadir = array_sum(array_column($attendanceSummary, 'hadir'));
-        $totalClassSakit = array_sum(array_column($attendanceSummary, 'sakit'));
-        $totalClassIzin = array_sum(array_column($attendanceSummary, 'izin'));
-        $totalClassAlpa = array_sum(array_column($attendanceSummary, 'alpa'));
-        $totalEffectiveWorkdays = $period->count();
-        $totalPossible = count($students) * $totalEffectiveWorkdays;
-        $classAvgPercent = $totalPossible > 0 ? round(($totalClassHadir / $totalPossible) * 100, 1) : 0;
-
-        return view('teacher.attendance-history', compact(
-            'teacher',
-            'class',
-            'students',
-            'attendances',
-            'period',
-            'selectedDate',
-            'attendanceSummary',
-            'selfStudyDays',
-            'totalClassHadir',
-            'totalClassSakit',
-            'totalClassIzin',
-            'totalClassAlpa',
-            'totalEffectiveWorkdays',
-            'classAvgPercent'
-        ));
+        return view('teacher.attendance-history', compact('class', 'students', 'attendances', 'period', 'selectedDate', 'attendanceSummary', 'holidays', 'selfStudyDays'));
     }
 
     public function printAttendance(Request $request)
@@ -502,10 +624,8 @@ class DashboardController extends Controller
         $teacher = Auth::user()->teacher;
 
         if (!$teacher || !$teacher->homeroomClass) {
-            return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak memiliki kelas untuk dicetak.');
+            return view('teacher.dashboard-no-class', compact('teacher'));
         }
-
-        $settings = Setting::all()->pluck('value', 'key');
 
         $class = $teacher->homeroomClass;
         $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
@@ -535,339 +655,327 @@ class DashboardController extends Controller
         $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
         $period = CarbonPeriod::create($startDate, $endDate);
 
-        $workdays = collect($period)->filter(function ($date) use ($holidays) {
+        $period = collect($period)->filter(function ($date) use ($holidays) {
             return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
 
         $attendanceSummary = [];
-        $effectiveDaysCount = $workdays->count();
-
+        $totalHadir = 0; $totalSakit = 0; $totalIzin = 0; $totalAlpa = 0;
         foreach ($students as $student) {
             $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
             $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
             
-            foreach ($workdays as $date) {
+            foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
                 $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
                     return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
                 });
-                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
                 
-                if ($isSelfStudy) {
-                    $hadirCount++;
+                if ($attendanceRecord) {
+                    if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
+                    elseif ($attendanceRecord->status === 'sakit') $sakitCount++;
+                    elseif (in_array($attendanceRecord->status, ['izin', 'izin_keluar'])) $izinCount++;
+                    elseif ($attendanceRecord->status === 'alpa') $alpaCount++;
                 } else {
-                    $status = $attendanceRecord ? $attendanceRecord->status : null;
-                    if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
-                    elseif ($status === 'sakit') $sakitCount++;
-                    elseif ($status === 'izin') $izinCount++;
-                    elseif ($status === 'alpa') $alpaCount++;
+                    if ($date->isPast() && !$date->isToday()) {
+                        $alpaCount++;
+                    }
                 }
             }
-
-            $totalAbsen = $sakitCount + $izinCount + $alpaCount;
-            if ($effectiveDaysCount > 0) {
-                $persen = (($effectiveDaysCount - $totalAbsen) / $effectiveDaysCount) * 100;
-                $persenStr = round($persen, 0) . '%';
-            } else {
-                $persen = 0;
-                $persenStr = '0%';
-            }
-
-            $summary = [
+            $attendanceSummary[$student->id] = [
                 'hadir' => $hadirCount,
                 'sakit' => $sakitCount,
                 'izin' => $izinCount,
                 'alpa' => $alpaCount,
-                'jml' => $totalAbsen,
-                'persen' => $persen,
-                'persen_str' => $persenStr
             ];
-            $attendanceSummary[$student->id] = $summary;
+            $totalHadir += $hadirCount;
+            $totalSakit += $sakitCount;
+            $totalIzin += $izinCount;
+            $totalAlpa += $alpaCount;
         }
 
-        // Summary Statistics for the Class
-        $totalStudents = $students->count();
-        $classAverageAttendance = $totalStudents > 0 ? round(collect($attendanceSummary)->avg('persen'), 1) : 0;
-        $perfectAttendanceCount = collect($attendanceSummary)->filter(function($s) { return $s['persen'] >= 100; })->count();
-        $needsAttentionCount = collect($attendanceSummary)->filter(function($s) { return $s['persen'] < 85; })->count();
+        $settings = Setting::whereIn('key', [
+            'app_logo', 'school_name', 'school_address', 'school_phone', 
+            'school_email', 'school_headmaster_name', 'school_headmaster_nip'
+        ])->get();
+        
+        $schoolIdentity = [
+            'logo' => $settings->firstWhere('key', 'app_logo')->value ?? null,
+            'name' => $settings->firstWhere('key', 'school_name')->value ?? null,
+            'address' => $settings->firstWhere('key', 'school_address')->value ?? null,
+            'phone' => $settings->firstWhere('key', 'school_phone')->value ?? null,
+            'email' => $settings->firstWhere('key', 'school_email')->value ?? null,
+            'headmaster_name' => $settings->firstWhere('key', 'school_headmaster_name')->value ?? null,
+            'headmaster_nip' => $settings->firstWhere('key', 'school_headmaster_nip')->value ?? null,
+        ];
 
-        // Logo Base64
-        $logoPath = $settings->get('app_logo');
-        $logoBase64 = null;
-        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
-            try {
-                $logoData = \Illuminate\Support\Facades\Storage::disk('public')->get($logoPath);
-                $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
-            } catch (\Exception $e) { }
-        }
-
-        $paperSize = strtolower($request->input('paper_size', 'a4'));
-
-        return view('teacher.print.attendance-report', [
-            'settings' => $settings,
-            'schoolName' => $settings->get('school_name', config('app.name')),
-            'schoolAddress' => $settings->get('school_address'),
-            'schoolCity' => $settings->get('school_city', 'Buol'),
-            'logoBase64' => $logoBase64,
-            'class' => $class,
-            'students' => $students,
-            'attendances' => $attendances,
-            'period' => $workdays,
-            'selectedDate' => $selectedDate,
-            'effectiveDaysCount' => $effectiveDaysCount,
-            'attendanceSummary' => $attendanceSummary,
-            'selfStudyDays' => $selfStudyDays,
-            'totalStudents' => $totalStudents,
-            'classAverageAttendance' => $classAverageAttendance,
-            'perfectAttendanceCount' => $perfectAttendanceCount,
-            'needsAttentionCount' => $needsAttentionCount,
-            'headmasterName' => $settings->get('school_headmaster_name', '-'),
-            'headmasterNip' => $settings->get('school_headmaster_nip', '-'),
-            'homeroomTeacherName' => $teacher->name ?? '-',
-            'homeroomTeacherNip' => $teacher->nip ?? '-',
-            'paperSize' => $paperSize,
-            'printDate' => now()->translatedFormat('d F Y, H:i:s'),
-        ]);
+        return view('teacher.print.attendance-report', compact(
+            'class', 'students', 'attendances', 'period', 'selectedDate', 
+            'attendanceSummary', 'totalHadir', 'totalSakit', 'totalIzin', 
+            'totalAlpa', 'teacher', 'schoolIdentity', 'holidays', 'selfStudyDays'
+        ));
     }
-
 
     public function printTrimesterAttendance(Request $request)
     {
         $teacher = Auth::user()->teacher;
 
         if (!$teacher || !$teacher->homeroomClass) {
-            return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak memiliki kelas untuk dicetak.');
+            return view('teacher.dashboard-no-class', compact('teacher'));
         }
 
         $class = $teacher->homeroomClass;
-        
+        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $studentIds = $students->pluck('id');
+
         $request->validate([
             'trimester' => 'required|in:1,2,3,4',
-            'year' => 'required|integer|min:2000',
+            'year' => 'nullable|digits:4',
         ]);
 
-        $year = $request->year;
-        $trimester = $request->trimester;
-        
-        $months = [];
-        if ($trimester == 1) $months = [1, 2, 3];
-        elseif ($trimester == 2) $months = [4, 5, 6];
-        elseif ($trimester == 3) $months = [7, 8, 9];
-        elseif ($trimester == 4) $months = [10, 11, 12];
+        $trimester = $request->input('trimester', 1);
+        $year = $request->input('year', date('Y'));
 
-        // Dapatkan hari efektif per bulan
-        $monthNames = [
-            1 => 'JANUARI', 2 => 'FEBRUARI', 3 => 'MARET', 4 => 'APRIL',
-            5 => 'MEI', 6 => 'JUNI', 7 => 'JULI', 8 => 'AGUSTUS',
-            9 => 'SEPTEMBER', 10 => 'OKTOBER', 11 => 'NOVEMBER', 12 => 'DESEMBER'
-        ];
-
-        $trimesterMap = [];
-        foreach ($months as $m) {
-            $effectiveDays = Setting::where('key', 'effective_days_' . $year . '_' . $m)->value('value');
-            if ($effectiveDays === null) {
-                $effectiveDays = Setting::where('key', 'effective_days_' . $m)->value('value');
-            }
-            
-            if (empty($effectiveDays) || $effectiveDays == 0) {
-                $startDate = Carbon::create($year, $m, 1)->startOfMonth();
-                $endDate = $startDate->copy()->endOfMonth();
-                $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
-                $period = CarbonPeriod::create($startDate, $endDate);
-                $workdays = collect($period)->filter(function ($d) use ($holidays) {
-                    return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
-                });
-                $effectiveDays = $workdays->count();
-            }
-
-            $trimesterMap[$m] = [
-                'name' => $monthNames[$m],
-                'effective_days' => $effectiveDays !== null ? (int)$effectiveDays : 0
-            ];
+        switch ($trimester) {
+            case 1:
+                $startMonth = 1; $endMonth = 3;
+                $trimesterName = 'Triwulan I (Januari - Maret)';
+                break;
+            case 2:
+                $startMonth = 4; $endMonth = 6;
+                $trimesterName = 'Triwulan II (April - Juni)';
+                break;
+            case 3:
+                $startMonth = 7; $endMonth = 9;
+                $trimesterName = 'Triwulan III (Juli - September)';
+                break;
+            case 4:
+                $startMonth = 10; $endMonth = 12;
+                $trimesterName = 'Triwulan IV (Oktober - Desember)';
+                break;
         }
 
-        $students = Student::where('school_class_id', $class->id)
-            ->with(['attendances' => function ($query) use ($year, $months) {
-                $query->whereYear('attendance_time', $year)
-                      ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
-            }])
-            ->orderBy('name')
+        $startDate = Carbon::createFromDate($year, $startMonth, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($year, $endMonth, 1)->endOfMonth();
+
+        $allAttendancesInPeriod = Attendance::whereIn('student_id', $studentIds)
+            ->whereBetween('attendance_time', [$startDate, $endDate])
             ->get();
 
-        $totalTrimesterEffectiveDays = 0;
-        foreach ($months as $m) {
-            $totalTrimesterEffectiveDays += $trimesterMap[$m]['effective_days'];
-        }
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+        $period = CarbonPeriod::create($startDate, $endDate);
 
-        $reportData = $students->map(function ($student) use ($months, $trimesterMap, $year) {
-            $studentData = [
-                'name' => $student->name,
-                'nis' => $student->nis,
-                'monthly_data' => [],
-                'total_alpa' => 0,
-                'total_izin' => 0,
-                'total_sakit' => 0,
-                'total_jml' => 0,
-                'total_effective_days' => 0,
-                'total_persen' => '0%',
-                'total_persen_num' => 0
-            ];
-
-            foreach ($months as $m) {
-                $attendancesInMonth = $student->attendances->filter(function ($att) use ($m) {
-                    return Carbon::parse($att->attendance_time)->month == $m;
-                });
-                
-                $startDate = Carbon::create($year, $m, 1)->startOfMonth();
-                $endDate = $startDate->copy()->endOfMonth();
-                $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
-                $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
-                $period = CarbonPeriod::create($startDate, $endDate);
-
-                $workdays = collect($period)->filter(function ($d) use ($holidays) {
-                    return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
-                });
-
-                $hadir = 0; $sakit = 0; $izin = 0; $alpa = 0;
-
-                foreach ($workdays as $wDate) {
-                    $dateString = $wDate->format('Y-m-d');
-                    $attendanceRecord = $attendancesInMonth->firstWhere(function($item) use ($dateString) {
-                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
-                    });
-                    
-                    $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
-                    
-                    if ($isSelfStudy) {
-                        $hadir++;
-                    } else {
-                        $status = $attendanceRecord ? $attendanceRecord->status : null;
-                        if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadir++;
-                        elseif ($status === 'sakit') $sakit++;
-                        elseif ($status === 'izin') $izin++;
-                        elseif ($status === 'alpa') $alpa++;
-                    }
-                }
-
-                $effDays = $trimesterMap[$m]['effective_days'];
-                
-                $totalAbsen = $sakit + $izin + $alpa;
-                $jml = $totalAbsen;
-                if ($effDays > 0) {
-                    $persen = (($effDays - $jml) / $effDays) * 100;
-                    $persenStr = round($persen, 0) . '%';
-                } else {
-                    $persenStr = '0%';
-                }
-
-                $studentData['monthly_data'][$m] = [
-                    'alpa' => $alpa,
-                    'izin' => $izin,
-                    'sakit' => $sakit,
-                    'jml' => $jml,
-                    'persen' => $persenStr
-                ];
-
-                $studentData['total_alpa'] += $alpa;
-                $studentData['total_izin'] += $izin;
-                $studentData['total_sakit'] += $sakit;
-                $studentData['total_jml'] += $jml;
-                $studentData['total_effective_days'] += $effDays;
-            }
-
-            if ($studentData['total_effective_days'] > 0) {
-                $totPersen = (($studentData['total_effective_days'] - $studentData['total_jml']) / $studentData['total_effective_days']) * 100;
-                $studentData['total_persen'] = round($totPersen, 0) . '%';
-                $studentData['total_persen_num'] = $totPersen;
-            } else {
-                $studentData['total_persen'] = '0%';
-                $studentData['total_persen_num'] = 0;
-            }
-
-            return (object)$studentData;
+        $validDays = collect($period)->filter(function ($date) use ($holidays) {
+            return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
 
-        // Summary Statistics for the Class
-        $totalStudents = $reportData->count();
-        $classAverageAttendance = $totalStudents > 0 ? round($reportData->avg('total_persen_num'), 1) : 0;
-        $perfectAttendanceCount = $reportData->filter(function($s) { return $s->total_persen_num >= 100; })->count();
-        $needsAttentionCount = $reportData->filter(function($s) { return $s->total_persen_num < 85; })->count();
-
-        // Common PDF Data similar to Admin
-        $settings = Setting::pluck('value', 'key');
-        $logoPath = $settings->get('app_logo');
-        $logoBase64 = null;
-        if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
-            try {
-                $logoData = \Illuminate\Support\Facades\Storage::disk('public')->get($logoPath);
-                $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
-            } catch (\Exception $e) { }
+        $attendanceSummary = [];
+        $totalHadir = 0; $totalSakit = 0; $totalIzin = 0; $totalAlpa = 0;
+        foreach ($students as $student) {
+            $studentAttendances = $allAttendancesInPeriod->where('student_id', $student->id);
+            $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
+            
+            foreach ($validDays as $date) {
+                $dateString = $date->format('Y-m-d');
+                $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
+                    return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                });
+                
+                if ($attendanceRecord) {
+                    if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
+                    elseif ($attendanceRecord->status === 'sakit') $sakitCount++;
+                    elseif (in_array($attendanceRecord->status, ['izin', 'izin_keluar'])) $izinCount++;
+                    elseif ($attendanceRecord->status === 'alpa') $alpaCount++;
+                } else {
+                    if ($date->isPast() && !$date->isToday()) {
+                        $alpaCount++;
+                    }
+                }
+            }
+            $attendanceSummary[$student->id] = [
+                'hadir' => $hadirCount,
+                'sakit' => $sakitCount,
+                'izin' => $izinCount,
+                'alpa' => $alpaCount,
+            ];
+            $totalHadir += $hadirCount;
+            $totalSakit += $sakitCount;
+            $totalIzin += $izinCount;
+            $totalAlpa += $alpaCount;
         }
 
-        $paperSize = strtolower($request->input('paper_size', 'a4'));
-
-        $pdfData = [
-            'schoolName' => $settings->get('school_name', config('app.name')),
-            'schoolAddress' => $settings->get('school_address'),
-            'schoolCity' => $settings->get('school_city', 'Buol'),
-            'logoBase64' => $logoBase64,
-            'appName' => config('app.name', 'SIASEK'),
-            'printDate' => now()->translatedFormat('d F Y, H:i:s'),
-            'userRole' => Auth::check() ? ucfirst(Auth::user()->role) : 'Wali Kelas',
-            'headmasterName' => $settings->get('school_headmaster_name', '-'),
-            'headmasterNip' => $settings->get('school_headmaster_nip', '-'),
-            'reportData' => $reportData,
-            'className' => $class->name,
-            'trimester' => $trimester,
-            'year' => $year,
-            'trimesterMap' => $trimesterMap,
-            'months' => $months,
-            'totalTrimesterEffectiveDays' => $totalTrimesterEffectiveDays,
-            'totalStudents' => $totalStudents,
-            'classAverageAttendance' => $classAverageAttendance,
-            'perfectAttendanceCount' => $perfectAttendanceCount,
-            'needsAttentionCount' => $needsAttentionCount,
-            'homeroomTeacherName' => $teacher->name ?? null,
-            'homeroomTeacherNip' => $teacher->nip ?? null,
-            'paperSize' => $paperSize
+        $settings = Setting::whereIn('key', [
+            'app_logo', 'school_name', 'school_address', 'school_phone', 
+            'school_email', 'school_headmaster_name', 'school_headmaster_nip'
+        ])->get();
+        
+        $schoolIdentity = [
+            'logo' => $settings->firstWhere('key', 'app_logo')->value ?? null,
+            'name' => $settings->firstWhere('key', 'school_name')->value ?? null,
+            'address' => $settings->firstWhere('key', 'school_address')->value ?? null,
+            'phone' => $settings->firstWhere('key', 'school_phone')->value ?? null,
+            'email' => $settings->firstWhere('key', 'school_email')->value ?? null,
+            'headmaster_name' => $settings->firstWhere('key', 'school_headmaster_name')->value ?? null,
+            'headmaster_nip' => $settings->firstWhere('key', 'school_headmaster_nip')->value ?? null,
         ];
 
-        $pdf = Pdf::loadView('admin.reports.triwulan_pdf', $pdfData);
-        
-        // Pilihan Kertas A4 / Folio (F4) Landscape
-        if (in_array($paperSize, ['folio', 'f4'])) {
-            // Ukuran Folio / F4 Landscape: 330mm x 215mm = 935.43pt x 609.45pt
-            $pdf->setPaper([0, 0, 935.43, 609.45], 'landscape');
-        } else {
-            $pdf->setPaper('a4', 'landscape');
-        }
-
-        return $pdf->stream('laporan-triwulan-' . $class->name . '-T' . $trimester . '-' . $year . '.pdf');
+        return view('teacher.print.trimester-attendance-report', compact(
+            'class', 'students', 'trimesterName', 'year', 
+            'attendanceSummary', 'totalHadir', 'totalSakit', 'totalIzin', 
+            'totalAlpa', 'teacher', 'schoolIdentity', 'validDays'
+        ));
     }
 
-
-    /**
-     * Menangani permintaan ekspor ke Excel.
-     * Logika ini disamakan dengan printAttendance untuk mengambil semua data yang dibutuhkan.
-     */
-    public function exportAttendanceExcel(Request $request)
+    public function charts()
     {
         $teacher = Auth::user()->teacher;
         if (!$teacher || !$teacher->homeroomClass) {
-            return redirect()->route('teacher.dashboard')->with('error', 'Anda tidak memiliki kelas untuk diekspor.');
+            return view('teacher.dashboard-no-class', compact('teacher'));
         }
+
+        $class = $teacher->homeroomClass;
+        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+
+        return view('teacher.attendance.charts', compact('class', 'students'));
+    }
+
+    public function chartData(Request $request)
+    {
+        $teacher = Auth::user()->teacher;
+        if (!$teacher || !$teacher->homeroomClass) {
+            return response()->json(['error' => 'Akses tidak sah'], 403);
+        }
+
+        $class = $teacher->homeroomClass;
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'period' => 'required|in:weekly,monthly'
+        ]);
+
+        $startDate = Carbon::parse($request->start_date)->startOfDay();
+        $endDate = Carbon::parse($request->end_date)->endOfDay();
+        $studentId = $request->student_id;
+        $periodType = $request->period;
+
+        $students = Student::where('school_class_id', $class->id);
+        if ($studentId && $studentId !== 'all') {
+            $students->where('id', $studentId);
+        }
+        $students = $students->get();
+        $studentIds = $students->pluck('id');
+        $studentsCount = $students->count();
+
+        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+        $validDays = collect(CarbonPeriod::create($startDate, $endDate))->filter(function ($date) use ($holidays) {
+            return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays) && $date->startOfDay() <= now()->startOfDay();
+        });
+
+        $attendances = Attendance::whereIn('student_id', $studentIds)
+            ->whereBetween('attendance_time', [$startDate, $endDate])
+            ->get();
+
+        $totalHadir = $attendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
+        $totalSakit = $attendances->where('status', 'sakit')->count();
+        $totalIzin = $attendances->whereIn('status', ['izin', 'izin_keluar'])->count();
+        $totalAlpaTercatat = $attendances->where('status', 'alpa')->count();
+
+        $maxPossible = $validDays->count() * $studentsCount;
+        $p_hadir = 0; $p_sakit = 0; $p_izin = 0; $p_alpa = 0;
+
+        if ($maxPossible > 0) {
+            $p_hadir = round(($totalHadir / $maxPossible) * 100, 1);
+            $p_sakit = round(($totalSakit / $maxPossible) * 100, 1);
+            $p_izin  = round(($totalIzin / $maxPossible) * 100, 1);
+            
+            $recorded = $totalHadir + $totalSakit + $totalIzin + $totalAlpaTercatat;
+            $unrecorded = $maxPossible - $recorded;
+            $totalAlpa = $totalAlpaTercatat + ($unrecorded > 0 ? $unrecorded : 0);
+            
+            $p_alpa  = round(($totalAlpa / $maxPossible) * 100, 1);
+        }
+
+        $summaryData = [
+            'hadir' => $p_hadir,
+            'sakit' => $p_sakit,
+            'izin' => $p_izin,
+            'alpa' => $p_alpa,
+        ];
+
+        $trendLabels = [];
+        $trendData = [
+            'hadir' => [],
+            'sakit' => [],
+            'izin' => [],
+            'alpa' => []
+        ];
+
+        $groupedDays = [];
+        foreach ($validDays as $day) {
+            if ($periodType === 'weekly') {
+                $label = 'Minggu ' . $day->weekOfMonth . ' ' . $day->translatedFormat('F');
+            } else {
+                $label = $day->translatedFormat('F Y');
+            }
+            if (!isset($groupedDays[$label])) {
+                $groupedDays[$label] = [];
+            }
+            $groupedDays[$label][] = $day->format('Y-m-d');
+        }
+
+        foreach ($groupedDays as $label => $days) {
+            $trendLabels[] = $label;
+            $maxPossGroup = count($days) * $studentsCount;
+            if ($maxPossGroup == 0) {
+                $trendData['hadir'][] = 0; $trendData['sakit'][] = 0;
+                $trendData['izin'][] = 0; $trendData['alpa'][] = 0;
+                continue;
+            }
+
+            $gHadir = 0; $gSakit = 0; $gIzin = 0; $gAlpa = 0;
+            foreach ($attendances as $att) {
+                if (in_array(Carbon::parse($att->attendance_time)->format('Y-m-d'), $days)) {
+                    if (in_array($att->status, ['tepat_waktu', 'terlambat'])) $gHadir++;
+                    elseif ($att->status == 'sakit') $gSakit++;
+                    elseif (in_array($att->status, ['izin', 'izin_keluar'])) $gIzin++;
+                    elseif ($att->status == 'alpa') $gAlpa++;
+                }
+            }
+
+            $gRecorded = $gHadir + $gSakit + $gIzin + $gAlpa;
+            $gUnrecorded = $maxPossGroup - $gRecorded;
+            $gAlpaTotal = $gAlpa + ($gUnrecorded > 0 ? $gUnrecorded : 0);
+
+            $trendData['hadir'][] = round(($gHadir / $maxPossGroup) * 100, 1);
+            $trendData['sakit'][] = round(($gSakit / $maxPossGroup) * 100, 1);
+            $trendData['izin'][] = round(($gIzin / $maxPossGroup) * 100, 1);
+            $trendData['alpa'][] = round(($gAlpaTotal / $maxPossGroup) * 100, 1);
+        }
+
+        return response()->json([
+            'summary' => $summaryData,
+            'trendLabels' => $trendLabels,
+            'trendData' => $trendData
+        ]);
+    }
+
+    public function exportAttendanceExcel(Request $request)
+    {
+        $teacher = Auth::user()->teacher;
+
+        if (!$teacher || !$teacher->homeroomClass) {
+            return back()->with('error', 'Anda bukan wali kelas.');
+        }
+
+        $class = $teacher->homeroomClass;
+        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $studentIds = $students->pluck('id');
 
         $request->validate([
             'month' => 'nullable|date_format:Y-m',
         ]);
 
         $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
-
-        // --- MULAI LOGIKA PENGAMBILAN DATA ---
-        $class = $teacher->homeroomClass;
-        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
-        $studentIds = $students->pluck('id');
-
         $startDate = $selectedDate->copy()->startOfMonth();
         $endDate = $selectedDate->copy()->endOfMonth();
 
@@ -887,254 +995,113 @@ class DashboardController extends Controller
         $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
         $period = CarbonPeriod::create($startDate, $endDate);
 
-        $workdays = collect($period)->filter(function ($date) use ($holidays) {
+        $period = collect($period)->filter(function ($date) use ($holidays) {
             return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
 
         $attendanceSummary = [];
+        $totalHadir = 0; $totalSakit = 0; $totalIzin = 0; $totalAlpa = 0;
         foreach ($students as $student) {
             $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
             $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
             
-            foreach ($workdays as $date) {
+            foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
                 $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
                     return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
                 });
-                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
                 
-                if ($isSelfStudy) {
-                    $hadirCount++;
+                if ($attendanceRecord) {
+                    if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
+                    elseif ($attendanceRecord->status === 'sakit') $sakitCount++;
+                    elseif (in_array($attendanceRecord->status, ['izin', 'izin_keluar'])) $izinCount++;
+                    elseif ($attendanceRecord->status === 'alpa') $alpaCount++;
                 } else {
-                    $status = $attendanceRecord ? $attendanceRecord->status : null;
-                    if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
-                    elseif ($status === 'sakit') $sakitCount++;
-                    elseif ($status === 'izin') $izinCount++;
-                    elseif ($status === 'alpa') $alpaCount++;
+                    if ($date->isPast() && !$date->isToday()) {
+                        $alpaCount++;
+                    }
                 }
             }
-
-            $summary = [
+            $attendanceSummary[$student->id] = [
                 'hadir' => $hadirCount,
                 'sakit' => $sakitCount,
                 'izin' => $izinCount,
                 'alpa' => $alpaCount,
             ];
-            $attendanceSummary[$student->id] = $summary;
+            $totalHadir += $hadirCount;
+            $totalSakit += $sakitCount;
+            $totalIzin += $izinCount;
+            $totalAlpa += $alpaCount;
         }
-        // --- SELESAI LOGIKA PENGAMBILAN DATA ---
 
-        $fileName = 'Laporan Kehadiran ' . $class->name . ' - ' . $selectedDate->translatedFormat('F Y') . '.xlsx';
+        $settings = Setting::whereIn('key', [
+            'app_logo', 'school_name', 'school_address', 'school_phone', 
+            'school_email', 'school_headmaster_name', 'school_headmaster_nip'
+        ])->get();
+        
+        $schoolIdentity = [
+            'logo' => $settings->firstWhere('key', 'app_logo')->value ?? null,
+            'name' => $settings->firstWhere('key', 'school_name')->value ?? null,
+            'address' => $settings->firstWhere('key', 'school_address')->value ?? null,
+            'phone' => $settings->firstWhere('key', 'school_phone')->value ?? null,
+            'email' => $settings->firstWhere('key', 'school_email')->value ?? null,
+            'headmaster_name' => $settings->firstWhere('key', 'school_headmaster_name')->value ?? null,
+            'headmaster_nip' => $settings->firstWhere('key', 'school_headmaster_nip')->value ?? null,
+        ];
 
-        // Kirim semua data yang dibutuhkan ke class Export
+        $fileName = 'Laporan_Presensi_' . str_replace(' ', '_', $class->name) . '_' . $selectedDate->format('F_Y') . '.xlsx';
+
         return Excel::download(new AttendanceReportExport(
-            $class,
-            $students,
-            $workdays,
-            $attendances,
-            $attendanceSummary,
-            $selectedDate,
-            $selfStudyDays
+            $class, $students, $attendances, $period, $selectedDate, 
+            $attendanceSummary, $totalHadir, $totalSakit, $totalIzin, 
+            $totalAlpa, $teacher, $schoolIdentity, $holidays, $selfStudyDays
         ), $fileName);
+    }
+
+    public function updateNote(Request $request)
+    {
+        $request->validate([
+            'note' => 'nullable|string|max:1000',
+        ]);
+
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher) {
+            return back()->with('error', 'Guru tidak ditemukan.');
+        }
+
+        TeacherNote::updateOrCreate(
+            ['teacher_id' => $teacher->id],
+            ['content' => $request->input('note')]
+        );
+
+        return back()->with('success', 'Catatan guru berhasil diperbarui.');
     }
 
     public function updateStudentPhoto(Request $request, Student $student)
     {
         $teacher = Auth::user()?->teacher;
-
-        // Validasi otoritas Wali Kelas
-        if (!$teacher || !$student || !$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
-            return back()->with('error', 'Anda tidak memiliki wewenang untuk mengubah data siswa di luar kelas Anda.');
+        if (!$teacher || !$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
+            return back()->with('error', 'Anda tidak berhak mengubah data siswa ini.');
         }
 
         $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        try {
-            // Hapus foto lama jika ada
+        if ($request->hasFile('photo')) {
             if ($student->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->photo)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($student->photo);
             }
 
-            // Simpan foto baru
-            $path = $request->file('photo')->store('students/photos', 'public');
-            
-            // Update database dan reset face_descriptor
+            $path = $request->file('photo')->store('students', 'public');
             $student->update([
                 'photo' => $path,
-                'face_descriptor' => null
+                'face_descriptor' => null,
             ]);
 
             return back()->with('success', 'Foto ' . $student->name . ' berhasil diperbarui.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memperbarui foto siswa.');
-        }
-    }
-
-    public function updateNote(Request $request)
-    {
-        $request->validate(['content' => 'nullable|string']);
-        $teacher = Auth::user()->teacher;
-
-        if (!$teacher) {
-            return response()->json(['success' => false, 'message' => 'Guru tidak ditemukan.'], 404);
         }
 
-        $note = TeacherNote::updateOrCreate(
-            ['teacher_id' => $teacher->id],
-            ['content' => $request->input('content', '')]
-        );
-
-        return response()->json(['success' => true, 'message' => 'Catatan berhasil disimpan.']);
-    }
-
-    public function charts()
-    {
-        $teacher = Auth::user()->teacher;
-        $class = $teacher ? $teacher->homeroomClass : null;
-        if (!$class) {
-            return redirect()->route('teacher.dashboard')->with('error', 'Anda belum ditetapkan sebagai wali kelas.');
-        }
-
-        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
-        return view('teacher.reports.charts', compact('class', 'students'));
-    }
-
-    public function chartData(Request $request)
-    {
-        $teacher = Auth::user()->teacher;
-        $class = $teacher ? $teacher->homeroomClass : null;
-        if (!$class) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $params = $request->validate([
-            'target_type' => 'required|in:class,student',
-            'period_type' => 'required|in:month,trimester,semester',
-            'year' => 'required|integer',
-            'period_value' => 'required|integer',
-            'student_id' => 'required_if:target_type,student|nullable|exists:students,id',
-        ]);
-
-        $year = (int) $params['year'];
-        $months = [];
-        $labels = [];
-
-        if ($params['period_type'] === 'month') {
-            $months = [(int) $params['period_value']];
-            $labels = [Carbon::create()->month($months[0])->translatedFormat('F')];
-        } elseif ($params['period_type'] === 'trimester') {
-            $t = (int) $params['period_value'];
-            $months = [($t - 1) * 3 + 1, ($t - 1) * 3 + 2, ($t - 1) * 3 + 3];
-            foreach($months as $m) $labels[] = Carbon::create()->month($m)->translatedFormat('F');
-        } elseif ($params['period_type'] === 'semester') {
-            $s = (int) $params['period_value'];
-            if ($s === 1) { // Ganjil: Jul - Dec
-                $months = [7, 8, 9, 10, 11, 12];
-            } else { // Genap: Jan - Jun
-                $months = [1, 2, 3, 4, 5, 6];
-            }
-            foreach($months as $m) $labels[] = Carbon::create()->month($m)->translatedFormat('F');
-        }
-
-        $studentsQuery = Student::where('school_class_id', $class->id);
-        if ($params['target_type'] === 'student') {
-            $studentsQuery->where('id', $params['student_id']);
-        }
-
-        $students = $studentsQuery->with(['attendances' => function ($query) use ($year, $months) {
-            $query->whereYear('attendance_time', $year)
-                  ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
-        }])->get();
-
-        $monthlyDataArray = [];
-        $totalSum = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
-
-        foreach ($months as $m) {
-            $startDate = Carbon::create($year, $m, 1)->startOfMonth();
-            $endDate = $startDate->copy()->endOfMonth();
-            
-            $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
-            $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
-            $period = CarbonPeriod::create($startDate, $endDate);
-
-            $workdays = collect($period)->filter(function ($d) use ($holidays) {
-                return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
-            });
-
-            // Hanya hitung hari yang sudah berlalu (sampai hari ini)
-            $passedWorkdays = $workdays->filter(function ($d) {
-                return $d->startOfDay() <= now()->startOfDay();
-            });
-
-            $hadirMonth = 0; $sakitMonth = 0; $izinMonth = 0; $alpaMonth = 0;
-
-            foreach ($passedWorkdays as $wDate) {
-                $dateString = $wDate->format('Y-m-d');
-                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
-
-                foreach ($students as $student) {
-                    $attendanceRecord = $student->attendances->firstWhere(function($item) use ($dateString) {
-                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
-                    });
-
-                    if ($isSelfStudy) {
-                        $hadirMonth++;
-                    } else {
-                        $status = $attendanceRecord ? $attendanceRecord->status : null;
-                        if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirMonth++;
-                        elseif ($status === 'sakit') $sakitMonth++;
-                        elseif ($status === 'izin') $izinMonth++;
-                        elseif ($status === 'alpa') $alpaMonth++;
-                    }
-                }
-            }
-            
-            $totalStudentsCount = count($students);
-            $maxPossible = $passedWorkdays->count() * $totalStudentsCount;
-            
-            if ($maxPossible > 0) {
-                $p_hadir = round(($hadirMonth / $maxPossible) * 100, 1);
-                $p_sakit = round(($sakitMonth / $maxPossible) * 100, 1);
-                $p_izin  = round(($izinMonth / $maxPossible) * 100, 1);
-                
-                // Hari tanpa keterangan/belum absen dianggap Alpa
-                $recorded = $hadirMonth + $sakitMonth + $izinMonth + $alpaMonth;
-                $unrecorded = $maxPossible - $recorded;
-                $totalAlpa = $alpaMonth + ($unrecorded > 0 ? $unrecorded : 0);
-                
-                $p_alpa  = round(($totalAlpa / $maxPossible) * 100, 1);
-            } else {
-                $p_hadir = 0; $p_sakit = 0; $p_izin = 0; $p_alpa = 0;
-            }
-
-            $monthlyDataArray[] = [
-                'hadir' => $p_hadir,
-                'sakit' => $p_sakit,
-                'izin' => $p_izin,
-                'alpa' => $p_alpa,
-            ];
-
-            // Akumulasi sum menggunakan persentase untuk donut chart
-            $totalSum['hadir'] += $p_hadir;
-            $totalSum['sakit'] += $p_sakit;
-            $totalSum['izin'] += $p_izin;
-            $totalSum['alpa'] += $p_alpa;
-        }
-
-        $numMonths = count($months);
-        if ($numMonths > 0) {
-            $totalSum['hadir'] = round($totalSum['hadir'] / $numMonths, 1);
-            $totalSum['sakit'] = round($totalSum['sakit'] / $numMonths, 1);
-            $totalSum['izin'] = round($totalSum['izin'] / $numMonths, 1);
-            $totalSum['alpa'] = round($totalSum['alpa'] / $numMonths, 1);
-        }
-
-        return response()->json([
-            'labels' => $labels,
-            'monthly' => $monthlyDataArray,
-            'summary' => $totalSum
-        ]);
+        return back()->with('error', 'Gagal mengunggah foto.');
     }
 }
