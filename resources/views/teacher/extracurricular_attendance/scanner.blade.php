@@ -303,8 +303,19 @@
                                  x-show="(activeTab === '{{ $category }}') && (searchQuery === '' || '{{ mb_strtolower($student->name) }}'.includes(searchQuery.toLowerCase()) || '{{ $student->nis }}'.includes(searchQuery))">
                                 
                                 <div class="flex items-center gap-3 min-w-0">
-                                    <div class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-extrabold text-xs flex items-center justify-center shrink-0 border border-amber-200/60 dark:border-amber-800">
-                                        {{ strtoupper(substr($student->name, 0, 1)) }}
+                                    <div class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-extrabold text-xs flex items-center justify-center shrink-0 border border-amber-200/60 dark:border-amber-800 overflow-hidden shadow-2xs">
+                                        @if(!empty($student->photo_url))
+                                            <img src="{{ $student->photo_url }}" 
+                                                 alt="{{ $student->name }}" 
+                                                 class="w-full h-full object-cover rounded-2xl" 
+                                                 loading="lazy"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <span style="display: none;" class="w-full h-full items-center justify-center font-extrabold text-xs">
+                                                {{ strtoupper(substr($student->name, 0, 1)) }}
+                                            </span>
+                                        @else
+                                            <span>{{ strtoupper(substr($student->name, 0, 1)) }}</span>
+                                        @endif
                                     </div>
                                     <div class="min-w-0">
                                         <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
