@@ -26,11 +26,79 @@ class ExtracurricularAttendanceController extends Controller
             abort(403, 'Akses ditolak.');
         }
 
+        $activeYear = AcademicYear::getActive();
+        $activeSemester = Semester::getActive();
+
         $extracurriculars = Extracurricular::where('teacher_id', $teacher->id)
+            ->with(['students.schoolClass'])
             ->withCount('students')
             ->get();
         
-        return view('teacher.extracurricular_attendance.index', compact('extracurriculars'));
+        $ekskulIds = $extracurriculars->pluck('id');
+        $today = Carbon::today()->format('Y-m-d');
+
+        // Statistik kehadiran hari ini per ekskul
+        $todayStats = [];
+        foreach ($extracurriculars as $ekskul) {
+            $stats = ExtracurricularAttendance::where('extracurricular_id', $ekskul->id)
+                ->where('attendance_date', $today)
+                ->select('status', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+                ->groupBy('status')
+                ->pluck('total', 'status');
+
+            $todayStats[$ekskul->id] = [
+                'hadir' => $stats->get('hadir', 0),
+                'sakit' => $stats->get('sakit', 0),
+                'izin' => $stats->get('izin', 0),
+                'alpa' => $stats->get('alpa', 0),
+                'total' => $stats->sum(),
+            ];
+        }
+
+        // Hitung KPI Keseluruhan
+        $totalMembers = $extracurriculars->sum('students_count');
+        $totalSessions = ExtracurricularAttendance::whereIn('extracurricular_id', $ekskulIds)
+            ->distinct('extracurricular_id', 'attendance_date')
+            ->count('attendance_date');
+
+        $totalHadir = ExtracurricularAttendance::whereIn('extracurricular_id', $ekskulIds)
+            ->where('status', 'hadir')
+            ->count();
+
+        $allAttendancesCount = ExtracurricularAttendance::whereIn('extracurricular_id', $ekskulIds)->count();
+        $avgAttendanceRate = ($allAttendancesCount > 0) ? round(($totalHadir / $allAttendancesCount) * 100, 1) : 0;
+
+        // Riwayat Sesi Presensi Terbaru (6 sesi terakhir)
+        $recentSessions = ExtracurricularAttendance::whereIn('extracurricular_id', $ekskulIds)
+            ->select('extracurricular_id', 'attendance_date', \Illuminate\Support\Facades\DB::raw('count(*) as total_students'))
+            ->groupBy('extracurricular_id', 'attendance_date')
+            ->orderByDesc('attendance_date')
+            ->take(6)
+            ->get()
+            ->map(function($session) {
+                $sessionAttendances = ExtracurricularAttendance::where('extracurricular_id', $session->extracurricular_id)
+                    ->where('attendance_date', $session->attendance_date)
+                    ->get();
+                $session->hadir_count = $sessionAttendances->where('status', 'hadir')->count();
+                $session->sakit_count = $sessionAttendances->where('status', 'sakit')->count();
+                $session->izin_count = $sessionAttendances->where('status', 'izin')->count();
+                $session->alpa_count = $sessionAttendances->where('status', 'alpa')->count();
+                $session->extracurricular = Extracurricular::find($session->extracurricular_id);
+                return $session;
+            });
+
+        return view('teacher.extracurricular_attendance.index', compact(
+            'teacher',
+            'extracurriculars',
+            'todayStats',
+            'today',
+            'activeYear',
+            'activeSemester',
+            'totalMembers',
+            'totalSessions',
+            'avgAttendanceRate',
+            'recentSessions'
+        ));
     }
 
     /**
