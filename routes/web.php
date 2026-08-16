@@ -278,7 +278,11 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::get('/extracurricular-attendance', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'index'])->name('extracurricular-attendance.index');
     Route::get('/extracurricular-attendance/{extracurricular}/create', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'create'])->name('extracurricular-attendance.create');
     Route::post('/extracurricular-attendance/{extracurricular}', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'store'])->name('extracurricular-attendance.store');
+    Route::get('/extracurricular-attendance/{extracurricular}/scanner', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'showScanner'])->name('extracurricular-attendance.scanner');
+    Route::post('/extracurricular-attendance/{extracurricular}/scan', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'storeScan'])->name('extracurricular-attendance.scan');
+    Route::post('/extracurricular-attendance/{extracurricular}/mark-manual', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'markManual'])->name('extracurricular-attendance.mark_manual');
     Route::get('/extracurricular-attendance/{extracurricular}/report', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'report'])->name('extracurricular-attendance.report');
+    Route::get('/extracurricular-attendance/{extracurricular}/print', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'print'])->name('extracurricular-attendance.print');
 });
 
 // == UTILITAS: Pembersihan cache dan diagnostik server ==

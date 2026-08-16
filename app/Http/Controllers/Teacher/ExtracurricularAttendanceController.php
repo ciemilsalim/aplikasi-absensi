@@ -8,28 +8,40 @@ use App\Models\ExtracurricularAttendance;
 use App\Models\AcademicYear;
 use App\Models\Semester;
 use App\Models\Student;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
 use App\Models\Setting;
-use App\Models\SchoolClass;
+use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ExtracurricularAttendanceController extends Controller
 {
+    /**
+     * Menampilkan daftar kegiatan ekstrakurikuler yang dibina oleh guru.
+     */
     public function index()
     {
-        $teacher = Auth::user()->teacher;
-        $extracurriculars = Extracurricular::where('teacher_id', $teacher->id)->with('students')->get();
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $extracurriculars = Extracurricular::where('teacher_id', $teacher->id)
+            ->withCount('students')
+            ->get();
         
         return view('teacher.extracurricular_attendance.index', compact('extracurriculars'));
     }
 
-    public function create(Extracurricular $extracurricular)
+    /**
+     * Menampilkan form input absensi manual (checklist).
+     */
+    public function create(Request $request, Extracurricular $extracurricular)
     {
-        $teacher = Auth::user()->teacher;
-        if ($extracurricular->teacher_id !== $teacher->id) {
-            return redirect()->route('teacher.dashboard')->with('error', 'Anda bukan pembina ekstrakurikuler ini.');
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+            return redirect()->route('teacher.dashboard', ['view' => 'pembina_ekskul'])
+                ->with('error', 'Anda bukan pembina ekstrakurikuler ini.');
         }
 
         $activeYear = AcademicYear::getActive();
@@ -40,18 +52,35 @@ class ExtracurricularAttendanceController extends Controller
         }
 
         $extracurricular->load('students.schoolClass');
-        $today = Carbon::today()->toDateString();
+        $dateStr = $request->input('date');
+        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
+        $today = $selectedDate->format('Y-m-d');
 
         $existingAttendances = ExtracurricularAttendance::where('extracurricular_id', $extracurricular->id)
             ->where('attendance_date', $today)
             ->get()
             ->keyBy('student_id');
 
-        return view('teacher.extracurricular_attendance.create', compact('extracurricular', 'activeYear', 'activeSemester', 'existingAttendances', 'today'));
+        return view('teacher.extracurricular_attendance.create', compact(
+            'extracurricular', 
+            'activeYear', 
+            'activeSemester', 
+            'existingAttendances', 
+            'today',
+            'selectedDate'
+        ));
     }
 
+    /**
+     * Menyimpan data presensi dari form checklist manual.
+     */
     public function store(Request $request, Extracurricular $extracurricular)
     {
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+            abort(403);
+        }
+
         $request->validate([
             'attendance_date' => 'required|date',
             'attendances' => 'required|array',
@@ -63,7 +92,7 @@ class ExtracurricularAttendanceController extends Controller
         $activeSemester = Semester::getActive();
 
         if (!$activeYear || !$activeSemester) {
-            return back()->with('error', 'Gagal menyimpan: Tahun Ajaran atau Semester aktif belum ditentukan oleh Admin. Silakan hubungi Admin.');
+            return back()->with('error', 'Gagal menyimpan: Tahun Ajaran atau Semester aktif belum ditentukan oleh Admin.');
         }
 
         foreach ($request->attendances as $studentId => $data) {
@@ -82,13 +111,225 @@ class ExtracurricularAttendanceController extends Controller
             );
         }
 
-        return redirect()->route('teacher.extracurricular-attendance.index')->with('success', 'Absensi berhasil disimpan.');
+        return redirect()->route('teacher.dashboard', ['view' => 'pembina_ekskul'])
+            ->with('success', 'Presensi ekstrakurikuler ' . $extracurricular->name . ' tanggal ' . Carbon::parse($request->attendance_date)->translatedFormat('d F Y') . ' berhasil disimpan.');
     }
 
+    /**
+     * Menampilkan antarmuka Scanner Kamera (QR Code & Face Recognition) untuk ekskul.
+     */
+    public function showScanner(Request $request, Extracurricular $extracurricular)
+    {
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+            return redirect()->route('teacher.dashboard', ['view' => 'pembina_ekskul'])
+                ->with('error', 'Anda bukan pembina ekstrakurikuler ini.');
+        }
+
+        $dateStr = $request->query('date');
+        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
+        $todayStr = $selectedDate->format('Y-m-d');
+
+        $extracurricular->load(['students.schoolClass']);
+        $students = $extracurricular->students->sortBy('name');
+
+        $attendances = ExtracurricularAttendance::where('extracurricular_id', $extracurricular->id)
+            ->where('attendance_date', $todayStr)
+            ->get()
+            ->keyBy('student_id');
+
+        // Grouping siswa
+        $studentsHadir = [];
+        $studentsIzin = [];
+        $studentsBelumAbsen = [];
+
+        foreach ($students as $student) {
+            $att = $attendances->get($student->id);
+            if ($att) {
+                if ($att->status === 'hadir') {
+                    $studentsHadir[] = [
+                        'student' => $student,
+                        'attendance' => $att,
+                    ];
+                } elseif (in_array($att->status, ['sakit', 'izin'])) {
+                    $studentsIzin[] = [
+                        'student' => $student,
+                        'attendance' => $att,
+                    ];
+                } else {
+                    $studentsBelumAbsen[] = [
+                        'student' => $student,
+                        'attendance' => $att,
+                    ];
+                }
+            } else {
+                $studentsBelumAbsen[] = [
+                    'student' => $student,
+                    'attendance' => null,
+                ];
+            }
+        }
+
+        return view('teacher.extracurricular_attendance.scanner', compact(
+            'extracurricular',
+            'selectedDate',
+            'students',
+            'studentsHadir',
+            'studentsIzin',
+            'studentsBelumAbsen'
+        ));
+    }
+
+    /**
+     * Menyimpan rekaman presensi via Scan QR Code atau Face Recognition.
+     */
+    public function storeScan(Request $request, Extracurricular $extracurricular)
+    {
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+            return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
+        }
+
+        $qrData = $request->student_unique_id;
+        if (!$qrData) {
+            return response()->json(['success' => false, 'message' => 'Kode QR / Identitas siswa tidak diterima.'], 400);
+        }
+
+        $parts = explode('-', $qrData, 2);
+        if (count($parts) === 2) {
+            $student = Student::where('nis', $parts[0])->where('unique_id', $parts[1])->first();
+        } else {
+            $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->orWhere('id', $qrData)->first();
+        }
+
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan atau QR Code tidak valid.'], 404);
+        }
+
+        // Pastikan siswa terdaftar di ekskul ini
+        if (!$extracurricular->students()->where('students.id', $student->id)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Siswa ' . $student->name . ' tidak terdaftar sebagai anggota ekstrakurikuler ' . $extracurricular->name . '.'], 422);
+        }
+
+        $dateStr = $request->input('date');
+        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
+        $attendanceDate = $selectedDate->format('Y-m-d');
+
+        $activeYear = AcademicYear::getActive();
+        $activeSemester = Semester::getActive();
+
+        $existing = ExtracurricularAttendance::where('extracurricular_id', $extracurricular->id)
+            ->where('student_id', $student->id)
+            ->where('attendance_date', $attendanceDate)
+            ->first();
+
+        if ($existing && $existing->status === 'hadir') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Siswa ' . $student->name . ' sudah tercatat Hadir hari ini.',
+                'already_recorded' => true
+            ], 409);
+        }
+
+        $attendance = ExtracurricularAttendance::updateOrCreate(
+            [
+                'extracurricular_id' => $extracurricular->id,
+                'student_id' => $student->id,
+                'attendance_date' => $attendanceDate,
+            ],
+            [
+                'academic_year_id' => $activeYear?->id,
+                'semester_id' => $activeSemester?->id,
+                'status' => 'hadir',
+                'notes' => 'Presensi via Scanner Kamera'
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kehadiran ' . $student->name . ' berhasil dicatat!',
+            'student' => [
+                'id' => $student->id,
+                'name' => $student->name,
+                'nis' => $student->nis ?? '-',
+                'class_name' => $student->schoolClass?->name ?? '-',
+                'status' => 'hadir',
+                'time' => now()->format('H:i:s'),
+                'photo_url' => $student->photo_url,
+            ]
+        ]);
+    }
+
+    /**
+     * Menandai status kehadiran secara manual cepat dari modal scanner.
+     */
+    public function markManual(Request $request, Extracurricular $extracurricular)
+    {
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+            return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
+        }
+
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'status' => 'required|in:hadir,sakit,izin,alpa,hapus',
+            'date' => 'required|date',
+            'notes' => 'nullable|string'
+        ]);
+
+        $student = Student::with('schoolClass')->findOrFail($request->student_id);
+
+        if (!$extracurricular->students()->where('students.id', $student->id)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Siswa tidak terdaftar di ekstrakurikuler ini.'], 422);
+        }
+
+        $attendanceDate = Carbon::parse($request->date)->format('Y-m-d');
+        $activeYear = AcademicYear::getActive();
+        $activeSemester = Semester::getActive();
+
+        if ($request->status === 'hapus') {
+            ExtracurricularAttendance::where('extracurricular_id', $extracurricular->id)
+                ->where('student_id', $student->id)
+                ->where('attendance_date', $attendanceDate)
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Presensi ' . $student->name . ' berhasil direset (Belum Absen).',
+                'student_id' => $student->id,
+                'status' => 'belum_absen'
+            ]);
+        }
+
+        $attendance = ExtracurricularAttendance::updateOrCreate(
+            [
+                'extracurricular_id' => $extracurricular->id,
+                'student_id' => $student->id,
+                'attendance_date' => $attendanceDate,
+            ],
+            [
+                'academic_year_id' => $activeYear?->id,
+                'semester_id' => $activeSemester?->id,
+                'status' => $request->status,
+                'notes' => $request->notes
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status presensi ' . $student->name . ' berhasil diubah menjadi ' . ucfirst($request->status) . '.',
+            'student_id' => $student->id,
+            'status' => $request->status
+        ]);
+    }
+
+    /**
+     * Menampilkan halaman preview laporan dan matriks rekap kehadiran ekstrakurikuler.
+     */
     public function report(Request $request, Extracurricular $extracurricular)
     {
-        $teacher = Auth::user()->teacher;
-        if ($extracurricular->teacher_id !== $teacher->id) {
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
             abort(403);
         }
 
@@ -109,24 +350,112 @@ class ExtracurricularAttendanceController extends Controller
         $dates = [];
         $period = CarbonPeriod::create($startDate, $endDate);
         foreach ($period as $date) {
-            // Kita hanya tampilkan tanggal di mana ada aktivitas absensi agar tabel tidak terlalu lebar
-            if ($attendances->contains('attendance_date', $date->toDateString())) {
-                $dates[] = $date->toDateString();
+            $dateStr = $date->toDateString();
+            if ($attendances->contains('attendance_date', $dateStr)) {
+                $dates[] = $dateStr;
             }
         }
 
-        $settings = Setting::whereIn('key', ['app_logo', 'school_name', 'school_address', 'school_phone', 'school_email', 'school_headmaster_name', 'school_headmaster_nip'])->get();
+        // Hitung KPI
+        $totalSessions = count($dates);
+        $totalMembers = $students->count();
+        $totalHadir = $attendances->where('status', 'hadir')->count();
+        $totalSakit = $attendances->where('status', 'sakit')->count();
+        $totalIzin = $attendances->where('status', 'izin')->count();
+        $totalAlpa = $attendances->where('status', 'alpa')->count();
+
+        $potentialAttendance = $totalMembers * $totalSessions;
+        $classAvgPercent = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100, 1) : 0;
+
+        $settings = Setting::whereIn('key', [
+            'app_logo', 'school_name', 'school_address', 'school_phone', 'school_email', 
+            'school_headmaster_name', 'school_headmaster_nip'
+        ])->pluck('value', 'key');
+
         $schoolIdentity = [
-            'logo' => $settings->firstWhere('key', 'app_logo')->value ?? null,
-            'name' => $settings->firstWhere('key', 'school_name')->value ?? null,
-            'address' => $settings->firstWhere('key', 'school_address')->value ?? null,
-            'phone' => $settings->firstWhere('key', 'school_phone')->value ?? null,
-            'email' => $settings->firstWhere('key', 'school_email')->value ?? null,
-            'headmaster_name' => $settings->firstWhere('key', 'school_headmaster_name')->value ?? '..........................................',
-            'headmaster_nip' => $settings->firstWhere('key', 'school_headmaster_nip')->value ?? '..........................................',
+            'logo' => $settings->get('app_logo'),
+            'name' => $settings->get('school_name', 'SMP NEGERI 1 BIAU'),
+            'address' => $settings->get('school_address', 'Jl. Pendidikan No. 1'),
+            'phone' => $settings->get('school_phone'),
+            'email' => $settings->get('school_email'),
+            'headmaster_name' => $settings->get('school_headmaster_name', '-'),
+            'headmaster_nip' => $settings->get('school_headmaster_nip', '-'),
+        ];
+
+        $requestInputs = [
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d')
         ];
 
         return view('teacher.extracurricular_attendance.report', compact(
+            'extracurricular',
+            'students',
+            'dates',
+            'attendanceData',
+            'startDate',
+            'endDate',
+            'schoolIdentity',
+            'teacher',
+            'totalSessions',
+            'totalMembers',
+            'totalHadir',
+            'totalSakit',
+            'totalIzin',
+            'totalAlpa',
+            'classAvgPercent',
+            'requestInputs'
+        ));
+    }
+
+    /**
+     * Menampilkan dokumen cetak PDF resmi ber-kop surat sekolah untuk rekap ekskul.
+     */
+    public function print(Request $request, Extracurricular $extracurricular)
+    {
+        $teacher = Auth::user()?->teacher;
+        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+            abort(403);
+        }
+
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : Carbon::now()->endOfMonth();
+
+        $students = $extracurricular->students()->with('schoolClass')->orderBy('name')->get();
+        
+        $attendances = ExtracurricularAttendance::where('extracurricular_id', $extracurricular->id)
+            ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get();
+
+        $attendanceData = [];
+        foreach ($attendances as $attendance) {
+            $attendanceData[$attendance->student_id][$attendance->attendance_date] = $attendance->status;
+        }
+
+        $dates = [];
+        $period = CarbonPeriod::create($startDate, $endDate);
+        foreach ($period as $date) {
+            $dateStr = $date->toDateString();
+            if ($attendances->contains('attendance_date', $dateStr)) {
+                $dates[] = $dateStr;
+            }
+        }
+
+        $settings = Setting::whereIn('key', [
+            'app_logo', 'school_name', 'school_address', 'school_phone', 'school_email', 
+            'school_headmaster_name', 'school_headmaster_nip'
+        ])->pluck('value', 'key');
+
+        $schoolIdentity = [
+            'logo' => $settings->get('app_logo'),
+            'name' => $settings->get('school_name', 'SMP NEGERI 1 BIAU'),
+            'address' => $settings->get('school_address', 'Jl. Pendidikan No. 1'),
+            'phone' => $settings->get('school_phone'),
+            'email' => $settings->get('school_email'),
+            'headmaster_name' => $settings->get('school_headmaster_name', '-'),
+            'headmaster_nip' => $settings->get('school_headmaster_nip', '-'),
+        ];
+
+        return view('teacher.extracurricular_attendance.print', compact(
             'extracurricular',
             'students',
             'dates',

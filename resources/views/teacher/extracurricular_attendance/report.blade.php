@@ -1,478 +1,266 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rekap Absensi Ekskul {{ $extracurricular->name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        @page {
-            size: A4 landscape;
-            margin: 0.8cm 1cm;
-        }
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+            <div>
+                <x-breadcrumb :breadcrumbs="[
+                    ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard', ['view' => 'pembina_ekskul'])],
+                    ['title' => 'Presensi ' . $extracurricular->name, 'url' => route('teacher.extracurricular-attendance.scanner', $extracurricular)],
+                    ['title' => 'Rekapitulasi Kehadiran', 'url' => '#']
+                ]" />
+                <div class="flex items-center gap-2 flex-wrap mt-1">
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                        Rekapitulasi Presensi Ekstrakurikuler
+                    </h1>
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs">
+                        {{ $extracurricular->name }}
+                    </span>
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
+                        {{ $totalMembers }} Anggota
+                    </span>
+                </div>
+            </div>
 
-        * {
-            box-sizing: border-box;
-        }
+            <!-- Action Controls -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{{ route('teacher.extracurricular-attendance.scanner', $extracurricular) }}" 
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shadow-2xs">
+                    <span class="material-icons text-sm text-slate-500">qr_code_scanner</span>
+                    <span>Scanner</span>
+                </a>
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            color: #1e293b;
-            background-color: #f1f5f9;
-            margin: 0;
-            padding: 0;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-
-        /* Screen Preview Sheet Container */
-        @media screen {
-            .page-container {
-                max-width: 29.7cm;
-                min-height: 21cm;
-                margin: 20px auto;
-                background: #ffffff;
-                padding: 30px 40px;
-                border-radius: 12px;
-                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-                border: 1px solid #e2e8f0;
-            }
-        }
-
-        /* Print Specific Styles */
-        @media print {
-            body {
-                background: #ffffff !important;
-                color: #000000 !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .page-container {
-                width: 100% !important;
-                max-width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background: transparent !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
-            .break-inside-avoid {
-                page-break-inside: avoid !important;
-            }
-        }
-
-        /* Kop Surat Styling */
-        .kop-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding-bottom: 8px;
-        }
-        .kop-logo {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 75px;
-            height: 75px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .kop-logo img {
-            max-height: 75px;
-            max-width: 75px;
-            object-fit: contain;
-        }
-        .kop-text {
-            text-align: center;
-            width: 100%;
-            padding: 0 85px;
-        }
-        .kop-text h1 {
-            font-size: 16pt;
-            font-weight: 800;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #0f172a;
-        }
-        .kop-text p {
-            font-size: 8.5pt;
-            margin: 2px 0 0 0;
-            color: #334155;
-        }
-        .kop-divider {
-            border-top: 2.5px solid #000000;
-            border-bottom: 1px solid #000000;
-            height: 4px;
-            margin-top: 6px;
-            margin-bottom: 12px;
-        }
-
-        /* Metadata Information Table */
-        .meta-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 8.5pt;
-            margin-bottom: 10px;
-        }
-        .meta-table td {
-            padding: 2px 4px;
-            vertical-align: top;
-        }
-        .meta-label {
-            font-weight: 600;
-            color: #475569;
-        }
-        .meta-val {
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        /* Attendance Matrix Table */
-        .report-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 8pt;
-            table-layout: fixed;
-        }
-        .report-table th, 
-        .report-table td {
-            border: 1px solid #64748b;
-            padding: 3px 2px;
-            text-align: center;
-            vertical-align: middle;
-        }
-        .report-table thead th {
-            background-color: #f1f5f9;
-            color: #0f172a;
-            font-weight: 700;
-        }
-        .report-table .student-name {
-            text-align: left;
-            padding-left: 6px;
-            padding-right: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-weight: 600;
-        }
-        .report-table .student-nis {
-            font-family: monospace;
-            font-size: 7.5pt;
-            color: #334155;
-        }
-
-        .rotate-text {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-            white-space: nowrap;
-            margin: 0 auto;
-            font-size: 7.5pt;
-            line-height: 1;
-        }
-
-        /* Status Colors - Print Friendly Soft Pastel */
-        .st-H { background-color: #dcfce7 !important; color: #166534 !important; font-weight: 700; }
-        .st-S { background-color: #fef9c3 !important; color: #854d0e !important; font-weight: 700; }
-        .st-I { background-color: #e0f2fe !important; color: #075985 !important; font-weight: 700; }
-        .st-A { background-color: #fee2e2 !important; color: #991b1b !important; font-weight: 700; }
-        .st-none { color: #94a3b8; }
-
-        /* Signatures Block */
-        .signature-table {
-            width: 100%;
-            margin-top: 14px;
-            font-size: 8.5pt;
-            border-collapse: collapse;
-            page-break-inside: avoid;
-        }
-        .signature-table td {
-            width: 50%;
-            text-align: center;
-            vertical-align: top;
-            padding: 0 20px;
-        }
-        .signature-space {
-            height: 48px;
-        }
-        .signature-name {
-            font-weight: 800;
-            text-decoration: underline;
-            color: #0f172a;
-        }
-    </style>
-</head>
-<body>
+                <a href="{{ route('teacher.extracurricular-attendance.print', array_merge(['extracurricular' => $extracurricular->id], $requestInputs)) }}" target="_blank" 
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 transition-all">
+                    <span class="material-icons text-sm">picture_as_pdf</span>
+                    <span>Cetak PDF</span>
+                </a>
+            </div>
+        </div>
+    </x-slot>
 
     @php
-        $totalMeetings = count($dates);
-        $totalStudents = $students->count();
-        $grandSummary = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
-        $dateSummary = [];
-        foreach ($dates as $d) {
-            $dateSummary[$d] = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
-        }
-
-        foreach ($students as $st) {
-            foreach ($dates as $d) {
-                $stStat = $attendanceData[$st->id][$d] ?? null;
-                if ($stStat && isset($grandSummary[$stStat])) {
-                    $grandSummary[$stStat]++;
-                    $dateSummary[$d][$stStat]++;
-                }
-            }
-        }
-
-        $totalPossibleAttendances = $totalStudents * $totalMeetings;
-        $attendanceRate = $totalPossibleAttendances > 0 
-            ? round(($grandSummary['hadir'] / $totalPossibleAttendances) * 100, 1) 
-            : 0;
+        $totalPossible = $totalMembers * $totalSessions;
+        $attendanceRate = $totalPossible > 0 ? round(($totalHadir / $totalPossible) * 100, 1) : 0;
     @endphp
 
-    <!-- Floating Top Action Bar (Screen Only) -->
-    <div class="no-print sticky top-0 z-50 bg-slate-900 text-white shadow-xl border-b border-slate-700">
-        <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('teacher.extracurricular-attendance.index') }}" 
-                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-600 transition-colors">
-                    <span class="material-icons text-sm">arrow_back</span>
-                    Kembali
-                </a>
-                <div>
-                    <h1 class="text-sm font-bold text-white flex items-center gap-2">
-                        Pratinjau Cetak Rekap Absensi Ekstrakurikuler
-                    </h1>
-                    <p class="text-xs text-slate-400">Pastikan pengaturan ukuran kertas pada dialog cetak adalah <strong>A4 Landscape</strong>.</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-3">
-                <button onclick="window.print()" 
-                        class="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-lg shadow-sky-600/30 transition-all cursor-pointer">
-                    <span class="material-icons text-base">print</span>
-                    Cetak / Simpan PDF
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Printable Paper Sheet -->
-    <div class="page-container">
+    <div class="space-y-6" x-data="{ searchQuery: '', viewMode: 'matrix' }">
         
-        <!-- Official Kop Surat -->
-        <div class="kop-wrapper">
-            <div class="kop-logo">
-                @if(isset($schoolIdentity['logo']) && $schoolIdentity['logo'])
-                    <img src="{{ asset('storage/' . $schoolIdentity['logo']) }}" alt="Logo Sekolah" onerror="this.style.display='none'">
-                @endif
-            </div>
-            <div class="kop-text">
-                <h1>{{ $schoolIdentity['name'] ?? 'SMP NEGERI 1 BIAU' }}</h1>
-                <p>{{ $schoolIdentity['address'] ?? 'Alamat Sekolah Belum Diset' }}</p>
-                <p>
-                    @if(!empty($schoolIdentity['phone'])) Telp: {{ $schoolIdentity['phone'] }} @endif
-                    @if(!empty($schoolIdentity['email'])) | Email: {{ $schoolIdentity['email'] }} @endif
-                </p>
-            </div>
-        </div>
-        <div class="kop-divider"></div>
+        <!-- Filter Bar Card -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-5">
+            <form action="{{ route('teacher.extracurricular-attendance.report', $extracurricular) }}" method="GET" class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 max-w-xl">
+                    <div>
+                        <label for="start_date" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Dari Tanggal</label>
+                        <input type="date" name="start_date" id="start_date" value="{{ $startDate->format('Y-m-d') }}" 
+                               class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15">
+                    </div>
+                    <div>
+                        <label for="end_date" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Sampai Tanggal</label>
+                        <input type="date" name="end_date" id="end_date" value="{{ $endDate->format('Y-m-d') }}" 
+                               class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-2.5 text-slate-800 dark:text-slate-100 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15">
+                    </div>
+                </div>
 
-        <!-- Document Title -->
-        <div style="text-align: center; margin-bottom: 8px;">
-            <h2 style="font-size: 11pt; font-weight: 800; text-transform: uppercase; text-decoration: underline; margin: 0; color: #0f172a;">
-                REKAPITULASI KEHADIRAN EKSTRAKURIKULER
-            </h2>
-            <p style="font-size: 8pt; font-weight: 600; color: #475569; margin: 2px 0 0 0;">
-                Tahun Ajaran {{ date('Y') }}/{{ date('Y') + 1 }}
-            </p>
+                <button type="submit" 
+                        class="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs shadow-sm transition-all active:scale-95">
+                    <span class="material-icons text-sm">filter_alt</span>
+                    <span>Terapkan Filter</span>
+                </button>
+            </form>
         </div>
 
-        <!-- Structured Metadata Table -->
-        <table class="meta-table">
-            <colgroup>
-                <col style="width: 140px;">
-                <col style="width: auto;">
-                <col style="width: 80px;">
-                <col style="width: 260px;">
-            </colgroup>
-            <tr>
-                <td class="meta-label">Nama Kegiatan</td>
-                <td class="meta-val">: {{ $extracurricular->name }}</td>
-                <td class="meta-label" style="text-align: right; padding-right: 8px;">Total Anggota :</td>
-                <td class="meta-val" style="white-space: nowrap;">{{ $totalStudents }} Siswa</td>
-            </tr>
-            <tr>
-                <td class="meta-label">Pembina Ekstrakurikuler</td>
-                <td class="meta-val">: {{ $teacher->name }}</td>
-                <td class="meta-label" style="text-align: right; padding-right: 8px;">Periode :</td>
-                <td class="meta-val" style="white-space: nowrap;">{{ $startDate->isoFormat('D MMM Y') }} s/d {{ $endDate->isoFormat('D MMM Y') }}</td>
-            </tr>
-        </table>
+        <!-- Top 4 KPI Summary Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <!-- KPI 1: Rata-rata Kehadiran -->
+            <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rata-rata Kehadiran</span>
+                    <div class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                        <span class="material-icons text-base">pie_chart</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                        {{ $attendanceRate }}%
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: {{ min(100, max(0, $attendanceRate)) }}%"></div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Main Attendance Matrix Table -->
-        <table class="report-table">
-            <colgroup>
-                <col style="width: 26px;">  <!-- No -->
-                <col style="width: 78px;">  <!-- NIS -->
-                <col style="width: 180px;"> <!-- Nama Siswa -->
-                <col style="width: 55px;">  <!-- Kelas -->
-                @if($totalMeetings > 0)
-                    @foreach($dates as $date)
-                        <col style="width: 24px;">
-                    @endforeach
-                @else
-                    <col style="width: 60px;">
-                @endif
-                <col style="width: 22px;"> <!-- H -->
-                <col style="width: 22px;"> <!-- S -->
-                <col style="width: 22px;"> <!-- I -->
-                <col style="width: 22px;"> <!-- A -->
-                <col style="width: 42px;"> <!-- % Hadir -->
-            </colgroup>
-            <thead>
-                <tr>
-                    <th rowspan="2">No</th>
-                    <th rowspan="2">NIS</th>
-                    <th rowspan="2" style="text-align: left; padding-left: 6px;">Nama Lengkap Siswa</th>
-                    <th rowspan="2">Kelas</th>
-                    <th colspan="{{ $totalMeetings > 0 ? $totalMeetings : 1 }}" style="background-color: #e2e8f0;">
-                        Pertemuan Tanggal Kegiatan
-                    </th>
-                    <th colspan="4" style="background-color: #e2e8f0;">Rekapitulasi</th>
-                    <th rowspan="2" style="background-color: #dcfce7; color: #166534; font-size: 7.5pt;">% Hadir</th>
-                </tr>
-                <tr>
-                    @if($totalMeetings > 0)
-                        @foreach($dates as $date)
-                            <th style="padding: 2px 0;">
-                                <div class="rotate-text">{{ \Carbon\Carbon::parse($date)->format('d/m') }}</div>
-                            </th>
-                        @endforeach
-                    @else
-                        <th>-</th>
-                    @endif
-                    <th style="background-color: #dcfce7; color: #166534;">H</th>
-                    <th style="background-color: #fef9c3; color: #854d0e;">S</th>
-                    <th style="background-color: #e0f2fe; color: #075985;">I</th>
-                    <th style="background-color: #fee2e2; color: #991b1b;">A</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($students as $student)
-                    @php
-                        $studentSummary = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
-                    @endphp
-                    <tr>
-                        <td style="color: #64748b;">{{ $loop->iteration }}</td>
-                        <td class="student-nis">{{ $student->nis ?? '-' }}</td>
-                        <td class="student-name" title="{{ $student->name }}">{{ $student->name }}</td>
-                        <td style="font-size: 7.5pt; color: #334155;">{{ $student->schoolClass->name ?? '-' }}</td>
-                        
-                        @if($totalMeetings > 0)
-                            @foreach($dates as $date)
-                                @php
-                                    $status = $attendanceData[$student->id][$date] ?? '-';
-                                    if (isset($studentSummary[$status])) {
-                                        $studentSummary[$status]++;
-                                    }
-                                @endphp
-                                <td class="{{ $status == 'hadir' ? 'st-H' : ($status == 'sakit' ? 'st-S' : ($status == 'izin' ? 'st-I' : ($status == 'alpa' ? 'st-A' : 'st-none'))) }}">
-                                    {{ $status !== '-' ? strtoupper(substr($status, 0, 1)) : '-' }}
-                                </td>
-                            @endforeach
-                        @else
-                            <td>-</td>
-                        @endif
+            <!-- KPI 2: Anggota & Sesi -->
+            <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Anggota & Sesi</span>
+                    <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                        <span class="material-icons text-base">groups</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                        {{ $totalMembers }} <span class="text-xs font-semibold text-slate-500">Anggota</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        {{ $totalSessions }} Sesi Latihan Tercatat
+                    </p>
+                </div>
+            </div>
 
-                        @php
-                            $studentAttendanceRate = $totalMeetings > 0 ? round(($studentSummary['hadir'] / $totalMeetings) * 100) : 0;
-                        @endphp
+            <!-- KPI 3: Sakit & Izin -->
+            <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sakit & Izin</span>
+                    <div class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                        <span class="material-icons text-base">medical_services</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                        {{ $totalSakit + $totalIzin }} <span class="text-xs font-semibold text-slate-500">Total</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        Sakit: {{ $totalSakit }} • Izin: {{ $totalIzin }}
+                    </p>
+                </div>
+            </div>
 
-                        <td style="font-weight: 700; color: #166534; background-color: #f0fdf4;">{{ $studentSummary['hadir'] }}</td>
-                        <td style="font-weight: 700; color: #854d0e; background-color: #fefce8;">{{ $studentSummary['sakit'] }}</td>
-                        <td style="font-weight: 700; color: #075985; background-color: #f0f9ff;">{{ $studentSummary['izin'] }}</td>
-                        <td style="font-weight: 700; color: #991b1b; background-color: #fef2f2;">{{ $studentSummary['alpa'] }}</td>
-                        <td style="font-weight: 800; font-size: 7.5pt; color: {{ $studentAttendanceRate >= 80 ? '#166534' : ($studentAttendanceRate >= 70 ? '#854d0e' : '#991b1b') }}; background-color: #f8fafc;">
-                            {{ $studentAttendanceRate }}%
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="{{ 4 + ($totalMeetings > 0 ? $totalMeetings : 1) + 5 }}" style="padding: 16px; color: #94a3b8; font-style: italic;">
-                            Tidak ada data anggota yang terdaftar pada kegiatan ekstrakurikuler ini.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-            <!-- Footer Total Row -->
-            @if($students->count() > 0)
-            <tfoot>
-                <tr style="background-color: #f1f5f9; font-weight: 800;">
-                    <td colspan="4" style="text-align: right; padding-right: 8px;">Total Kehadiran :</td>
-                    @if($totalMeetings > 0)
-                        @foreach($dates as $date)
-                            @php
-                                $hCount = $dateSummary[$date]['hadir'] ?? 0;
-                            @endphp
-                            <td style="font-size: 7.5pt; color: #334155;">{{ $hCount }}</td>
-                        @endforeach
-                    @else
-                        <td>-</td>
-                    @endif
-                    <td style="background-color: #dcfce7; color: #166534;">{{ $grandSummary['hadir'] }}</td>
-                    <td style="background-color: #fef9c3; color: #854d0e;">{{ $grandSummary['sakit'] }}</td>
-                    <td style="background-color: #e0f2fe; color: #075985;">{{ $grandSummary['izin'] }}</td>
-                    <td style="background-color: #fee2e2; color: #991b1b;">{{ $grandSummary['alpa'] }}</td>
-                    <td style="background-color: #dcfce7; color: #166534; font-size: 7.5pt;">{{ $attendanceRate }}%</td>
-                </tr>
-            </tfoot>
-            @endif
-        </table>
+            <!-- KPI 4: Alpa -->
+            <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tanpa Keterangan</span>
+                    <div class="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                        <span class="material-icons text-base">person_off</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                        {{ $totalAlpa }} <span class="text-xs font-semibold text-slate-500">Alpa</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        Ketidakhadiran tanpa izin
+                    </p>
+                </div>
+            </div>
+        </div>
 
-        <!-- Legend & Signatures in 1 avoid-break block -->
-        <div class="break-inside-avoid" style="margin-top: 10px;">
-            <!-- Legend Status -->
-            <div style="font-size: 7.5pt; color: #475569; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px;">
+        <!-- Matrix Attendance Table Card -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+            
+            <div class="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <strong>Keterangan:</strong> 
-                    <span class="st-H" style="padding: 1px 4px; border-radius: 2px;">H: Hadir</span> &nbsp;
-                    <span class="st-S" style="padding: 1px 4px; border-radius: 2px;">S: Sakit</span> &nbsp;
-                    <span class="st-I" style="padding: 1px 4px; border-radius: 2px;">I: Izin</span> &nbsp;
-                    <span class="st-A" style="padding: 1px 4px; border-radius: 2px;">A: Alpa</span> &nbsp;
-                    <span style="color: #94a3b8;">- : Tidak Ada Data</span>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="material-icons text-amber-500 text-lg">grid_on</span>
+                        Matriks Presensi Anggota
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Rincian kehadiran seluruh anggota pada periode {{ $startDate->translatedFormat('d M Y') }} s/d {{ $endDate->translatedFormat('d M Y') }}
+                    </p>
                 </div>
-                <div style="font-size: 7pt; color: #94a3b8;">
-                    Dicetak melalui SIASEK • {{ now()->isoFormat('D MMMM YYYY, HH:mm') }}
+
+                <!-- Instant Search -->
+                <div class="relative w-full sm:w-64">
+                    <input type="text" x-model="searchQuery" placeholder="Cari nama / NIS siswa..." 
+                           class="w-full text-xs py-2 pl-8 pr-3 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-amber-500 focus:border-amber-500">
+                    <span class="material-icons text-slate-400 text-sm absolute left-2.5 top-1/2 -translate-y-1/2">search</span>
                 </div>
             </div>
 
-            <!-- Formal Dual Signatures -->
-            <table class="signature-table">
-                <tr>
-                    <td>
-                        <p style="margin: 0; color: #475569;">Mengetahui,</p>
-                        <p style="margin: 2px 0 0 0; font-weight: 700; color: #0f172a;">Kepala Sekolah</p>
-                        <div class="signature-space"></div>
-                        <p class="signature-name" style="margin: 0;">{{ $schoolIdentity['headmaster_name'] ?? '......................................................' }}</p>
-                        <p style="margin: 2px 0 0 0; font-size: 8pt; color: #475569;">NIP. {{ $schoolIdentity['headmaster_nip'] ?? '......................................................' }}</p>
-                    </td>
-                    <td>
-                        <p style="margin: 0; color: #475569;">Buol, {{ now()->isoFormat('D MMMM YYYY') }}</p>
-                        <p style="margin: 2px 0 0 0; font-weight: 700; color: #0f172a;">Pembina Ekstrakurikuler,</p>
-                        <div class="signature-space"></div>
-                        <p class="signature-name" style="margin: 0;">{{ $teacher->name }}</p>
-                        <p style="margin: 2px 0 0 0; font-size: 8pt; color: #475569;">NIP. {{ $teacher->nip ?? '......................................................' }}</p>
-                    </td>
-                </tr>
-            </table>
+            <!-- Table Matrix Container -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead class="bg-slate-50 dark:bg-slate-850/80 text-slate-700 dark:text-slate-300 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                            <th class="py-3 px-3 text-center w-12 sticky left-0 bg-slate-50 dark:bg-slate-850 z-10">No</th>
+                            <th class="py-3 px-3 min-w-[180px] sticky left-12 bg-slate-50 dark:bg-slate-850 z-10">Nama Siswa</th>
+                            <th class="py-3 px-3 text-center min-w-[70px]">Kelas</th>
+                            
+                            @if(count($dates) > 0)
+                                @foreach($dates as $date)
+                                    <th class="py-3 px-2 text-center min-w-[40px] border-l border-slate-200/60 dark:border-slate-800">
+                                        {{ \Carbon\Carbon::parse($date)->format('d/m') }}
+                                    </th>
+                                @endforeach
+                            @else
+                                <th class="py-3 px-4 text-center text-slate-400">Belum Ada Sesi</th>
+                            @endif
+
+                            <th class="py-3 px-2 text-center bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-l border-slate-200 dark:border-slate-800">H</th>
+                            <th class="py-3 px-2 text-center bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300">S</th>
+                            <th class="py-3 px-2 text-center bg-purple-50/50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300">I</th>
+                            <th class="py-3 px-2 text-center bg-rose-50/50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300">A</th>
+                            <th class="py-3 px-3 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">%</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                        @forelse($students as $student)
+                            @php
+                                $stHadir = 0; $stSakit = 0; $stIzin = 0; $stAlpa = 0;
+                            @endphp
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-850/40 transition-colors"
+                                x-show="searchQuery === '' || '{{ mb_strtolower($student->name) }}'.includes(searchQuery.toLowerCase()) || '{{ $student->nis }}'.includes(searchQuery)">
+                                
+                                <td class="py-2.5 px-3 text-center text-slate-400 font-bold sticky left-0 bg-white dark:bg-slate-900 z-10">
+                                    {{ $loop->iteration }}
+                                </td>
+                                
+                                <td class="py-2.5 px-3 sticky left-12 bg-white dark:bg-slate-900 z-10">
+                                    <span class="font-bold text-slate-900 dark:text-white block truncate max-w-[200px]">{{ $student->name }}</span>
+                                    <span class="text-[10px] text-slate-400">NIS: {{ $student->nis ?? '-' }}</span>
+                                </td>
+
+                                <td class="py-2.5 px-3 text-center text-slate-600 dark:text-slate-300 text-[11px] font-semibold">
+                                    {{ $student->schoolClass->name ?? '-' }}
+                                </td>
+
+                                @if(count($dates) > 0)
+                                    @foreach($dates as $date)
+                                        @php
+                                            $status = $attendanceData[$student->id][$date] ?? null;
+                                            if ($status === 'hadir') $stHadir++;
+                                            elseif ($status === 'sakit') $stSakit++;
+                                            elseif ($status === 'izin') $stIzin++;
+                                            elseif ($status === 'alpa') $stAlpa++;
+                                        @endphp
+                                        <td class="py-2.5 px-2 text-center border-l border-slate-100 dark:border-slate-800">
+                                            @if($status === 'hadir')
+                                                <span class="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-black text-[11px] inline-flex items-center justify-center">H</span>
+                                            @elseif($status === 'sakit')
+                                                <span class="w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-black text-[11px] inline-flex items-center justify-center">S</span>
+                                            @elseif($status === 'izin')
+                                                <span class="w-6 h-6 rounded-lg bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-black text-[11px] inline-flex items-center justify-center">I</span>
+                                            @elseif($status === 'alpa')
+                                                <span class="w-6 h-6 rounded-lg bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 font-black text-[11px] inline-flex items-center justify-center">A</span>
+                                            @else
+                                                <span class="text-slate-300 dark:text-slate-600">-</span>
+                                            @endif
+                                        </td>
+                                    @endforeach
+                                @else
+                                    <td class="py-2.5 px-4 text-center text-slate-300">-</td>
+                                @endif
+
+                                @php
+                                    $stPercent = (count($dates) > 0) ? round(($stHadir / count($dates)) * 100) : 0;
+                                @endphp
+
+                                <td class="py-2.5 px-2 text-center font-bold text-emerald-600 bg-emerald-50/30 dark:bg-emerald-950/20 border-l border-slate-100 dark:border-slate-800">{{ $stHadir }}</td>
+                                <td class="py-2.5 px-2 text-center font-bold text-amber-600 bg-amber-50/30 dark:bg-amber-950/20">{{ $stSakit }}</td>
+                                <td class="py-2.5 px-2 text-center font-bold text-purple-600 bg-purple-50/30 dark:bg-purple-950/20">{{ $stIzin }}</td>
+                                <td class="py-2.5 px-2 text-center font-bold text-rose-600 bg-rose-50/30 dark:bg-rose-950/20">{{ $stAlpa }}</td>
+                                <td class="py-2.5 px-3 text-center font-black text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-850/60">{{ $stPercent }}%</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="15" class="py-8 text-center text-slate-400 text-xs">
+                                    Belum ada data anggota yang terdaftar pada kegiatan ekstrakurikuler ini.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
         </div>
 
     </div>
-
-</body>
-</html>
+</x-app-layout>

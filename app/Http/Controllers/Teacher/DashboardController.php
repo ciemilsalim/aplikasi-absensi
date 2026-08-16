@@ -462,8 +462,11 @@ class DashboardController extends Controller
     {
         $today = Carbon::today();
         $extracurriculars = Extracurricular::where('teacher_id', $teacher->id)
+            ->with('students.schoolClass')
             ->withCount('students')
             ->get();
+
+        $ekskulIds = $extracurriculars->pluck('id');
 
         $todayAttendanceStats = [];
         foreach ($extracurriculars as $ekskul) {
@@ -482,9 +485,85 @@ class DashboardController extends Controller
             ];
         }
 
+        $now = now();
+        $currentMonth = $now->month;
+        if ($currentMonth >= 7 && $currentMonth <= 12) {
+            $semesterStart = $now->copy()->setMonth(7)->startOfMonth();
+            $semesterEnd = $now->copy()->setMonth(12)->endOfMonth();
+        } else {
+            $semesterStart = $now->copy()->setMonth(1)->startOfMonth();
+            $semesterEnd = $now->copy()->setMonth(6)->endOfMonth();
+        }
+
+        // Siswa ekskul yang sering alpa
+        $studentsForAttentionEkskul = ExtracurricularAttendance::whereIn('extracurricular_id', $ekskulIds)
+            ->where('status', 'alpa')
+            ->whereBetween('attendance_date', [$semesterStart->toDateString(), $semesterEnd->toDateString()])
+            ->with(['student.schoolClass', 'extracurricular'])
+            ->select('student_id', 'extracurricular_id', DB::raw('count(*) as alpa_count'))
+            ->groupBy('student_id', 'extracurricular_id')
+            ->havingRaw('count(*) > 0')
+            ->orderByDesc('alpa_count')
+            ->take(5)
+            ->get();
+
+        // Ringkasan presensi sesi latihan terakhir
+        $lastAttendanceSummaryEkskul = null;
+        $lastRecord = ExtracurricularAttendance::whereIn('extracurricular_id', $ekskulIds)
+            ->latest('attendance_date')
+            ->first();
+
+        if ($lastRecord) {
+            $attendances = ExtracurricularAttendance::where('extracurricular_id', $lastRecord->extracurricular_id)
+                ->where('attendance_date', $lastRecord->attendance_date)
+                ->get();
+
+            $summary = $attendances->countBy('status');
+            $lastAttendanceSummaryEkskul = [
+                'extracurricular' => $lastRecord->extracurricular,
+                'date' => Carbon::parse($lastRecord->attendance_date),
+                'hadir' => $summary->get('hadir', 0),
+                'sakit' => $summary->get('sakit', 0),
+                'izin' => $summary->get('izin', 0),
+                'alpa' => $summary->get('alpa', 0),
+                'total' => $attendances->count(),
+            ];
+        }
+
+        // Performa Kehadiran Ekskul 30 Hari Terakhir
+        $thirtyDaysAgo = now()->subDays(30);
+        $classPerformanceDataEkskul = [];
+        foreach ($extracurriculars as $ekskul) {
+            $totalSessions = ExtracurricularAttendance::where('extracurricular_id', $ekskul->id)
+                ->where('attendance_date', '>=', $thirtyDaysAgo->toDateString())
+                ->distinct('attendance_date')
+                ->count('attendance_date');
+
+            $totalHadir = ExtracurricularAttendance::where('extracurricular_id', $ekskul->id)
+                ->where('status', 'hadir')
+                ->where('attendance_date', '>=', $thirtyDaysAgo->toDateString())
+                ->count();
+
+            $totalMembers = $ekskul->students_count;
+            $potentialAttendance = $totalMembers * $totalSessions;
+            $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
+
+            $classPerformanceDataEkskul[] = [
+                'label' => $ekskul->name,
+                'percentage' => $percentage,
+                'total_sessions' => $totalSessions,
+            ];
+        }
+
+        $teacherNote = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
+
         return [
             'coachedExtracurriculars' => $extracurriculars,
             'todayExtracurricularStats' => $todayAttendanceStats,
+            'studentsForAttentionEkskul' => $studentsForAttentionEkskul,
+            'lastAttendanceSummaryEkskul' => $lastAttendanceSummaryEkskul,
+            'classPerformanceDataEkskul' => $classPerformanceDataEkskul,
+            'teacherNote' => $teacherNote,
         ];
     }
 
