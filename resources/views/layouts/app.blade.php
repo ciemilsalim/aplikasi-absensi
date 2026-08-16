@@ -533,12 +533,23 @@
                                  </div>
 
                                  <div>
-                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Menu Mengajar & Wali Kelas</div>
+                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Menu Mengajar & Penugasan</div>
                                      <div class="grid grid-cols-2 gap-2.5">
                                          <a href="{{ route('teacher.subject.attendance.history') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all col-span-2">
                                              <span class="material-icons text-indigo-600 dark:text-indigo-400 text-xl">history_edu</span>
                                              <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Riwayat Presensi Mapel</span>
                                          </a>
+
+                                         @if(auth()->user()->teacher?->cocurriculars()->exists())
+                                             <a href="{{ route('teacher.dashboard', ['view' => 'fasilitator_kokurikuler']) }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-900/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all col-span-2">
+                                                 <span class="material-icons text-indigo-600 dark:text-indigo-400 text-xl">psychology</span>
+                                                 <div class="flex-1 min-w-0">
+                                                     <div class="text-xs font-bold text-indigo-950 dark:text-indigo-200 truncate">Presensi Kokurikuler</div>
+                                                     <div class="text-[10px] text-indigo-600 dark:text-indigo-400">Tim Fasilitator Proyek</div>
+                                                 </div>
+                                                 <span class="material-icons text-indigo-400 text-sm">chevron_right</span>
+                                             </a>
+                                         @endif
 
                                          @if(auth()->user()->teacher?->homeroomClass)
                                              <a href="{{ route('teacher.leave_requests.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all col-span-2">
@@ -561,9 +572,13 @@
                                          @endif
 
                                          @if(auth()->user()->teacher?->coachingExtracurriculars()->exists())
-                                             <a href="{{ route('teacher.extracurricular-attendance.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-rose-50 dark:hover:bg-slate-800 transition-all col-span-2">
-                                                 <span class="material-icons text-rose-600 dark:text-rose-400 text-xl">star</span>
-                                                 <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Presensi Ekstrakurikuler</span>
+                                             <a href="{{ route('teacher.extracurricular-attendance.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 hover:bg-amber-100 dark:hover:bg-slate-800 transition-all col-span-2">
+                                                 <span class="material-icons text-amber-600 dark:text-amber-400 text-xl">military_tech</span>
+                                                 <div class="flex-1 min-w-0">
+                                                     <div class="text-xs font-bold text-amber-950 dark:text-amber-200 truncate">Presensi Ekstrakurikuler</div>
+                                                     <div class="text-[10px] text-amber-600 dark:text-amber-400">Pembina Kegiatan</div>
+                                                 </div>
+                                                 <span class="material-icons text-amber-400 text-sm">chevron_right</span>
                                              </a>
                                          @endif
                                      </div>
