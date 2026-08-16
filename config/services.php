@@ -39,4 +39,10 @@ return [
         'url' => env('SIPADA_URL', 'http://localhost:8000'),
     ],
 
+    'lms' => [
+        'local_url' => env('LMS_LOCAL_URL', 'http://localhost:8001'),
+        'production_url' => env('LMS_PRODUCTION_URL', 'https://lms-smpn1biau.zahradev.id'),
+        'url' => env('LMS_URL'),
+    ],
+
 ];

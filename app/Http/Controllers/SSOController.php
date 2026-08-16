@@ -10,6 +10,28 @@ use Carbon\Carbon;
 class SSOController extends Controller
 {
     /**
+     * Menentukan URL LMS Mokopani secara adaptif (Lokal vs cPanel/Hosting).
+     */
+    public function getTargetLmsUrl(Request $request): string
+    {
+        $host = $request->getHost();
+        
+        $isLocalHost = in_array($host, ['localhost', '127.0.0.1', '::1'])
+            || str_starts_with($host, '192.168.')
+            || str_starts_with($host, '10.')
+            || str_ends_with($host, '.test')
+            || str_ends_with($host, '.local');
+
+        if ($isLocalHost) {
+            return config('services.lms.local_url') 
+                ?: env('LMS_LOCAL_URL', env('LMS_URL', 'http://localhost:8001'));
+        }
+
+        return config('services.lms.production_url') 
+            ?: env('LMS_PRODUCTION_URL', env('LMS_URL', 'https://lms-smpn1biau.zahradev.id'));
+    }
+
+    /**
      * Redirect to LMS using secure database token SSO.
      */
     public function redirectToLms(Request $request)
@@ -39,8 +61,8 @@ class SSOController extends Controller
             'updated_at' => Carbon::now('UTC'),
         ]);
 
-        // 3. Get target LMS URL
-        $lmsUrl = env('LMS_URL', 'http://localhost:8001');
+        // 3. Get target LMS URL dynamically based on environment/host
+        $lmsUrl = $this->getTargetLmsUrl($request);
 
         // 4. Redirect to the target LMS SSO login route
         return redirect()->away(rtrim($lmsUrl, '/') . '/sso/login?token=' . $token);
