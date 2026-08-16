@@ -25,15 +25,26 @@
                             <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
 
-                        <div>
-                            <x-input-label for="teacher_id" value="Pembina (Guru)" />
-                            <select id="teacher_id" name="teacher_id" class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-xl shadow-sm">
-                                <option value="">Pilih Pembina...</option>
+                        <div x-data="{ search: '' }">
+                            <x-input-label value="Tim Guru Pembina (Pilih satu atau lebih)" />
+                            <input type="text" x-model="search" placeholder="Ketik nama guru untuk mencari..." class="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl text-xs shadow-sm mb-2" />
+                            @php
+                                $selectedTeacherIds = $extracurricular->teachers->pluck('id')->toArray();
+                                if (empty($selectedTeacherIds) && $extracurricular->teacher_id) {
+                                    $selectedTeacherIds = [$extracurricular->teacher_id];
+                                }
+                            @endphp
+                            <div class="border border-gray-200 dark:border-slate-700 rounded-xl p-3 max-h-48 overflow-y-auto bg-white dark:bg-slate-900 space-y-2">
                                 @foreach($teachers as $teacher)
-                                    <option value="{{ $teacher->id }}" {{ $extracurricular->teacher_id == $teacher->id ? 'selected' : '' }}>{{ $teacher->name }}</option>
+                                    <label x-show="search === '' || '{{ strtolower($teacher->name) }}'.includes(search.toLowerCase())" class="flex items-center gap-3 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+                                        <input type="checkbox" name="teacher_ids[]" value="{{ $teacher->id }}" {{ in_array($teacher->id, $selectedTeacherIds) ? 'checked' : '' }} class="rounded border-gray-300 dark:border-slate-600 text-blue-600 shadow-sm focus:ring-blue-500">
+                                        <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                                            {{ $teacher->name }} <span class="text-[10px] text-slate-400">({{ $teacher->nip ?? '-' }})</span>
+                                        </span>
+                                    </label>
                                 @endforeach
-                            </select>
-                            <x-input-error :messages="$errors->get('teacher_id')" class="mt-2" />
+                            </div>
+                            <x-input-error :messages="$errors->get('teacher_ids')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100 dark:border-slate-700">

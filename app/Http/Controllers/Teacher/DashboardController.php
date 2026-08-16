@@ -461,8 +461,8 @@ class DashboardController extends Controller
     private function getExtracurricularCoachData($teacher)
     {
         $today = Carbon::today();
-        $extracurriculars = Extracurricular::where('teacher_id', $teacher->id)
-            ->with('students.schoolClass')
+        $extracurriculars = $teacher->coachingExtracurriculars()
+            ->with(['teachers', 'students.schoolClass'])
             ->withCount('students')
             ->get();
 

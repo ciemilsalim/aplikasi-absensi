@@ -36,10 +36,11 @@ class ExtracurricularController extends Controller
         }
 
         // Otorisasi: Pastikan guru ini adalah pembinanya
-        if ($extracurricular->teacher_id != $teacher->id) {
+        $isCoach = ($extracurricular->teacher_id == $teacher->id) || $teacher->coachingExtracurriculars()->where('extracurriculars.id', $extracurricular->id)->exists();
+        if (!$isCoach) {
             return response()->json([
                 'status' => 'error', 
-                'message' => 'Akses ditolak. Anda login sebagai ' . $teacher->name . ' (ID:' . $teacher->id . '), sedangkan pembina ekskul ini adalah Guru dengan ID:' . $extracurricular->teacher_id
+                'message' => 'Akses ditolak. Anda bukan pembina ekstrakurikuler ' . $extracurricular->name
             ], 403);
         }
 

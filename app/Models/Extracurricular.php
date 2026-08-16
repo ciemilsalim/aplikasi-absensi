@@ -11,6 +11,11 @@ class Extracurricular extends Model
 
     protected $fillable = ['name', 'description', 'teacher_id', 'semester_id', 'academic_year_id'];
 
+    public function teachers()
+    {
+        return $this->belongsToMany(Teacher::class, 'extracurricular_teacher');
+    }
+
     public function coach()
     {
         return $this->belongsTo(Teacher::class, 'teacher_id');

@@ -217,6 +217,21 @@
                                 </p>
                             @endif
 
+                            <!-- Tim Guru Pembina -->
+                            @if($ekskul->teachers && $ekskul->teachers->count() > 1)
+                                <div class="flex items-center gap-1.5 flex-wrap pt-1">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase">Tim Pembina:</span>
+                                    @foreach($ekskul->teachers as $c)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold {{ $c->id === $teacher->id ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
+                                            <span>{{ $c->name }}</span>
+                                            @if($c->id === $teacher->id)
+                                                <span class="text-[9px] text-amber-600 dark:text-amber-400 font-black">(Saya)</span>
+                                            @endif
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
+
                             <!-- Mini Summary Box Hari Ini -->
                             @if($isRecorded)
                                 <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/60 border border-slate-100 dark:border-slate-800 grid grid-cols-4 gap-2 text-center">

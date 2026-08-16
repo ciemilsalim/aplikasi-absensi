@@ -8,6 +8,7 @@ use App\Models\ExtracurricularAttendance;
 use App\Models\AcademicYear;
 use App\Models\Semester;
 use App\Models\Student;
+use App\Models\Teacher;
 use App\Models\Setting;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -16,6 +17,20 @@ use Illuminate\Support\Facades\Auth;
 
 class ExtracurricularAttendanceController extends Controller
 {
+    /**
+     * Memeriksa apakah guru login memiliki hak akses sebagai pembina ekskul ini.
+     */
+    private function checkCoachAccess(Extracurricular $extracurricular, ?Teacher $teacher): bool
+    {
+        if (!$teacher) {
+            return false;
+        }
+        if ($extracurricular->teacher_id == $teacher->id) {
+            return true;
+        }
+        return $teacher->coachingExtracurriculars()->where('extracurriculars.id', $extracurricular->id)->exists();
+    }
+
     /**
      * Menampilkan daftar kegiatan ekstrakurikuler yang dibina oleh guru.
      */
@@ -29,8 +44,8 @@ class ExtracurricularAttendanceController extends Controller
         $activeYear = AcademicYear::getActive();
         $activeSemester = Semester::getActive();
 
-        $extracurriculars = Extracurricular::where('teacher_id', $teacher->id)
-            ->with(['students.schoolClass'])
+        $extracurriculars = $teacher->coachingExtracurriculars()
+            ->with(['teachers', 'students.schoolClass'])
             ->withCount('students')
             ->get();
         
@@ -83,7 +98,7 @@ class ExtracurricularAttendanceController extends Controller
                 $session->sakit_count = $sessionAttendances->where('status', 'sakit')->count();
                 $session->izin_count = $sessionAttendances->where('status', 'izin')->count();
                 $session->alpa_count = $sessionAttendances->where('status', 'alpa')->count();
-                $session->extracurricular = Extracurricular::find($session->extracurricular_id);
+                $session->extracurricular = Extracurricular::with('teachers')->find($session->extracurricular_id);
                 return $session;
             });
 
@@ -107,7 +122,7 @@ class ExtracurricularAttendanceController extends Controller
     public function create(Request $request, Extracurricular $extracurricular)
     {
         $teacher = Auth::user()?->teacher;
-        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+        if (!$this->checkCoachAccess($extracurricular, $teacher)) {
             return redirect()->route('teacher.dashboard', ['view' => 'pembina_ekskul'])
                 ->with('error', 'Anda bukan pembina ekstrakurikuler ini.');
         }
@@ -119,7 +134,7 @@ class ExtracurricularAttendanceController extends Controller
             return back()->with('error', 'Tahun Ajaran atau Semester aktif belum ditentukan oleh Admin.');
         }
 
-        $extracurricular->load('students.schoolClass');
+        $extracurricular->load(['teachers', 'students.schoolClass']);
         $dateStr = $request->input('date');
         $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
         $today = $selectedDate->format('Y-m-d');
@@ -135,7 +150,8 @@ class ExtracurricularAttendanceController extends Controller
             'activeSemester', 
             'existingAttendances', 
             'today',
-            'selectedDate'
+            'selectedDate',
+            'teacher'
         ));
     }
 
@@ -145,8 +161,8 @@ class ExtracurricularAttendanceController extends Controller
     public function store(Request $request, Extracurricular $extracurricular)
     {
         $teacher = Auth::user()?->teacher;
-        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
-            abort(403);
+        if (!$this->checkCoachAccess($extracurricular, $teacher)) {
+            abort(403, 'Akses ditolak.');
         }
 
         $request->validate([
@@ -189,7 +205,7 @@ class ExtracurricularAttendanceController extends Controller
     public function showScanner(Request $request, Extracurricular $extracurricular)
     {
         $teacher = Auth::user()?->teacher;
-        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+        if (!$this->checkCoachAccess($extracurricular, $teacher)) {
             return redirect()->route('teacher.dashboard', ['view' => 'pembina_ekskul'])
                 ->with('error', 'Anda bukan pembina ekstrakurikuler ini.');
         }
@@ -198,7 +214,7 @@ class ExtracurricularAttendanceController extends Controller
         $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
         $todayStr = $selectedDate->format('Y-m-d');
 
-        $extracurricular->load(['students.schoolClass']);
+        $extracurricular->load(['teachers', 'students.schoolClass']);
         $students = $extracurricular->students->sortBy('name');
 
         $attendances = ExtracurricularAttendance::where('extracurricular_id', $extracurricular->id)
@@ -256,7 +272,8 @@ class ExtracurricularAttendanceController extends Controller
             'studentsHadir',
             'studentsIzin',
             'studentsBelumAbsen',
-            'studentsWithPhotos'
+            'studentsWithPhotos',
+            'teacher'
         ));
     }
 
@@ -266,7 +283,7 @@ class ExtracurricularAttendanceController extends Controller
     public function storeScan(Request $request, Extracurricular $extracurricular)
     {
         $teacher = Auth::user()?->teacher;
-        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+        if (!$this->checkCoachAccess($extracurricular, $teacher)) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
         }
 
@@ -346,7 +363,7 @@ class ExtracurricularAttendanceController extends Controller
     public function markManual(Request $request, Extracurricular $extracurricular)
     {
         $teacher = Auth::user()?->teacher;
-        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
+        if (!$this->checkCoachAccess($extracurricular, $teacher)) {
             return response()->json(['success' => false, 'message' => 'Otorisasi gagal.'], 403);
         }
 
@@ -409,14 +426,15 @@ class ExtracurricularAttendanceController extends Controller
     public function report(Request $request, Extracurricular $extracurricular)
     {
         $teacher = Auth::user()?->teacher;
-        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
-            abort(403);
+        if (!$this->checkCoachAccess($extracurricular, $teacher)) {
+            abort(403, 'Akses ditolak.');
         }
 
         $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : Carbon::now()->endOfMonth();
 
         $students = $extracurricular->students()->with('schoolClass')->orderBy('name')->get();
+        $extracurricular->load('teachers');
         
         $attendances = ExtracurricularAttendance::where('extracurricular_id', $extracurricular->id)
             ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
@@ -493,14 +511,15 @@ class ExtracurricularAttendanceController extends Controller
     public function print(Request $request, Extracurricular $extracurricular)
     {
         $teacher = Auth::user()?->teacher;
-        if (!$teacher || $extracurricular->teacher_id !== $teacher->id) {
-            abort(403);
+        if (!$this->checkCoachAccess($extracurricular, $teacher)) {
+            abort(403, 'Akses ditolak.');
         }
 
         $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : Carbon::now()->endOfMonth();
 
         $students = $extracurricular->students()->with('schoolClass')->orderBy('name')->get();
+        $extracurricular->load('teachers');
         
         $attendances = ExtracurricularAttendance::where('extracurricular_id', $extracurricular->id)
             ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])

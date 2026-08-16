@@ -299,7 +299,14 @@
             </tr>
             <tr>
                 <td class="meta-label">Pembina Ekstrakurikuler</td>
-                <td class="meta-val">: {{ $teacher->name }}</td>
+                <td class="meta-val">: 
+                    {{ $teacher->name }}
+                    @if($extracurricular->teachers && $extracurricular->teachers->count() > 1)
+                        <span style="font-size: 7.5pt; font-weight: normal; color: #64748b;">
+                            (Tim: {{ $extracurricular->teachers->pluck('name')->implode(', ') }})
+                        </span>
+                    @endif
+                </td>
                 <td class="meta-label" style="text-align: right; padding-right: 8px;">Periode :</td>
                 <td class="meta-val" style="white-space: nowrap;">{{ $startDate->isoFormat('D MMM Y') }} s/d {{ $endDate->isoFormat('D MMM Y') }}</td>
             </tr>

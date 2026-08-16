@@ -61,19 +61,27 @@
                                 <h4 class="text-lg font-bold text-gray-800 dark:text-white">{{ $ekskul->name }}</h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{{ $ekskul->description ?? 'Tidak ada deskripsi.' }}</p>
                                 
-                                <div class="mt-6 flex items-center gap-3">
-                                    <div class="flex-shrink-0">
-                                        @if($ekskul->coach && $ekskul->coach->photo)
-                                            <img src="{{ asset('storage/' . $ekskul->coach->photo) }}" class="w-8 h-8 rounded-full object-cover border border-white dark:border-slate-600" alt="">
-                                        @else
-                                            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-xs font-bold text-slate-500">
-                                                {{ substr($ekskul->coach->name ?? '?', 0, 1) }}
-                                            </div>
-                                        @endif
+                                <div class="mt-6 flex items-start gap-3">
+                                    <div class="flex-shrink-0 mt-0.5">
+                                        <div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold shadow-2xs">
+                                            <span class="material-icons text-base">military_tech</span>
+                                        </div>
                                     </div>
-                                    <div class="min-w-0">
-                                        <p class="text-[10px] uppercase font-black text-slate-400 leading-none">Pembina</p>
-                                        <p class="text-xs font-bold text-gray-700 dark:text-slate-300 truncate">{{ $ekskul->coach->name ?? 'Belum Ditentukan' }}</p>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-[10px] uppercase font-black text-slate-400 leading-none mb-1">Tim Pembina</p>
+                                        @if($ekskul->teachers && $ekskul->teachers->count() > 0)
+                                            <div class="flex flex-wrap gap-1">
+                                                @foreach($ekskul->teachers as $coach)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                                        {{ $coach->name }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        @elseif($ekskul->coach)
+                                            <p class="text-xs font-bold text-gray-700 dark:text-slate-300 truncate">{{ $ekskul->coach->name }}</p>
+                                        @else
+                                            <p class="text-xs font-medium text-slate-400 italic">Belum Ditentukan</p>
+                                        @endif
                                     </div>
                                 </div>
 

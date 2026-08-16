@@ -13,7 +13,7 @@ class ExtracurricularController extends Controller
 {
     public function index()
     {
-        $extracurriculars = Extracurricular::with('coach', 'students')->get();
+        $extracurriculars = Extracurricular::with('teachers', 'coach', 'students')->get();
         return view('admin.extracurriculars.index', compact('extracurriculars'));
     }
 
@@ -28,16 +28,32 @@ class ExtracurricularController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'teacher_ids' => 'nullable|array',
+            'teacher_ids.*' => 'exists:teachers,id',
             'teacher_id' => 'nullable|exists:teachers,id',
         ]);
 
-        Extracurricular::create($request->all());
+        $teacherIds = $request->input('teacher_ids', []);
+        if (empty($teacherIds) && $request->filled('teacher_id')) {
+            $teacherIds = [$request->teacher_id];
+        }
+
+        $extracurricular = Extracurricular::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'teacher_id' => !empty($teacherIds) ? $teacherIds[0] : null,
+        ]);
+
+        if (!empty($teacherIds)) {
+            $extracurricular->teachers()->sync($teacherIds);
+        }
 
         return redirect()->route('admin.extracurriculars.index')->with('success', 'Ekstrakurikuler berhasil ditambahkan.');
     }
 
     public function edit(Extracurricular $extracurricular)
     {
+        $extracurricular->load('teachers');
         $teachers = Teacher::orderBy('name')->get();
         return view('admin.extracurriculars.edit', compact('extracurricular', 'teachers'));
     }
@@ -47,16 +63,31 @@ class ExtracurricularController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'teacher_ids' => 'nullable|array',
+            'teacher_ids.*' => 'exists:teachers,id',
             'teacher_id' => 'nullable|exists:teachers,id',
         ]);
 
-        $extracurricular->update($request->all());
+        $teacherIds = $request->input('teacher_ids', []);
+        if (empty($teacherIds) && $request->filled('teacher_id')) {
+            $teacherIds = [$request->teacher_id];
+        }
+
+        $extracurricular->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'teacher_id' => !empty($teacherIds) ? $teacherIds[0] : null,
+        ]);
+
+        $extracurricular->teachers()->sync($teacherIds);
 
         return redirect()->route('admin.extracurriculars.index')->with('success', 'Ekstrakurikuler berhasil diperbarui.');
     }
 
     public function destroy(Extracurricular $extracurricular)
     {
+        $extracurricular->teachers()->detach();
+        $extracurricular->students()->detach();
         $extracurricular->delete();
         return redirect()->route('admin.extracurriculars.index')->with('success', 'Ekstrakurikuler berhasil dihapus.');
     }
