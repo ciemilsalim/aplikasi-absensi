@@ -170,18 +170,7 @@
                             </li>
                         @endif
 
-                        {{-- SSO LMS Link for Teachers --}}
-                        @if(auth()->user()->hasRole('teacher'))
-                            <li>
-                                <a href="{{ route('sso.lms') }}" :title="sidebarCollapsed ? 'LMS Mokopani' : ''" 
-                                   class="group flex items-center rounded-xl p-2.5 text-xs font-semibold bg-indigo-50/70 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-100 dark:border-indigo-900/40 transition-all duration-200 shadow-2xs" 
-                                   :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
-                                    <span class="material-icons text-xl shrink-0">school</span>
-                                    <span x-show="!sidebarCollapsed" class="truncate">LMS Mokopani</span>
-                                    <span x-show="!sidebarCollapsed" class="material-icons text-xs ml-auto opacity-60">open_in_new</span>
-                                </a>
-                            </li>
-                        @endif
+
                     @endauth
                 </ul>
             </li>
@@ -503,6 +492,26 @@
                 </ul>
             </li>
             @endif
+
+            <!-- SECTION: APLIKASI TERINTEGRASI (LMS MOKOPANI DI PALING BAWAH) -->
+            @auth
+                @if(auth()->user()->hasRole('teacher'))
+                <li>
+                    <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Aplikasi Terintegrasi</div>
+                    <ul role="list" class="mt-1.5 space-y-1">
+                        <li>
+                            <a href="{{ route('sso.lms') }}" :title="sidebarCollapsed ? 'LMS Mokopani' : ''" 
+                               class="group flex items-center rounded-xl p-2.5 text-xs font-semibold bg-indigo-50/70 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-100 dark:border-indigo-900/40 transition-all duration-200 shadow-2xs" 
+                               :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
+                                <span class="material-icons text-xl shrink-0 text-indigo-500">school</span>
+                                <span x-show="!sidebarCollapsed" class="truncate">LMS Mokopani</span>
+                                <span x-show="!sidebarCollapsed" class="material-icons text-xs ml-auto opacity-60">open_in_new</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                @endif
+            @endauth
 
         </ul>
     </nav>
