@@ -256,6 +256,11 @@
                             <span>&copy; {{ date('Y') }}</span>
                         </div>
                         <div class="flex items-center gap-3 text-[11px]">
+                            <a href="{{ route('guide') }}" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors flex items-center gap-1">
+                                <span class="material-icons text-xs text-sky-500">auto_stories</span>
+                                <span>Panduan Pengguna</span>
+                            </a>
+                            <span class="text-slate-300 dark:text-slate-700">&bull;</span>
                             <a href="{{ route('about') }}" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Tentang Sistem</a>
                             <span class="text-slate-300 dark:text-slate-700">&bull;</span>
                             <a href="https://www.zahradev.online" target="_blank" class="hover:text-sky-600 dark:hover:text-sky-400 font-medium transition-colors">ZahraDev</a>
@@ -642,6 +647,11 @@
                                          </a>
                                      @endif
 
+                                     <a href="{{ route('guide') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 px-4 py-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/60 rounded-xl hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
+                                         <span class="material-icons text-sky-600 dark:text-sky-400 text-xl">auto_stories</span>
+                                         <span class="text-xs font-bold text-sky-800 dark:text-sky-200">Panduan Penggunaan</span>
+                                     </a>
+
                                      <button type="button" 
                                              @click="mobileMenuOpen = false; showMobileLogoutConfirm = true" 
                                              class="w-full flex items-center gap-3 px-4 py-3 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors text-left">
@@ -653,9 +663,15 @@
 
                              <!-- Mobile Drawer Footer Info -->
                              <div class="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
-                                 <a href="{{ route('about') }}" @click="mobileMenuOpen = false" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors">
-                                     Tentang Aplikasi & Fitur
-                                 </a>
+                                 <div class="flex items-center gap-2">
+                                     <a href="{{ route('guide') }}" @click="mobileMenuOpen = false" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors">
+                                         Panduan
+                                     </a>
+                                     <span>&bull;</span>
+                                     <a href="{{ route('about') }}" @click="mobileMenuOpen = false" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors">
+                                         Tentang
+                                     </a>
+                                 </div>
                                  <span>{{ config('app.name', 'Presensi') }} v2.5</span>
                              </div>
                          </div>

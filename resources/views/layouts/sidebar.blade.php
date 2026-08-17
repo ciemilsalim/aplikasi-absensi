@@ -493,6 +493,27 @@
             </li>
             @endif
 
+            <!-- SECTION: PUSAT BANTUAN & PANDUAN -->
+            @auth
+            <li>
+                <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Pusat Bantuan</div>
+                <ul role="list" class="mt-1.5 space-y-1">
+                    @php $isGuideActive = request()->routeIs('guide'); @endphp
+                    <li>
+                        <a href="{{ route('guide') }}" :title="sidebarCollapsed ? 'Panduan Penggunaan' : ''" 
+                           class="{{ $isGuideActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                           :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
+                            <span class="material-icons text-xl shrink-0 text-sky-500 transition-transform group-hover:scale-110">auto_stories</span>
+                            <span x-show="!sidebarCollapsed" class="truncate font-semibold">Panduan Pengguna</span>
+                            @if($isGuideActive)
+                                <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                            @endif
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            @endauth
+
             <!-- SECTION: APLIKASI TERINTEGRASI (LMS MOKOPANI DI PALING BAWAH) -->
             @auth
                 @if(auth()->user()->hasAnyRole(['teacher', 'admin', 'operator']) || auth()->user()->teacher !== null)

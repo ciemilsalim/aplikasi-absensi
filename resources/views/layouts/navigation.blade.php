@@ -93,6 +93,11 @@
                                 <span class="material-icons text-base text-slate-400">person_outline</span>
                                 <span>Profil Pengguna</span>
                             </a>
+                            <a href="{{ route('guide') }}" 
+                               class="flex items-center gap-2.5 px-4 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800 transition">
+                                <span class="material-icons text-base text-sky-500">auto_stories</span>
+                                <span>Panduan Pengguna</span>
+                            </a>
                             <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
                             <a href="#" @click.prevent="showLogoutConfirm = true; dropdownOpen = false" 
                                class="flex items-center gap-2.5 px-4 py-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
@@ -102,6 +107,11 @@
                         </div>
                     </div>
                 @else
+                    <a href="{{ route('guide') }}" 
+                       class="inline-flex items-center gap-1 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
+                        <span class="material-icons text-sm text-sky-500">auto_stories</span>
+                        <span>Panduan</span>
+                    </a>
                     <a href="{{ route('login') }}" 
                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
                         <span class="material-icons text-sm">login</span>

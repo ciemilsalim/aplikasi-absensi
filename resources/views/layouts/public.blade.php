@@ -134,6 +134,7 @@
                 <p>&copy; {{ date('Y') }} {{ $appName }} - {{ config('app.name') }} v2.0.</p>
                 <p class="mt-1">
                     Dikembangkan oleh <a href="https://www.zahradev.online" target="_blank" class="font-bold text-sky-600 dark:text-sky-400 hover:underline">ZahraDev</a>
+                    • <a href="{{ route('guide') }}" class="hover:underline font-semibold text-slate-600 dark:text-slate-300">Panduan Pengguna</a>
                     • <a href="{{ route('about') }}" class="hover:underline">Tentang Aplikasi</a>
                 </p>
             </div>
