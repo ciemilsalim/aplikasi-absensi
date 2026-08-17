@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class SSOController extends Controller
@@ -36,6 +37,7 @@ class SSOController extends Controller
     {
         $user = auth()->user();
         if (!$user) {
+            Log::warning('[SSO Presensi] Percobaan SSO tanpa login');
             abort(403, 'Unauthorized');
         }
 
@@ -43,7 +45,21 @@ class SSOController extends Controller
         $isTeacher = $user->hasRole('teacher') || ($user->teacher !== null);
         $isAdmin = $user->hasAnyRole(['admin', 'operator']);
 
+        Log::info('[SSO Presensi] User memulai proses SSO ke LMS Mokopani', [
+            'user_id'    => $user->id,
+            'name'       => $user->name,
+            'email'      => $user->email,
+            'role'       => $user->role,
+            'is_teacher' => $isTeacher,
+            'is_admin'   => $isAdmin,
+            'host'       => $request->getHost(),
+        ]);
+
         if (!$isTeacher && !$isAdmin) {
+            Log::warning('[SSO Presensi] User tidak memiliki izin SSO', [
+                'user_id' => $user->id,
+                'role'    => $user->role,
+            ]);
             abort(403, 'Anda tidak memiliki hak akses untuk SSO ke LMS Mokopani.');
         }
 
@@ -56,19 +72,26 @@ class SSOController extends Controller
             ->orWhere('expires_at', '<', now()->subMinutes(30))
             ->delete();
 
-        // 3. Store the token in the shared database with a 10-minute expiration
+        // 3. Store the token in the shared database with a 15-minute expiration
         DB::table('sso_tokens')->insert([
-            'user_id' => $user->id,
-            'token' => $token,
-            'expires_at' => now()->addMinutes(10),
+            'user_id'    => $user->id,
+            'token'      => $token,
+            'expires_at' => now()->addMinutes(15),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         // 4. Get target LMS URL dynamically based on environment/host
         $lmsUrl = $this->getTargetLmsUrl($request);
+        $finalRedirect = rtrim($lmsUrl, '/') . '/sso/login?token=' . $token;
+
+        Log::info('[SSO Presensi] Token SSO berhasil dibuat di database. Mengalihkan ke LMS Mokopani', [
+            'token_snippet'  => substr($token, 0, 10) . '...',
+            'target_lms_url' => $lmsUrl,
+            'final_redirect' => $finalRedirect,
+        ]);
 
         // 5. Redirect to the target LMS SSO login route
-        return redirect()->away(rtrim($lmsUrl, '/') . '/sso/login?token=' . $token);
+        return redirect()->away($finalRedirect);
     }
 }

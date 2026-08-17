@@ -496,7 +496,7 @@
 
                                  <div>
                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Aplikasi Terintegrasi</div>
-                                     <a href="{{ route('sso.lms') }}" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all mb-3">
+                                     <a href="{{ route('sso.lms') }}" @click="console.log('[SSO Presensi Mobile] Mengalihkan ke LMS Mokopani via SSO:', '{{ route('sso.lms') }}'); mobileMenuOpen = false;" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all mb-3">
                                          <div class="p-2 bg-white/20 rounded-xl backdrop-blur-xs">
                                              <span class="material-icons text-xl text-white">school</span>
                                          </div>
@@ -512,7 +512,7 @@
                              @elseif(auth()->user()->role === 'teacher')
                                  <div>
                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Aplikasi Terintegrasi</div>
-                                     <a href="{{ route('sso.lms') }}" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all mb-3">
+                                     <a href="{{ route('sso.lms') }}" @click="console.log('[SSO Presensi Mobile] Mengalihkan ke LMS Mokopani via SSO:', '{{ route('sso.lms') }}'); mobileMenuOpen = false;" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all mb-3">
                                          <div class="p-2 bg-white/20 rounded-xl backdrop-blur-xs">
                                              <span class="material-icons text-xl text-white">school</span>
                                          </div>

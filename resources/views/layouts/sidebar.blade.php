@@ -501,6 +501,7 @@
                     <ul role="list" class="mt-1.5 space-y-1">
                         <li>
                             <a href="{{ route('sso.lms') }}" :title="sidebarCollapsed ? 'LMS Mokopani' : ''" 
+                               @click="console.log('[SSO Presensi] Mengalihkan ke LMS Mokopani via SSO:', '{{ route('sso.lms') }}')"
                                class="group flex items-center rounded-xl p-2.5 text-xs font-semibold bg-indigo-50/70 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-100 dark:border-indigo-900/40 transition-all duration-200 shadow-2xs" 
                                :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
                                 <span class="material-icons text-xl shrink-0 text-indigo-500">school</span>
