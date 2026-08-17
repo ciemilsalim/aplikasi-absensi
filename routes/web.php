@@ -54,6 +54,45 @@ Route::view('/offline', 'offline')->name('offline'); // Endpoint PWA
 Route::get('/sso/login', [\App\Http\Controllers\Auth\SsoLoginController::class, 'login'])->name('sso.login');
 Route::get('/sso/lms', [\App\Http\Controllers\SSOController::class, 'redirectToLms'])->name('sso.lms');
 
+Route::get('/sso/debug', function () {
+    try {
+        $dbName = \Illuminate\Support\Facades\DB::connection()->getDatabaseName();
+        $ssoTableExists = \Illuminate\Support\Facades\Schema::hasTable('sso_tokens');
+        $ssoTokensCount = $ssoTableExists ? \Illuminate\Support\Facades\DB::table('sso_tokens')->count() : 0;
+        $recentTokens = $ssoTableExists ? \Illuminate\Support\Facades\DB::table('sso_tokens')->latest('id')->take(5)->get() : [];
+        $usersCount = \Illuminate\Support\Facades\Schema::hasTable('users') ? \Illuminate\Support\Facades\DB::table('users')->count() : 0;
+        $sessionsTableExists = \Illuminate\Support\Facades\Schema::hasTable('sessions');
+        $sessionsCount = $sessionsTableExists ? \Illuminate\Support\Facades\DB::table('sessions')->count() : 0;
+        
+        return response()->json([
+            'app_name' => config('app.name'),
+            'app_env' => config('app.env'),
+            'app_url' => config('app.url'),
+            'db_connection' => config('database.default'),
+            'db_database_name' => $dbName,
+            'db_host' => config('database.connections.' . config('database.default') . '.host'),
+            'target_lms_url' => (new \App\Http\Controllers\SSOController)->getTargetLmsUrl(request()),
+            'sso_table_exists' => $ssoTableExists,
+            'sso_tokens_count' => $ssoTokensCount,
+            'recent_sso_tokens' => $recentTokens,
+            'users_table_count' => $usersCount,
+            'sessions_table_exists' => $sessionsTableExists,
+            'sessions_count' => $sessionsCount,
+            'session_driver' => config('session.driver'),
+            'server_time' => now()->toDateTimeString(),
+            'app_timezone' => config('app.timezone'),
+            'auth_check' => auth()->check(),
+            'auth_user' => auth()->user() ? auth()->user()->only('id', 'name', 'email', 'role') : null,
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+})->name('sso.debug');
+
 // == RUTE AUTENTIKASI & PENGALIHAN ==
 Route::get('/dashboard', function () {
     $user = auth()->user();
