@@ -495,7 +495,7 @@
 
             <!-- SECTION: APLIKASI TERINTEGRASI (LMS MOKOPANI DI PALING BAWAH) -->
             @auth
-                @if(auth()->user()->hasRole('teacher'))
+                @if(auth()->user()->hasAnyRole(['teacher', 'admin', 'operator']) || auth()->user()->teacher !== null)
                 <li>
                     <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Aplikasi Terintegrasi</div>
                     <ul role="list" class="mt-1.5 space-y-1">

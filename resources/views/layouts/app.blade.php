@@ -482,7 +482,7 @@
 
                                  <div>
                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Laporan & Rekap</div>
-                                     <div class="grid grid-cols-2 gap-2.5">
+                                     <div class="grid grid-cols-2 gap-2.5 mb-3">
                                          <a href="{{ route('admin.reports.create') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-emerald-50 dark:hover:bg-slate-800 transition-all">
                                              <span class="material-icons text-emerald-600 dark:text-emerald-400 text-xl">bar_chart</span>
                                              <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Laporan Siswa</span>
@@ -492,6 +492,20 @@
                                              <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Laporan Guru</span>
                                          </a>
                                      </div>
+                                 </div>
+
+                                 <div>
+                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Aplikasi Terintegrasi</div>
+                                     <a href="{{ route('sso.lms') }}" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all mb-3">
+                                         <div class="p-2 bg-white/20 rounded-xl backdrop-blur-xs">
+                                             <span class="material-icons text-xl text-white">school</span>
+                                         </div>
+                                         <div>
+                                             <h4 class="text-xs font-bold">LMS Mokopani</h4>
+                                             <p class="text-[10px] text-indigo-100">Buka ruang kelas daring & tugas</p>
+                                         </div>
+                                         <span class="material-icons text-sm ml-auto opacity-75">open_in_new</span>
+                                     </a>
                                  </div>
 
                              <!-- Teacher Section -->

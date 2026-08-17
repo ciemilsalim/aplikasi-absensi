@@ -23,12 +23,10 @@ class SSOController extends Controller
             || str_ends_with($host, '.local');
 
         if ($isLocalHost) {
-            return config('services.lms.local_url') 
-                ?: env('LMS_LOCAL_URL', env('LMS_URL', 'http://localhost:8001'));
+            return config('services.lms.local_url', 'http://localhost:8001');
         }
 
-        return config('services.lms.production_url') 
-            ?: env('LMS_PRODUCTION_URL', env('LMS_URL', 'https://mokopani-smpn1biau.zahradev.id'));
+        return config('services.lms.production_url', 'https://mokopani-smpn1biau.zahradev.id');
     }
 
     /**
@@ -41,7 +39,7 @@ class SSOController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        // Secure role check: only allow 'teacher' or 'admin' or 'operator'
+        // Secure role check: allow 'teacher', 'admin', or 'operator'
         $isTeacher = $user->hasRole('teacher') || ($user->teacher !== null);
         $isAdmin = $user->hasAnyRole(['admin', 'operator']);
 
@@ -52,7 +50,13 @@ class SSOController extends Controller
         // 1. Generate a secure random token
         $token = Str::random(60);
 
-        // 2. Store the token in the shared database with a 10-minute expiration
+        // 2. Clean up any previous expired tokens for this user
+        DB::table('sso_tokens')
+            ->where('user_id', $user->id)
+            ->orWhere('expires_at', '<', now()->subMinutes(30))
+            ->delete();
+
+        // 3. Store the token in the shared database with a 10-minute expiration
         DB::table('sso_tokens')->insert([
             'user_id' => $user->id,
             'token' => $token,
@@ -61,10 +65,10 @@ class SSOController extends Controller
             'updated_at' => now(),
         ]);
 
-        // 3. Get target LMS URL dynamically based on environment/host
+        // 4. Get target LMS URL dynamically based on environment/host
         $lmsUrl = $this->getTargetLmsUrl($request);
 
-        // 4. Redirect to the target LMS SSO login route
+        // 5. Redirect to the target LMS SSO login route
         return redirect()->away(rtrim($lmsUrl, '/') . '/sso/login?token=' . $token);
     }
 }
