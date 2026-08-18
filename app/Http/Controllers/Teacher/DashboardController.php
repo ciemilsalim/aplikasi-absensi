@@ -20,6 +20,7 @@ use App\Models\Announcement;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Exports\AttendanceReportExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -754,11 +755,13 @@ class DashboardController extends Controller
 
         $request->validate([
             'month' => 'nullable|date_format:Y-m',
+            'paper_size' => 'nullable|string|in:a4,folio,f4',
         ]);
 
         $selectedDate = $request->input('month') ? Carbon::parse($request->input('month')) : Carbon::now();
         $startDate = $selectedDate->copy()->startOfMonth();
         $endDate = $selectedDate->copy()->endOfMonth();
+        $paperSize = strtolower($request->input('paper_size', 'a4'));
 
         $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
@@ -780,60 +783,101 @@ class DashboardController extends Controller
             return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
         });
 
+        $effectiveDaysCount = $period->count();
+        $totalStudents = $students->count();
+
         $attendanceSummary = [];
         $totalHadir = 0; $totalSakit = 0; $totalIzin = 0; $totalAlpa = 0;
+
         foreach ($students as $student) {
             $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
             $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
             
             foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
-                $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
-                    return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
-                });
+                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($date, $selfStudyDays);
                 
-                if ($attendanceRecord) {
-                    if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
-                    elseif ($attendanceRecord->status === 'sakit') $sakitCount++;
-                    elseif (in_array($attendanceRecord->status, ['izin', 'izin_keluar'])) $izinCount++;
-                    elseif ($attendanceRecord->status === 'alpa') $alpaCount++;
+                if ($isSelfStudy) {
+                    $hadirCount++;
                 } else {
-                    if ($date->isPast() && !$date->isToday()) {
-                        $alpaCount++;
+                    $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
+                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                    });
+                    
+                    if ($attendanceRecord) {
+                        if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
+                        elseif ($attendanceRecord->status === 'sakit') $sakitCount++;
+                        elseif (in_array($attendanceRecord->status, ['izin', 'izin_keluar'])) $izinCount++;
+                        elseif ($attendanceRecord->status === 'alpa') $alpaCount++;
+                    } else {
+                        if ($date->isPast() && !$date->isToday()) {
+                            $alpaCount++;
+                        }
                     }
                 }
             }
+
+            $totalAbsen = $sakitCount + $izinCount + $alpaCount;
+            $jml = $totalAbsen;
+            if ($effectiveDaysCount > 0) {
+                $persen = round((($effectiveDaysCount - $totalAbsen) / $effectiveDaysCount) * 100, 0);
+                $persen = max(0, min(100, $persen));
+                $persenStr = $persen . '%';
+            } else {
+                $persen = 0;
+                $persenStr = '0%';
+            }
+
             $attendanceSummary[$student->id] = [
                 'hadir' => $hadirCount,
                 'sakit' => $sakitCount,
                 'izin' => $izinCount,
                 'alpa' => $alpaCount,
+                'jml' => $jml,
+                'persen' => $persen,
+                'persen_str' => $persenStr,
             ];
+
             $totalHadir += $hadirCount;
             $totalSakit += $sakitCount;
             $totalIzin += $izinCount;
             $totalAlpa += $alpaCount;
         }
 
-        $settings = Setting::whereIn('key', [
-            'app_logo', 'school_name', 'school_address', 'school_phone', 
-            'school_email', 'school_headmaster_name', 'school_headmaster_nip'
-        ])->get();
-        
-        $schoolIdentity = [
-            'logo' => $settings->firstWhere('key', 'app_logo')->value ?? null,
-            'name' => $settings->firstWhere('key', 'school_name')->value ?? null,
-            'address' => $settings->firstWhere('key', 'school_address')->value ?? null,
-            'phone' => $settings->firstWhere('key', 'school_phone')->value ?? null,
-            'email' => $settings->firstWhere('key', 'school_email')->value ?? null,
-            'headmaster_name' => $settings->firstWhere('key', 'school_headmaster_name')->value ?? null,
-            'headmaster_nip' => $settings->firstWhere('key', 'school_headmaster_nip')->value ?? null,
-        ];
+        $totalPossibleAttendance = $totalStudents * $effectiveDaysCount;
+        $classAverageAttendance = $totalPossibleAttendance > 0 ? round(($totalHadir / $totalPossibleAttendance) * 100, 1) : 0;
+        $perfectAttendanceCount = collect($attendanceSummary)->filter(fn($s) => $s['persen'] >= 100)->count();
+        $needsAttentionCount = collect($attendanceSummary)->filter(fn($s) => $s['persen'] < 85)->count();
+
+        $settings = Setting::pluck('value', 'key');
+        $logoPath = $settings->get('app_logo');
+        $logoBase64 = null;
+        if ($logoPath && Storage::disk('public')->exists($logoPath)) {
+            try {
+                $logoData = Storage::disk('public')->get($logoPath);
+                $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
+            } catch (\Exception $e) {
+                $logoBase64 = null;
+            }
+        }
+
+        $schoolName = $settings->get('school_name', config('app.name', 'SMP Negeri 1 Biau'));
+        $schoolAddress = $settings->get('school_address', '');
+        $schoolCity = $settings->get('school_city', 'Buol');
+        $headmasterName = $settings->get('school_headmaster_name', '');
+        $headmasterNip = $settings->get('school_headmaster_nip', '');
+        $homeroomTeacherName = $teacher->name;
+        $homeroomTeacherNip = $teacher->nip;
+        $printDate = now()->translatedFormat('d F Y, H:i:s');
 
         return view('teacher.print.attendance-report', compact(
             'class', 'students', 'attendances', 'period', 'selectedDate', 
             'attendanceSummary', 'totalHadir', 'totalSakit', 'totalIzin', 
-            'totalAlpa', 'teacher', 'schoolIdentity', 'holidays', 'selfStudyDays'
+            'totalAlpa', 'teacher', 'holidays', 'selfStudyDays',
+            'paperSize', 'schoolName', 'schoolAddress', 'schoolCity', 'logoBase64',
+            'headmasterName', 'headmasterNip', 'homeroomTeacherName', 'homeroomTeacherNip',
+            'effectiveDaysCount', 'totalStudents', 'classAverageAttendance',
+            'perfectAttendanceCount', 'needsAttentionCount', 'printDate'
         ));
     }
 
@@ -846,105 +890,205 @@ class DashboardController extends Controller
         }
 
         $class = $teacher->homeroomClass;
-        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
-        $studentIds = $students->pluck('id');
-
         $request->validate([
             'trimester' => 'required|in:1,2,3,4',
             'year' => 'nullable|digits:4',
+            'paper_size' => 'nullable|string|in:a4,folio,f4',
         ]);
 
-        $trimester = $request->input('trimester', 1);
-        $year = $request->input('year', date('Y'));
+        $trimester = (int)$request->input('trimester', 1);
+        $year = (int)$request->input('year', date('Y'));
+        $paperSize = strtolower($request->input('paper_size', 'a4'));
 
         switch ($trimester) {
             case 1:
-                $startMonth = 1; $endMonth = 3;
-                $trimesterName = 'Triwulan I (Januari - Maret)';
+                $months = [1, 2, 3];
                 break;
             case 2:
-                $startMonth = 4; $endMonth = 6;
-                $trimesterName = 'Triwulan II (April - Juni)';
+                $months = [4, 5, 6];
                 break;
             case 3:
-                $startMonth = 7; $endMonth = 9;
-                $trimesterName = 'Triwulan III (Juli - September)';
+                $months = [7, 8, 9];
                 break;
             case 4:
-                $startMonth = 10; $endMonth = 12;
-                $trimesterName = 'Triwulan IV (Oktober - Desember)';
+                $months = [10, 11, 12];
                 break;
         }
 
-        $startDate = Carbon::createFromDate($year, $startMonth, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($year, $endMonth, 1)->endOfMonth();
-
-        $allAttendancesInPeriod = Attendance::whereIn('student_id', $studentIds)
-            ->whereBetween('attendance_time', [$startDate, $endDate])
-            ->get();
-
-        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
-        $period = CarbonPeriod::create($startDate, $endDate);
-
-        $validDays = collect($period)->filter(function ($date) use ($holidays) {
-            return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays);
-        });
-
-        $attendanceSummary = [];
-        $totalHadir = 0; $totalSakit = 0; $totalIzin = 0; $totalAlpa = 0;
-        foreach ($students as $student) {
-            $studentAttendances = $allAttendancesInPeriod->where('student_id', $student->id);
-            $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
-            
-            foreach ($validDays as $date) {
-                $dateString = $date->format('Y-m-d');
-                $attendanceRecord = $studentAttendances->firstWhere(function($item) use ($dateString) {
-                    return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
-                });
-                
-                if ($attendanceRecord) {
-                    if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) $hadirCount++;
-                    elseif ($attendanceRecord->status === 'sakit') $sakitCount++;
-                    elseif (in_array($attendanceRecord->status, ['izin', 'izin_keluar'])) $izinCount++;
-                    elseif ($attendanceRecord->status === 'alpa') $alpaCount++;
-                } else {
-                    if ($date->isPast() && !$date->isToday()) {
-                        $alpaCount++;
-                    }
-                }
-            }
-            $attendanceSummary[$student->id] = [
-                'hadir' => $hadirCount,
-                'sakit' => $sakitCount,
-                'izin' => $izinCount,
-                'alpa' => $alpaCount,
-            ];
-            $totalHadir += $hadirCount;
-            $totalSakit += $sakitCount;
-            $totalIzin += $izinCount;
-            $totalAlpa += $alpaCount;
-        }
-
-        $settings = Setting::whereIn('key', [
-            'app_logo', 'school_name', 'school_address', 'school_phone', 
-            'school_email', 'school_headmaster_name', 'school_headmaster_nip'
-        ])->get();
-        
-        $schoolIdentity = [
-            'logo' => $settings->firstWhere('key', 'app_logo')->value ?? null,
-            'name' => $settings->firstWhere('key', 'school_name')->value ?? null,
-            'address' => $settings->firstWhere('key', 'school_address')->value ?? null,
-            'phone' => $settings->firstWhere('key', 'school_phone')->value ?? null,
-            'email' => $settings->firstWhere('key', 'school_email')->value ?? null,
-            'headmaster_name' => $settings->firstWhere('key', 'school_headmaster_name')->value ?? null,
-            'headmaster_nip' => $settings->firstWhere('key', 'school_headmaster_nip')->value ?? null,
+        $monthNames = [
+            1 => 'JANUARI', 2 => 'FEBRUARI', 3 => 'MARET', 4 => 'APRIL',
+            5 => 'MEI', 6 => 'JUNI', 7 => 'JULI', 8 => 'AGUSTUS',
+            9 => 'SEPTEMBER', 10 => 'OKTOBER', 11 => 'NOVEMBER', 12 => 'DESEMBER'
         ];
 
-        return view('teacher.print.trimester-attendance-report', compact(
-            'class', 'students', 'trimesterName', 'year', 
-            'attendanceSummary', 'totalHadir', 'totalSakit', 'totalIzin', 
-            'totalAlpa', 'teacher', 'schoolIdentity', 'validDays'
-        ));
+        $trimesterMap = [];
+        foreach ($months as $m) {
+            $effectiveDays = Setting::where('key', 'effective_days_' . $year . '_' . $m)->value('value');
+            if ($effectiveDays === null) {
+                $effectiveDays = Setting::where('key', 'effective_days_' . $m)->value('value');
+            }
+            
+            if (empty($effectiveDays) || $effectiveDays == 0) {
+                $startDate = Carbon::create($year, $m, 1)->startOfMonth();
+                $endDate = $startDate->copy()->endOfMonth();
+                $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+                $period = CarbonPeriod::create($startDate, $endDate);
+                $workdays = collect($period)->filter(function ($d) use ($holidays) {
+                    return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
+                });
+                $effectiveDays = $workdays->count();
+            }
+
+            $trimesterMap[$m] = [
+                'name' => $monthNames[$m],
+                'effective_days' => $effectiveDays !== null ? (int)$effectiveDays : 0
+            ];
+        }
+
+        $students = Student::where('school_class_id', $class->id)
+            ->with(['attendances' => function ($query) use ($year, $months) {
+                $query->whereYear('attendance_time', $year)
+                      ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+            }])
+            ->orderBy('name')
+            ->get();
+
+        $reportData = $students->map(function ($student) use ($months, $trimesterMap, $year) {
+            $studentData = [
+                'name' => $student->name,
+                'nis' => $student->nis,
+                'monthly_data' => []
+            ];
+
+            foreach ($months as $m) {
+                $attendancesInMonth = $student->attendances->filter(function ($att) use ($m) {
+                    return Carbon::parse($att->attendance_time)->month == $m;
+                });
+                
+                $startDate = Carbon::create($year, $m, 1)->startOfMonth();
+                $endDate = $startDate->copy()->endOfMonth();
+                $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+                $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
+                $period = CarbonPeriod::create($startDate, $endDate);
+
+                $workdays = collect($period)->filter(function ($d) use ($holidays) {
+                    return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
+                });
+
+                $hadir = 0; $sakit = 0; $izin = 0; $alpa = 0;
+
+                foreach ($workdays as $wDate) {
+                    $dateString = $wDate->format('Y-m-d');
+                    $attendanceRecord = $attendancesInMonth->firstWhere(function($item) use ($dateString) {
+                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                    });
+                    
+                    $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
+                    
+                    if ($isSelfStudy) {
+                        $hadir++;
+                    } else {
+                        $status = $attendanceRecord ? $attendanceRecord->status : null;
+                        if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadir++;
+                        elseif ($status === 'sakit') $sakit++;
+                        elseif (in_array($status, ['izin', 'izin_keluar'])) $izin++;
+                        elseif ($status === 'alpa') $alpa++;
+                    }
+                }
+
+                $effDays = $trimesterMap[$m]['effective_days'];
+                $totalAbsen = $sakit + $izin + $alpa;
+                $jml = $totalAbsen;
+                if ($effDays > 0) {
+                    $persen = (($effDays - $jml) / $effDays) * 100;
+                    $persenStr = round($persen, 0) . '%';
+                } else {
+                    $persenStr = '0%';
+                }
+
+                $studentData['total_alpa'] = ($studentData['total_alpa'] ?? 0) + $alpa;
+                $studentData['total_izin'] = ($studentData['total_izin'] ?? 0) + $izin;
+                $studentData['total_sakit'] = ($studentData['total_sakit'] ?? 0) + $sakit;
+                $studentData['total_jml'] = ($studentData['total_jml'] ?? 0) + $jml;
+                $studentData['total_effective_days'] = ($studentData['total_effective_days'] ?? 0) + $effDays;
+
+                $studentData['monthly_data'][$m] = [
+                    'alpa' => $alpa,
+                    'izin' => $izin,
+                    'sakit' => $sakit,
+                    'jml' => $jml,
+                    'persen' => $persenStr
+                ];
+            }
+
+            if (($studentData['total_effective_days'] ?? 0) > 0) {
+                $totPersen = (($studentData['total_effective_days'] - $studentData['total_jml']) / $studentData['total_effective_days']) * 100;
+                $studentData['total_persen'] = round($totPersen, 0) . '%';
+                $studentData['total_persen_num'] = $totPersen;
+            } else {
+                $studentData['total_persen'] = '0%';
+                $studentData['total_persen_num'] = 0;
+            }
+
+            return (object)$studentData;
+        });
+
+        $totalTrimesterEffectiveDays = 0;
+        foreach ($months as $m) {
+            $totalTrimesterEffectiveDays += $trimesterMap[$m]['effective_days'];
+        }
+
+        $totalStudents = $reportData->count();
+        $classAverageAttendance = $totalStudents > 0 ? round($reportData->avg('total_persen_num'), 1) : 0;
+        $perfectAttendanceCount = $reportData->filter(function($s) { return ($s->total_persen_num ?? 0) >= 100; })->count();
+        $needsAttentionCount = $reportData->filter(function($s) { return ($s->total_persen_num ?? 0) < 85; })->count();
+
+        $settings = Setting::pluck('value', 'key');
+        $logoPath = $settings->get('app_logo');
+        $logoBase64 = null;
+        if ($logoPath && Storage::disk('public')->exists($logoPath)) {
+            try {
+                $logoData = Storage::disk('public')->get($logoPath);
+                $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
+            } catch (\Exception $e) {
+                $logoBase64 = null;
+            }
+        }
+
+        $pdfData = [
+            'schoolName' => $settings->get('school_name', config('app.name')),
+            'schoolAddress' => $settings->get('school_address'),
+            'schoolCity' => $settings->get('school_city', 'Buol'),
+            'logoBase64' => $logoBase64,
+            'appName' => config('app.name', 'SIASEK'),
+            'printDate' => now()->translatedFormat('d F Y, H:i:s'),
+            'userRole' => 'Wali Kelas',
+            'reportData' => $reportData,
+            'className' => $class->name,
+            'trimester' => $trimester,
+            'year' => $year,
+            'trimesterMap' => $trimesterMap,
+            'months' => $months,
+            'totalTrimesterEffectiveDays' => $totalTrimesterEffectiveDays,
+            'totalStudents' => $totalStudents,
+            'classAverageAttendance' => $classAverageAttendance,
+            'perfectAttendanceCount' => $perfectAttendanceCount,
+            'needsAttentionCount' => $needsAttentionCount,
+            'homeroomTeacherName' => $teacher->name,
+            'homeroomTeacherNip' => $teacher->nip,
+            'headmasterName' => $settings->get('school_headmaster_name'),
+            'headmasterNip' => $settings->get('school_headmaster_nip'),
+            'paperSize' => $paperSize,
+        ];
+
+        $pdf = Pdf::loadView('admin.reports.triwulan_pdf', $pdfData);
+        if (in_array($paperSize, ['folio', 'f4'])) {
+            $pdf->setPaper([0, 0, 935.43, 609.45], 'landscape');
+        } else {
+            $pdf->setPaper('a4', 'landscape');
+        }
+
+        return $pdf->stream('laporan-triwulan-' . $class->name . '-T' . $trimester . '-' . $year . '.pdf');
     }
 
     public function charts()
