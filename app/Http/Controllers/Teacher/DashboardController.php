@@ -689,6 +689,11 @@ class DashboardController extends Controller
         });
 
         $attendanceSummary = [];
+        $totalClassHadir = 0;
+        $totalClassSakit = 0;
+        $totalClassIzin = 0;
+        $totalClassAlpa = 0;
+
         foreach ($students as $student) {
             $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
             $hadirCount = 0; $sakitCount = 0; $izinCount = 0; $alpaCount = 0;
@@ -716,9 +721,23 @@ class DashboardController extends Controller
                 'izin' => $izinCount,
                 'alpa' => $alpaCount,
             ];
+
+            $totalClassHadir += $hadirCount;
+            $totalClassSakit += $sakitCount;
+            $totalClassIzin += $izinCount;
+            $totalClassAlpa += $alpaCount;
         }
 
-        return view('teacher.attendance-history', compact('class', 'students', 'attendances', 'period', 'selectedDate', 'attendanceSummary', 'holidays', 'selfStudyDays'));
+        $totalEffectiveWorkdays = $period->count();
+        $totalPossibleAttendance = $students->count() * $totalEffectiveWorkdays;
+        $classAvgPercent = $totalPossibleAttendance > 0 ? round(($totalClassHadir / $totalPossibleAttendance) * 100, 1) : 0;
+
+        return view('teacher.attendance-history', compact(
+            'class', 'students', 'attendances', 'period', 'selectedDate', 
+            'attendanceSummary', 'holidays', 'selfStudyDays',
+            'classAvgPercent', 'totalEffectiveWorkdays',
+            'totalClassSakit', 'totalClassIzin', 'totalClassAlpa'
+        ));
     }
 
     public function printAttendance(Request $request)
