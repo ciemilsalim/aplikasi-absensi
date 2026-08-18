@@ -316,7 +316,7 @@
         <!-- Catatan Pembina Ekskul (Auto-Save) -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-6" 
              x-data="{
-                 note: '{{ addslashes($teacherNote->note ?? '') }}',
+                 note: '{{ addslashes($teacherNote->content ?? ($teacherNote->note ?? '')) }}',
                  status: '',
                  timeout: null,
                  saveNote() {

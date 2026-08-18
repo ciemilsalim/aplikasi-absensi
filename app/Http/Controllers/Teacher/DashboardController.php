@@ -104,6 +104,9 @@ class DashboardController extends Controller
         if (!isset($viewData['classPerformanceData'])) {
             $viewData['classPerformanceData'] = [];
         }
+        if (!isset($viewData['teacherNote'])) {
+            $viewData['teacherNote'] = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
+        }
 
         // Ambil pengumuman terbaru
         $viewData['announcements'] = Announcement::whereNotNull('published_at')
@@ -121,7 +124,7 @@ class DashboardController extends Controller
         $today = Carbon::today();
         $thirtyDaysAgo = now()->subDays(30);
 
-        $studentsInClass = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $studentsInClass = $class ? Student::where('school_class_id', $class->id)->orderBy('name')->get() : collect();
         $studentIds = $studentsInClass->pluck('id');
 
         $attendancesToday = Attendance::whereIn('student_id', $studentIds)
@@ -149,6 +152,14 @@ class DashboardController extends Controller
         $absentStudents = $studentsInClass->whereNotIn('id', $presentStudentIds)->values();
         $totalBelumAbsen = $absentStudents->count();
 
+        // Rekap status kehadiran hari ini
+        $onTimeCount = $attendancesToday->where('status', 'tepat_waktu')->count();
+        $lateCount = $attendancesToday->where('status', 'terlambat')->count();
+        $sickCount = $attendancesToday->where('status', 'sakit')->count();
+        $permitCount = $attendancesToday->whereIn('status', ['izin', 'izin_keluar'])->count();
+        $alphaCount = $attendancesToday->where('status', 'alpa')->count();
+        $noRecordCount = $totalBelumAbsen;
+
         // Check if today is an effective school day
         $isWeekend = $today->isWeekend();
         $holidaysToday = \App\Models\Calendar::getHolidaysInRange($today, $today);
@@ -175,16 +186,17 @@ class DashboardController extends Controller
             $chartData[] = $percentage;
         }
 
+        // Siswa yang perlu perhatian khusus (dihitung aman di Collection tanpa memicu sql_mode ONLY_FULL_GROUP_BY error)
         $studentsForAttention = Student::whereIn('id', $studentIds)
             ->withCount([
                 'attendances as late_count' => fn($query) => $query->where('status', 'terlambat')->where('attendance_time', '>=', $thirtyDaysAgo),
                 'attendances as alpha_count' => fn($query) => $query->where('status', 'alpa')->where('attendance_time', '>=', $thirtyDaysAgo)
             ])
-            ->having('late_count', '>', 2)
-            ->orHaving('alpha_count', '>', 2)
-            ->orderByRaw('late_count + alpha_count DESC')
+            ->get()
+            ->filter(fn($student) => ($student->late_count > 0 || $student->alpha_count > 0))
+            ->sortByDesc(fn($student) => $student->late_count + $student->alpha_count)
             ->take(5)
-            ->get();
+            ->values();
 
         $dailyPresencePercentage = 0;
         if ($totalStudents > 0) {
@@ -192,7 +204,10 @@ class DashboardController extends Controller
             $dailyPresencePercentage = round(($presentTodayCount / $totalStudents) * 100);
         }
 
+        $teacherNote = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
+
         return [
+            'class' => $class,
             'homeroomClass' => $class,
             'studentsInClass' => $studentsInClass,
             'attendancesToday' => $attendancesToday,
@@ -200,12 +215,20 @@ class DashboardController extends Controller
             'chartLabels' => $chartLabels,
             'chartData' => $chartData,
             'studentsForAttention' => $studentsForAttention,
+            'studentsForAttentionWali' => $studentsForAttention,
             'dailyPresencePercentage' => $dailyPresencePercentage,
             'studentsOnPermit' => $studentsOnPermit,
             'studentsNotCheckedOut' => $studentsNotCheckedOut,
             'absentStudents' => $absentStudents,
             'totalBelumAbsen' => $totalBelumAbsen,
             'isEffectiveSchoolDay' => $isEffectiveSchoolDay,
+            'onTimeCount' => $onTimeCount,
+            'lateCount' => $lateCount,
+            'sickCount' => $sickCount,
+            'permitCount' => $permitCount,
+            'alphaCount' => $alphaCount,
+            'noRecordCount' => $noRecordCount,
+            'teacherNote' => $teacherNote,
         ];
     }
 
@@ -1140,18 +1163,28 @@ class DashboardController extends Controller
     public function updateNote(Request $request)
     {
         $request->validate([
+            'content' => 'nullable|string|max:1000',
             'note' => 'nullable|string|max:1000',
         ]);
 
         $teacher = Auth::user()?->teacher;
         if (!$teacher) {
+            if ($request->expectsJson() || $request->isJson()) {
+                return response()->json(['success' => false, 'message' => 'Guru tidak ditemukan.'], 404);
+            }
             return back()->with('error', 'Guru tidak ditemukan.');
         }
 
+        $content = $request->input('content', $request->input('note'));
+
         TeacherNote::updateOrCreate(
             ['teacher_id' => $teacher->id],
-            ['content' => $request->input('note')]
+            ['content' => $content]
         );
+
+        if ($request->expectsJson() || $request->isJson()) {
+            return response()->json(['success' => true, 'message' => 'Catatan berhasil disimpan.']);
+        }
 
         return back()->with('success', 'Catatan guru berhasil diperbarui.');
     }
