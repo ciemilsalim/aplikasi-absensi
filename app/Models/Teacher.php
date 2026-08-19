@@ -64,11 +64,13 @@ class Teacher extends Model
         return $this->belongsToMany(Cocurricular::class, 'cocurricular_teacher');
     }
 
-    /**
-     * Relasi ke jadwal sesi kokurikuler yang diampu langsung oleh guru ini.
-     */
-    public function cocurricularSchedules()
+    public function teachingJournals()
     {
-        return $this->hasMany(Schedule::class, 'teacher_id')->where('schedule_type', 'cocurricular');
+        return $this->hasMany(TeachingJournal::class);
+    }
+
+    public function semesterReflections()
+    {
+        return $this->hasMany(TeacherSemesterReflection::class);
     }
 }

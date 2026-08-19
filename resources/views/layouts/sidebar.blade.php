@@ -188,7 +188,8 @@
                                     $isSubjectHistoryActive = request()->routeIs(['teacher.subject.attendance.history', 'teacher.subject.attendance.scanner']) && (request('type') !== 'cocurricular');
                                     $isSubjectReportActive = request()->routeIs(['teacher.subject.attendance.report', 'teacher.subject.attendance.preview', 'teacher.subject.attendance.print', 'teacher.subject.attendance.charts']) && (request('type') !== 'cocurricular');
                                     $isSubjectDashActive = request()->routeIs('teacher.dashboard') && request('view') === 'guru_mapel';
-                                    $isSubjectGroupActive = $isSubjectHistoryActive || $isSubjectReportActive || $isSubjectDashActive;
+                                    $isJournalActive = request()->routeIs('teacher.journals.*');
+                                    $isSubjectGroupActive = $isSubjectHistoryActive || $isSubjectReportActive || $isSubjectDashActive || $isJournalActive;
                                 @endphp
                                 <li x-data="{ open: {{ $isSubjectGroupActive ? 'true' : 'false' }} }" class="relative">
                                     <button @click="open = !open" :title="sidebarCollapsed ? 'Guru Mata Pelajaran' : ''" 
@@ -205,6 +206,18 @@
                                                class="{{ $isSubjectDashActive ? 'text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                                 <span>Dasbor Mapel</span>
                                                 @if($isSubjectDashActive)
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                                                @endif
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('teacher.journals.index') }}" 
+                                               class="{{ $isJournalActive ? 'text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                                <span class="flex items-center gap-1.5">
+                                                    <span>Jurnal Mengajar</span>
+                                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500 text-white shadow-2xs">Baru</span>
+                                                </span>
+                                                @if($isJournalActive)
                                                     <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
                                                 @endif
                                             </a>
@@ -473,6 +486,19 @@
                                 </a>
                             </li>
                         </ul>
+                    </li>
+
+                    @php $isAdminJournalActive = request()->routeIs('admin.teaching_journals.*'); @endphp
+                    <li>
+                        <a href="{{ route('admin.teaching_journals.index') }}" :title="sidebarCollapsed ? 'Supervisi Jurnal' : ''" 
+                           class="{{ $isAdminJournalActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                           :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
+                            <span class="flex gap-x-3 items-center">
+                                <span class="material-icons text-xl shrink-0 text-sky-500">verified</span>
+                                <span x-show="!sidebarCollapsed" class="truncate font-semibold">Supervisi Jurnal</span>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500 text-white shadow-2xs">Baru</span>
+                        </a>
                     </li>
 
                     @if(auth()->user()->hasRole('admin'))

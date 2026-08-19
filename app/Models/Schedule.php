@@ -40,6 +40,14 @@ class Schedule extends Model
     }
 
     /**
+     * Relasi untuk jurnal mengajar pada sesi jadwal ini.
+     */
+    public function teachingJournals()
+    {
+        return $this->hasMany(TeachingJournal::class);
+    }
+
+    /**
      * Mendapatkan data proyek kokurikuler yang terkait dengan jadwal ini.
      */
     public function cocurricular()

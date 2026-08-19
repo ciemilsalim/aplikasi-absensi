@@ -38,6 +38,8 @@ use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestCont
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestController;
 use App\Http\Controllers\Teacher\SubjectAttendanceController;
+use App\Http\Controllers\Teacher\TeachingJournalController;
+use App\Http\Controllers\Admin\AdminTeachingJournalController;
 
 /* |-------------------------------------------------------------------------- | Rute Web |-------------------------------------------------------------------------- */
 
@@ -248,6 +250,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'students'])->name('extracurriculars.students');
             Route::post('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'assignStudents'])->name('extracurriculars.assign_students');
             Route::delete('extracurriculars/{extracurricular}/students/{student}', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'removeStudent'])->name('extracurriculars.remove_student');
+
+            // Supervisi Jurnal Mengajar Guru (Admin / Waka Kurikulum)
+            Route::get('/teaching-journals', [AdminTeachingJournalController::class, 'index'])->name('teaching_journals.index');
+            Route::get('/teaching-journals/teacher/{teacher}', [AdminTeachingJournalController::class, 'show'])->name('teaching_journals.show');
+            Route::post('/teaching-journals/{journal}/verify', [AdminTeachingJournalController::class, 'verify'])->name('teaching_journals.verify');
+            Route::post('/teaching-journals/batch-verify', [AdminTeachingJournalController::class, 'batchVerify'])->name('teaching_journals.batch_verify');
         }
     );
 });
@@ -323,6 +331,20 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::post('/extracurricular-attendance/{extracurricular}/mark-manual', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'markManual'])->name('extracurricular-attendance.mark_manual');
     Route::get('/extracurricular-attendance/{extracurricular}/report', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'report'])->name('extracurricular-attendance.report');
     Route::get('/extracurricular-attendance/{extracurricular}/print', [\App\Http\Controllers\Teacher\ExtracurricularAttendanceController::class, 'print'])->name('extracurricular-attendance.print');
+
+    // == RUTE JURNAL MENGAJAR GURU MATA PELAJARAN (SMP NEGERI 1 BIAU) ==
+    Route::get('/journals', [TeachingJournalController::class, 'index'])->name('journals.index');
+    Route::get('/journals/create', [TeachingJournalController::class, 'create'])->name('journals.create');
+    Route::post('/journals', [TeachingJournalController::class, 'store'])->name('journals.store');
+    Route::get('/journals/{journal}/edit', [TeachingJournalController::class, 'edit'])->name('journals.edit');
+    Route::put('/journals/{journal}', [TeachingJournalController::class, 'update'])->name('journals.update');
+    Route::delete('/journals/{journal}', [TeachingJournalController::class, 'destroy'])->name('journals.destroy');
+    Route::get('/journals/weekly-report', [TeachingJournalController::class, 'weeklyReport'])->name('journals.weekly');
+    Route::get('/journals/semester-report', [TeachingJournalController::class, 'semesterReport'])->name('journals.semester');
+    Route::get('/journals/reflection', [TeachingJournalController::class, 'reflection'])->name('journals.reflection');
+    Route::post('/journals/reflection', [TeachingJournalController::class, 'storeReflection'])->name('journals.reflection.store');
+    Route::get('/journals/print-document', [TeachingJournalController::class, 'print'])->name('journals.print');
+    Route::get('/journals/api/session-data', [TeachingJournalController::class, 'apiGetSessionData'])->name('journals.session_data');
 });
 
 // == UTILITAS: Pembersihan cache dan diagnostik server ==

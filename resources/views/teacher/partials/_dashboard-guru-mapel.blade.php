@@ -25,8 +25,8 @@
             </div>
         </div>
 
-        <!-- Fast Actions (Scan Datang/Pulang Siswa & Scan Izin Keluar) -->
-        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+        <!-- Fast Actions (Scan Datang/Pulang Siswa, Scan Izin Keluar, Jurnal Mengajar) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <a href="{{ route('scanner') }}" 
                class="group p-4 sm:p-4.5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center gap-3">
                 <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
@@ -46,6 +46,18 @@
                 <div class="min-w-0">
                     <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Scan Izin Keluar</h4>
                     <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">Izin Tinggalkan Sekolah</p>
+                </div>
+            </a>
+
+            <a href="{{ route('teacher.journals.index') }}" 
+               class="group relative p-4 sm:p-4.5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center gap-3">
+                <span class="absolute top-3.5 right-3.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500 text-white shadow-2xs">Baru</span>
+                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
+                    <span class="material-icons text-2xl">auto_stories</span>
+                </div>
+                <div class="min-w-0 pr-6 sm:pr-0">
+                    <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Jurnal Mengajar</h4>
+                    <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">Log & Rekap TP Fase D</p>
                 </div>
             </a>
         </div>
