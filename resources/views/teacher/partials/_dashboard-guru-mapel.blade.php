@@ -221,7 +221,7 @@
         </div>
 
         <!-- Ringkasan Absensi Terakhir -->
-        @if($lastAttendanceSummary)
+        @if(isset($lastAttendanceSummary) && $lastAttendanceSummary)
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
             <div class="p-5 border-b border-slate-100 dark:border-slate-800">
                 <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
