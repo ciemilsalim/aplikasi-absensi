@@ -357,8 +357,8 @@ Route::get('/fix-storage-link', function () {
     $output = '<html><body style="font-family: sans-serif; max-width: 800px; margin: 20px auto; padding: 0 20px;">';
     $output .= '<h2>🔧 Utilitas Server Presensi</h2>';
 
-    // 1. Pembersihan Cache Sistem
-    $output .= '<h3>1. Pembersihan Cache</h3>';
+    // 1. Pembersihan Cache Sistem & Migrasi Database
+    $output .= '<h3>1. Pembersihan Cache Sistem</h3>';
     try {
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('config:clear');
@@ -367,6 +367,17 @@ Route::get('/fix-storage-link', function () {
         $output .= "<p style='color: green;'><b>✔ Route, Config, View, dan Cache berhasil dibersihkan!</b></p>";
     } catch (\Throwable $e) {
         $output .= "<p style='color: red;'><b>❌ Gagal membersihkan cache: " . htmlspecialchars($e->getMessage()) . "</b></p>";
+    }
+
+    // 1b. Migrasi Database (jika diminta atau otomatis)
+    $output .= '<h3>1b. Migrasi Database</h3>';
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+        $output .= "<p style='color: green;'><b>✔ Migrasi database berhasil dijalankan!</b></p>";
+        $output .= "<pre style='background:#f1f5f9; padding:10px; border-radius:8px; font-size:11px;'>" . htmlspecialchars($migrateOutput) . "</pre>";
+    } catch (\Throwable $e) {
+        $output .= "<p style='color: red;'><b>❌ Gagal menjalankan migrasi: " . htmlspecialchars($e->getMessage()) . "</b></p>";
     }
 
     // 2. Diagnostik (hanya cek, TIDAK menghapus/membuat symlink)
