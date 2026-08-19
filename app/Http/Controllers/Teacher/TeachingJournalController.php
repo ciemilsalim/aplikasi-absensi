@@ -568,10 +568,18 @@ class TeachingJournalController extends Controller
         $schoolClass = $schoolClassId ? SchoolClass::find($schoolClassId) : null;
         $subject = $subjectId ? Subject::find($subjectId) : $teacher->subjects()->first();
         
-        $setting = Setting::first();
-        $schoolName = $setting?->school_name ?: 'SMP NEGERI 1 BIAU';
-        $principalName = $setting?->principal_name ?: '........................................................';
-        $principalNip = $setting?->principal_nip ?: '.....................................................';
+        $settings = Setting::all()->pluck('value', 'key');
+        $schoolName = $settings['school_name'] ?? 'SMP Negeri 1 Biau';
+        $schoolAddress = $settings['school_address'] ?? 'Jl. Syarief Mansyur No. 145 Kelurahan Leok II Kecamatan Biau Kabupaten Buol';
+        $schoolCity = $settings['school_city'] ?? 'Buol';
+        $principalName = $settings['school_headmaster_name'] ?? $settings['principal_name'] ?? '........................................................';
+        $principalNip = $settings['school_headmaster_nip'] ?? $settings['principal_nip'] ?? '.....................................................';
+        $schoolLogo = $settings['school_logo'] ?? $settings['app_logo'] ?? null;
+
+        $activeAcademicYear = AcademicYear::where('is_active', true)->first();
+        $activeSemester = Semester::where('is_active', true)->first();
+        $academicYearName = $activeAcademicYear?->name ?? '2026/2027';
+        $semesterName = $activeSemester?->name ?? 'Ganjil';
 
         // Query Jurnal Harian (Bagian B)
         $journals = TeachingJournal::with(['schoolClass', 'subject'])
@@ -637,8 +645,13 @@ class TeachingJournalController extends Controller
             'weeklyData',
             'reflection',
             'schoolName',
+            'schoolAddress',
+            'schoolCity',
             'principalName',
             'principalNip',
+            'schoolLogo',
+            'academicYearName',
+            'semesterName',
             'month'
         ));
     }

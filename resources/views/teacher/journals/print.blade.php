@@ -234,18 +234,21 @@
     <div class="print-container">
         <!-- KOP SEKOLAH -->
         <div class="kop-header">
+            @if($schoolLogo)
+                <img src="{{ asset('storage/' . $schoolLogo) }}" alt="Logo Sekolah" class="logo" onerror="this.style.display='none'">
+            @endif
             <div class="kop-title">
-                <h1>PEMERINTAH KABUPATEN BUOL</h1>
+                <h1>PEMERINTAH KABUPATEN {{ strtoupper($schoolCity ?: 'BUOL') }}</h1>
                 <h2>DINAS PENDIDIKAN DAN KEBUDAYAAN</h2>
-                <h2>{{ $schoolName }}</h2>
-                <p>Alamat: Jl. Syarif Mansur No. 1, Kec. Biau, Kab. Buol, Sulawesi Tengah 94563</p>
+                <h2>{{ strtoupper($schoolName) }}</h2>
+                <p>{{ $schoolAddress }}</p>
             </div>
         </div>
 
         <!-- JUDUL DOKUMEN -->
         <div class="doc-title">
             <h3>JURNAL MENGAJAR GURU MATA PELAJARAN</h3>
-            <span>Tahun Pelajaran 2026/2027 &bull; Fase D</span>
+            <span>Tahun Pelajaran {{ $academicYearName }} &bull; Semester {{ $semesterName }} &bull; Fase D</span>
         </div>
 
         <!-- A. IDENTITAS GURU -->
@@ -279,17 +282,17 @@
             <tr>
                 <td>Kelas / Rombel</td>
                 <td>:</td>
-                <td>{{ $schoolClass?->name ?? 'Kelas VII / VIII / IX' }}</td>
+                <td>{{ $schoolClass?->name ?? 'Semua Kelas Binaan' }}</td>
             </tr>
             <tr>
                 <td>Semester</td>
                 <td>:</td>
-                <td>Ganjil / Genap</td>
+                <td>{{ $semesterName }}</td>
             </tr>
             <tr>
                 <td>Tahun Pelajaran</td>
                 <td>:</td>
-                <td><strong>2026/2027</strong></td>
+                <td><strong>{{ $academicYearName }}</strong></td>
             </tr>
         </table>
 
@@ -420,10 +423,10 @@
             </div>
 
             <div class="sig-box">
-                <div>Biau, {{ \Carbon\Carbon::today()->translatedFormat('d F Y') }}</div>
+                <div>{{ $schoolCity ?: 'Buol' }}, {{ \Carbon\Carbon::today()->translatedFormat('d F Y') }}</div>
                 <div>Guru Mata Pelajaran</div>
                 <div class="name">{{ $teacher->name }}</div>
-                <div class="nip">NIP. {{ $teacher->nip ?: '.....................................................' }}</div>
+                <div class="nip">NIP. {{ $teacher->nip ?: '-' }}</div>
             </div>
         </div>
     </div>
