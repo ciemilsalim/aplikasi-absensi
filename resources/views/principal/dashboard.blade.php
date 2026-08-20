@@ -501,7 +501,11 @@
         // Diagnostic Console Logger
         console.group('🔍 SIASEK Dasbor Eksekutif Kepala Sekolah Diagnostics');
         console.info('🕒 Server Time:', @json(now()->toDateTimeString()));
-        console.info('👤 Logged-in User:', @json(Auth::user()?->only(['id', 'name', 'email', 'role'])));
+        console.info('👤 Logged-in User:', {
+            id: {{ Auth::id() ?? 0 }},
+            name: @json(Auth::user()?->name ?? 'Tamu'),
+            role: @json(Auth::user()?->role ?? 'none')
+        });
         console.info('📊 Daily Presence %:', @json($dailyPresencePercentage) + '%');
         console.info('👥 Total Students:', @json($totalStudents));
         console.info('📝 Total Teaching Journals:', @json($totalJournals));
