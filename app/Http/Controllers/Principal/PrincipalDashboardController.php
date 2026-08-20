@@ -48,7 +48,6 @@ class PrincipalDashboardController extends Controller
 
             try {
                 $totalStudents = Student::count();
-                // Menggunakan attendance_time (nama kolom standar pada tabel attendances)
                 $attendancesToday = Attendance::whereDate('attendance_time', $today)
                     ->when(session('active_semester_id'), function ($q) {
                         return $q->where('semester_id', session('active_semester_id'));
@@ -233,7 +232,7 @@ class PrincipalDashboardController extends Controller
                 Log::warning('[PrincipalDashboard] Gagal memuat performa kelas: ' . $e->getMessage());
             }
 
-            return view('principal.dashboard', compact(
+            $viewData = compact(
                 'totalStudents',
                 'totalHadir',
                 'presentOnTimeCount',
@@ -262,7 +261,11 @@ class PrincipalDashboardController extends Controller
                 'chartPercentages',
                 'classAttendanceBreakdown',
                 'debugErrors'
-            ));
+            );
+
+            // Render Blade secara eksplisit di dalam try-catch agar error Blade tertangkap
+            $renderedHtml = view('principal.dashboard', $viewData)->render();
+            return response($renderedHtml);
 
         } catch (\Throwable $fatalError) {
             Log::error('[PrincipalDashboard Fatal Error] ' . $fatalError->getMessage(), [
@@ -271,37 +274,14 @@ class PrincipalDashboardController extends Controller
                 'trace' => $fatalError->getTraceAsString(),
             ]);
 
-            // Jika terjadi error tak terduga, tampilkan layar diagnostik bersih dan terstruktur daripada blank 500
-            return response()->view('principal.dashboard', [
-                'totalStudents' => 0,
-                'totalHadir' => 0,
-                'presentOnTimeCount' => 0,
-                'presentLateCount' => 0,
-                'sickCount' => 0,
-                'permitCount' => 0,
-                'alphaCount' => 0,
-                'unmarkedCount' => 0,
-                'dailyPresencePercentage' => 0,
-                'activePermitsCount' => 0,
-                'totalMapelSessionsToday' => 0,
-                'activeMapelSessionsToday' => 0,
-                'mapelHadirCount' => 0,
-                'mapelBolosCount' => 0,
-                'cocurricularProjectsCount' => 0,
-                'cocurricularSchedulesToday' => 0,
-                'extracurricularsCount' => 0,
-                'extraAttendancesThisWeek' => 0,
-                'totalJournals' => 0,
-                'verifiedJournals' => 0,
-                'pendingJournals' => 0,
-                'activeTeachersWithJournal' => 0,
-                'totalTeachers' => 0,
-                'recentPendingJournals' => collect(),
-                'chartDates' => [],
-                'chartPercentages' => [],
-                'classAttendanceBreakdown' => [],
-                'debugErrors' => ['fatal_error' => $fatalError->getMessage() . ' in ' . $fatalError->getFile() . ':' . $fatalError->getLine()],
-            ], 200);
+            // Tampilkan rincian error secara transparan dalam format terstruktur
+            return response()->json([
+                'status' => 'render_error',
+                'message' => $fatalError->getMessage(),
+                'file' => $fatalError->getFile(),
+                'line' => $fatalError->getLine(),
+                'trace_snippet' => array_slice(explode("\n", $fatalError->getTraceAsString()), 0, 8),
+            ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         }
     }
 }
