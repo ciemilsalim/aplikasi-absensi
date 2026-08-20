@@ -9,61 +9,41 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-3.5 w-full">
-            <!-- Breadcrumbs -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
             <div>
                 <x-breadcrumb :breadcrumbs="[
                     ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard', ['view' => $isCocurricular ? 'fasilitator_kokurikuler' : 'guru_mapel'])],
                     ['title' => $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar', 'url' => '#']
                 ]" />
+                <div class="flex items-center gap-2 flex-wrap mt-1">
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                        {{ $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar' }}
+                    </h1>
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold {{ $isCocurricular ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800' }} shadow-2xs">
+                        {{ $schedule->getActivityName() }}
+                    </span>
+                    @php
+                        $rawClassName = $schedule->getTargetClass()?->name ?? '-';
+                        $displayClassName = str_starts_with($rawClassName, 'Kelas') ? $rawClassName : 'Kelas ' . $rawClassName;
+                    @endphp
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
+                        {{ $displayClassName }}
+                    </span>
+                </div>
             </div>
 
-            <!-- Title & Badges Row (Memberi ruang penuh untuk judul yang panjang) -->
-            <div class="flex flex-wrap items-center gap-2.5">
-                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight shrink-0">
-                    {{ $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar' }}
-                </h1>
-                
-                <!-- Badge Judul Kegiatan / Mapel -->
-                <span class="inline-flex items-center px-3 py-1 rounded-2xl text-xs font-bold {{ $isCocurricular ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800' }} shadow-2xs max-w-full" title="{{ $schedule->getActivityName() }}">
-                    {{ $schedule->getActivityName() }}
-                </span>
-
-                <!-- Badge Kelas (Otomatis mencegah duplikasi 'Kelas Kelas 8E') -->
-                @php
-                    $rawClassName = $schedule->getTargetClass()?->name ?? '-';
-                    $displayClassName = str_starts_with($rawClassName, 'Kelas') ? $rawClassName : 'Kelas ' . $rawClassName;
-                @endphp
-                <span class="inline-flex items-center px-3 py-1 rounded-2xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0">
-                    {{ $displayClassName }}
-                </span>
-            </div>
-
-            <!-- Action Toolbar Row (Berada rapi di baris bawah judul) -->
-            <div class="flex items-center gap-2.5 flex-wrap pt-0.5">
-                <a href="{{ route('teacher.anecdotes.index', ['school_class_id' => $schedule->getTargetClass()?->id, 'subject_id' => $schedule->teachingAssignment?->subject_id]) }}" 
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-800 transition-all active:scale-95 shadow-2xs whitespace-nowrap">
-                    <span class="material-icons text-sm">rate_review</span>
-                    <span>Rekap Anekdot</span>
-                </a>
-
-                <a href="{{ route('teacher.journals.create', ['schedule_id' => $schedule->id, 'date' => $selectedDate->format('Y-m-d')]) }}" 
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl {{ $themeBtn }} text-white font-bold text-xs shadow-sm transition-all active:scale-95 whitespace-nowrap">
-                    <span class="material-icons text-sm">edit_note</span>
-                    <span>Isi Jurnal Sesi Ini</span>
-                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-400 text-slate-950 shadow-2xs">Baru</span>
-                </a>
-
+            <!-- Header Action Controls (Kanan Atas Sejajar Judul) -->
+            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
                 <a href="{{ route('teacher.dashboard', ['view' => $isCocurricular ? 'fasilitator_kokurikuler' : 'guru_mapel']) }}" 
                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shadow-2xs whitespace-nowrap">
                     <span class="material-icons text-sm">arrow_back</span>
                     <span>Dasbor</span>
                 </a>
 
-                <div class="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
-                    <span class="material-icons text-slate-400 text-xs ml-0.5">calendar_today</span>
+                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+                    <span class="material-icons text-slate-400 text-xs ml-1.5">calendar_today</span>
                     <input type="date" id="attendance-date" name="date" value="{{ $selectedDate->format('Y-m-d') }}" 
-                           class="border-0 bg-transparent text-slate-800 dark:text-white focus:ring-0 text-xs font-bold py-1 px-1 cursor-pointer">
+                           class="border-0 bg-transparent text-slate-800 dark:text-white focus:ring-0 text-xs font-bold py-1 px-1.5 cursor-pointer">
                 </div>
             </div>
         </div>
@@ -259,6 +239,40 @@
                         </span>
                         <span class="font-medium text-slate-400">Jarak Ideal: 20-40 cm</span>
                     </div>
+                </div>
+
+                <!-- Action Cards Under Camera (Rekap Anekdot & Isi Jurnal Sesi Ini) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Tombol Rekap Anekdot -->
+                    <a href="{{ route('teacher.anecdotes.index', ['school_class_id' => $schedule->getTargetClass()?->id, 'subject_id' => $schedule->teachingAssignment?->subject_id]) }}" 
+                       class="group p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-amber-200/80 dark:border-amber-900/50 hover:border-amber-300 dark:hover:border-amber-700 shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-3 active:scale-[0.98]">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                                <span class="material-icons text-xl">rate_review</span>
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Rekap Anekdot</h4>
+                                <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">Catatan Sikap & Nilai</p>
+                            </div>
+                        </div>
+                        <span class="material-icons text-slate-400 text-sm group-hover:translate-x-0.5 transition-transform shrink-0">chevron_right</span>
+                    </a>
+
+                    <!-- Tombol Isi Jurnal Sesi Ini -->
+                    <a href="{{ route('teacher.journals.create', ['schedule_id' => $schedule->id, 'date' => $selectedDate->format('Y-m-d')]) }}" 
+                       class="group relative p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border {{ $isCocurricular ? 'border-indigo-200/80 dark:border-indigo-900/50 hover:border-indigo-300' : 'border-sky-200/80 dark:border-sky-900/50 hover:border-sky-300' }} shadow-2xs hover:shadow-md transition-all flex items-center justify-between gap-3 active:scale-[0.98]">
+                        <span class="absolute top-3 right-3 inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500 text-white shadow-2xs">Baru</span>
+                        <div class="flex items-center gap-3 min-w-0 pr-4">
+                            <div class="w-10 h-10 rounded-2xl {{ $themeBgSoft }} {{ $themeText }} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                                <span class="material-icons text-xl">edit_note</span>
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Isi Jurnal</h4>
+                                <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">Jurnal Sesi Ini</p>
+                            </div>
+                        </div>
+                        <span class="material-icons text-slate-400 text-sm group-hover:translate-x-0.5 transition-transform shrink-0">chevron_right</span>
+                    </a>
                 </div>
             </div>
 
