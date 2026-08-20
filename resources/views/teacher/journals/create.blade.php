@@ -66,7 +66,7 @@
                                         data-class="{{ $sched->getTargetClass()?->name ?? '-' }}"
                                         data-subject="{{ $sched->getActivityName() }}"
                                         {{ (old('schedule_id', $selectedSchedule?->id) == $sched->id) ? 'selected' : '' }}>
-                                    {{ $sched->day_of_week }}: {{ $sched->getTargetClass()?->name ?? '-' }} - {{ $sched->getActivityName() }} ({{ \Carbon\Carbon::parse($sched->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($sched->end_time)->format('H:i') }})
+                                    {{ $sched->getDayName() }}: {{ $sched->getTargetClass()?->name ?? '-' }} - {{ $sched->getActivityName() }} ({{ \Carbon\Carbon::parse($sched->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($sched->end_time)->format('H:i') }})
                                 </option>
                             @endforeach
                         </select>

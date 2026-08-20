@@ -63,7 +63,7 @@
                                 class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-sky-500/15">
                             @foreach($schedules as $sched)
                                 <option value="{{ $sched->id }}" {{ (old('schedule_id', $journal->schedule_id) == $sched->id) ? 'selected' : '' }}>
-                                    {{ $sched->day_of_week }}: {{ $sched->getTargetClass()?->name ?? '-' }} - {{ $sched->getActivityName() }}
+                                    {{ $sched->getDayName() }}: {{ $sched->getTargetClass()?->name ?? '-' }} - {{ $sched->getActivityName() }} ({{ \Carbon\Carbon::parse($sched->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($sched->end_time)->format('H:i') }})
                                 </option>
                             @endforeach
                         </select>

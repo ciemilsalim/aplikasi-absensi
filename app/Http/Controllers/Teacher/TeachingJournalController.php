@@ -114,6 +114,8 @@ class TeachingJournalController extends Controller
             ->whereHas('teachingAssignment', function ($q) use ($teacher) {
                 $q->where('teacher_id', $teacher->id);
             })
+            ->orderBy('day_of_week', 'asc')
+            ->orderBy('start_time', 'asc')
             ->get();
 
         $selectedScheduleId = $request->input('schedule_id');
@@ -232,6 +234,8 @@ class TeachingJournalController extends Controller
             ->whereHas('teachingAssignment', function ($q) use ($teacher) {
                 $q->where('teacher_id', $teacher->id);
             })
+            ->orderBy('day_of_week', 'asc')
+            ->orderBy('start_time', 'asc')
             ->get();
 
         return view('teacher.journals.edit', compact('teacher', 'journal', 'schedules'));

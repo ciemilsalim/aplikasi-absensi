@@ -111,4 +111,22 @@ class Schedule extends Model
         }
         return $this->teachingAssignment?->teacher;
     }
+
+    /**
+     * Helper untuk mendapatkan nama hari (Senin - Minggu).
+     */
+    public function getDayName(): string
+    {
+        $dayNames = [
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu',
+            7 => 'Minggu',
+        ];
+
+        return $dayNames[$this->day_of_week] ?? (is_numeric($this->day_of_week) ? 'Hari ' . $this->day_of_week : (string)$this->day_of_week);
+    }
 }
