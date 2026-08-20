@@ -450,7 +450,9 @@ class DashboardController extends Controller
 
             $totalSessions = SubjectAttendance::whereIn('schedule_id', $pairScheduleIds)
                 ->where('created_at', '>=', $thirtyDaysAgo)
-                ->distinct(DB::raw('DATE(created_at)'))
+                ->selectRaw('DATE(created_at) as session_date')
+                ->distinct()
+                ->get()
                 ->count();
 
             $totalHadir = SubjectAttendance::whereIn('schedule_id', $pairScheduleIds)
@@ -463,7 +465,7 @@ class DashboardController extends Controller
             $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
 
             $classPerformanceData[] = [
-                'label' => ($item->schoolClass?->name ?? 'Kelas') . ' - ' . ($item->cocurricular?->title ?? 'Kokurikuler'),
+                'label' => ($item->schoolClass?->name ?? 'Kelas') . ' - ' . \Illuminate\Support\Str::limit($item->cocurricular?->title ?? 'Kokurikuler', 25),
                 'percentage' => $percentage,
             ];
         }
