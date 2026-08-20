@@ -36,8 +36,36 @@
     {{-- Action & Notification Icon Buttons --}}
     <div class="flex items-center gap-x-1 sm:gap-x-1.5">
         
+        {{-- Notifications for Kepala Sekolah / Wakasek Kurikulum --}}
+        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum']))
+            @php
+                $topbarPendingJournals = 0;
+                if (\Illuminate\Support\Facades\Schema::hasTable('teaching_journals') && \Illuminate\Support\Facades\Schema::hasColumn('teaching_journals', 'is_verified')) {
+                    try {
+                        $topbarPendingJournals = \App\Models\TeachingJournal::where('is_verified', false)->count();
+                    } catch (\Throwable $e) {
+                        $topbarPendingJournals = 0;
+                    }
+                }
+            @endphp
+            <a href="{{ route('admin.teaching_journals.index') }}" 
+               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
+               title="Supervisi Jurnal Guru">
+                <span class="material-icons text-xl">verified_user</span>
+                @if($topbarPendingJournals > 0)
+                    <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-amber-500 text-slate-950 text-[9px] font-black shadow-xs animate-pulse">{{ $topbarPendingJournals }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('principal.dashboard') }}" 
+               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
+               title="Dasbor Eksekutif">
+                <span class="material-icons text-xl">account_balance</span>
+            </a>
+        @endif
+
         {{-- Notifications for Admin / Staff --}}
-        @if(auth()->user()->role === 'admin')
+        @if(auth()->user()->hasAnyRole(['admin', 'operator']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
             <a href="{{ route('admin.leave_requests.index') }}" 
                class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                title="Persetujuan Izin Siswa">
@@ -58,7 +86,7 @@
         @endif
         
         {{-- Notifications for Teacher & Parent --}}
-        @if(auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass || auth()->user()->role === 'parent')
+        @if((auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass) || auth()->user()->role === 'parent')
             
             {{-- Quick Create Leave Request (Parent) --}}
             @if(auth()->user()->role === 'parent')
@@ -111,15 +139,25 @@
             <button @click="open = !open" 
                     class="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
                 <div class="relative">
-                    <img class="h-8 w-8 rounded-full object-cover ring-2 ring-sky-500/20 bg-slate-200 dark:bg-slate-700" 
-                         src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=0284c7&background=e0f2fe' }}" 
+                    <img class="h-8 w-8 rounded-full object-cover ring-2 ring-indigo-500/20 bg-slate-200 dark:bg-slate-700" 
+                         src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=818cf8&background=e0e7ff' }}" 
                          alt="{{ Auth::user()->name }}">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"></span>
                 </div>
 
                 <div class="hidden md:flex flex-col text-left leading-tight">
                     <span class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate max-w-[120px]">{{ Auth::user()->name }}</span>
-                    <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400 capitalize">{{ Auth::user()->role }}</span>
+                    @php
+                        $displayRole = Auth::user()->role;
+                        if (Auth::user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster'])) {
+                            $displayRole = 'Kepala Sekolah';
+                        } elseif (Auth::user()->hasAnyRole(['wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum'])) {
+                            $displayRole = 'Wakasek Kurikulum';
+                        } else {
+                            $displayRole = str_replace('_', ' ', ucwords(Auth::user()->role, '_'));
+                        }
+                    @endphp
+                    <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 capitalize">{{ $displayRole }}</span>
                 </div>
                 
                 <span class="material-icons text-slate-400 text-base hidden sm:inline-block transition-transform duration-200" :class="{ 'rotate-180': open }">expand_more</span>
@@ -136,6 +174,20 @@
                 </div>
 
                 <div class="space-y-0.5">
+                    @if(Auth::user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum']))
+                        <a href="{{ route('principal.dashboard') }}" 
+                           class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors">
+                            <span class="material-icons text-base text-indigo-500">account_balance</span>
+                            Dasbor Eksekutif
+                        </a>
+
+                        <a href="{{ route('admin.teaching_journals.index') }}" 
+                           class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                            <span class="material-icons text-base text-amber-500">verified_user</span>
+                            Supervisi Jurnal
+                        </a>
+                    @endif
+
                     <a href="{{ route('profile.edit') }}" 
                        class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                         <span class="material-icons text-base text-slate-400">manage_accounts</span>

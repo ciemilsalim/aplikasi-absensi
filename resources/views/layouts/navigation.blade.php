@@ -22,14 +22,31 @@
                 <!-- Navigation Links (Desktop) -->
                 <div class="hidden lg:flex lg:items-center lg:gap-1.5">
                     @auth
-                        @if(auth()->user()->role === 'admin')
+                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum']))
+                            <a href="{{ route('principal.dashboard') }}" 
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('principal.dashboard') ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                <span class="material-icons text-base">account_balance</span>
+                                <span>Dasbor Eksekutif</span>
+                            </a>
+                            <a href="{{ route('admin.teaching_journals.index') }}" 
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('admin.teaching_journals.*') ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                <span class="material-icons text-base">verified_user</span>
+                                <span>Supervisi Jurnal</span>
+                            </a>
+                            <a href="{{ route('admin.reports.charts') }}" 
+                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('admin.reports.charts') ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                                <span class="material-icons text-base">insights</span>
+                                <span>Monitoring</span>
+                            </a>
+                        @endif
+                        @if(auth()->user()->hasAnyRole(['admin', 'operator']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
                             <a href="{{ route('admin.dashboard') }}" 
                                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('admin.dashboard') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                                 <span class="material-icons text-base">dashboard</span>
                                 <span>Dasbor</span>
                             </a>
                         @endif
-                        @if(auth()->user()->role === 'parent')
+                        @if(auth()->user()->role === 'parent' || auth()->user()->hasRole('parent'))
                             <a href="{{ route('parent.dashboard') }}" 
                                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('parent.dashboard') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                                 <span class="material-icons text-base">family_restroom</span>
@@ -41,7 +58,7 @@
                                 <span>Izin & Sakit</span>
                             </a>
                         @endif
-                        @if(auth()->user()->role === 'teacher')
+                        @if(auth()->user()->role === 'teacher' || auth()->user()->hasRole('teacher'))
                             <a href="{{ route('teacher.dashboard') }}" 
                                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all {{ request()->routeIs('teacher.dashboard') ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                                 <span class="material-icons text-base">dashboard</span>
@@ -147,7 +164,25 @@
                 </a>
             @endif
             @auth
-                @if(auth()->user()->role === 'admin')
+                @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum']))
+                    <a href="{{ route('principal.dashboard') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/40">
+                        <span class="material-icons text-base text-indigo-600 dark:text-indigo-400">account_balance</span>
+                        <span>Dasbor Eksekutif</span>
+                    </a>
+                    <a href="{{ route('admin.teaching_journals.index') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-amber-500">verified_user</span>
+                        <span>Supervisi Jurnal</span>
+                    </a>
+                    <a href="{{ route('admin.reports.charts') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-indigo-500">insights</span>
+                        <span>Monitoring Presensi</span>
+                    </a>
+                    <a href="{{ route('admin.reports.create') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-800">
+                        <span class="material-icons text-base text-emerald-500">bar_chart</span>
+                        <span>Laporan Siswa</span>
+                    </a>
+                @endif
+                @if(auth()->user()->hasAnyRole(['admin', 'operator']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
                         <span class="material-icons text-base text-sky-500">dashboard</span>
                         <span>Dasbor Admin</span>
@@ -161,7 +196,7 @@
                         <span>Laporan Presensi</span>
                     </a>
                 @endif
-                @if(auth()->user()->role === 'parent')
+                @if(auth()->user()->role === 'parent' || auth()->user()->hasRole('parent'))
                     <a href="{{ route('parent.dashboard') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
                         <span class="material-icons text-base text-sky-500">family_restroom</span>
                         <span>Dasbor Anak</span>
@@ -171,7 +206,7 @@
                         <span>Pengajuan Izin/Sakit</span>
                     </a>
                 @endif
-                @if(auth()->user()->role === 'teacher')
+                @if(auth()->user()->role === 'teacher' || auth()->user()->hasRole('teacher'))
                     <a href="{{ route('teacher.dashboard') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800">
                         <span class="material-icons text-base text-sky-500">dashboard</span>
                         <span>Dasbor Guru</span>

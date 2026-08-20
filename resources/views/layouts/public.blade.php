@@ -145,7 +145,38 @@
             <div class="fixed bottom-3 inset-x-3 z-40 lg:hidden">
                 <nav class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 shadow-2xl rounded-2xl px-2 py-1 max-w-md mx-auto">
                     <div class="flex justify-around items-center h-14">
-                        @if(in_array(auth()->user()->role, ['admin', 'operator']))
+                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum']))
+                            <a href="{{ route('principal.dashboard') }}"
+                                class="nav-item flex flex-col items-center justify-center text-center py-1 w-full transition-colors {{ request()->routeIs('principal.dashboard') ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400' }}">
+                                <span class="material-icons text-xl">account_balance</span>
+                                <span class="text-[10px] mt-0.5">Eksekutif</span>
+                            </a>
+                            <a href="{{ route('admin.teaching_journals.index') }}"
+                                class="nav-item flex flex-col items-center justify-center text-center py-1 w-full transition-colors {{ request()->routeIs('admin.teaching_journals.*') ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400' }}">
+                                <span class="material-icons text-xl">verified_user</span>
+                                <span class="text-[10px] mt-0.5">Supervisi</span>
+                            </a>
+                            
+                            <!-- Middle Floating Action Button -->
+                            <div class="relative -mt-5 flex flex-col items-center justify-center">
+                                <a href="{{ route('admin.reports.charts') }}"
+                                    class="flex items-center justify-center h-12 w-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/30 border-2 border-white dark:border-slate-900 transition-transform active:scale-95">
+                                    <span class="material-icons text-2xl">insights</span>
+                                </a>
+                                <span class="text-[9px] font-bold mt-1 text-slate-500 dark:text-slate-400">Monitoring</span>
+                            </div>
+
+                            <a href="{{ route('admin.reports.create') }}"
+                                class="nav-item flex flex-col items-center justify-center text-center py-1 w-full transition-colors {{ request()->routeIs(['admin.reports.create', 'admin.reports.teacher.*']) ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400' }}">
+                                <span class="material-icons text-xl">assessment</span>
+                                <span class="text-[10px] mt-0.5">Laporan</span>
+                            </a>
+                            <button @click="mobileMenuOpen = true"
+                                class="nav-item flex flex-col items-center justify-center text-center py-1 w-full transition-colors text-slate-500 dark:text-slate-400">
+                                <span class="material-icons text-xl">grid_view</span>
+                                <span class="text-[10px] mt-0.5">Lainnya</span>
+                            </button>
+                        @elseif(in_array(auth()->user()->role, ['admin', 'operator']) || auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
                             <a href="{{ route('admin.dashboard') }}"
                                 class="nav-item flex flex-col items-center justify-center text-center py-1 w-full transition-colors {{ request()->routeIs('admin.dashboard') ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400' }}">
                                 <span class="material-icons text-xl">grid_view</span>
@@ -176,7 +207,7 @@
                                 <span class="material-icons text-xl">more_horiz</span>
                                 <span class="text-[10px] mt-0.5">Lainnya</span>
                             </button>
-                        @elseif(auth()->user()->role === 'teacher')
+                        @elseif(auth()->user()->role === 'teacher' || auth()->user()->hasRole('teacher'))
                             <a href="{{ route('teacher.dashboard') }}"
                                 class="nav-item flex flex-col items-center justify-center text-center py-1 w-full transition-colors {{ request()->routeIs('teacher.dashboard') ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400' }}">
                                 <span class="material-icons text-xl">grid_view</span>
@@ -196,7 +227,7 @@
                                         <span class="material-icons text-2xl">qr_code_scanner</span>
                                     </a>
                                 @else
-                                    @if($teacherScheduleId)
+                                    @if($teacherScheduleId ?? null)
                                         <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $teacherScheduleId]) }}"
                                             class="flex items-center justify-center h-12 w-12 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/30 border-2 border-white dark:border-slate-900 transition-transform active:scale-95">
                                             <span class="material-icons text-2xl">qr_code_scanner</span>
@@ -221,7 +252,7 @@
                                 <span class="material-icons text-xl">more_horiz</span>
                                 <span class="text-[10px] mt-0.5">Lainnya</span>
                             </button>
-                        @elseif(auth()->user()->role === 'parent')
+                        @elseif(auth()->user()->role === 'parent' || auth()->user()->hasRole('parent'))
                             <a href="{{ route('parent.dashboard') }}"
                                 class="nav-item flex flex-col items-center justify-center text-center py-1 w-full transition-colors {{ request()->routeIs('parent.dashboard') ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400' }}">
                                 <span class="material-icons text-xl">grid_view</span>
@@ -273,7 +304,27 @@
                     </div>
 
                     <div class="overflow-y-auto pb-8 space-y-5">
-                        @if(in_array(auth()->user()->role, ['admin', 'operator']))
+                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum']))
+                            <div class="text-[11px] font-bold uppercase text-indigo-400 tracking-wider">Modul Eksekutif & Supervisi</div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <a href="{{ route('principal.dashboard') }}" class="flex flex-col items-center justify-center p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 hover:bg-indigo-100 rounded-2xl transition border border-indigo-200/60 dark:border-indigo-900/40 col-span-2">
+                                    <span class="material-icons text-indigo-600 dark:text-indigo-400 text-2xl mb-1">account_balance</span>
+                                    <span class="text-xs font-bold text-indigo-950 dark:text-indigo-200">Dasbor Eksekutif</span>
+                                </a>
+                                <a href="{{ route('admin.teaching_journals.index') }}" class="flex flex-col items-center justify-center p-3.5 bg-amber-50/70 dark:bg-amber-950/30 hover:bg-amber-100 rounded-2xl transition border border-amber-200/60 dark:border-amber-900/40 col-span-2">
+                                    <span class="material-icons text-amber-500 text-2xl mb-1">verified_user</span>
+                                    <span class="text-xs font-bold text-amber-900 dark:text-amber-200">Supervisi Jurnal Guru</span>
+                                </a>
+                                <a href="{{ route('admin.reports.charts') }}" class="flex flex-col items-center justify-center p-3.5 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 rounded-2xl transition border border-slate-100 dark:border-slate-750">
+                                    <span class="material-icons text-indigo-500 text-2xl mb-1">insights</span>
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Grafik Siswa</span>
+                                </a>
+                                <a href="{{ route('admin.reports.create') }}" class="flex flex-col items-center justify-center p-3.5 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 rounded-2xl transition border border-slate-100 dark:border-slate-750">
+                                    <span class="material-icons text-emerald-500 text-2xl mb-1">bar_chart</span>
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Rekap Siswa</span>
+                                </a>
+                            </div>
+                        @elseif(in_array(auth()->user()->role, ['admin', 'operator']) || auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
                             <div class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Pemindai & Layanan</div>
                             <div class="grid grid-cols-2 gap-3">
                                 <a href="{{ route('admin.leave_requests.index') }}" class="flex flex-col items-center justify-center p-3.5 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition border border-slate-100 dark:border-slate-750 col-span-2">
@@ -289,7 +340,7 @@
                                     <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Pemindai Izin</span>
                                 </a>
                             </div>
-                        @elseif(auth()->user()->role === 'teacher')
+                        @elseif(auth()->user()->role === 'teacher' || auth()->user()->hasRole('teacher'))
                             <div class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Layanan Guru</div>
                             <div class="grid grid-cols-2 gap-3">
                                 <a href="{{ route('teacher.subject.attendance.history') }}" class="flex flex-col items-center justify-center p-3.5 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition border border-slate-100 dark:border-slate-750 col-span-2">
