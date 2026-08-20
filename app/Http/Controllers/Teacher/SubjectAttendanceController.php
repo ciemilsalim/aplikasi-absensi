@@ -97,13 +97,20 @@ class SubjectAttendanceController extends Controller
                 ];
             });
 
+        // Catatan Anekdot siswa pada jadwal dan tanggal ini
+        $anecdotesToday = \App\Models\StudentAnecdote::where('schedule_id', $schedule->id)
+            ->whereDate('date', $selectedDate)
+            ->get()
+            ->keyBy('student_id');
+
         return view('teacher.subject_attendance_scanner', compact(
             'schedule', 
             'attendedStudents', 
             'studentsOnLeave', 
             'studentsWithoutNotice', 
             'studentsForFaceRecognition', 
-            'selectedDate'
+            'selectedDate',
+            'anecdotesToday'
         ));
     }
 

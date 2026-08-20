@@ -232,6 +232,18 @@
                                             </a>
                                         </li>
                                         <li>
+                                            <a href="{{ route('teacher.anecdotes.index') }}" 
+                                               class="{{ request()->routeIs('teacher.anecdotes.*') ? 'text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                                <span class="flex items-center gap-1.5">
+                                                    <span>Catatan Anekdot</span>
+                                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-amber-500 text-white shadow-2xs">Baru</span>
+                                                </span>
+                                                @if(request()->routeIs('teacher.anecdotes.*'))
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                                                @endif
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a href="{{ route('teacher.subject.attendance.report') }}" 
                                                class="{{ $isSubjectReportActive ? 'text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                                 <span>Rekap Absensi</span>
@@ -293,6 +305,15 @@
                                                class="{{ $isClassHistoryActive ? 'text-amber-600 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                                 <span>Riwayat Kehadiran</span>
                                                 @if($isClassHistoryActive)
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                                @endif
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('teacher.anecdotes.index', ['school_class_id' => auth()->user()->teacher->homeroomClass->id]) }}" 
+                                               class="{{ request()->routeIs('teacher.anecdotes.*') && request('school_class_id') == auth()->user()->teacher->homeroomClass->id ? 'text-amber-600 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                                <span>Catatan Anekdot Kelas</span>
+                                                @if(request()->routeIs('teacher.anecdotes.*') && request('school_class_id') == auth()->user()->teacher->homeroomClass->id)
                                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                                 @endif
                                             </a>

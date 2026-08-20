@@ -39,6 +39,7 @@ use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardControll
 use App\Http\Controllers\Teacher\LeaveRequestController as TeacherLeaveRequestController;
 use App\Http\Controllers\Teacher\SubjectAttendanceController;
 use App\Http\Controllers\Teacher\TeachingJournalController;
+use App\Http\Controllers\Teacher\StudentAnecdoteController;
 use App\Http\Controllers\Admin\AdminTeachingJournalController;
 
 /* |-------------------------------------------------------------------------- | Rute Web |-------------------------------------------------------------------------- */
@@ -349,6 +350,13 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::post('/journals/reflection', [TeachingJournalController::class, 'storeReflection'])->name('journals.reflection.store');
     Route::get('/journals/print-document', [TeachingJournalController::class, 'print'])->name('journals.print');
     Route::get('/journals/api/session-data', [TeachingJournalController::class, 'apiGetSessionData'])->name('journals.session_data');
+
+    // == RUTE CATATAN ANEKDOT SISWA (AKADEMIK, KEHADIRAN, SIKAP) ==
+    Route::get('/anecdotes/get-student', [StudentAnecdoteController::class, 'getForStudent'])->name('anecdotes.get_student');
+    Route::post('/anecdotes/store-update', [StudentAnecdoteController::class, 'storeOrUpdate'])->name('anecdotes.store_update');
+    Route::get('/anecdotes', [StudentAnecdoteController::class, 'index'])->name('anecdotes.index');
+    Route::get('/anecdotes/print', [StudentAnecdoteController::class, 'print'])->name('anecdotes.print');
+    Route::delete('/anecdotes/{anecdote}', [StudentAnecdoteController::class, 'destroy'])->name('anecdotes.destroy');
 });
 
 // == UTILITAS: Pembersihan cache dan diagnostik server ==

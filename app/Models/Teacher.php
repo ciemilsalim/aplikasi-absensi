@@ -73,4 +73,9 @@ class Teacher extends Model
     {
         return $this->hasMany(TeacherSemesterReflection::class);
     }
+
+    public function studentAnecdotes()
+    {
+        return $this->hasMany(StudentAnecdote::class);
+    }
 }

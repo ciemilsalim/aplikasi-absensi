@@ -12,6 +12,11 @@
             </div>
 
             <div class="flex items-center gap-2">
+                <a href="{{ route('teacher.anecdotes.index') }}" 
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-xs font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs transition-all active:scale-95">
+                    <span class="material-icons text-xs">rate_review</span>
+                    <span>Rekap Catatan Anekdot</span>
+                </a>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300">
                     <span class="material-icons text-xs text-sky-500">event</span>
                     <span>{{ $selectedDate->translatedFormat('l, d F Y') }}</span>

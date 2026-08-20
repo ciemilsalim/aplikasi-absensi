@@ -163,4 +163,9 @@ class Student extends Model
     {
         return $this->hasMany(ExtracurricularAttendance::class);
     }
+
+    public function anecdotes()
+    {
+        return $this->hasMany(StudentAnecdote::class);
+    }
 }

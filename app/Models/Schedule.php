@@ -48,6 +48,14 @@ class Schedule extends Model
     }
 
     /**
+     * Relasi untuk catatan anekdot siswa pada sesi jadwal ini.
+     */
+    public function anecdotes()
+    {
+        return $this->hasMany(StudentAnecdote::class);
+    }
+
+    /**
      * Mendapatkan data proyek kokurikuler yang terkait dengan jadwal ini.
      */
     public function cocurricular()
