@@ -185,23 +185,43 @@ class PrincipalDashboardController extends Controller
             // 5. DATA TREN GRAFIK KEHADIRAN SISWA (14 Hari Terakhir)
             $chartDates = [];
             $chartPercentages = [];
+            $chartHadirCounts = [];
+            $chartTotalCounts = [];
 
             try {
+                $startDate = $today->copy()->subDays(13)->startOfDay();
+                $endDate = $today->copy()->endOfDay();
+
+                // Ambil semua data kehadiran dalam rentang 14 hari dalam satu kueri efisien
+                $rangeAttendances = Attendance::whereBetween('attendance_time', [$startDate, $endDate])
+                    ->when(session('active_semester_id'), function ($q) {
+                        return $q->where('semester_id', session('active_semester_id'));
+                    })
+                    ->get();
+
                 for ($i = 13; $i >= 0; $i--) {
                     $date = $today->copy()->subDays($i);
+                    // Lewati hari Minggu
                     if ($date->isSunday()) continue;
 
                     $dateStr = $date->format('Y-m-d');
-                    $dayAttendance = Attendance::whereDate('attendance_time', $dateStr)->get();
-                    $dayHadir = $dayAttendance->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
                     
-                    $pct = $totalStudents > 0 ? round(($dayHadir / $totalStudents) * 100) : 0;
+                    $dayAttendances = $rangeAttendances->filter(function ($att) use ($dateStr) {
+                        return $att->attendance_time && Carbon::parse($att->attendance_time)->format('Y-m-d') === $dateStr;
+                    });
+
+                    $dayHadir = $dayAttendances->whereIn('status', ['hadir', 'present', 'tepat_waktu', 'terlambat', 'late', 'on_time'])->count();
+                    
+                    $pct = $totalStudents > 0 ? round(($dayHadir / $totalStudents) * 100, 1) : 0;
                     
                     $chartDates[] = $date->translatedFormat('d M');
                     $chartPercentages[] = $pct;
+                    $chartHadirCounts[] = $dayHadir;
+                    $chartTotalCounts[] = $totalStudents;
                 }
             } catch (\Throwable $e) {
                 $debugErrors['attendance_trend_chart'] = $e->getMessage();
+                Log::warning('[PrincipalDashboard] Gagal memuat tren kehadiran: ' . $e->getMessage());
             }
 
             // 6. PERFORMA KEHADIRAN PER KELAS (Hari Ini)
@@ -216,7 +236,7 @@ class PrincipalDashboardController extends Controller
 
                     $clsStudentIds = $clsStudents->pluck('id');
                     $clsAttendances = $attendancesToday->whereIn('student_id', $clsStudentIds);
-                    $clsHadir = $clsAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
+                    $clsHadir = $clsAttendances->whereIn('status', ['hadir', 'present', 'tepat_waktu', 'terlambat', 'late', 'on_time'])->count();
                     $clsPct = round(($clsHadir / $clsStudentCount) * 100);
 
                     $classAttendanceBreakdown[] = [
@@ -259,6 +279,8 @@ class PrincipalDashboardController extends Controller
                 'recentPendingJournals',
                 'chartDates',
                 'chartPercentages',
+                'chartHadirCounts',
+                'chartTotalCounts',
                 'classAttendanceBreakdown',
                 'debugErrors'
             );

@@ -200,12 +200,16 @@
                             </h3>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pantau stabilitas kehadiran harian 14 hari sekolah terakhir</p>
                         </div>
-                        <span class="self-start sm:self-auto text-[10px] font-bold px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60">
-                            Rata-rata: {{ $dailyPresencePercentage }}%
+                        @php
+                            $avgTrendPct = count($chartPercentages ?? []) > 0 ? round(array_sum($chartPercentages) / count($chartPercentages), 1) : $dailyPresencePercentage;
+                        @endphp
+                        <span class="self-start sm:self-auto text-[10px] font-bold px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center gap-1.5 shadow-2xs">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                            <span>Rata-rata 14 Hari: {{ $avgTrendPct }}%</span>
                         </span>
                     </div>
 
-                    <div class="h-64 sm:h-72 w-full">
+                    <div class="h-64 sm:h-72 w-full relative">
                         <canvas id="principalAttendanceChart"></canvas>
                     </div>
                 </div>
@@ -420,82 +424,110 @@
     </div>
 
     @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const isDarkMode = document.documentElement.classList.contains('dark');
-            const chartCtx = document.getElementById('principalAttendanceChart');
+            function initPrincipalChart() {
+                if (typeof Chart === 'undefined') {
+                    setTimeout(initPrincipalChart, 100);
+                    return;
+                }
 
-            if (chartCtx) {
-                const ctx = chartCtx.getContext('2d');
-                const labels = @json($chartDates);
-                const data = @json($chartPercentages);
+                const isDarkMode = document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
+                const chartCanvas = document.getElementById('principalAttendanceChart');
 
-                // Create gradient background
-                const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                gradient.addColorStop(0, isDarkMode ? 'rgba(99, 102, 241, 0.4)' : 'rgba(99, 102, 241, 0.25)');
-                gradient.addColorStop(1, isDarkMode ? 'rgba(99, 102, 241, 0.0)' : 'rgba(99, 102, 241, 0.0)');
+                if (chartCanvas) {
+                    const ctx = chartCanvas.getContext('2d');
+                    const labels = @json($chartDates ?? []);
+                    const data = @json($chartPercentages ?? []);
+                    const hadirCounts = @json($chartHadirCounts ?? []);
+                    const totalCounts = @json($chartTotalCounts ?? []);
 
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Kehadiran (%)',
-                            data: data,
-                            borderColor: '#6366f1',
-                            borderWidth: 3,
-                            backgroundColor: gradient,
-                            fill: true,
-                            tension: 0.35,
-                            pointBackgroundColor: '#ffffff',
-                            pointBorderColor: '#6366f1',
-                            pointBorderWidth: 2,
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            intersect: false,
-                            mode: 'index',
+                    // Create gradient background
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    gradient.addColorStop(0, isDarkMode ? 'rgba(99, 102, 241, 0.45)' : 'rgba(99, 102, 241, 0.22)');
+                    gradient.addColorStop(1, isDarkMode ? 'rgba(99, 102, 241, 0.0)' : 'rgba(99, 102, 241, 0.0)');
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Tingkat Kehadiran',
+                                data: data,
+                                borderColor: '#6366f1',
+                                borderWidth: 3,
+                                backgroundColor: gradient,
+                                fill: true,
+                                tension: 0.35,
+                                pointBackgroundColor: '#ffffff',
+                                pointBorderColor: '#6366f1',
+                                pointBorderWidth: 2.5,
+                                pointRadius: 4.5,
+                                pointHoverRadius: 7,
+                                pointHoverBackgroundColor: '#6366f1',
+                                pointHoverBorderColor: '#ffffff',
+                                pointHoverBorderWidth: 2,
+                            }]
                         },
-                        scales: {
-                            y: {
-                                min: 0,
-                                max: 100,
-                                ticks: {
-                                    callback: (val) => val + '%',
-                                    color: isDarkMode ? '#94a3b8' : '#64748b',
-                                    font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
-                                },
-                                grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' }
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                intersect: false,
+                                mode: 'index',
                             },
-                            x: {
-                                ticks: {
-                                    color: isDarkMode ? '#94a3b8' : '#64748b',
-                                    font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
+                            scales: {
+                                y: {
+                                    min: 0,
+                                    max: 100,
+                                    ticks: {
+                                        stepSize: 20,
+                                        callback: (val) => val + '%',
+                                        color: isDarkMode ? '#94a3b8' : '#64748b',
+                                        font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
+                                    },
+                                    grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }
                                 },
-                                grid: { display: false }
-                            }
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: isDarkMode ? '#1e293b' : '#0f172a',
-                                titleFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12, weight: 'bold' },
-                                bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12 },
-                                padding: 12,
-                                cornerRadius: 12,
-                                callbacks: {
-                                    label: (ctx) => ' Kehadiran Sekolah: ' + ctx.parsed.y + '%'
+                                x: {
+                                    ticks: {
+                                        color: isDarkMode ? '#94a3b8' : '#64748b',
+                                        font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
+                                    },
+                                    grid: { display: false }
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: isDarkMode ? '#1e293b' : '#0f172a',
+                                    titleColor: '#ffffff',
+                                    bodyColor: '#e2e8f0',
+                                    titleFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12, weight: 'bold' },
+                                    bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12 },
+                                    padding: 12,
+                                    cornerRadius: 12,
+                                    displayColors: false,
+                                    callbacks: {
+                                        label: function(context) {
+                                            const idx = context.dataIndex;
+                                            const val = context.parsed.y;
+                                            const hadir = hadirCounts && hadirCounts[idx] !== undefined ? hadirCounts[idx] : null;
+                                            const total = totalCounts && totalCounts[idx] !== undefined ? totalCounts[idx] : null;
+                                            if (hadir !== null && total !== null && total > 0) {
+                                                return ` Kehadiran: ${val}% (${hadir} dari ${total} siswa)`;
+                                            }
+                                            return ` Kehadiran: ${val}%`;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
+
+            initPrincipalChart();
         });
 
         // Diagnostic Console Logger
