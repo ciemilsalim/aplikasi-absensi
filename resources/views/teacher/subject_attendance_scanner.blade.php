@@ -9,50 +9,61 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+        <div class="flex flex-col gap-3.5 w-full">
+            <!-- Breadcrumbs -->
             <div>
                 <x-breadcrumb :breadcrumbs="[
                     ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard', ['view' => $isCocurricular ? 'fasilitator_kokurikuler' : 'guru_mapel'])],
                     ['title' => $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar', 'url' => '#']
                 ]" />
-                <div class="flex items-center gap-2 flex-wrap mt-1">
-                    <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                        {{ $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar' }}
-                    </h1>
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold {{ $isCocurricular ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800' }} shadow-2xs">
-                        {{ $schedule->getActivityName() }}
-                    </span>
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
-                        Kelas {{ $schedule->getTargetClass()?->name ?? '-' }}
-                    </span>
-                </div>
             </div>
 
-            <!-- Header Action Controls -->
-            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <!-- Title & Badges Row (Memberi ruang penuh untuk judul yang panjang) -->
+            <div class="flex flex-wrap items-center gap-2.5">
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight shrink-0">
+                    {{ $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar' }}
+                </h1>
+                
+                <!-- Badge Judul Kegiatan / Mapel -->
+                <span class="inline-flex items-center px-3 py-1 rounded-2xl text-xs font-bold {{ $isCocurricular ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800' }} shadow-2xs max-w-full" title="{{ $schedule->getActivityName() }}">
+                    {{ $schedule->getActivityName() }}
+                </span>
+
+                <!-- Badge Kelas (Otomatis mencegah duplikasi 'Kelas Kelas 8E') -->
+                @php
+                    $rawClassName = $schedule->getTargetClass()?->name ?? '-';
+                    $displayClassName = str_starts_with($rawClassName, 'Kelas') ? $rawClassName : 'Kelas ' . $rawClassName;
+                @endphp
+                <span class="inline-flex items-center px-3 py-1 rounded-2xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0">
+                    {{ $displayClassName }}
+                </span>
+            </div>
+
+            <!-- Action Toolbar Row (Berada rapi di baris bawah judul) -->
+            <div class="flex items-center gap-2.5 flex-wrap pt-0.5">
                 <a href="{{ route('teacher.anecdotes.index', ['school_class_id' => $schedule->getTargetClass()?->id, 'subject_id' => $schedule->teachingAssignment?->subject_id]) }}" 
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-800 transition-all active:scale-95 shadow-2xs">
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-800 transition-all active:scale-95 shadow-2xs whitespace-nowrap">
                     <span class="material-icons text-sm">rate_review</span>
                     <span>Rekap Anekdot</span>
                 </a>
 
                 <a href="{{ route('teacher.journals.create', ['schedule_id' => $schedule->id, 'date' => $selectedDate->format('Y-m-d')]) }}" 
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl {{ $themeBtn }} text-white font-bold text-xs shadow-sm transition-all active:scale-95">
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl {{ $themeBtn }} text-white font-bold text-xs shadow-sm transition-all active:scale-95 whitespace-nowrap">
                     <span class="material-icons text-sm">edit_note</span>
                     <span>Isi Jurnal Sesi Ini</span>
                     <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-400 text-slate-950 shadow-2xs">Baru</span>
                 </a>
 
                 <a href="{{ route('teacher.dashboard', ['view' => $isCocurricular ? 'fasilitator_kokurikuler' : 'guru_mapel']) }}" 
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shadow-2xs">
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shadow-2xs whitespace-nowrap">
                     <span class="material-icons text-sm">arrow_back</span>
-                    <span class="hidden sm:inline">Dasbor</span>
+                    <span>Dasbor</span>
                 </a>
 
-                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700">
-                    <span class="material-icons text-slate-400 text-xs ml-1.5">calendar_today</span>
+                <div class="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+                    <span class="material-icons text-slate-400 text-xs ml-0.5">calendar_today</span>
                     <input type="date" id="attendance-date" name="date" value="{{ $selectedDate->format('Y-m-d') }}" 
-                           class="border-0 bg-transparent text-slate-800 dark:text-white focus:ring-0 text-xs font-bold py-1 px-1.5 cursor-pointer">
+                           class="border-0 bg-transparent text-slate-800 dark:text-white focus:ring-0 text-xs font-bold py-1 px-1 cursor-pointer">
                 </div>
             </div>
         </div>

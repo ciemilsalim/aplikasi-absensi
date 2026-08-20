@@ -185,7 +185,19 @@
                             {{-- 1. DROPDOWN: GURU MATA PELAJARAN --}}
                             @if(auth()->user()->teacher?->teachingAssignments()->exists())
                                 @php 
-                                    $isSubjectHistoryActive = request()->routeIs(['teacher.subject.attendance.history', 'teacher.subject.attendance.scanner']) && (request('type') !== 'cocurricular');
+                                    $isCurrentScheduleCocurricular = false;
+                                    if (request()->routeIs('teacher.subject.attendance.scanner')) {
+                                        $currentScheduleParam = request()->route('schedule');
+                                        if ($currentScheduleParam instanceof \App\Models\Schedule) {
+                                            $isCurrentScheduleCocurricular = $currentScheduleParam->isCocurricular();
+                                        } elseif (is_numeric($currentScheduleParam)) {
+                                            $isCurrentScheduleCocurricular = \App\Models\Schedule::find($currentScheduleParam)?->isCocurricular() ?? false;
+                                        }
+                                    }
+                                    $isCocurricularContext = (request('type') === 'cocurricular') || $isCurrentScheduleCocurricular;
+
+                                    $isSubjectHistoryActive = (request()->routeIs('teacher.subject.attendance.history') && request('type') !== 'cocurricular') 
+                                        || (request()->routeIs('teacher.subject.attendance.scanner') && !$isCocurricularContext);
                                     $isSubjectReportActive = request()->routeIs(['teacher.subject.attendance.report', 'teacher.subject.attendance.preview', 'teacher.subject.attendance.print', 'teacher.subject.attendance.charts']) && (request('type') !== 'cocurricular');
                                     $isSubjectDashActive = request()->routeIs('teacher.dashboard') && request('view') === 'guru_mapel';
                                     $isJournalActive = request()->routeIs('teacher.journals.*');
@@ -337,7 +349,8 @@
                             @if(auth()->user()->teacher?->cocurriculars()->exists())
                                 @php 
                                     $isCocurricularDashActive = request()->routeIs('teacher.dashboard') && request('view') === 'fasilitator_kokurikuler';
-                                    $isCocurricularHistoryActive = request()->routeIs(['teacher.subject.attendance.history', 'teacher.subject.attendance.scanner']) && (request('type') === 'cocurricular');
+                                    $isCocurricularHistoryActive = (request()->routeIs('teacher.subject.attendance.history') && request('type') === 'cocurricular') 
+                                        || (request()->routeIs('teacher.subject.attendance.scanner') && $isCocurricularContext);
                                     $isCocurricularReportActive = request()->routeIs(['teacher.subject.attendance.report', 'teacher.subject.attendance.preview', 'teacher.subject.attendance.print', 'teacher.subject.attendance.charts']) && (request('type') === 'cocurricular');
                                     $isCocurricularGroupActive = $isCocurricularDashActive || $isCocurricularHistoryActive || $isCocurricularReportActive;
                                 @endphp
