@@ -160,47 +160,21 @@
     <!-- Kolom Samping (4 cols) -->
     <div class="lg:col-span-4 space-y-6">
         
-        <!-- Aksi Cepat Guru (Absen Datang/Pulang, Scan Izin Keluar, Jurnal Mengajar) -->
-        <div class="space-y-3">
-            <a href="{{ route('scanner') }}" 
-               class="group p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 shadow-2xs hover:shadow-md transition-all flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
-                    <span class="material-icons text-xl">qr_code_scanner</span>
+        <!-- Pintasan Jurnal Mengajar -->
+        <a href="{{ route('teacher.journals.index') }}" 
+           class="group relative p-4 sm:p-4.5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-2xs hover:shadow-md transition-all flex items-center gap-3.5 block">
+            <div class="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
+                <span class="material-icons text-2xl">auto_stories</span>
+            </div>
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                    <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Jurnal Mengajar</h4>
+                    <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500 text-white shadow-2xs">Baru</span>
                 </div>
-                <div class="min-w-0 flex-1">
-                    <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Absen Datang/Pulang</h4>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">Scan Masuk & Pulang Siswa</p>
-                </div>
-                <span class="material-icons text-slate-400 text-sm group-hover:translate-x-0.5 transition-transform">chevron_right</span>
-            </a>
-
-            <a href="{{ route('permit.scanner') }}" 
-               class="group p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 shadow-2xs hover:shadow-md transition-all flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
-                    <span class="material-icons text-xl">assignment</span>
-                </div>
-                <div class="min-w-0 flex-1">
-                    <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Scan Izin Keluar</h4>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">Izin Tinggalkan Sekolah</p>
-                </div>
-                <span class="material-icons text-slate-400 text-sm group-hover:translate-x-0.5 transition-transform">chevron_right</span>
-            </a>
-
-            <a href="{{ route('teacher.journals.index') }}" 
-               class="group relative p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-2xs hover:shadow-md transition-all flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
-                    <span class="material-icons text-xl">auto_stories</span>
-                </div>
-                <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-1.5">
-                        <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">Jurnal Mengajar</h4>
-                        <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500 text-white shadow-2xs">Baru</span>
-                    </div>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">Log & Rekap TP Fase D</p>
-                </div>
-                <span class="material-icons text-slate-400 text-sm group-hover:translate-x-0.5 transition-transform">chevron_right</span>
-            </a>
-        </div>
+                <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">Log Materi & Rekap TP Fase D</p>
+            </div>
+            <span class="material-icons text-slate-400 text-base group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+        </a>
 
         <!-- Catatan Pribadi -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
