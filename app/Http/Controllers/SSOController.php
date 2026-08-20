@@ -72,11 +72,11 @@ class SSOController extends Controller
             ->orWhere('expires_at', '<', now()->subMinutes(30))
             ->delete();
 
-        // 3. Store the token in the shared database with a 15-minute expiration
+        // 3. Store the token in the shared database with a 2-hour expiration
         DB::table('sso_tokens')->insert([
             'user_id'    => $user->id,
             'token'      => $token,
-            'expires_at' => now()->addMinutes(15),
+            'expires_at' => now()->addHours(2),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
