@@ -1,16 +1,25 @@
+@php
+    $isCocurricular = $schedule->isCocurricular();
+    $themeColor = $isCocurricular ? 'indigo' : 'sky';
+    $themeBgSoft = $isCocurricular ? 'bg-indigo-50 dark:bg-indigo-950/60' : 'bg-sky-50 dark:bg-sky-950/60';
+    $themeText = $isCocurricular ? 'text-indigo-600 dark:text-indigo-400' : 'text-sky-600 dark:text-sky-400';
+    $themeBtn = $isCocurricular ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-sky-600 hover:bg-sky-500';
+    $themeBorder = $isCocurricular ? 'border-indigo-200 dark:border-indigo-800' : 'border-sky-200 dark:border-sky-800';
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
             <div>
                 <x-breadcrumb :breadcrumbs="[
-                    ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard', ['view' => $schedule->isCocurricular() ? 'fasilitator_kokurikuler' : 'guru_mapel'])],
-                    ['title' => $schedule->isCocurricular() ? 'Sesi Presensi Kokurikuler' : 'Sesi Presensi Mengajar', 'url' => '#']
+                    ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard', ['view' => $isCocurricular ? 'fasilitator_kokurikuler' : 'guru_mapel'])],
+                    ['title' => $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar', 'url' => '#']
                 ]" />
                 <div class="flex items-center gap-2 flex-wrap mt-1">
                     <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                        {{ $schedule->isCocurricular() ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar' }}
+                        {{ $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar' }}
                     </h1>
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold {{ $schedule->isCocurricular() ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800' }} shadow-2xs">
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold {{ $isCocurricular ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800' }} shadow-2xs">
                         {{ $schedule->getActivityName() }}
                     </span>
                     <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
@@ -19,6 +28,8 @@
                 </div>
             </div>
 
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 <a href="{{ route('teacher.anecdotes.index', ['school_class_id' => $schedule->getTargetClass()?->id, 'subject_id' => $schedule->teachingAssignment?->subject_id]) }}" 
                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-800 transition-all active:scale-95 shadow-2xs">
                     <span class="material-icons text-sm">rate_review</span>
@@ -26,13 +37,13 @@
                 </a>
 
                 <a href="{{ route('teacher.journals.create', ['schedule_id' => $schedule->id, 'date' => $selectedDate->format('Y-m-d')]) }}" 
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-sm shadow-sky-600/20 transition-all active:scale-95">
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl {{ $themeBtn }} text-white font-bold text-xs shadow-sm transition-all active:scale-95">
                     <span class="material-icons text-sm">edit_note</span>
                     <span>Isi Jurnal Sesi Ini</span>
                     <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-400 text-slate-950 shadow-2xs">Baru</span>
                 </a>
 
-                <a href="{{ route('teacher.dashboard', ['view' => $schedule->isCocurricular() ? 'fasilitator_kokurikuler' : 'guru_mapel']) }}" 
+                <a href="{{ route('teacher.dashboard', ['view' => $isCocurricular ? 'fasilitator_kokurikuler' : 'guru_mapel']) }}" 
                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shadow-2xs">
                     <span class="material-icons text-sm">arrow_back</span>
                     <span class="hidden sm:inline">Dasbor</span>
@@ -103,15 +114,15 @@
 
     <div class="space-y-4 sm:space-y-6" x-data="{ mobileSection: 'scanner' }">
         
-        <!-- Info Bar (Waktu Mengajar & Status Sesi) -->
+        <!-- Info Bar (Waktu Mengajar / Sesi & Status) -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold shrink-0">
-                    <span class="material-icons text-xl">schedule</span>
+                <div class="w-10 h-10 rounded-2xl {{ $themeBgSoft }} {{ $themeText }} flex items-center justify-center font-bold shrink-0">
+                    <span class="material-icons text-xl">{{ $isCocurricular ? 'psychology' : 'schedule' }}</span>
                 </div>
                 <div>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                        Waktu Pembelajaran
+                        {{ $isCocurricular ? 'Waktu Sesi Kokurikuler' : 'Waktu Pembelajaran' }}
                     </h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         Pukul <strong class="text-slate-800 dark:text-slate-200">{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}</strong> WITA • Hari {{ ['1'=>'Senin','2'=>'Selasa','3'=>'Rabu','4'=>'Kamis','5'=>'Jumat','6'=>'Sabtu','7'=>'Minggu'][$schedule->day_of_week] ?? '' }}
@@ -122,13 +133,13 @@
             <!-- Mobile View Switcher (Hanya Tampil di Layar Ponsel & Tablet < lg) -->
             <div class="lg:hidden flex p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700">
                 <button @click="mobileSection = 'scanner'" 
-                        :class="mobileSection === 'scanner' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 font-medium'"
+                        :class="mobileSection === 'scanner' ? 'bg-white dark:bg-slate-700 {{ $themeText }} shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 font-medium'"
                         class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs transition-all">
                     <span class="material-icons text-sm">qr_code_scanner</span>
                     <span>Kamera Scan</span>
                 </button>
                 <button @click="mobileSection = 'roster'" 
-                        :class="mobileSection === 'roster' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 font-medium'"
+                        :class="mobileSection === 'roster' ? 'bg-white dark:bg-slate-700 {{ $themeText }} shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 font-medium'"
                         class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs transition-all">
                     <span class="material-icons text-sm">format_list_bulleted</span>
                     <span>Daftar Siswa</span>
@@ -146,7 +157,7 @@
                     <!-- Mode Tab Switcher (QR vs Face AI) -->
                     <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4 border border-slate-200/60 dark:border-slate-700/60">
                         <button id="tab-qr"
-                                class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-white bg-sky-600 shadow-sm">
+                                class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-white {{ $themeBtn }} shadow-sm">
                             <span class="material-icons text-base">qr_code_scanner</span>
                             <span>Scan QR Code</span>
                         </button>
@@ -164,14 +175,14 @@
                             
                             <!-- Futuristic Precision Cyber Overlay -->
                             <div class="absolute inset-0 pointer-events-none p-4 sm:p-5 flex items-center justify-center z-10">
-                                <div class="w-full h-full relative overflow-hidden rounded-2xl border border-sky-500/20 bg-sky-500/5">
-                                    <div class="absolute top-0 left-0 w-7 h-7 border-t-3 border-l-3 border-sky-400 rounded-tl-xl"></div>
-                                    <div class="absolute top-0 right-0 w-7 h-7 border-t-3 border-r-3 border-sky-400 rounded-tr-xl"></div>
-                                    <div class="absolute bottom-0 left-0 w-7 h-7 border-b-3 border-l-3 border-sky-400 rounded-bl-xl"></div>
-                                    <div class="absolute bottom-0 right-0 w-7 h-7 border-b-3 border-r-3 border-sky-400 rounded-br-xl"></div>
+                                <div class="w-full h-full relative overflow-hidden rounded-2xl border {{ $isCocurricular ? 'border-indigo-500/20 bg-indigo-500/5' : 'border-sky-500/20 bg-sky-500/5' }}">
+                                    <div class="absolute top-0 left-0 w-7 h-7 border-t-3 border-l-3 {{ $isCocurricular ? 'border-indigo-400' : 'border-sky-400' }} rounded-tl-xl"></div>
+                                    <div class="absolute top-0 right-0 w-7 h-7 border-t-3 border-r-3 {{ $isCocurricular ? 'border-indigo-400' : 'border-sky-400' }} rounded-tr-xl"></div>
+                                    <div class="absolute bottom-0 left-0 w-7 h-7 border-b-3 border-l-3 {{ $isCocurricular ? 'border-indigo-400' : 'border-sky-400' }} rounded-bl-xl"></div>
+                                    <div class="absolute bottom-0 right-0 w-7 h-7 border-b-3 border-r-3 {{ $isCocurricular ? 'border-indigo-400' : 'border-sky-400' }} rounded-br-xl"></div>
 
                                     <!-- Precision Laser Beam -->
-                                    <div class="animate-laser h-0.5 bg-gradient-to-r from-transparent via-sky-400 to-transparent shadow-[0_0_16px_#38bdf8,0_0_4px_#0284c7]"></div>
+                                    <div class="animate-laser h-0.5 bg-gradient-to-r from-transparent {{ $isCocurricular ? 'via-indigo-400 shadow-[0_0_16px_#818cf8,0_0_4px_#6366f1]' : 'via-sky-400 shadow-[0_0_16px_#38bdf8,0_0_4px_#0284c7]' }} to-transparent"></div>
                                 </div>
                             </div>
                         </div>
@@ -179,7 +190,7 @@
                         <!-- Camera Switcher -->
                         <div id="camera-switch-container" class="mt-3 text-center hidden">
                             <button id="camera-switch-button" type="button"
-                                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 transition-colors shadow-2xs">
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold {{ $themeText }} {{ $themeBgSoft }} hover:opacity-80 transition-colors shadow-2xs">
                                 <span class="material-icons text-sm">cameraswitch</span>
                                 <span>Ganti Kamera</span>
                             </button>
