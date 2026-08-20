@@ -40,6 +40,19 @@
     </x-slot>
 
     <div class="space-y-6">
+        @if(!empty($debugErrors))
+            <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs">
+                <div class="flex items-center gap-2 font-bold mb-1 text-amber-700 dark:text-amber-300">
+                    <span class="material-icons text-sm">troubleshoot</span>
+                    <span>Diagnostik Sistem Dasbor Eksekutif</span>
+                </div>
+                <ul class="list-disc list-inside space-y-0.5 text-[11px] opacity-90">
+                    @foreach($debugErrors as $key => $err)
+                        <li><strong>{{ $key }}:</strong> {{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         
         <!-- Welcome Hero Executive Banner -->
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-6 sm:p-7 shadow-xl border border-indigo-900/40">
@@ -484,6 +497,20 @@
                 });
             }
         });
+
+        // Diagnostic Console Logger
+        console.group('🔍 SIASEK Dasbor Eksekutif Kepala Sekolah Diagnostics');
+        console.info('🕒 Server Time:', @json(now()->toDateTimeString()));
+        console.info('👤 Logged-in User:', @json(Auth::user()?->only(['id', 'name', 'email', 'role'])));
+        console.info('📊 Daily Presence %:', @json($dailyPresencePercentage) + '%');
+        console.info('👥 Total Students:', @json($totalStudents));
+        console.info('📝 Total Teaching Journals:', @json($totalJournals));
+        @if(!empty($debugErrors))
+            console.warn('⚠️ Diagnostic Alerts / Fallbacks:', @json($debugErrors));
+        @else
+            console.log('✅ Semua Kueri Dasbor Eksekutif Berhasil Dijalankan 100%');
+        @endif
+        console.groupEnd();
     </script>
     @endpush
 </x-app-layout>
