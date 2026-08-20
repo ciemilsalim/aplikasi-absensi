@@ -121,6 +121,27 @@ Route::get('/dashboard', function () {
 // == GRUP RUTE KEPALA SEKOLAH (EXECUTIVE OVERVIEW) ==
 Route::middleware(['auth', 'role:admin,operator,wakasek_kurikulum,wakasek kurikulum,waka_kurikulum,waka kurikulum,kepala_sekolah,kepala sekolah,headmaster'])->prefix('principal')->name('principal.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Principal\PrincipalDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/diag', function() {
+        try {
+            $user = auth()->user();
+            return response()->json([
+                'status' => 'success',
+                'user' => $user ? $user->only(['id', 'name', 'email', 'role']) : 'Not Logged In',
+                'hasRole_kepala_sekolah' => $user ? $user->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']) : false,
+                'students_count' => \App\Models\Student::count(),
+                'attendances_today' => \App\Models\Attendance::whereDate('attendance_time', \Carbon\Carbon::today())->count(),
+                'teaching_journals_count' => \Illuminate\Support\Facades\Schema::hasTable('teaching_journals') ? \App\Models\TeachingJournal::count() : 'Table not found',
+                'classes_count' => \App\Models\SchoolClass::count(),
+            ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        }
+    })->name('diag');
 });
 
 // == GRUP RUTE YANG MEMERLUKAN LOGIN ==

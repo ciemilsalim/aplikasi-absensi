@@ -45,7 +45,14 @@
                             {{-- Supervisi Jurnal Mengajar Guru --}}
                             @php 
                                 $isJournalSupervisionActive = request()->routeIs('admin.teaching_journals.*');
-                                $pendingJournalsCount = \App\Models\TeachingJournal::where('is_verified', false)->count();
+                                $pendingJournalsCount = 0;
+                                if (\Illuminate\Support\Facades\Schema::hasTable('teaching_journals') && \Illuminate\Support\Facades\Schema::hasColumn('teaching_journals', 'is_verified')) {
+                                    try {
+                                        $pendingJournalsCount = \App\Models\TeachingJournal::where('is_verified', false)->count();
+                                    } catch (\Throwable $e) {
+                                        $pendingJournalsCount = 0;
+                                    }
+                                }
                             @endphp
                             <li>
                                 <a href="{{ route('admin.teaching_journals.index') }}" :title="sidebarCollapsed ? 'Supervisi Jurnal' : ''" 

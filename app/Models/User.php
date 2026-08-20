@@ -97,7 +97,7 @@ class User extends Authenticatable
         }
 
         // 2. Fallback ke kolom role lokal di tabel users
-        return in_array(strtolower($this->role), $normalizedRoles);
+        return in_array(strtolower((string)$this->role), $normalizedRoles);
     }
 
     /**
