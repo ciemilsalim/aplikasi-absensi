@@ -27,29 +27,7 @@
         </div>
 
         <!-- Fast Actions -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <a href="{{ route('scanner') }}" 
-               class="group p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 shadow-2xs hover:shadow-md transition-all flex flex-col items-center text-center gap-2">
-                <div class="w-10 h-10 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
-                    <span class="material-icons text-xl">qr_code_scanner</span>
-                </div>
-                <div class="min-w-0 w-full">
-                    <h4 class="font-bold text-xs text-slate-900 dark:text-white truncate">Scan Datang</h4>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">Presensi Harian</p>
-                </div>
-            </a>
-
-            <a href="{{ route('permit.scanner') }}" 
-               class="group p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 shadow-2xs hover:shadow-md transition-all flex flex-col items-center text-center gap-2">
-                <div class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
-                    <span class="material-icons text-xl">assignment</span>
-                </div>
-                <div class="min-w-0 w-full">
-                    <h4 class="font-bold text-xs text-slate-900 dark:text-white truncate">Izin Keluar</h4>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">Scan Izin Siswa</p>
-                </div>
-            </a>
-
+        <div class="grid grid-cols-2 gap-3">
             <a href="{{ route('teacher.subject.attendance.report') }}" 
                class="group p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700 shadow-2xs hover:shadow-md transition-all flex flex-col items-center text-center gap-2">
                 <div class="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-2xs">
