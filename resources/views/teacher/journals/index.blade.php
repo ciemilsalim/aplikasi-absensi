@@ -176,11 +176,11 @@
             </form>
         </div>
 
-        <!-- Tabel Jurnal Pelaksanaan Pembelajaran (Bagian B) -->
+        <!-- Tabel Jurnal Pelaksanaan Pembelajaran -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
             <div class="p-5 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
-                    <h2 class="text-base font-extrabold text-slate-900 dark:text-white">B. Jurnal Pelaksanaan Pembelajaran</h2>
+                    <h2 class="text-base font-extrabold text-slate-900 dark:text-white">Jurnal Pelaksanaan Pembelajaran</h2>
                     <p class="text-xs text-slate-400 mt-0.5">Catatan keterlaksanaan tatap muka, asesmen, refleksi dan tindak lanjut</p>
                 </div>
                 <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 self-start sm:self-auto">

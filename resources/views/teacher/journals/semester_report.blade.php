@@ -8,7 +8,7 @@
                     ['title' => 'Rekap Semester', 'url' => route('teacher.journals.semester')]
                 ]" />
                 <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-                    D & E. Rekap Pelaksanaan Pembelajaran & Asesmen Semester
+                    Rekap Pelaksanaan Pembelajaran & Asesmen Semester
                 </h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
                     SMP Negeri 1 Biau &bull; Tahun Pelajaran {{ $academicYear->name ?? '2026/2027' }} (Semester {{ $semester->name ?? 'Ganjil' }})
@@ -68,10 +68,10 @@
             </form>
         </div>
 
-        <!-- Bagian D: Rekap Pelaksanaan Pembelajaran Semester -->
+        <!-- Rekap Pelaksanaan Pembelajaran Semester -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
             <div class="p-5 border-b border-slate-200/80 dark:border-slate-800">
-                <h2 class="text-base font-extrabold text-slate-900 dark:text-white">D. Rekap Pelaksanaan Pembelajaran Semester</h2>
+                <h2 class="text-base font-extrabold text-slate-900 dark:text-white">Rekap Pelaksanaan Pembelajaran Semester</h2>
                 <p class="text-xs text-slate-400 mt-0.5">Perbandingan jam pelajaran yang direncanakan vs terlaksana serta ketuntasan tujuan pembelajaran</p>
             </div>
 
@@ -120,10 +120,10 @@
             </div>
         </div>
 
-        <!-- Bagian E: Rekap Asesmen dan Tindak Lanjut -->
+        <!-- Rekap Asesmen dan Tindak Lanjut -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
             <div class="p-5 border-b border-slate-200/80 dark:border-slate-800">
-                <h2 class="text-base font-extrabold text-slate-900 dark:text-white">E. Rekap Asesmen dan Tindak Lanjut</h2>
+                <h2 class="text-base font-extrabold text-slate-900 dark:text-white">Rekap Asesmen dan Tindak Lanjut</h2>
                 <p class="text-xs text-slate-400 mt-0.5">Penilaian ketercapaian tujuan pembelajaran dan tindak lanjut remedial/pengayaan</p>
             </div>
 

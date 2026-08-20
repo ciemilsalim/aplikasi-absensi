@@ -8,7 +8,7 @@
                     ['title' => 'Refleksi Semester', 'url' => route('teacher.journals.reflection')]
                 ]" />
                 <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-                    F. Refleksi Guru Semester
+                    Refleksi Guru Semester
                 </h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
                     SMP Negeri 1 Biau &bull; Evaluasi Diri & Rencana Perbaikan Pembelajaran Akhir Semester

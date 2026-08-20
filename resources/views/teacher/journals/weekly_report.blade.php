@@ -8,7 +8,7 @@
                     ['title' => 'Rekap Mingguan', 'url' => route('teacher.journals.weekly')]
                 ]" />
                 <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-                    C. Rekap Jurnal Mengajar Mingguan
+                    Rekap Jurnal Mengajar Mingguan
                 </h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
                     SMP Negeri 1 Biau &bull; Ringkasan Progres Pembelajaran Mingguan Guru
@@ -86,11 +86,11 @@
             </form>
         </div>
 
-        <!-- Tabel Bagian C -->
+        <!-- Tabel Rekap Mingguan -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
             <div class="p-5 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
-                    <h2 class="text-base font-extrabold text-slate-900 dark:text-white">C. Rekap Jurnal Mengajar Mingguan</h2>
+                    <h2 class="text-base font-extrabold text-slate-900 dark:text-white">Rekap Jurnal Mengajar Mingguan</h2>
                     <p class="text-xs text-slate-400 mt-0.5">
                         Bulan: <strong class="text-slate-700 dark:text-slate-200">{{ \Carbon\Carbon::parse($selectedMonth . '-01')->translatedFormat('F Y') }}</strong> &bull; 
                         Kelas: <strong class="text-slate-700 dark:text-slate-200">{{ $classes->firstWhere('id', $selectedClassId)?->name ?? '-' }}</strong>
