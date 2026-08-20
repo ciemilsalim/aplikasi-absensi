@@ -405,11 +405,12 @@
                 @endif
             @endauth
             
-            <!-- SECTION 3: ADMINISTRASI & LAPORAN (ADMIN / OPERATOR) -->
-            @if(Auth::check() && auth()->user()->hasAnyRole(['admin', 'operator']))
+            <!-- SECTION 3: ADMINISTRASI & SUPERVISI (ADMIN / OPERATOR / WAKASEK / KEPSEK) -->
+            @if(Auth::check() && auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster']))
             <li>
-                <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Administrasi & Laporan</div>
+                <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Administrasi & Supervisi</div>
                 <ul role="list" class="mt-1.5 space-y-1.5">
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator']))
                     <li>
                         <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard" :title="sidebarCollapsed ? 'Portal SIPADA' : ''" 
                            class="group flex items-center rounded-xl p-2.5 text-xs font-semibold bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50 border border-sky-100 dark:border-sky-900/40 transition-all duration-200 shadow-xs" 
@@ -419,7 +420,9 @@
                             <span x-show="!sidebarCollapsed" class="material-icons text-xs ml-auto opacity-70">open_in_new</span>
                         </a>
                     </li>
+                    @endif
 
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
                     @php $isAdminLeaveActive = request()->routeIs('admin.leave_requests.*'); @endphp
                     <li>
                         <a href="{{ route('admin.leave_requests.index') }}" :title="sidebarCollapsed ? 'Pengajuan Izin Siswa' : ''" 
@@ -436,7 +439,9 @@
                             @endif
                         </a>
                     </li>
+                    @endif
 
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator']))
                     @php $isAdminChatActive = request()->routeIs('admin.chat.*'); @endphp
                     <li>
                         <a href="{{ route('admin.chat.index') }}" :title="sidebarCollapsed ? 'Pesan Orang Tua' : ''" 
@@ -453,8 +458,10 @@
                             @endif
                         </a>
                     </li>
+                    @endif
 
                     {{-- DROPDOWN: LAPORAN PRESENSI ADMIN --}}
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster']))
                     @php 
                         $isStudentReportActive = request()->routeIs(['admin.reports.create', 'admin.reports.charts', 'admin.reports.generate']);
                         $isTeacherReportActive = request()->routeIs('admin.reports.teacher.*');
@@ -487,6 +494,7 @@
                             </li>
                         </ul>
                     </li>
+                    @endif
 
                     @php $isAdminJournalActive = request()->routeIs('admin.teaching_journals.*'); @endphp
                     <li>

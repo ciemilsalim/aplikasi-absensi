@@ -250,8 +250,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'students'])->name('extracurriculars.students');
             Route::post('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'assignStudents'])->name('extracurriculars.assign_students');
             Route::delete('extracurriculars/{extracurricular}/students/{student}', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'removeStudent'])->name('extracurriculars.remove_student');
+        }
+    );
 
-            // Supervisi Jurnal Mengajar Guru (Admin / Waka Kurikulum)
+    // Supervisi Jurnal Mengajar Guru (Dapat diakses oleh Admin, Operator, Wakasek Kurikulum, dan Kepala Sekolah)
+    Route::middleware(['role:admin,operator,wakasek_kurikulum,wakasek kurikulum,waka_kurikulum,waka kurikulum,kepala_sekolah,kepala sekolah,headmaster'])->group(
+        function () {
             Route::get('/teaching-journals', [AdminTeachingJournalController::class, 'index'])->name('teaching_journals.index');
             Route::get('/teaching-journals/teacher/{teacher}', [AdminTeachingJournalController::class, 'show'])->name('teaching_journals.show');
             Route::post('/teaching-journals/{journal}/verify', [AdminTeachingJournalController::class, 'verify'])->name('teaching_journals.verify');
