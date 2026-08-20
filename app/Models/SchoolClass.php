@@ -15,11 +15,11 @@ class SchoolClass extends Model
 
     public function students() 
     { 
-        if (session()->has('active_semester_id')) {
+        if (session()->has('active_semester_id') && \Illuminate\Support\Facades\Schema::hasTable('class_student')) {
             return $this->belongsToMany(Student::class, 'class_student')
                         ->wherePivot('semester_id', session('active_semester_id'));
         }
-        return $this->hasMany(Student::class); 
+        return $this->hasMany(Student::class, 'school_class_id'); 
     }
 
     // Relasi ke guru sebagai wali kelas

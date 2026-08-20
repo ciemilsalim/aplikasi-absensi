@@ -139,13 +139,14 @@ class PrincipalDashboardController extends Controller
         }
 
         // 6. PERFORMA KEHADIRAN PER KELAS (Hari Ini)
-        $classes = SchoolClass::withCount('students')->get()->sortBy('name', SORT_NATURAL);
+        $classes = SchoolClass::all()->sortBy('name', SORT_NATURAL);
         $classAttendanceBreakdown = [];
         foreach ($classes as $cls) {
-            $clsStudentCount = $cls->students_count;
+            $clsStudents = Student::where('school_class_id', $cls->id)->get();
+            $clsStudentCount = $clsStudents->count();
             if ($clsStudentCount === 0) continue;
 
-            $clsStudentIds = $cls->students()->pluck('id');
+            $clsStudentIds = $clsStudents->pluck('id');
             $clsAttendances = $attendancesToday->whereIn('student_id', $clsStudentIds);
             $clsHadir = $clsAttendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
             $clsPct = round(($clsHadir / $clsStudentCount) * 100);

@@ -119,7 +119,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // == GRUP RUTE KEPALA SEKOLAH (EXECUTIVE OVERVIEW) ==
-Route::middleware(['auth', 'role:admin,kepala_sekolah,kepala sekolah,headmaster'])->prefix('principal')->name('principal.')->group(function () {
+Route::middleware(['auth', 'role:admin,operator,wakasek_kurikulum,wakasek kurikulum,waka_kurikulum,waka kurikulum,kepala_sekolah,kepala sekolah,headmaster'])->prefix('principal')->name('principal.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Principal\PrincipalDashboardController::class, 'index'])->name('dashboard');
 });
 
