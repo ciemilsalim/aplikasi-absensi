@@ -310,10 +310,10 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('teacher.anecdotes.index', ['school_class_id' => auth()->user()->teacher->homeroomClass->id]) }}" 
-                                               class="{{ request()->routeIs('teacher.anecdotes.*') && request('school_class_id') == auth()->user()->teacher->homeroomClass->id ? 'text-amber-600 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <a href="{{ route('teacher.anecdotes.index', ['school_class_id' => auth()->user()->teacher?->homeroomClass?->id]) }}" 
+                                               class="{{ request()->routeIs('teacher.anecdotes.*') && request('school_class_id') == auth()->user()->teacher?->homeroomClass?->id ? 'text-amber-600 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                                 <span>Catatan Anekdot Kelas</span>
-                                                @if(request()->routeIs('teacher.anecdotes.*') && request('school_class_id') == auth()->user()->teacher->homeroomClass->id)
+                                                @if(request()->routeIs('teacher.anecdotes.*') && request('school_class_id') == auth()->user()->teacher?->homeroomClass?->id)
                                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                                 @endif
                                             </a>

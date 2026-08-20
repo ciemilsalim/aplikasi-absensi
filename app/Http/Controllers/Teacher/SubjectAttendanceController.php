@@ -97,11 +97,18 @@ class SubjectAttendanceController extends Controller
                 ];
             });
 
-        // Catatan Anekdot siswa pada jadwal dan tanggal ini
-        $anecdotesToday = \App\Models\StudentAnecdote::where('schedule_id', $schedule->id)
-            ->whereDate('date', $selectedDate)
-            ->get()
-            ->keyBy('student_id');
+        // Catatan Anekdot siswa pada jadwal dan tanggal ini (aman jika tabel belum dimigrasi)
+        $anecdotesToday = collect();
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('student_anecdotes')) {
+                $anecdotesToday = \App\Models\StudentAnecdote::where('schedule_id', $schedule->id)
+                    ->whereDate('date', $selectedDate)
+                    ->get()
+                    ->keyBy('student_id');
+            }
+        } catch (\Throwable $e) {
+            $anecdotesToday = collect();
+        }
 
         return view('teacher.subject_attendance_scanner', compact(
             'schedule', 

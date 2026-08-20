@@ -57,39 +57,53 @@ class StudentAnecdoteController extends Controller
         $date = Carbon::parse($request->date)->format('Y-m-d');
         $scheduleId = $request->schedule_id;
 
-        $query = StudentAnecdote::where('student_id', $student->id)
-            ->whereDate('date', $date);
+        try {
+            $query = StudentAnecdote::where('student_id', $student->id)
+                ->whereDate('date', $date);
 
-        if ($scheduleId) {
-            $query->where('schedule_id', $scheduleId);
-        } else {
-            $query->where('teacher_id', $teacher->id);
+            if ($scheduleId) {
+                $query->where('schedule_id', $scheduleId);
+            } else {
+                $query->where('teacher_id', $teacher->id);
+            }
+
+            $anecdote = $query->first();
+
+            return response()->json([
+                'success' => true,
+                'student' => [
+                    'id' => $student->id,
+                    'name' => $student->name,
+                    'nis' => $student->nis,
+                    'class_name' => $student->schoolClass?->name ?? '-',
+                    'photo_url' => $student->photo_url,
+                ],
+                'anecdote' => $anecdote ? [
+                    'id' => $anecdote->id,
+                    'academic_note' => $anecdote->academic_note ?? '',
+                    'academic_sentiment' => $anecdote->academic_sentiment ?? 'neutral',
+                    'attendance_note' => $anecdote->attendance_note ?? '',
+                    'attendance_sentiment' => $anecdote->attendance_sentiment ?? 'neutral',
+                    'attitude_note' => $anecdote->attitude_note ?? '',
+                    'attitude_sentiment' => $anecdote->attitude_sentiment ?? 'neutral',
+                    'follow_up' => $anecdote->follow_up ?? '',
+                    'is_visible_to_parents' => (bool)$anecdote->is_visible_to_parents,
+                    'date' => $anecdote->date->format('Y-m-d'),
+                ] : null,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => true,
+                'student' => [
+                    'id' => $student->id,
+                    'name' => $student->name,
+                    'nis' => $student->nis,
+                    'class_name' => $student->schoolClass?->name ?? '-',
+                    'photo_url' => $student->photo_url,
+                ],
+                'anecdote' => null,
+            ]);
         }
-
-        $anecdote = $query->first();
-
-        return response()->json([
-            'success' => true,
-            'student' => [
-                'id' => $student->id,
-                'name' => $student->name,
-                'nis' => $student->nis,
-                'class_name' => $student->schoolClass?->name ?? '-',
-                'photo_url' => $student->photo_url,
-            ],
-            'anecdote' => $anecdote ? [
-                'id' => $anecdote->id,
-                'academic_note' => $anecdote->academic_note ?? '',
-                'academic_sentiment' => $anecdote->academic_sentiment ?? 'neutral',
-                'attendance_note' => $anecdote->attendance_note ?? '',
-                'attendance_sentiment' => $anecdote->attendance_sentiment ?? 'neutral',
-                'attitude_note' => $anecdote->attitude_note ?? '',
-                'attitude_sentiment' => $anecdote->attitude_sentiment ?? 'neutral',
-                'follow_up' => $anecdote->follow_up ?? '',
-                'is_visible_to_parents' => (bool)$anecdote->is_visible_to_parents,
-                'date' => $anecdote->date->format('Y-m-d'),
-            ] : null,
-        ]);
     }
 
     /**
@@ -167,24 +181,31 @@ class StudentAnecdoteController extends Controller
             'is_visible_to_parents' => $request->boolean('is_visible_to_parents'),
         ];
 
-        if ($anecdote) {
-            $anecdote->update($data);
-        } else {
-            $anecdote = StudentAnecdote::create($data);
-        }
+        try {
+            if ($anecdote) {
+                $anecdote->update($data);
+            } else {
+                $anecdote = StudentAnecdote::create($data);
+            }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Catatan anekdot untuk ' . $student->name . ' berhasil disimpan.',
-            'anecdote' => [
-                'id' => $anecdote->id,
-                'student_id' => $student->id,
-                'has_notes' => $anecdote->hasAnyNote(),
-                'academic_sentiment' => $anecdote->academic_sentiment,
-                'attendance_sentiment' => $anecdote->attendance_sentiment,
-                'attitude_sentiment' => $anecdote->attitude_sentiment,
-            ]
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Catatan anekdot untuk ' . $student->name . ' berhasil disimpan.',
+                'anecdote' => [
+                    'id' => $anecdote->id,
+                    'student_id' => $student->id,
+                    'has_notes' => $anecdote->hasAnyNote(),
+                    'academic_sentiment' => $anecdote->academic_sentiment,
+                    'attendance_sentiment' => $anecdote->attendance_sentiment,
+                    'attitude_sentiment' => $anecdote->attitude_sentiment,
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan ke basis data: pastikan migrasi database telah dijalankan.'
+            ], 500);
+        }
     }
 
     /**
@@ -259,7 +280,11 @@ class StudentAnecdoteController extends Controller
             });
         }
 
-        $anecdotes = $query->orderBy('date', 'desc')->paginate(15)->withQueryString();
+        try {
+            $anecdotes = $query->orderBy('date', 'desc')->paginate(15)->withQueryString();
+        } catch (\Throwable $e) {
+            $anecdotes = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
+        }
 
         return view('teacher.anecdotes.index', compact(
             'anecdotes',
@@ -309,7 +334,11 @@ class StudentAnecdoteController extends Controller
             $query->where('teacher_id', $teacher->id);
         }
 
-        $anecdotes = $query->orderBy('date', 'asc')->get();
+        try {
+            $anecdotes = $query->orderBy('date', 'asc')->get();
+        } catch (\Throwable $e) {
+            $anecdotes = collect();
+        }
 
         $settings = Setting::whereIn('key', [
             'app_logo', 'school_name', 'school_address', 'school_phone', 
