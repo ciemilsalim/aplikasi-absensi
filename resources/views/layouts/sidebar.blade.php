@@ -27,7 +27,111 @@
                 <ul role="list" class="mt-1.5 space-y-1">
                     @auth
                         {{-- Dashboard: Admin / Operator / Satpam --}}
-                        @if(auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
+                        {{-- Dashboard: Kepala Sekolah (Executive) --}}
+                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
+                            @php $isPrincipalDashActive = request()->routeIs('principal.dashboard'); @endphp
+                            <li>
+                                <a href="{{ route('principal.dashboard') }}" :title="sidebarCollapsed ? 'Dasbor Eksekutif' : ''" 
+                                   class="{{ $isPrincipalDashActive ? 'bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
+                                    <span class="material-icons text-xl shrink-0 text-indigo-600 dark:text-indigo-400 transition-transform group-hover:scale-110">account_balance</span>
+                                    <span x-show="!sidebarCollapsed" class="truncate font-bold">Dasbor Eksekutif</span>
+                                    @if($isPrincipalDashActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-indigo-500 ml-auto shrink-0"></span>
+                                    @endif
+                                </a>
+                            </li>
+
+                            {{-- Supervisi Jurnal Mengajar Guru --}}
+                            @php 
+                                $isJournalSupervisionActive = request()->routeIs('admin.teaching_journals.*');
+                                $pendingJournalsCount = \App\Models\TeachingJournal::where('is_verified', false)->count();
+                            @endphp
+                            <li>
+                                <a href="{{ route('admin.teaching_journals.index') }}" :title="sidebarCollapsed ? 'Supervisi Jurnal' : ''" 
+                                   class="{{ $isJournalSupervisionActive ? 'bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                                   :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
+                                    <span class="flex gap-x-3 items-center">
+                                        <span class="material-icons text-xl shrink-0 text-indigo-500">verified_user</span>
+                                        <span x-show="!sidebarCollapsed" class="truncate font-bold">Supervisi Jurnal</span>
+                                    </span>
+                                    @if($pendingJournalsCount > 0)
+                                        <span x-show="!sidebarCollapsed" class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-xs ml-auto">{{ $pendingJournalsCount }}</span>
+                                    @elseif($isJournalSupervisionActive)
+                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-indigo-500 ml-auto shrink-0"></span>
+                                    @endif
+                                </a>
+                            </li>
+
+                            {{-- Dropdown: Monitoring Presensi Terpadu --}}
+                            @php 
+                                $isMonitoringDailyActive = request()->routeIs(['admin.reports.create', 'admin.reports.charts', 'admin.reports.generate']);
+                                $isMonitoringSubjectActive = request()->routeIs(['teacher.subject.attendance.*']) && request('type') !== 'cocurricular';
+                                $isMonitoringCocurricularActive = request()->routeIs(['teacher.subject.attendance.*']) && request('type') === 'cocurricular';
+                                $isMonitoringTeacherActive = request()->routeIs('admin.reports.teacher.*');
+                                $isMonitoringExtraActive = request()->routeIs('admin.extracurriculars.*');
+                                $isMonitoringGroupActive = $isMonitoringDailyActive || $isMonitoringSubjectActive || $isMonitoringCocurricularActive || $isMonitoringTeacherActive || $isMonitoringExtraActive;
+                            @endphp
+                            <li x-data="{ open: {{ $isMonitoringGroupActive ? 'true' : 'false' }} }" class="relative">
+                                <button @click="open = !open" :title="sidebarCollapsed ? 'Monitoring Presensi' : ''" 
+                                        class="group flex items-center w-full rounded-xl p-2.5 text-xs transition-all duration-200 {{ $isMonitoringGroupActive ? 'bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }}" 
+                                        :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
+                                    <span class="material-icons text-xl shrink-0 text-indigo-500">insights</span>
+                                    <span x-show="!sidebarCollapsed" class="truncate font-bold">Monitoring Presensi</span>
+                                    <span x-show="!sidebarCollapsed" class="material-icons text-base ml-auto transition-transform duration-200 opacity-60" :class="{ 'rotate-90': open }">chevron_right</span>
+                                </button>
+                                
+                                <ul x-show="open && !sidebarCollapsed" x-collapse x-transition class="mt-1 ml-4 pl-3 space-y-1 border-l-2 border-indigo-200 dark:border-indigo-800/60">
+                                    <li>
+                                        <a href="{{ route('admin.reports.charts') }}" 
+                                           class="{{ $isMonitoringDailyActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <span>Kehadiran Harian</span>
+                                            @if($isMonitoringDailyActive)
+                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('teacher.subject.attendance.report') }}" 
+                                           class="{{ $isMonitoringSubjectActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <span>Kehadiran Mapel</span>
+                                            @if($isMonitoringSubjectActive)
+                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('teacher.subject.attendance.report', ['type' => 'cocurricular']) }}" 
+                                           class="{{ $isMonitoringCocurricularActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <span>Kehadiran Kokurikuler</span>
+                                            @if($isMonitoringCocurricularActive)
+                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('admin.extracurriculars.index') }}" 
+                                           class="{{ $isMonitoringExtraActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <span>Kehadiran Ekskul</span>
+                                            @if($isMonitoringExtraActive)
+                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('admin.reports.teacher.index') }}" 
+                                           class="{{ $isMonitoringTeacherActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <span>Kehadiran Guru</span>
+                                            @if($isMonitoringTeacherActive)
+                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                        {{-- Dashboard: Admin & Operator --}}
+                        @elseif(auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
                             @php $isActive = request()->routeIs('admin.dashboard'); @endphp
                             <li>
                                 <a href="{{ route('admin.dashboard') }}" :title="sidebarCollapsed ? 'Dasbor Utama' : ''" 
@@ -439,8 +543,8 @@
                 @endif
             @endauth
             
-            <!-- SECTION 3: ADMINISTRASI & SUPERVISI (ADMIN / OPERATOR / WAKASEK / KEPSEK) -->
-            @if(Auth::check() && auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster']))
+            <!-- SECTION 3: ADMINISTRASI & SUPERVISI (ADMIN / OPERATOR / WAKASEK) -->
+            @if(Auth::check() && auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
             <li>
                 <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Administrasi & Supervisi</div>
                 <ul role="list" class="mt-1.5 space-y-1.5">

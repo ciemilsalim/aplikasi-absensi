@@ -379,31 +379,41 @@ class SubjectAttendanceController extends Controller
      */
     public function showReportForm()
     {
-        $teacher = Auth::user()->teacher;
-        if (!$teacher) {
+        $user = Auth::user();
+        $isExecutive = $user->hasAnyRole(['admin', 'operator', 'kepala_sekolah', 'kepala sekolah', 'headmaster']);
+        $teacher = $user->teacher;
+
+        if (!$teacher && !$isExecutive) {
             return redirect()->route('teacher.dashboard')->with('error', 'Data guru tidak ditemukan.');
         }
 
-        // Mapel Reguler
-        $assignments = TeachingAssignment::with(['schoolClass', 'subject'])
-            ->where('teacher_id', $teacher->id)
-            ->get();
+        if ($isExecutive) {
+            $classes = SchoolClass::orderBy('name', 'asc')->pluck('name', 'id');
+            $subjects = Subject::orderBy('name', 'asc')->pluck('name', 'id');
+            $cocurricularProjects = DB::table('cocurriculars')->pluck('title', 'id');
+            $cocurricularClasses = SchoolClass::orderBy('name', 'asc')->pluck('name', 'id');
+        } else {
+            // Mapel Reguler
+            $assignments = TeachingAssignment::with(['schoolClass', 'subject'])
+                ->where('teacher_id', $teacher->id)
+                ->get();
 
-        $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->filter()->unique();
-        $subjects = $assignments->pluck('subject.name', 'subject.id')->filter()->unique();
+            $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->filter()->unique();
+            $subjects = $assignments->pluck('subject.name', 'subject.id')->filter()->unique();
 
-        // Kokurikuler
-        $cocurricularIds = $teacher->cocurriculars()->pluck('cocurriculars.id');
-        $cocurricularSchedules = Schedule::with(['cocurricular', 'schoolClass'])
-            ->where('schedule_type', 'cocurricular')
-            ->where(function ($query) use ($teacher, $cocurricularIds) {
-                $query->where('teacher_id', $teacher->id)
-                      ->orWhereIn('cocurricular_id', $cocurricularIds);
-            })
-            ->get();
+            // Kokurikuler
+            $cocurricularIds = $teacher->cocurriculars()->pluck('cocurriculars.id');
+            $cocurricularSchedules = Schedule::with(['cocurricular', 'schoolClass'])
+                ->where('schedule_type', 'cocurricular')
+                ->where(function ($query) use ($teacher, $cocurricularIds) {
+                    $query->where('teacher_id', $teacher->id)
+                          ->orWhereIn('cocurricular_id', $cocurricularIds);
+                })
+                ->get();
 
-        $cocurricularProjects = $cocurricularSchedules->pluck('cocurricular.title', 'cocurricular.id')->filter()->unique();
-        $cocurricularClasses = $cocurricularSchedules->pluck('schoolClass.name', 'schoolClass.id')->filter()->unique();
+            $cocurricularProjects = $cocurricularSchedules->pluck('cocurricular.title', 'cocurricular.id')->filter()->unique();
+            $cocurricularClasses = $cocurricularSchedules->pluck('schoolClass.name', 'schoolClass.id')->filter()->unique();
+        }
 
         return view('teacher.report_form', compact(
             'classes', 
@@ -436,7 +446,9 @@ class SubjectAttendanceController extends Controller
             ]);
         }
 
-        $teacher = Auth::user()->teacher;
+        $user = Auth::user();
+        $isExecutive = $user->hasAnyRole(['admin', 'operator', 'kepala_sekolah', 'kepala sekolah', 'headmaster']);
+        $teacher = $user->teacher;
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
         $schoolClassId = $request->school_class_id;
@@ -470,10 +482,14 @@ class SubjectAttendanceController extends Controller
             $subjectInfo = Subject::find($subjectId);
             $cocurricularInfo = null;
 
-            $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
-                ->where('school_class_id', $schoolClassId)
-                ->where('subject_id', $subjectId)
-                ->first();
+            $assignmentQuery = TeachingAssignment::where('school_class_id', $schoolClassId)
+                ->where('subject_id', $subjectId);
+
+            if (!$isExecutive && $teacher) {
+                $assignmentQuery->where('teacher_id', $teacher->id);
+            }
+
+            $assignment = $assignmentQuery->first();
 
             if (!$assignment) {
                 return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
@@ -484,14 +500,18 @@ class SubjectAttendanceController extends Controller
                 ->unique()
                 ->toArray();
 
-            $attendances = SubjectAttendance::with('student')
-                ->where('teacher_id', $teacher->id)
+            $attendanceQuery = SubjectAttendance::with('student')
                 ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
                 ->whereHas('schedule.teachingAssignment', function ($query) use ($schoolClassId, $subjectId) {
                     $query->where('school_class_id', $schoolClassId)
                         ->where('subject_id', $subjectId);
-                })
-                ->get();
+                });
+
+            if (!$isExecutive && $teacher) {
+                $attendanceQuery->where('teacher_id', $teacher->id);
+            }
+
+            $attendances = $attendanceQuery->get();
         }
 
         $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);

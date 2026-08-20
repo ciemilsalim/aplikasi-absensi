@@ -100,6 +100,9 @@ Route::get('/sso/debug', function () {
 // == RUTE AUTENTIKASI & PENGALIHAN ==
 Route::get('/dashboard', function () {
     $user = auth()->user();
+    if ($user->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster'])) {
+        return redirect()->route('principal.dashboard');
+    }
     if ($user->hasAnyRole(['admin', 'operator', 'satpam'])) {
         return redirect()->route('admin.dashboard');
     }
@@ -114,6 +117,11 @@ Route::get('/dashboard', function () {
     auth()->logout();
     return redirect()->route('login')->withErrors(['role' => 'Peran Anda tidak dikenali oleh sistem absensi. Silakan hubungi administrator.']);
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// == GRUP RUTE KEPALA SEKOLAH (EXECUTIVE OVERVIEW) ==
+Route::middleware(['auth', 'role:admin,kepala_sekolah,kepala sekolah,headmaster'])->prefix('principal')->name('principal.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Principal\PrincipalDashboardController::class, 'index'])->name('dashboard');
+});
 
 // == GRUP RUTE YANG MEMERLUKAN LOGIN ==
 Route::middleware('auth')->group(function () {
@@ -150,8 +158,8 @@ Route::middleware(['auth', 'scanner.access'])->group(function () {
 
 // == GRUP RUTE ADMIN ==
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    // Rute yang bisa diakses oleh Admin, Operator, & Satpam
-    Route::middleware(['role:admin,operator,satpam'])->group(
+    // Rute yang bisa diakses oleh Admin, Operator, Satpam, dan Kepala Sekolah
+    Route::middleware(['role:admin,operator,satpam,kepala_sekolah,kepala sekolah,headmaster'])->group(
         function () {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::get('/reports', [ReportController::class, 'create'])->name('reports.create');
