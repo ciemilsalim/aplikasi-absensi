@@ -102,16 +102,9 @@
 
                         <!-- Password -->
                         <div>
-                            <div class="flex items-center justify-between mb-1.5">
-                                <label for="password" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                                    Kata Sandi
-                                </label>
-                                @if (Route::has('password.request'))
-                                    <a href="{{ route('password.request') }}" class="text-[11px] font-bold text-sky-600 hover:text-sky-500 dark:text-sky-400 transition-colors">
-                                        Lupa sandi?
-                                    </a>
-                                @endif
-                            </div>
+                            <label for="password" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                                Kata Sandi
+                            </label>
                             <div class="relative">
                                 <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">lock_outline</span>
                                 <input id="password" 
@@ -130,13 +123,19 @@
                             <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
                         </div>
 
-                        <!-- Ingat Saya -->
-                        <div class="flex items-center pt-1">
-                            <label class="relative flex items-center gap-2.5 cursor-pointer select-none">
+                        <!-- Ingat Saya & Lupa Sandi di Bawah Form Input Password -->
+                        <div class="flex items-center justify-between pt-1">
+                            <label class="relative flex items-center gap-2 cursor-pointer select-none">
                                 <input id="remember_me" name="remember" type="checkbox" 
                                        class="w-4 h-4 rounded-lg border-slate-300 dark:border-slate-700 text-sky-600 focus:ring-sky-500 dark:bg-slate-850">
-                                <span class="text-xs font-medium text-slate-600 dark:text-slate-300">Ingat saya di perangkat ini</span>
+                                <span class="text-xs font-medium text-slate-600 dark:text-slate-300">Ingat saya</span>
                             </label>
+
+                            @if (Route::has('password.request'))
+                                <a href="{{ route('password.request') }}" class="text-xs font-bold text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300 transition-colors">
+                                    Lupa sandi?
+                                </a>
+                            @endif
                         </div>
 
                         <!-- Tombol Submit -->
