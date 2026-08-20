@@ -34,24 +34,24 @@
         @endif
 
         <!-- Quick Tabs Navigation -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-1">
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
             <a href="{{ route('teacher.journals.index') }}" 
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 text-xs font-bold transition-all">
+               class="inline-flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 text-xs font-bold transition-all whitespace-nowrap shrink-0">
                 <span class="material-icons text-sm text-sky-500">menu_book</span>
                 <span>Jurnal Pelaksanaan</span>
             </a>
             <a href="{{ route('teacher.journals.weekly') }}" 
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 text-xs font-bold transition-all">
+               class="inline-flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 text-xs font-bold transition-all whitespace-nowrap shrink-0">
                 <span class="material-icons text-sm text-sky-500">calendar_view_week</span>
                 <span>Rekap Mingguan</span>
             </a>
             <a href="{{ route('teacher.journals.semester') }}" 
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 text-xs font-bold transition-all">
+               class="inline-flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 text-xs font-bold transition-all whitespace-nowrap shrink-0">
                 <span class="material-icons text-sm text-indigo-500">assessment</span>
                 <span>Rekap Semester & Asesmen</span>
             </a>
             <a href="{{ route('teacher.journals.reflection') }}" 
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-sky-600 text-white text-xs font-extrabold shadow-sm">
+               class="inline-flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-sky-600 text-white text-xs font-extrabold shadow-sm whitespace-nowrap shrink-0">
                 <span class="material-icons text-sm">psychology</span>
                 <span>Refleksi Guru</span>
             </a>
