@@ -231,7 +231,7 @@
                                             </span>
                                         </div>
                                         <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-1">
-                                            <strong>Materi:</strong> {{ $journal->topic_material ?? $journal->learning_goal ?? '-' }}
+                                            <strong>Materi:</strong> {{ $journal->topic ?? $journal->topic_material ?? $journal->learning_objective ?? $journal->learning_goal ?? '-' }}
                                         </p>
                                         <p class="text-[10px] text-slate-400 mt-0.5">
                                             Tanggal: {{ Carbon\Carbon::parse($journal->date)->translatedFormat('d F Y') }} • {{ $journal->jp ?? 2 }} JP

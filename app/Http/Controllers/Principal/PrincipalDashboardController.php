@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Principal;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Models\Student;
 use App\Models\Attendance;
 use App\Models\Teacher;
@@ -28,7 +29,6 @@ class PrincipalDashboardController extends Controller
     {
         $today = Carbon::today();
         $dayOfWeek = $today->dayOfWeek; // 0=Sun, 1=Mon, ..., 6=Sat
-        $thirtyDaysAgo = $today->copy()->subDays(30);
 
         // 1. STATISTIK KEHADIRAN HARIAN SEKOLAH HARI INI
         $totalStudents = Student::count();
@@ -47,10 +47,17 @@ class PrincipalDashboardController extends Controller
             ? round(($totalHadir / $totalStudents) * 100, 1) 
             : 0;
 
-        // Siswa sedang izin keluar sekolah
-        $activePermitsCount = StudentPermit::whereDate('permit_date', $today)
-            ->whereNull('checkout_time')
-            ->count();
+        // Siswa sedang izin keluar sekolah (Fail-safe check)
+        $activePermitsCount = 0;
+        if (Schema::hasTable('student_permits')) {
+            try {
+                $activePermitsCount = StudentPermit::whereDate('time_out', $today)
+                    ->whereNull('time_in')
+                    ->count();
+            } catch (\Throwable $e) {
+                $activePermitsCount = 0;
+            }
+        }
 
         // 2. STATISTIK SESI MAPEL HARI INI
         $schedulesTodayMapel = Schedule::where('schedule_type', 'regular')
@@ -68,37 +75,57 @@ class PrincipalDashboardController extends Controller
         $mapelBolosCount = $mapelAttendancesToday->where('status', 'bolos')->count();
 
         // 3. STATISTIK KOKURIKULER & EKSTRAKURIKULER
-        $cocurricularProjectsCount = DB::table('cocurriculars')->count();
+        $cocurricularProjectsCount = Schema::hasTable('cocurriculars') ? DB::table('cocurriculars')->count() : 0;
         $cocurricularSchedulesToday = Schedule::where('schedule_type', 'cocurricular')
             ->where('day_of_week', $dayOfWeek)
             ->count();
 
-        $extracurricularsCount = Extracurricular::count();
-        $extraAttendancesThisWeek = ExtracurricularAttendance::where('attendance_date', '>=', $today->copy()->startOfWeek())
-            ->where('status', 'hadir')
-            ->count();
+        $extracurricularsCount = Schema::hasTable('extracurriculars') ? Extracurricular::count() : 0;
+        $extraAttendancesThisWeek = 0;
+        if (Schema::hasTable('extracurricular_attendances')) {
+            try {
+                $extraAttendancesThisWeek = ExtracurricularAttendance::where('attendance_date', '>=', $today->copy()->startOfWeek())
+                    ->where('status', 'hadir')
+                    ->count();
+            } catch (\Throwable $e) {
+                $extraAttendancesThisWeek = 0;
+            }
+        }
 
         // 4. SUPERVISI JURNAL MENGAJAR GURU
-        $totalJournals = TeachingJournal::count();
-        $verifiedJournals = TeachingJournal::where('is_verified', true)->count();
-        $pendingJournals = TeachingJournal::where('is_verified', false)->count();
-        $activeTeachersWithJournal = TeachingJournal::distinct('teacher_id')->count('teacher_id');
+        $totalJournals = 0;
+        $verifiedJournals = 0;
+        $pendingJournals = 0;
+        $activeTeachersWithJournal = 0;
         $totalTeachers = Teacher::count();
+        $recentPendingJournals = collect();
 
-        // Daftar 6 Jurnal Terbaru yang Menunggu Supervisi
-        $recentPendingJournals = TeachingJournal::with(['teacher', 'subject', 'schoolClass'])
-            ->where('is_verified', false)
-            ->orderBy('date', 'desc')
-            ->orderBy('id', 'desc')
-            ->take(6)
-            ->get();
+        if (Schema::hasTable('teaching_journals')) {
+            $totalJournals = TeachingJournal::count();
+            if (Schema::hasColumn('teaching_journals', 'is_verified')) {
+                $verifiedJournals = TeachingJournal::where('is_verified', true)->count();
+                $pendingJournals = TeachingJournal::where('is_verified', false)->count();
+                $recentPendingJournals = TeachingJournal::with(['teacher', 'subject', 'schoolClass'])
+                    ->where('is_verified', false)
+                    ->orderBy('date', 'desc')
+                    ->orderBy('id', 'desc')
+                    ->take(6)
+                    ->get();
+            } else {
+                $recentPendingJournals = TeachingJournal::with(['teacher', 'subject', 'schoolClass'])
+                    ->orderBy('date', 'desc')
+                    ->orderBy('id', 'desc')
+                    ->take(6)
+                    ->get();
+            }
+            $activeTeachersWithJournal = TeachingJournal::distinct('teacher_id')->count('teacher_id');
+        }
 
         // 5. DATA TREN GRAFIK KEHADIRAN SISWA (14 Hari Terakhir)
         $chartDates = [];
         $chartPercentages = [];
         for ($i = 13; $i >= 0; $i--) {
             $date = $today->copy()->subDays($i);
-            // Lewati hari Minggu
             if ($date->isSunday()) continue;
 
             $dateStr = $date->format('Y-m-d');
