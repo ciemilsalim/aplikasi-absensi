@@ -22,7 +22,7 @@ class AdminTeachingJournalController extends Controller
     {
         $teachers = Teacher::orderBy('name', 'asc')->get();
         $subjects = Subject::orderBy('name', 'asc')->get();
-        $classes = SchoolClass::orderBy('name', 'asc')->get();
+        $classes = SchoolClass::all()->sortBy('name', SORT_NATURAL)->values();
 
         $query = TeachingJournal::with(['teacher', 'subject', 'schoolClass', 'verifier']);
 
@@ -79,8 +79,8 @@ class AdminTeachingJournalController extends Controller
      */
     public function show(Teacher $teacher, Request $request)
     {
-        $subjects = $teacher->subjects()->get();
-        $classes = SchoolClass::orderBy('name', 'asc')->get();
+        $subjects = $teacher->subjects()->orderBy('name', 'asc')->get();
+        $classes = SchoolClass::all()->sortBy('name', SORT_NATURAL)->values();
 
         $query = TeachingJournal::with(['subject', 'schoolClass', 'verifier'])
             ->where('teacher_id', $teacher->id);

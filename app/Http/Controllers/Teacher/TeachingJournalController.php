@@ -44,8 +44,8 @@ class TeachingJournalController extends Controller
             ->where('teacher_id', $teacher->id)
             ->get();
 
-        $classes = $assignments->pluck('schoolClass')->unique('id')->filter();
-        $subjects = $assignments->pluck('subject')->unique('id')->filter();
+        $classes = $assignments->pluck('schoolClass')->unique('id')->filter()->sortBy('name', SORT_NATURAL)->values();
+        $subjects = $assignments->pluck('subject')->unique('id')->filter()->sortBy('name', SORT_NATURAL)->values();
 
         // Query Jurnal
         $query = TeachingJournal::with(['schedule.teachingAssignment.schoolClass', 'schedule.teachingAssignment.subject', 'schoolClass', 'subject', 'verifier'])
@@ -358,8 +358,8 @@ class TeachingJournalController extends Controller
             ->where('teacher_id', $teacher->id)
             ->get();
 
-        $classes = $assignments->pluck('schoolClass')->unique('id')->filter();
-        $subjects = $assignments->pluck('subject')->unique('id')->filter();
+        $classes = $assignments->pluck('schoolClass')->unique('id')->filter()->sortBy('name', SORT_NATURAL)->values();
+        $subjects = $assignments->pluck('subject')->unique('id')->filter()->sortBy('name', SORT_NATURAL)->values();
 
         $selectedClassId = $request->input('school_class_id', $classes->first()?->id);
         $selectedSubjectId = $request->input('subject_id', $subjects->first()?->id);
@@ -442,8 +442,8 @@ class TeachingJournalController extends Controller
             ->where('teacher_id', $teacher->id)
             ->get();
 
-        $classes = $assignments->pluck('schoolClass')->unique('id')->filter();
-        $subjects = $assignments->pluck('subject')->unique('id')->filter();
+        $classes = $assignments->pluck('schoolClass')->unique('id')->filter()->sortBy('name', SORT_NATURAL)->values();
+        $subjects = $assignments->pluck('subject')->unique('id')->filter()->sortBy('name', SORT_NATURAL)->values();
 
         $selectedSubjectId = $request->input('subject_id', $subjects->first()?->id);
         $academicYear = AcademicYear::where('is_active', true)->first() ?: (object)['name' => '2026/2027'];
