@@ -105,7 +105,7 @@
                         {{ $dailyPresencePercentage }}%
                     </span>
                     <span class="text-xs text-slate-400 font-semibold">
-                        ({{ $totalHadir }} / {{ $totalStudents }} Siswa)
+                        ({{ $totalHadir }} / {{ $totalStudents }} Siswa Aktif)
                     </span>
                 </div>
                 <div class="mt-3 w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -198,7 +198,7 @@
                                 <span class="material-icons text-indigo-500 text-lg">insights</span>
                                 Tren Persentase Kehadiran Siswa
                             </h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pantau stabilitas kehadiran harian 14 hari sekolah terakhir</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pantau stabilitas kehadiran harian 14 hari sekolah terakhir (basis siswa aktif)</p>
                         </div>
                         @php
                             $avgTrendPct = count($chartPercentages ?? []) > 0 ? round(array_sum($chartPercentages) / count($chartPercentages), 1) : $dailyPresencePercentage;
@@ -515,7 +515,7 @@
                                             const hadir = hadirCounts && hadirCounts[idx] !== undefined ? hadirCounts[idx] : null;
                                             const total = totalCounts && totalCounts[idx] !== undefined ? totalCounts[idx] : null;
                                             if (hadir !== null && total !== null && total > 0) {
-                                                return ` Kehadiran: ${val}% (${hadir} dari ${total} siswa)`;
+                                                return ` Kehadiran: ${val}% (${hadir} dari ${total} siswa aktif)`;
                                             }
                                             return ` Kehadiran: ${val}%`;
                                         }

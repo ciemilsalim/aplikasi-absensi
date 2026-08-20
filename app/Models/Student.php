@@ -21,7 +21,8 @@ class Student extends Model
         'school_class_id',
         'unique_id',
         'photo',
-        'face_descriptor'
+        'face_descriptor',
+        'status'
     ];
 
     protected $appends = ['photo_url'];

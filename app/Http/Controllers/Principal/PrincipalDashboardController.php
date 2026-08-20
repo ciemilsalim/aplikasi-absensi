@@ -45,18 +45,30 @@ class PrincipalDashboardController extends Controller
             $unmarkedCount = 0;
             $dailyPresencePercentage = 0;
             $attendancesToday = collect();
+            $activeStudentIds = collect();
 
             try {
-                $totalStudents = Student::count();
+                // Hanya hitung siswa dengan status 'aktif' (mengabaikan siswa lulus, pindah, tidak_aktif)
+                $activeStudentsQuery = Student::query()
+                    ->when(Schema::hasColumn('students', 'status'), function ($q) {
+                        return $q->where('status', 'aktif');
+                    });
+                
+                $activeStudentIds = (clone $activeStudentsQuery)->pluck('id');
+                $totalStudents = (clone $activeStudentsQuery)->count();
+
                 $attendancesToday = Attendance::whereDate('attendance_time', $today)
+                    ->whereIn('student_id', $activeStudentIds)
                     ->when(session('active_semester_id'), function ($q) {
                         return $q->where('semester_id', session('active_semester_id'));
                     })
                     ->get();
 
-                $presentOnTimeCount = $attendancesToday->where('status', 'tepat_waktu')->count();
-                $presentLateCount = $attendancesToday->where('status', 'terlambat')->count();
-                $totalHadir = $presentOnTimeCount + $presentLateCount;
+                $presentOnTimeCount = $attendancesToday->whereIn('status', ['tepat_waktu', 'on_time'])->count();
+                $presentLateCount = $attendancesToday->whereIn('status', ['terlambat', 'late'])->count();
+                $generalHadirCount = $attendancesToday->whereIn('status', ['hadir', 'present'])->count();
+                $totalHadir = $presentOnTimeCount + $presentLateCount + $generalHadirCount;
+                
                 $sickCount = $attendancesToday->where('status', 'sakit')->count();
                 $permitCount = $attendancesToday->where('status', 'izin')->count();
                 $alphaCount = $attendancesToday->where('status', 'alpa')->count();
@@ -76,6 +88,7 @@ class PrincipalDashboardController extends Controller
             if (Schema::hasTable('student_permits')) {
                 try {
                     $activePermitsCount = StudentPermit::whereDate('time_out', $today)
+                        ->whereIn('student_id', $activeStudentIds)
                         ->whereNull('time_in')
                         ->count();
                 } catch (\Throwable $e) {
@@ -104,6 +117,7 @@ class PrincipalDashboardController extends Controller
 
                 if ($mapelScheduleIds->isNotEmpty()) {
                     $mapelAttendancesToday = SubjectAttendance::whereIn('schedule_id', $mapelScheduleIds)
+                        ->whereIn('student_id', $activeStudentIds)
                         ->whereDate('created_at', $today)
                         ->get();
                     
@@ -182,7 +196,7 @@ class PrincipalDashboardController extends Controller
                 Log::warning('[PrincipalDashboard] Gagal memuat jurnal mengajar: ' . $e->getMessage());
             }
 
-            // 5. DATA TREN GRAFIK KEHADIRAN SISWA (14 Hari Terakhir)
+            // 5. DATA TREN GRAFIK KEHADIRAN SISWA AKTIF (14 Hari Terakhir)
             $chartDates = [];
             $chartPercentages = [];
             $chartHadirCounts = [];
@@ -192,8 +206,9 @@ class PrincipalDashboardController extends Controller
                 $startDate = $today->copy()->subDays(13)->startOfDay();
                 $endDate = $today->copy()->endOfDay();
 
-                // Ambil semua data kehadiran dalam rentang 14 hari dalam satu kueri efisien
+                // Ambil semua data kehadiran siswa aktif dalam rentang 14 hari dalam satu kueri efisien
                 $rangeAttendances = Attendance::whereBetween('attendance_time', [$startDate, $endDate])
+                    ->whereIn('student_id', $activeStudentIds)
                     ->when(session('active_semester_id'), function ($q) {
                         return $q->where('semester_id', session('active_semester_id'));
                     })
@@ -224,13 +239,17 @@ class PrincipalDashboardController extends Controller
                 Log::warning('[PrincipalDashboard] Gagal memuat tren kehadiran: ' . $e->getMessage());
             }
 
-            // 6. PERFORMA KEHADIRAN PER KELAS (Hari Ini)
+            // 6. PERFORMA KEHADIRAN PER KELAS (Hari Ini - Hanya Siswa Aktif)
             $classAttendanceBreakdown = [];
 
             try {
                 $classes = SchoolClass::all()->sortBy('name', SORT_NATURAL);
                 foreach ($classes as $cls) {
-                    $clsStudents = Student::where('school_class_id', $cls->id)->get();
+                    $clsStudents = Student::where('school_class_id', $cls->id)
+                        ->when(Schema::hasColumn('students', 'status'), function ($q) {
+                            return $q->where('status', 'aktif');
+                        })
+                        ->get();
                     $clsStudentCount = $clsStudents->count();
                     if ($clsStudentCount === 0) continue;
 
