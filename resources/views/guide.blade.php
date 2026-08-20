@@ -27,6 +27,6 @@
     </x-slot>
 
     <div class="py-2 sm:py-6">
-        @include('partials._guide-content', ['defaultTab' => $defaultTab ?? 'all'])
+        @include('partials._guide-content', ['defaultTab' => $defaultTab ?? 'all', 'userRoleLabel' => $userRoleLabel ?? ''])
     </div>
 </x-app-layout>
