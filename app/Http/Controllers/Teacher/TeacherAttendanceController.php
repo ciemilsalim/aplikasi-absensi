@@ -17,9 +17,52 @@ class TeacherAttendanceController extends Controller
     public function index()
     {
         $teacher = Auth::user()->teacher;
+        if (!$teacher) {
+            return redirect()->route('dashboard')->with('error', 'Data profil guru tidak ditemukan.');
+        }
+
+        $today = Carbon::today();
+        $todayAttendance = $teacher->attendances()->whereDate('created_at', $today)->first();
+
+        $startOfMonth = $today->copy()->startOfMonth();
+        $endOfMonth = $today->copy()->endOfMonth();
+
+        $monthlyAttendances = $teacher->attendances()
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->get();
+
+        $monthlyStats = [
+            'hadir' => $monthlyAttendances->where('status', 'hadir')->count(),
+            'izin' => $monthlyAttendances->where('status', 'izin')->count(),
+            'sakit' => $monthlyAttendances->where('status', 'sakit')->count(),
+            'alpa' => $monthlyAttendances->where('status', 'alpa')->count(),
+            'total' => $monthlyAttendances->count(),
+        ];
+
+        // Hitung hari kerja efektif bulan ini sampai hari ini
+        $workDaysCount = 0;
+        for ($date = $startOfMonth->copy(); $date->lte($today); $date->addDay()) {
+            if (!$date->isWeekend()) {
+                $workDaysCount++;
+            }
+        }
+        $monthlyPercentage = $workDaysCount > 0 ? min(100, round(($monthlyStats['hadir'] / $workDaysCount) * 100)) : 0;
+
+        $hasFaceRegistered = !empty($teacher->photo) || !empty($teacher->face_descriptor);
+        $settings = Setting::whereIn('key', ['school_latitude', 'school_longitude', 'attendance_radius', 'school_name'])->pluck('value', 'key');
+
         $attendances = $teacher->attendances()->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('teacher.attendance.index', compact('attendances'));
+        return view('teacher.attendance.index', compact(
+            'teacher',
+            'todayAttendance',
+            'monthlyStats',
+            'monthlyPercentage',
+            'workDaysCount',
+            'hasFaceRegistered',
+            'settings',
+            'attendances'
+        ));
     }
 
     public function showScanner()

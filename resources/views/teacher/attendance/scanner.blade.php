@@ -1,55 +1,65 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Scanner Absensi Guru
-        </h2>
+        <div class="flex items-center justify-between gap-3 w-full">
+            <div>
+                <x-breadcrumb :breadcrumbs="[
+                    ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard')],
+                    ['title' => 'Absen Guru', 'url' => route('teacher.attendance.dashboard')],
+                    ['title' => 'Scanner Wajah', 'url' => '#']
+                ]" />
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
+                    {{ $hasPhoto ? 'Pemindai Wajah Guru' : 'Registrasi Wajah Biometrik' }}
+                </h1>
+            </div>
+
+            <a href="{{ route('teacher.attendance.dashboard') }}" 
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold shadow-2xs hover:bg-slate-50 transition-all">
+                <span class="material-icons text-sm">arrow_back</span>
+                <span>Kembali</span>
+            </a>
+        </div>
     </x-slot>
 
-    <div class="py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md mx-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div class="p-6">
-                <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
-                    {{ $hasPhoto ? 'Absensi Kehadiran Guru' : 'Registrasi Wajah Guru' }}
-                </h2>
+    @push('styles')
+    <style>
+        body > footer, body > .back-to-top-button { display: none !important; }
+        footer.mobile-footer { display: block !important; }
+    </style>
+    @endpush
 
+    <div class="max-w-lg mx-auto py-4 sm:py-8 px-4 sm:px-0 space-y-4 pb-24 sm:pb-8">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+            <div class="p-5 sm:p-6">
                 <!-- Status Messages -->
-                <div id="status-message" class="hidden mb-4 p-4 rounded-lg text-center text-sm font-medium"></div>
+                <div id="status-message" class="hidden mb-4 p-3.5 rounded-2xl text-center text-xs font-bold shadow-2xs"></div>
 
                 <!-- Camera Container -->
-                <div class="relative aspect-[3/4] bg-black rounded-lg overflow-hidden mb-6">
+                <div class="relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden mb-4 shadow-inner ring-1 ring-white/10">
                     <video id="video" class="absolute inset-0 w-full h-full object-cover" autoplay muted
                         playsinline></video>
                     <canvas id="overlay" class="absolute inset-0 w-full h-full"></canvas>
 
                     <!-- Face Guide Frame -->
                     <div class="absolute inset-0 pointer-events-none flex items-center justify-center p-8 z-10">
-                        <div class="w-full h-full max-w-[280px] max-h-[360px] relative opacity-50">
+                        <div class="w-full h-full max-w-[260px] max-h-[340px] relative opacity-60">
                             <!-- Sudut Kiri Atas -->
-                            <div
-                                class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-sky-400 rounded-tl-lg animate-pulse">
-                            </div>
+                            <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-sky-400 rounded-tl-xl animate-pulse"></div>
                             <!-- Sudut Kanan Atas -->
-                            <div
-                                class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-sky-400 rounded-tr-lg animate-pulse">
-                            </div>
+                            <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-sky-400 rounded-tr-xl animate-pulse"></div>
                             <!-- Sudut Kiri Bawah -->
-                            <div
-                                class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-sky-400 rounded-bl-lg animate-pulse">
-                            </div>
+                            <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-sky-400 rounded-bl-xl animate-pulse"></div>
                             <!-- Sudut Kanan Bawah -->
-                            <div
-                                class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-sky-400 rounded-br-lg animate-pulse">
-                            </div>
+                            <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-sky-400 rounded-br-xl animate-pulse"></div>
 
                             <!-- Frame Tengah -->
-                            <div class="absolute inset-4 border-2 border-dashed border-white/40 rounded-[100px]"></div>
+                            <div class="absolute inset-4 border-2 border-dashed border-white/40 rounded-[90px]"></div>
                         </div>
                     </div>
 
                     <!-- Loading Indicator -->
                     <div id="loading"
-                        class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-20">
-                        <svg class="animate-spin h-10 w-10 text-sky-500 mb-4" xmlns="http://www.w3.org/2000/svg"
+                        class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-xs z-20">
+                        <svg class="animate-spin h-10 w-10 text-sky-500 mb-3" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                             </circle>
@@ -57,52 +67,50 @@
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
-                        <div class="w-2/3 max-w-xs bg-slate-700 rounded-full h-2.5 mb-2 overflow-hidden hidden"
+                        <div class="w-2/3 max-w-xs bg-slate-800 rounded-full h-2 mb-2 overflow-hidden hidden"
                             id="loading-bar-container">
-                            <div id="loading-bar" class="bg-sky-500 h-2.5 rounded-full transition-all duration-300 w-0">
+                            <div id="loading-bar" class="bg-sky-500 h-2 rounded-full transition-all duration-300 w-0">
                             </div>
                         </div>
-                        <p id="loading-text" class="text-white font-medium text-center">Memuat Model Wajah...</p>
+                        <p id="loading-text" class="text-white text-xs font-bold text-center">Memuat Model Wajah...</p>
                     </div>
                 </div>
 
-                <div id="face-camera-switch-container" class="mb-6 text-center">
+                <div id="face-camera-switch-container" class="mb-4 text-center">
                     <button id="face-camera-switch-button"
-                        class="text-sm text-sky-600 dark:text-sky-400 hover:underline flex items-center justify-center mx-auto gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                        </svg>
-                        Ganti Kamera
+                        class="text-xs text-sky-600 dark:text-sky-400 hover:underline font-bold inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200/60 dark:border-sky-900/40">
+                        <span class="material-icons text-sm">flip_camera_ios</span>
+                        <span>Ganti Kamera Depan/Belakang</span>
                     </button>
                 </div>
 
                 <!-- Controls -->
-                <div class="space-y-4">
+                <div class="space-y-3">
                     @if(!$hasPhoto)
-                        <div class="text-center text-yellow-600 dark:text-yellow-400 text-sm mb-4">
-                            Anda belum mendaftarkan wajah. Silakan ambil foto selfie untuk registrasi.
+                        <div class="text-center text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/40 p-3 rounded-2xl text-xs">
+                            <span class="font-bold block mb-0.5">Wajah Belum Terdaftar</span>
+                            Posisikan wajah Anda tepat di dalam bingkai, lalu tekan tombol di bawah untuk mendaftarkan wajah.
                         </div>
                         <button id="btn-register" disabled
-                            class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg shadow disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">
-                            Ambil Foto & Daftar
+                            class="w-full min-h-[48px] py-3 px-4 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-sky-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 active:scale-95">
+                            Ambil Foto & Daftarkan Wajah
                         </button>
                     @else
-                        <div id="attendance-info" class="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            Pastikan Anda berada di area sekolah.
-                            <div id="location-status" class="mt-1 font-mono text-xs text-orange-500">Mencari lokasi...</div>
+                        <div id="attendance-info" class="text-center text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                            <span class="block font-semibold text-slate-800 dark:text-slate-200">Verifikasi Lokasi & Biometrik Wajah</span>
+                            <div id="location-status" class="mt-1 font-mono text-[11px] text-amber-600 dark:text-amber-400 font-bold">Mencari lokasi GPS...</div>
                         </div>
                         <button id="btn-absent" disabled
-                            class="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow disabled:opacity-50 disabled:cursor-not-allowed transition duration-200">
+                            class="w-full min-h-[48px] py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 active:scale-95">
                             Rekam Kehadiran
                         </button>
                     @endif
                 </div>
 
-                <!-- Location Debug (Optional, hidden by default) -->
-                <div class="mt-4 text-xs text-gray-400 text-center">
-                    Jarak ke sekolah: <span id="distance-debug">-</span> meter
+                <!-- Location Distance Info -->
+                <div class="mt-3 text-[11px] text-slate-400 text-center flex items-center justify-center gap-1">
+                    <span class="material-icons text-xs">radar</span>
+                    <span>Jarak ke sekolah: <span id="distance-debug" class="font-bold text-slate-700 dark:text-slate-300">-</span> meter</span>
                 </div>
             </div>
         </div>
