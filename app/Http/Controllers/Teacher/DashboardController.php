@@ -109,6 +109,30 @@ class DashboardController extends Controller
             $viewData['teacherNote'] = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
         }
 
+        // Ambil data presensi mandiri guru hari ini
+        $teacherAttendanceToday = null;
+        if (\Illuminate\Support\Facades\Schema::hasTable('teacher_attendances')) {
+            try {
+                $teacherAttendanceToday = \App\Models\TeacherAttendance::where('teacher_id', $teacher->id)
+                    ->whereDate('created_at', Carbon::today())
+                    ->first();
+            } catch (\Throwable $e) {
+                $teacherAttendanceToday = null;
+            }
+        }
+        $viewData['teacherAttendanceToday'] = $teacherAttendanceToday;
+
+        // Pending Leave Requests untuk wali kelas
+        if ($isHomeroomTeacher && $teacher->homeroomClass) {
+            try {
+                $viewData['teacherPendingLeaveRequestsCount'] = \App\Models\LeaveRequest::whereHas('student', function($q) use ($teacher) {
+                    $q->where('school_class_id', $teacher->homeroomClass->id);
+                })->where('status', 'pending')->count();
+            } catch (\Throwable $e) {
+                $viewData['teacherPendingLeaveRequestsCount'] = 0;
+            }
+        }
+
         // Ambil pengumuman terbaru
         $viewData['announcements'] = Announcement::whereNotNull('published_at')
                                      ->where('published_at', '<=', now())

@@ -220,61 +220,68 @@
         @if($currentView === 'wali_kelas' && !empty($chartLabels))
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                if (document.getElementById('weeklyAttendanceChart')) {
-                    const isDarkMode = document.documentElement.classList.contains('dark');
-                    const ctx = document.getElementById('weeklyAttendanceChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: @json($chartLabels ?? []),
-                            datasets: [{
-                                label: 'Kehadiran (%)',
-                                data: @json($chartData ?? []),
-                                borderColor: isDarkMode ? '#38bdf8' : '#0284c7',
-                                backgroundColor: isDarkMode ? 'rgba(56, 189, 248, 0.15)' : 'rgba(2, 132, 199, 0.1)',
-                                fill: true,
-                                tension: 0.35,
-                                pointBackgroundColor: isDarkMode ? '#38bdf8' : '#0284c7',
-                                pointBorderColor: '#ffffff',
-                                pointHoverRadius: 6,
-                                pointRadius: 4,
-                                borderWidth: 2.5
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    beginAtZero: true, max: 100,
-                                    ticks: { 
-                                        callback: (value) => value + '%', 
-                                        color: isDarkMode ? '#94a3b8' : '#64748b',
-                                        font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
-                                    },
-                                    grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' }
+                const isDarkMode = document.documentElement.classList.contains('dark');
+                const chartConfig = {
+                    type: 'line',
+                    data: {
+                        labels: @json($chartLabels ?? []),
+                        datasets: [{
+                            label: 'Kehadiran (%)',
+                            data: @json($chartData ?? []),
+                            borderColor: isDarkMode ? '#38bdf8' : '#0284c7',
+                            backgroundColor: isDarkMode ? 'rgba(56, 189, 248, 0.15)' : 'rgba(2, 132, 199, 0.1)',
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: isDarkMode ? '#38bdf8' : '#0284c7',
+                            pointBorderColor: '#ffffff',
+                            pointHoverRadius: 6,
+                            pointRadius: 4,
+                            borderWidth: 2.5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true, max: 100,
+                                ticks: { 
+                                    callback: (value) => value + '%', 
+                                    color: isDarkMode ? '#94a3b8' : '#64748b',
+                                    font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
                                 },
-                                x: {
-                                    ticks: { 
-                                        color: isDarkMode ? '#94a3b8' : '#64748b',
-                                        font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
-                                    },
-                                    grid: { display: false }
-                                }
+                                grid: { color: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' }
                             },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { 
-                                    backgroundColor: isDarkMode ? '#1e293b' : '#0f172a',
-                                    titleFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12, weight: 'bold' },
-                                    bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12 },
-                                    padding: 12,
-                                    cornerRadius: 12,
-                                    callbacks: { label: (context) => ' Kehadiran: ' + context.parsed.y + '%' } 
-                                }
+                            x: {
+                                ticks: { 
+                                    color: isDarkMode ? '#94a3b8' : '#64748b',
+                                    font: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 11, weight: '600' }
+                                },
+                                grid: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { 
+                                backgroundColor: isDarkMode ? '#1e293b' : '#0f172a',
+                                titleFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12, weight: 'bold' },
+                                bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12 },
+                                padding: 12,
+                                cornerRadius: 12,
+                                callbacks: { label: (context) => ' Kehadiran: ' + context.parsed.y + '%' } 
                             }
                         }
-                    });
+                    }
+                };
+
+                const desktopCanvas = document.getElementById('weeklyAttendanceChart');
+                if (desktopCanvas) {
+                    new Chart(desktopCanvas.getContext('2d'), JSON.parse(JSON.stringify(chartConfig)));
+                }
+
+                const mobileCanvas = document.getElementById('weeklyAttendanceChartMobile');
+                if (mobileCanvas) {
+                    new Chart(mobileCanvas.getContext('2d'), JSON.parse(JSON.stringify(chartConfig)));
                 }
             });
         </script>

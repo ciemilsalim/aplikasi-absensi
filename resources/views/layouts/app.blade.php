@@ -425,12 +425,21 @@
                                 <span class="text-[9px] font-bold mt-1 text-slate-700 dark:text-slate-300">Scan QR</span>
                             </div>
 
-                            @php $isSubjectRep = request()->routeIs(['teacher.subject.attendance.report', 'teacher.subject.attendance.preview', 'teacher.subject.attendance.print', 'teacher.subject.attendance.charts']); @endphp
-                            <a href="{{ route('teacher.subject.attendance.report') }}"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isSubjectRep ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
-                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">assessment</span>
-                                <span class="text-[10px] {{ $isSubjectRep ? 'font-bold' : 'font-medium' }} mt-0.5">Rekap Mapel</span>
-                            </a>
+                            @if(auth()->user()->teacher?->homeroomClass)
+                                @php $isHomeroomHistory = request()->routeIs(['teacher.attendance.history', 'teacher.attendance.print']); @endphp
+                                <a href="{{ route('teacher.attendance.history') }}"
+                                    class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isHomeroomHistory ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
+                                    <span class="material-icons text-2xl group-hover:scale-110 transition-transform">groups</span>
+                                    <span class="text-[10px] {{ $isHomeroomHistory ? 'font-bold' : 'font-medium' }} mt-0.5">Siswa</span>
+                                </a>
+                            @else
+                                @php $isSubjectRep = request()->routeIs(['teacher.subject.attendance.report', 'teacher.subject.attendance.preview', 'teacher.subject.attendance.print', 'teacher.subject.attendance.charts']); @endphp
+                                <a href="{{ route('teacher.subject.attendance.report') }}"
+                                    class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isSubjectRep ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
+                                    <span class="material-icons text-2xl group-hover:scale-110 transition-transform">assessment</span>
+                                    <span class="text-[10px] {{ $isSubjectRep ? 'font-bold' : 'font-medium' }} mt-0.5">Rekap Mapel</span>
+                                </a>
+                            @endif
 
                             <button @click="mobileMenuOpen = true"
                                 class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
