@@ -500,9 +500,48 @@ class DashboardController extends Controller
             ];
         }
 
+        // Status kehadiran sesi per jadwal kokurikuler hari ini
+        $attendedScheduleIdsToday = SubjectAttendance::whereIn('schedule_id', $schedulesToday->pluck('id'))
+            ->whereDate('created_at', $now->toDateString())
+            ->pluck('schedule_id')
+            ->unique()
+            ->toArray();
+
+        $activeSchedule = null;
+        $nextSchedule = null;
+        $currentTime = $now->format('H:i:s');
+
+        foreach ($schedulesToday as $sched) {
+            $startTime = Carbon::parse($sched->start_time)->format('H:i:s');
+            $endTime = Carbon::parse($sched->end_time)->format('H:i:s');
+            $hasAttended = in_array($sched->id, $attendedScheduleIdsToday);
+            $sched->has_attended_today = $hasAttended;
+
+            if ($currentTime >= $startTime && $currentTime <= $endTime) {
+                $sched->status_time = 'ongoing';
+                if (!$activeSchedule) {
+                    $activeSchedule = $sched;
+                }
+            } elseif ($currentTime < $startTime) {
+                $sched->status_time = 'upcoming';
+                if (!$nextSchedule && !$activeSchedule) {
+                    $nextSchedule = $sched;
+                }
+            } else {
+                $sched->status_time = $hasAttended ? 'completed' : 'missed';
+            }
+        }
+
+        $heroSchedule = $activeSchedule ?? $nextSchedule ?? $schedulesToday->first();
+        $totalSessionsToday = $schedulesToday->count();
+        $completedSessionsToday = count($attendedScheduleIdsToday);
+        $remainingSessionsToday = max(0, $totalSessionsToday - $completedSessionsToday);
+
         // Performa Kehadiran Kelas Kokurikuler 30 Hari Terakhir
         $classPerformanceData = [];
         $thirtyDaysAgo = now()->subDays(30);
+        $totalSessions30Days = 0;
+        $totalPercentageSum = 0;
 
         $distinctPairs = $allSchedules->unique(function ($item) {
             return $item->cocurricular_id . '-' . $item->school_class_id;
@@ -532,11 +571,19 @@ class DashboardController extends Controller
             $potentialAttendance = $totalStudentsInClass * $totalSessions;
             $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
 
+            $totalSessions30Days += $totalSessions;
+            $totalPercentageSum += $percentage;
+
             $classPerformanceData[] = [
                 'label' => ($item->schoolClass?->name ?? 'Kelas') . ' - ' . \Illuminate\Support\Str::limit($item->cocurricular?->title ?? 'Kokurikuler', 25),
+                'className' => $item->schoolClass?->name ?? 'Kelas',
+                'title' => $item->cocurricular?->title ?? 'Kokurikuler',
                 'percentage' => $percentage,
+                'total_sessions' => $totalSessions,
             ];
         }
+
+        $avgAttendance30Days = count($classPerformanceData) > 0 ? round($totalPercentageSum / count($classPerformanceData)) : 0;
 
         $myProjects = $teacher->cocurriculars()->with(['level', 'teachers'])->get();
         $teacherNote = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
@@ -544,6 +591,12 @@ class DashboardController extends Controller
         return [
             'schedulesTodayKokurikuler' => $schedulesToday,
             'allSchedulesKokurikuler' => $allSchedules,
+            'heroScheduleKokurikuler' => $heroSchedule,
+            'totalSessionsTodayKokurikuler' => $totalSessionsToday,
+            'completedSessionsTodayKokurikuler' => $completedSessionsToday,
+            'remainingSessionsTodayKokurikuler' => $remainingSessionsToday,
+            'totalSessions30DaysKokurikuler' => $totalSessions30Days,
+            'avgAttendance30DaysKokurikuler' => $avgAttendance30Days,
             'studentsForAttentionKokurikuler' => $studentsForAttention,
             'lastAttendanceSummaryKokurikuler' => $lastAttendanceSummary,
             'classPerformanceDataKokurikuler' => $classPerformanceData,
