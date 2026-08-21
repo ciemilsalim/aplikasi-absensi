@@ -3,8 +3,9 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
             <div>
                 <x-breadcrumb :breadcrumbs="[
+                    ['title' => 'Dasbor Orang Tua/Wali', 'url' => route('parent.dashboard')],
                     ['title' => 'Riwayat Izin/Sakit', 'url' => route('parent.leave-requests.index')],
-                    ['title' => 'Buat Pengajuan', 'url' => '#']
+                    ['title' => 'Ajukan Izin / Sakit', 'url' => '#']
                 ]" />
                 <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
                     Form Pengajuan Izin / Sakit Siswa

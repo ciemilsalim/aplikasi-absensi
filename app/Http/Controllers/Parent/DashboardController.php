@@ -26,14 +26,20 @@ class DashboardController extends Controller
 
         $students = $parent->students()->with([
             'attendances' => function($query){
-                $query->latest()->take(5);
+                $query->orderByDesc('attendance_time')->take(10);
             }, 
             'schoolClass',
             'extracurriculars',
             'extracurricularAttendances' => function($query) {
-                $query->latest()->take(5);
+                $query->orderByDesc('attendance_date')->take(5);
             }
         ])->get();
+
+        foreach ($students as $student) {
+            $student->today_attendance = \App\Models\Attendance::where('student_id', $student->id)
+                ->whereDate('attendance_time', \Carbon\Carbon::today())
+                ->first();
+        }
         
         // PERBAIKAN: Mengambil kembali 3 pengumuman terbaru yang sudah dipublikasikan
         $announcements = Announcement::whereNotNull('published_at')
