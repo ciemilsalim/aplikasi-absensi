@@ -49,6 +49,15 @@
         @if($roleCount > 1)
             <div class="bg-white dark:bg-slate-900 shadow-2xs border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 overflow-x-auto no-scrollbar">
                 <div class="flex items-center space-x-1.5 min-w-max" role="tablist">
+                    @if($isHomeroomTeacher)
+                    <a href="{{ route('teacher.dashboard', ['view' => 'wali_kelas']) }}"
+                       class="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                              {{ $currentView === 'wali_kelas' ? 'bg-sky-600 text-white shadow-sm shadow-sky-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <span class="material-icons text-base">groups</span>
+                        <span>Wali Kelas</span>
+                    </a>
+                    @endif
+
                     @if($isSubjectTeacher)
                     <a href="{{ route('teacher.dashboard', ['view' => 'guru_mapel']) }}"
                        class="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all duration-200
@@ -73,15 +82,6 @@
                               {{ $currentView === 'pembina_ekskul' ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         <span class="material-icons text-base">sports_soccer</span>
                         <span>Ekstrakurikuler</span>
-                    </a>
-                    @endif
-
-                    @if($isHomeroomTeacher)
-                    <a href="{{ route('teacher.dashboard', ['view' => 'wali_kelas']) }}"
-                       class="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all duration-200
-                              {{ $currentView === 'wali_kelas' ? 'bg-sky-600 text-white shadow-sm shadow-sky-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                        <span class="material-icons text-base">groups</span>
-                        <span>Wali Kelas</span>
                     </a>
                     @endif
                 </div>

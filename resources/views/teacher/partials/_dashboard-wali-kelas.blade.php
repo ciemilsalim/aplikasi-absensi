@@ -1,4 +1,8 @@
 {{-- Konten khusus Dasbor Wali Kelas (SMP Negeri 1 Biau) --}}
+@php
+    $classNameFormatted = str_starts_with($class->name, 'Kelas') ? $class->name : 'Kelas ' . $class->name;
+    $rawClassName = preg_replace('/^Kelas\s+/i', '', $class->name);
+@endphp
 
 <div class="space-y-6">
 
@@ -20,7 +24,7 @@
                         Halo, {{ explode(' ', $teacher->name)[0] }} 👋
                     </h2>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                        Wali Kelas &bull; Kelas {{ $class->name }}
+                        Wali Kelas &bull; {{ $classNameFormatted }}
                     </p>
                 </div>
             </div>
@@ -31,15 +35,15 @@
 
         <!-- HERO CARD: STATUS PRESENSI KELAS BINAAN (SEDERHANA, JELAS, BEBAS OVERLAP) -->
         <div class="rounded-3xl p-5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-            <!-- Header Card: Info Kelas & Status -->
-            <div class="flex items-start justify-between">
+            <!-- Header Card: Info Kelas & Status (Ukuran Proporsional & Fokus Presensi) -->
+            <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-black uppercase tracking-wider text-sky-600 dark:text-sky-400 block">
-                        KELAS {{ $class->name }}
+                    <span class="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider block">
+                        {{ $classNameFormatted }}
                     </span>
-                    <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
-                        {{ $totalStudents }} Siswa
-                    </h3>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Total {{ $totalStudents }} Siswa Terdaftar
+                    </span>
                 </div>
                 
                 @if($dailyPresencePercentage > 0)
@@ -220,7 +224,7 @@
                         <span class="material-icons text-sky-500 text-base">show_chart</span>
                         <span>Tren Kehadiran</span>
                     </h3>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400">5 sesi terakhir &bull; Kelas {{ $class->name }}</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">5 sesi terakhir &bull; {{ $classNameFormatted }}</p>
                 </div>
                 <div class="text-right">
                     <span class="text-xs font-extrabold text-sky-600 dark:text-sky-400">{{ $avgRate ?? 0 }}%</span>
@@ -260,7 +264,7 @@
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                     <div>
                         <h3 class="text-sm font-bold text-slate-900 dark:text-white">Kelola Presensi Siswa</h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Kelas {{ $class->name }} &bull; {{ $totalStudents }} Siswa</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ $classNameFormatted }} &bull; {{ $totalStudents }} Siswa</p>
                     </div>
                     <button @click="showStudentManagementModal = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                         <span class="material-icons text-xl">close</span>
@@ -376,7 +380,7 @@
                              alt="{{ Auth::user()->name }}">
                         <div>
                             <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/20 text-[10px] font-bold text-sky-300 border border-sky-400/20 mb-1">
-                                <span>Wali Kelas {{ $class->name }}</span>
+                                <span>Wali {{ $classNameFormatted }}</span>
                             </div>
                             <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight leading-snug">
                                 Halo, {{ $teacher->name }}!
