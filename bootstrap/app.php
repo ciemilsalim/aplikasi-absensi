@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         
         // Middleware ini akan berjalan pada setiap permintaan web
         $middleware->web(append: [
+            \App\Http\Middleware\ContentSecurityPolicyMiddleware::class,
             \App\Http\Middleware\UpdateLastSeenMiddleware::class,
             \App\Http\Middleware\SetAcademicPeriod::class,
         ]);

@@ -139,8 +139,9 @@
             <button @click="open = !open" 
                     class="flex items-center gap-2 p-1.5 sm:p-1 pl-1.5 pr-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 min-h-[40px] sm:min-h-[36px]">
                 <div class="relative">
-                    <img class="h-8 w-8 rounded-full object-cover ring-2 ring-indigo-500/20 bg-slate-200 dark:bg-slate-700" 
-                         src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=818cf8&background=e0e7ff' }}" 
+                    <img class="h-8 w-8 rounded-full object-cover ring-2 ring-indigo-500/20 bg-slate-200 dark:bg-slate-750" 
+                         src="{{ Auth::user()->profile_photo_url }}" 
+                         onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&color=818cf8&background=e0e7ff';" 
                          alt="{{ Auth::user()->name }}">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"></span>
                 </div>

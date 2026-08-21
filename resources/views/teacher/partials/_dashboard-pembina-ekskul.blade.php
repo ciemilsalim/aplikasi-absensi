@@ -17,7 +17,8 @@
         <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
                 <img class="h-12 w-12 rounded-2xl object-cover ring-2 ring-amber-500/20 bg-slate-800 shrink-0 shadow-sm" 
-                     src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=d97706&background=fef3c7' }}" 
+                     src="{{ Auth::user()->profile_photo_url }}" 
+                     onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&color=d97706&background=fef3c7';" 
                      alt="{{ Auth::user()->name }}">
                 <div class="min-w-0">
                     <h2 class="text-base font-extrabold text-slate-900 dark:text-white leading-tight truncate">
@@ -406,7 +407,8 @@
                     
                     <div class="relative z-10 flex items-center gap-4">
                         <img class="h-16 w-16 rounded-2xl object-cover ring-4 ring-amber-500/30 bg-slate-800 shrink-0 shadow-md" 
-                             src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=d97706&background=fef3c7' }}" 
+                             src="{{ Auth::user()->profile_photo_url }}" 
+                             onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&color=d97706&background=fef3c7';" 
                              alt="{{ Auth::user()->name }}">
                         <div>
                             <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-[10px] font-bold text-amber-300 border border-amber-400/20 mb-1">

@@ -723,7 +723,8 @@
             <div class="flex items-center rounded-2xl p-2 bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-800 transition-all"
                  :class="sidebarCollapsed ? 'justify-center' : 'gap-x-3'">
                 <img class="h-8 w-8 rounded-xl object-cover ring-2 ring-sky-500/30 flex-shrink-0" 
-                     src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=0284c7&background=e0f2fe' }}" 
+                     src="{{ Auth::user()->profile_photo_url }}" 
+                     onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&color=0284c7&background=e0f2fe';" 
                      alt="{{ Auth::user()->name }}">
                 <div x-show="!sidebarCollapsed" class="min-w-0 flex-1">
                     <p class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-tight">{{ Auth::user()->name }}</p>

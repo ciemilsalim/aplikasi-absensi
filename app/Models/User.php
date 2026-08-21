@@ -107,4 +107,21 @@ class User extends Authenticatable
     {
         return $this->hasAnyRole([$role]);
     }
+
+    /**
+     * Mendapatkan URL foto profil pengguna dengan fallback aman bila file tidak ditemukan di disk.
+     */
+    public function getProfilePhotoUrlAttribute(): string
+    {
+        if (!empty($this->profile_photo_path)) {
+            try {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($this->profile_photo_path)) {
+                    return asset('storage/' . $this->profile_photo_path);
+                }
+            } catch (\Throwable $e) {
+                // Disk check fallback
+            }
+        }
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? 'User') . '&color=0284c7&background=e0f2fe';
+    }
 }
