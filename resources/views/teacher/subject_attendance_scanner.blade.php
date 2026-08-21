@@ -51,6 +51,9 @@
 
     @push('styles')
         <style>
+            body > footer, body > .back-to-top-button { display: none !important; }
+            footer.mobile-footer { display: block !important; }
+
             /* UI html5-qrcode kustom */
             #reader {
                 border: none !important;
@@ -103,7 +106,7 @@
         </style>
     @endpush
 
-    <div class="space-y-4 sm:space-y-6" x-data="{ mobileSection: 'scanner' }">
+    <div class="space-y-4 sm:space-y-6 pb-28 sm:pb-12" x-data="{ mobileSection: 'scanner' }">
         
         <!-- Info Bar (Waktu Mengajar / Sesi & Status) -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -121,18 +124,18 @@
                 </div>
             </div>
 
-            <!-- Mobile View Switcher (Hanya Tampil di Layar Ponsel & Tablet < lg) -->
-            <div class="lg:hidden flex p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+            <!-- Mobile View Switcher (Sticky & Prominent di Layar Ponsel < lg) -->
+            <div class="lg:hidden flex p-1.5 bg-slate-100 dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                 <button @click="mobileSection = 'scanner'" 
                         :class="mobileSection === 'scanner' ? 'bg-white dark:bg-slate-700 {{ $themeText }} shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 font-medium'"
-                        class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs transition-all">
-                    <span class="material-icons text-sm">qr_code_scanner</span>
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs transition-all min-h-[42px]">
+                    <span class="material-icons text-base">qr_code_scanner</span>
                     <span>Kamera Scan</span>
                 </button>
                 <button @click="mobileSection = 'roster'" 
                         :class="mobileSection === 'roster' ? 'bg-white dark:bg-slate-700 {{ $themeText }} shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 font-medium'"
-                        class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs transition-all">
-                    <span class="material-icons text-sm">format_list_bulleted</span>
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs transition-all min-h-[42px]">
+                    <span class="material-icons text-base">groups</span>
                     <span>Daftar Siswa</span>
                 </button>
             </div>
@@ -361,31 +364,31 @@
                                     </div>
                                 </div>
                                 <!-- Quick Manual Touch Actions (H, S, I, A, B) + Anecdote Button -->
-                                <div class="flex items-center gap-1 shrink-0">
+                                <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                     <button type="button" 
                                             onclick="openAnecdoteModal({{ $student->id }}, '{{ addslashes($student->name) }}', '{{ $student->photo_url }}', '{{ $student->nis ?? '-' }}')"
-                                            class="anecdote-btn w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 relative {{ isset($anecdotesToday[$student->id]) && $anecdotesToday[$student->id]->hasAnyNote() ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-amber-950/40 border border-slate-200 dark:border-slate-700' }}" 
+                                            class="anecdote-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 relative {{ isset($anecdotesToday[$student->id]) && $anecdotesToday[$student->id]->hasAnyNote() ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-amber-950/40 border border-slate-200 dark:border-slate-700' }}" 
                                             title="Catatan Anekdot (Akademik, Kehadiran, Sikap)" 
                                             id="anecdote-badge-{{ $student->id }}">
-                                        <span class="material-icons text-sm">rate_review</span>
+                                        <span class="material-icons text-base sm:text-sm">rate_review</span>
                                         @if(isset($anecdotesToday[$student->id]) && $anecdotesToday[$student->id]->hasAnyNote())
                                             <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900"></span>
                                         @endif
                                     </button>
                                     <button data-student-id="{{ $student->id }}" data-status="hadir"
-                                            class="manual-mark-btn w-8 h-8 rounded-xl font-black text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 transition-all active:scale-90" 
+                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 transition-all active:scale-90 shadow-2xs" 
                                             title="Tandai Hadir">H</button>
                                     <button data-student-id="{{ $student->id }}" data-status="sakit"
-                                            class="manual-mark-btn w-8 h-8 rounded-xl font-black text-xs bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white border border-purple-200/80 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800 transition-all active:scale-90" 
+                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white border border-purple-200/80 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800 transition-all active:scale-90 shadow-2xs" 
                                             title="Tandai Sakit">S</button>
                                     <button data-student-id="{{ $student->id }}" data-status="izin"
-                                            class="manual-mark-btn w-8 h-8 rounded-xl font-black text-xs bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white border border-sky-200/80 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 transition-all active:scale-90" 
+                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white border border-sky-200/80 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 transition-all active:scale-90 shadow-2xs" 
                                             title="Tandai Izin">I</button>
                                     <button data-student-id="{{ $student->id }}" data-status="alpa"
-                                            class="manual-mark-btn w-8 h-8 rounded-xl font-black text-xs bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white border border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 transition-all active:scale-90" 
+                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white border border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 transition-all active:scale-90 shadow-2xs" 
                                             title="Tandai Alpa">A</button>
                                     <button data-student-id="{{ $student->id }}" data-status="bolos"
-                                            class="manual-mark-btn w-8 h-8 rounded-xl font-black text-xs bg-orange-50 text-orange-700 hover:bg-orange-600 hover:text-white border border-orange-200/80 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800 transition-all active:scale-90" 
+                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-orange-50 text-orange-700 hover:bg-orange-600 hover:text-white border border-orange-200/80 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800 transition-all active:scale-90 shadow-2xs" 
                                             title="Tandai Bolos">B</button>
                                 </div>
                             </div>
