@@ -860,6 +860,7 @@ class SubjectAttendanceController extends Controller
     public function chartData(Request $request)
     {
         $activityType = $request->input('activity_type', 'regular');
+        $targetPercentage = (float)$request->input('target_percentage', 80);
 
         if ($activityType === 'cocurricular' || $request->filled('cocurricular_id')) {
             $request->validate([
@@ -894,7 +895,11 @@ class SubjectAttendanceController extends Controller
                 ->get();
 
             if ($schedules->isEmpty()) {
-                return response()->json(['error' => 'Jadwal kokurikuler tidak ditemukan.'], 404);
+                return response()->json([
+                    'success' => false,
+                    'emptyState' => true,
+                    'message' => 'Belum ada jadwal kokurikuler untuk kombinasi kelas dan proyek ini.'
+                ]);
             }
 
             $scheduleIds = $schedules->pluck('id')->toArray();
@@ -910,7 +915,11 @@ class SubjectAttendanceController extends Controller
                 ->first();
 
             if (!$assignment) {
-                return response()->json(['error' => 'Jadwal mengajar tidak ditemukan.'], 404);
+                return response()->json([
+                    'success' => false,
+                    'emptyState' => true,
+                    'message' => 'Jadwal mengajar mata pelajaran tidak ditemukan untuk kombinasi ini.'
+                ]);
             }
 
             $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
@@ -931,11 +940,20 @@ class SubjectAttendanceController extends Controller
             return in_array($date->dayOfWeekIso, $scheduleDays) && !\App\Models\Calendar::isDateInHolidays($date, $holidays) && $date->startOfDay() <= now()->startOfDay();
         });
 
+        $allStudents = Student::where('school_class_id', $schoolClassId)->orderBy('name')->get();
         if ($studentId && $studentId !== 'all') {
             $query->where('student_id', $studentId);
             $studentsCount = 1;
         } else {
-            $studentsCount = Student::where('school_class_id', $schoolClassId)->count();
+            $studentsCount = $allStudents->count();
+        }
+
+        if ($validDays->isEmpty() || $studentsCount === 0) {
+            return response()->json([
+                'success' => true,
+                'hasData' => false,
+                'message' => 'Belum ada sesi pertemuan efektif pada rentang tanggal ini.'
+            ]);
         }
 
         $attendances = $query->get();
@@ -966,6 +984,32 @@ class SubjectAttendanceController extends Controller
             'izin' => $p_izin,
             'alpa' => $p_alpa,
         ];
+
+        // Hitung siswa di bawah target (Need Attention)
+        $studentsBelowTarget = [];
+        if (!$studentId || $studentId === 'all') {
+            $totalSessions = $validDays->count();
+            if ($totalSessions > 0) {
+                foreach ($allStudents as $st) {
+                    $stHadir = $attendances->where('student_id', $st->id)->where('status', 'hadir')->count();
+                    $stPercent = round(($stHadir / $totalSessions) * 100, 1);
+                    if ($stPercent < $targetPercentage) {
+                        $stMissed = $totalSessions - $stHadir;
+                        $studentsBelowTarget[] = [
+                            'id' => $st->id,
+                            'name' => $st->name,
+                            'nis' => $st->nis ?? '-',
+                            'percent' => $stPercent,
+                            'hadir' => $stHadir,
+                            'missed' => $stMissed
+                        ];
+                    }
+                }
+            }
+        }
+
+        // Urutkan siswa butuh perhatian dari persentase terendah
+        usort($studentsBelowTarget, fn($a, $b) => $a['percent'] <=> $b['percent']);
 
         $trendLabels = [];
         $trendData = [
@@ -1027,7 +1071,21 @@ class SubjectAttendanceController extends Controller
         }
 
         return response()->json([
+            'success' => true,
+            'hasData' => true,
             'summary' => $summaryData,
+            'metrics' => [
+                'total_hadir' => $totalHadir,
+                'total_sakit' => $totalSakit,
+                'total_izin' => $totalIzin,
+                'total_alpa' => $totalAlpa,
+                'total_students' => $studentsCount,
+                'total_sessions' => $validDays->count(),
+                'max_possible' => $maxPossible,
+                'class_avg_percent' => $p_hadir,
+                'target_percent' => $targetPercentage,
+            ],
+            'studentsBelowTarget' => $studentsBelowTarget,
             'trendLabels' => $trendLabels,
             'trendData' => $trendData
         ]);
