@@ -77,12 +77,17 @@ class SubjectAttendanceController extends Controller
 
         $attendedStudents = $subjectAttendancesToday->where('status', 'hadir');
         $studentsOnLeave = $subjectAttendancesToday->whereIn('status', ['sakit', 'izin']);
+        $studentsSakit = $subjectAttendancesToday->where('status', 'sakit');
+        $studentsIzin = $subjectAttendancesToday->where('status', 'izin');
+        $studentsAlpa = $subjectAttendancesToday->where('status', 'alpa');
+        $studentsBolos = $subjectAttendancesToday->where('status', 'bolos');
         $studentIdsWithRecord = $subjectAttendancesToday->pluck('student_id');
 
-        $studentsWithoutNotice = Student::where('school_class_id', $classId)
-            ->whereNotIn('id', $studentIdsWithRecord)
-            ->orderBy('name', 'asc')
-            ->get();
+        $allClassStudents = Student::where('school_class_id', $classId)->orderBy('name', 'asc')->get();
+        $totalClassStudents = $allClassStudents->count();
+        $attendancePercentage = $totalClassStudents > 0 ? round(($attendedStudents->count() / $totalClassStudents) * 100) : 0;
+
+        $studentsWithoutNotice = $allClassStudents->whereNotIn('id', $studentIdsWithRecord);
 
         $studentsForFaceRecognition = Student::where('school_class_id', $classId)
             ->whereNotNull('photo')
@@ -114,7 +119,13 @@ class SubjectAttendanceController extends Controller
             'schedule', 
             'attendedStudents', 
             'studentsOnLeave', 
+            'studentsSakit',
+            'studentsIzin',
+            'studentsAlpa',
+            'studentsBolos',
             'studentsWithoutNotice', 
+            'totalClassStudents',
+            'attendancePercentage',
             'studentsForFaceRecognition', 
             'selectedDate',
             'anecdotesToday'

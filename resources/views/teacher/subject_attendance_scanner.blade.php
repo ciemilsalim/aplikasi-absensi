@@ -5,45 +5,39 @@
     $themeText = $isCocurricular ? 'text-indigo-600 dark:text-indigo-400' : 'text-sky-600 dark:text-sky-400';
     $themeBtn = $isCocurricular ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-sky-600 hover:bg-sky-500';
     $themeBorder = $isCocurricular ? 'border-indigo-200 dark:border-indigo-800' : 'border-sky-200 dark:border-sky-800';
+    
+    $rawClassName = $schedule->getTargetClass()?->name ?? '-';
+    $displayClassName = str_starts_with($rawClassName, 'Kelas') ? $rawClassName : 'Kelas ' . $rawClassName;
 @endphp
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+        <div class="flex items-center justify-between gap-3 w-full">
             <div>
                 <x-breadcrumb :breadcrumbs="[
                     ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard', ['view' => $isCocurricular ? 'fasilitator_kokurikuler' : 'guru_mapel'])],
                     ['title' => $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar', 'url' => '#']
                 ]" />
-                <div class="flex items-center gap-2 flex-wrap mt-1">
-                    <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                        {{ $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar' }}
-                    </h1>
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold {{ $isCocurricular ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800' }} shadow-2xs">
-                        {{ $schedule->getActivityName() }}
-                    </span>
-                    @php
-                        $rawClassName = $schedule->getTargetClass()?->name ?? '-';
-                        $displayClassName = str_starts_with($rawClassName, 'Kelas') ? $rawClassName : 'Kelas ' . $rawClassName;
-                    @endphp
-                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
-                        {{ $displayClassName }}
-                    </span>
-                </div>
+                <h1 class="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
+                    {{ $isCocurricular ? 'Presensi Kokurikuler' : 'Sesi Presensi Mengajar' }}
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <span class="font-bold text-slate-800 dark:text-slate-200">{{ $schedule->getActivityName() }}</span> &bull; <span>{{ $displayClassName }}</span>
+                </p>
             </div>
 
-            <!-- Header Action Controls (Kanan Atas Sejajar Judul) -->
-            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-2 shrink-0">
                 <a href="{{ route('teacher.dashboard', ['view' => $isCocurricular ? 'fasilitator_kokurikuler' : 'guru_mapel']) }}" 
-                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors shadow-2xs whitespace-nowrap">
+                   class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-colors shadow-2xs">
                     <span class="material-icons text-sm">arrow_back</span>
-                    <span>Dasbor</span>
+                    <span class="hidden sm:inline">Dasbor</span>
                 </a>
 
-                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
-                    <span class="material-icons text-slate-400 text-xs ml-1.5">calendar_today</span>
+                <div class="flex items-center gap-1 bg-white dark:bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs">
+                    <span class="material-icons text-slate-400 text-xs">calendar_today</span>
                     <input type="date" id="attendance-date" name="date" value="{{ $selectedDate->format('Y-m-d') }}" 
-                           class="border-0 bg-transparent text-slate-800 dark:text-white focus:ring-0 text-xs font-bold py-1 px-1.5 cursor-pointer">
+                           class="border-0 bg-transparent text-slate-800 dark:text-white focus:ring-0 text-xs font-bold py-0 px-1 cursor-pointer">
                 </div>
             </div>
         </div>
@@ -106,37 +100,37 @@
         </style>
     @endpush
 
-    <div class="space-y-4 sm:space-y-6 pb-28 sm:pb-12" x-data="{ mobileSection: 'scanner' }">
+    <div class="space-y-4 sm:space-y-6 pb-32 sm:pb-12" x-data="{ mobileSection: 'scanner' }">
         
-        <!-- Info Bar (Waktu Mengajar / Sesi & Status) -->
+        <!-- Waktu Pembelajaran & Primary Action Switcher -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-2xl {{ $themeBgSoft }} {{ $themeText }} flex items-center justify-center font-bold shrink-0">
                     <span class="material-icons text-xl">{{ $isCocurricular ? 'psychology' : 'schedule' }}</span>
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                        {{ $isCocurricular ? 'Waktu Sesi Kokurikuler' : 'Waktu Pembelajaran' }}
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        {{ $isCocurricular ? 'Sesi Kokurikuler' : 'Waktu Pembelajaran' }}
                     </h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        Pukul <strong class="text-slate-800 dark:text-slate-200">{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}</strong> WITA • Hari {{ ['1'=>'Senin','2'=>'Selasa','3'=>'Rabu','4'=>'Kamis','5'=>'Jumat','6'=>'Sabtu','7'=>'Minggu'][$schedule->day_of_week] ?? '' }}
+                    <p class="text-sm font-extrabold text-slate-800 dark:text-slate-100 mt-0.5">
+                        {{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }} WITA &bull; {{ $selectedDate->translatedFormat('l, d F Y') }}
                     </p>
                 </div>
             </div>
 
-            <!-- Mobile View Switcher (Sticky & Prominent di Layar Ponsel < lg) -->
-            <div class="lg:hidden flex p-1.5 bg-slate-100 dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+            <!-- Action Switcher: Scan QR (Primary) vs Daftar Siswa (Secondary) -->
+            <div class="flex items-center gap-2 w-full sm:w-auto">
                 <button @click="mobileSection = 'scanner'" 
-                        :class="mobileSection === 'scanner' ? 'bg-white dark:bg-slate-700 {{ $themeText }} shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 font-medium'"
-                        class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs transition-all min-h-[42px]">
+                        :class="mobileSection === 'scanner' ? '{{ $themeBtn }} text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                        class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all min-h-[44px] shadow-2xs">
                     <span class="material-icons text-base">qr_code_scanner</span>
-                    <span>Kamera Scan</span>
+                    <span>Scan Kamera</span>
                 </button>
                 <button @click="mobileSection = 'roster'" 
-                        :class="mobileSection === 'roster' ? 'bg-white dark:bg-slate-700 {{ $themeText }} shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 font-medium'"
-                        class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs transition-all min-h-[42px]">
+                        :class="mobileSection === 'roster' ? '{{ $themeBtn }} text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                        class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all min-h-[44px] shadow-2xs">
                     <span class="material-icons text-base">groups</span>
-                    <span>Daftar Siswa</span>
+                    <span>Daftar Siswa ({{ $totalClassStudents }})</span>
                 </button>
             </div>
         </div>
@@ -151,12 +145,12 @@
                     <!-- Mode Tab Switcher (QR vs Face AI) -->
                     <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4 border border-slate-200/60 dark:border-slate-700/60">
                         <button id="tab-qr"
-                                class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-white {{ $themeBtn }} shadow-sm">
+                                class="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 text-white {{ $themeBtn }} shadow-sm">
                             <span class="material-icons text-base">qr_code_scanner</span>
                             <span>Scan QR Code</span>
                         </button>
                         <button id="tab-face"
-                                class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                                class="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                             <span class="material-icons text-base">face</span>
                             <span>Scan Wajah AI</span>
                         </button>
@@ -282,35 +276,39 @@
             <!-- Right Column: Live Roster & Quick Actions (7 Cols di Desktop) -->
             <div class="lg:col-span-7 space-y-4" :class="mobileSection === 'roster' ? 'block' : 'hidden lg:block'">
 
-                <!-- Metric Ribbon Cards -->
-                <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
-                    <div class="bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-emerald-100 dark:border-emerald-950/50 shadow-2xs flex items-center justify-between">
-                        <div>
+                <!-- Integrated Metric Ribbon with Progress Bar -->
+                <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
+                    <div class="grid grid-cols-3 gap-2 sm:gap-3 text-center">
+                        <div class="p-2.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/40">
                             <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Hadir</p>
-                            <p class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white" id="attended-count">{{ $attendedStudents->count() }}</p>
+                            <p class="text-base sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                                <span id="attended-count">{{ $attendedStudents->count() }}</span> <span class="text-xs font-bold text-slate-400">/ {{ $totalClassStudents }}</span>
+                            </p>
                         </div>
-                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 font-black text-xs flex items-center justify-center">
-                            H
-                        </div>
-                    </div>
 
-                    <div class="bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-amber-100 dark:border-amber-950/50 shadow-2xs flex items-center justify-between">
-                        <div>
+                        <div class="p-2.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/40">
                             <p class="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Izin / Sakit</p>
-                            <p class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white" id="leave-count">{{ $studentsOnLeave->count() }}</p>
+                            <p class="text-base sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                                <span id="leave-count">{{ $studentsOnLeave->count() }}</span> <span class="text-xs font-bold text-slate-400">/ {{ $totalClassStudents }}</span>
+                            </p>
                         </div>
-                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 font-black text-xs flex items-center justify-center">
-                            I/S
+
+                        <div class="p-2.5 rounded-2xl bg-rose-50/60 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/40">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Belum Hadir</p>
+                            <p class="text-base sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                                <span id="no-notice-count">{{ $studentsWithoutNotice->count() }}</span> <span class="text-xs font-bold text-slate-400">/ {{ $totalClassStudents }}</span>
+                            </p>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-rose-100 dark:border-rose-950/50 shadow-2xs flex items-center justify-between">
-                        <div>
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Belum Hadir</p>
-                            <p class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white" id="no-notice-count">{{ $studentsWithoutNotice->count() }}</p>
+                    <!-- Progress Bar Kehadiran Kelas -->
+                    <div class="space-y-1.5 pt-1">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="font-bold text-slate-600 dark:text-slate-400">Tingkat Kehadiran Kelas</span>
+                            <span class="font-black text-emerald-600 dark:text-emerald-400" id="attendance-percent-label">{{ $attendancePercentage }}%</span>
                         </div>
-                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 font-black text-xs flex items-center justify-center">
-                            ?
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                            <div id="attendance-percent-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: {{ $attendancePercentage }}%;"></div>
                         </div>
                     </div>
                 </div>
@@ -321,75 +319,105 @@
                     <!-- List Navigation & Search -->
                     <div class="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800 space-y-3">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                            <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 overflow-x-auto no-scrollbar">
+                            
+                            <!-- Filter Status Tabs -->
+                            <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 overflow-x-auto no-scrollbar gap-1">
                                 <button @click="listTab = 'unmarked'" 
                                         :class="listTab === 'unmarked' ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium'"
-                                        class="px-3 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap">
-                                    Belum Absen
+                                        class="px-2.5 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap">
+                                    Belum Absen (<span id="tab-count-unmarked">{{ $studentsWithoutNotice->count() }}</span>)
                                 </button>
                                 <button @click="listTab = 'attended'" 
                                         :class="listTab === 'attended' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium'"
-                                        class="px-3 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap">
-                                    Sudah Hadir
+                                        class="px-2.5 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap">
+                                    Hadir (<span id="tab-count-attended">{{ $attendedStudents->count() }}</span>)
                                 </button>
-                                <button @click="listTab = 'leave'" 
-                                        :class="listTab === 'leave' ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium'"
-                                        class="px-3 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap">
-                                    Izin / Sakit
+                                <button @click="listTab = 'izin'" 
+                                        :class="listTab === 'izin' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium'"
+                                        class="px-2.5 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap">
+                                    Izin (<span id="tab-count-izin">{{ $studentsIzin->count() }}</span>)
+                                </button>
+                                <button @click="listTab = 'sakit'" 
+                                        :class="listTab === 'sakit' ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium'"
+                                        class="px-2.5 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap">
+                                    Sakit (<span id="tab-count-sakit">{{ $studentsSakit->count() }}</span>)
+                                </button>
+                                <button @click="listTab = 'alpa'" 
+                                        :class="listTab === 'alpa' ? 'bg-white dark:bg-slate-700 text-orange-600 dark:text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium'"
+                                        class="px-2.5 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap">
+                                    Alpa/Bolos (<span id="tab-count-alpa">{{ $studentsAlpa->count() + $studentsBolos->count() }}</span>)
                                 </button>
                             </div>
 
-                            <div class="relative w-full sm:w-48">
+                            <!-- Search Input (Nama / NIS) -->
+                            <div class="relative w-full sm:w-56">
                                 <span class="material-icons absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">search</span>
-                                <input type="text" x-model="search" placeholder="Cari nama siswa..." 
+                                <input type="text" x-model="search" placeholder="Cari nama / NIS siswa..." 
                                        class="w-full text-xs py-2 pl-8 pr-3 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500">
                             </div>
                         </div>
                     </div>
 
-                    <!-- 1. TAB: BELUM ABSEN (Daftar Siswa dengan Tombol Sentuh 1-Klik Cepat) -->
-                    <div x-show="listTab === 'unmarked'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="no-notice-list">
+                    <!-- 1. TAB: BELUM ABSEN (Daftar Siswa dengan Tombol Sentuh 1-Klik Cepat & Lapang) -->
+                    <div x-show="listTab === 'unmarked'" class="max-h-[500px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar p-2 sm:p-3 space-y-2.5" id="no-notice-list">
                         @forelse($studentsWithoutNotice as $student)
-                            <div class="p-3 sm:p-3.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors student-item" 
+                            <div class="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-slate-850 border border-slate-200/80 dark:border-slate-750 shadow-2xs space-y-2.5 student-item transition-all hover:border-sky-300 dark:hover:border-sky-700" 
                                  id="student-no-notice-{{ $student->id }}"
-                                 x-show="search === '' || {{ json_encode(mb_strtolower($student->name)) }}.includes(search.toLowerCase())">
-                                <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs"
-                                         src="{{ $student->photo_url }}" 
-                                         alt="{{ $student->name }}"
-                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe'">
-                                    <div class="min-w-0">
-                                        <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{{ $student->name }}</p>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">NIS: {{ $student->nis ?? '-' }}</p>
+                                 x-show="search === '' || {{ json_encode(mb_strtolower($student->name)) }}.includes(search.toLowerCase()) || {{ json_encode($student->nis ?? '') }}.includes(search)">
+                                
+                                <!-- Baris Atas: Foto, Nama, NIS & Tombol Anekdot -->
+                                <div class="flex items-center justify-between gap-2.5">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <img class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs"
+                                             src="{{ $student->photo_url }}" 
+                                             alt="{{ $student->name }}"
+                                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe'">
+                                        <div class="min-w-0">
+                                            <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{{ $student->name }}</p>
+                                            <p class="text-[11px] text-slate-400 mt-0.5">NIS: {{ $student->nis ?? '-' }}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <!-- Quick Manual Touch Actions (H, S, I, A, B) + Anecdote Button -->
-                                <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+
+                                    <!-- Tombol Catatan Anekdot Sikap -->
                                     <button type="button" 
                                             onclick="openAnecdoteModal({{ $student->id }}, '{{ addslashes($student->name) }}', '{{ $student->photo_url }}', '{{ $student->nis ?? '-' }}')"
-                                            class="anecdote-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 relative {{ isset($anecdotesToday[$student->id]) && $anecdotesToday[$student->id]->hasAnyNote() ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-amber-950/40 border border-slate-200 dark:border-slate-700' }}" 
+                                            class="anecdote-btn w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90 relative shrink-0 {{ isset($anecdotesToday[$student->id]) && $anecdotesToday[$student->id]->hasAnyNote() ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-amber-950/40 border border-slate-200 dark:border-slate-700' }}" 
                                             title="Catatan Anekdot (Akademik, Kehadiran, Sikap)" 
                                             id="anecdote-badge-{{ $student->id }}">
-                                        <span class="material-icons text-base sm:text-sm">rate_review</span>
+                                        <span class="material-icons text-base">rate_review</span>
                                         @if(isset($anecdotesToday[$student->id]) && $anecdotesToday[$student->id]->hasAnyNote())
                                             <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900"></span>
                                         @endif
                                     </button>
+                                </div>
+
+                                <!-- Baris Bawah: 5 Tombol Status 1-Klik Penuh dengan Area Sentuh Nyaman (≥42px) -->
+                                <div class="grid grid-cols-5 gap-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
                                     <button data-student-id="{{ $student->id }}" data-status="hadir"
-                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 transition-all active:scale-90 shadow-2xs" 
-                                            title="Tandai Hadir">H</button>
+                                            class="manual-mark-btn min-h-[42px] rounded-xl font-black text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 transition-all active:scale-95 shadow-2xs flex items-center justify-center" 
+                                            title="Tandai Hadir">
+                                        <span>H</span>
+                                    </button>
                                     <button data-student-id="{{ $student->id }}" data-status="sakit"
-                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white border border-purple-200/80 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800 transition-all active:scale-90 shadow-2xs" 
-                                            title="Tandai Sakit">S</button>
+                                            class="manual-mark-btn min-h-[42px] rounded-xl font-black text-xs bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white border border-purple-200/80 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800 transition-all active:scale-95 shadow-2xs flex items-center justify-center" 
+                                            title="Tandai Sakit">
+                                        <span>S</span>
+                                    </button>
                                     <button data-student-id="{{ $student->id }}" data-status="izin"
-                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white border border-sky-200/80 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 transition-all active:scale-90 shadow-2xs" 
-                                            title="Tandai Izin">I</button>
+                                            class="manual-mark-btn min-h-[42px] rounded-xl font-black text-xs bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white border border-sky-200/80 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 transition-all active:scale-95 shadow-2xs flex items-center justify-center" 
+                                            title="Tandai Izin">
+                                        <span>I</span>
+                                    </button>
                                     <button data-student-id="{{ $student->id }}" data-status="alpa"
-                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white border border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 transition-all active:scale-90 shadow-2xs" 
-                                            title="Tandai Alpa">A</button>
+                                            class="manual-mark-btn min-h-[42px] rounded-xl font-black text-xs bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white border border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 transition-all active:scale-95 shadow-2xs flex items-center justify-center" 
+                                            title="Tandai Alpa">
+                                        <span>A</span>
+                                    </button>
                                     <button data-student-id="{{ $student->id }}" data-status="bolos"
-                                            class="manual-mark-btn w-9 h-9 sm:w-8 sm:h-8 rounded-xl font-black text-xs bg-orange-50 text-orange-700 hover:bg-orange-600 hover:text-white border border-orange-200/80 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800 transition-all active:scale-90 shadow-2xs" 
-                                            title="Tandai Bolos">B</button>
+                                            class="manual-mark-btn min-h-[42px] rounded-xl font-black text-xs bg-orange-50 text-orange-700 hover:bg-orange-600 hover:text-white border border-orange-200/80 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800 transition-all active:scale-95 shadow-2xs flex items-center justify-center" 
+                                            title="Tandai Bolos">
+                                        <span>B</span>
+                                    </button>
                                 </div>
                             </div>
                         @empty
@@ -400,10 +428,10 @@
                     </div>
 
                     <!-- 2. TAB: SUDAH HADIR -->
-                    <div x-show="listTab === 'attended'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="attended-list" style="display: none;">
+                    <div x-show="listTab === 'attended'" class="max-h-[500px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="attended-list" style="display: none;">
                         @forelse($attendedStudents as $attendance)
                             <div class="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors student-attended-row-{{ $attendance->student->id }}"
-                                 x-show="search === '' || {{ json_encode(mb_strtolower($attendance->student->name)) }}.includes(search.toLowerCase())">
+                                 x-show="search === '' || {{ json_encode(mb_strtolower($attendance->student->name)) }}.includes(search.toLowerCase()) || {{ json_encode($attendance->student->nis ?? '') }}.includes(search)">
                                 <div class="flex items-center gap-2.5 min-w-0">
                                     <div class="relative shrink-0">
                                         <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-emerald-500 shadow-2xs"
@@ -420,7 +448,7 @@
                                 <div class="flex items-center gap-2">
                                     <button type="button" 
                                             onclick="openAnecdoteModal({{ $attendance->student->id }}, '{{ addslashes($attendance->student->name) }}', '{{ $attendance->student->photo_url }}', '{{ $attendance->student->nis ?? '-' }}')"
-                                            class="anecdote-btn w-7 h-7 rounded-xl flex items-center justify-center transition-all active:scale-90 relative {{ isset($anecdotesToday[$attendance->student->id]) && $anecdotesToday[$attendance->student->id]->hasAnyNote() ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-amber-950/40 border border-slate-200 dark:border-slate-700' }}" 
+                                            class="anecdote-btn w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 relative {{ isset($anecdotesToday[$attendance->student->id]) && $anecdotesToday[$attendance->student->id]->hasAnyNote() ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-amber-950/40 border border-slate-200 dark:border-slate-700' }}" 
                                             title="Catatan Anekdot" 
                                             id="anecdote-badge-attended-{{ $attendance->student->id }}">
                                         <span class="material-icons text-sm">rate_review</span>
@@ -440,48 +468,84 @@
                         @endforelse
                     </div>
 
-                    <!-- 3. TAB: SISWA IZIN / SAKIT -->
-                    <div x-show="listTab === 'leave'" class="max-h-[460px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="leave-list" style="display: none;">
-                        @forelse($studentsOnLeave as $subjectAttendance)
-                            <div class="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors student-leave-row-{{ $subjectAttendance->student->id }}"
-                                 x-show="search === '' || {{ json_encode(mb_strtolower($subjectAttendance->student->name)) }}.includes(search.toLowerCase())">
+                    <!-- 3. TAB: SISWA IZIN -->
+                    <div x-show="listTab === 'izin'" class="max-h-[500px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="izin-list" style="display: none;">
+                        @forelse($studentsIzin as $subjectAttendance)
+                            <div class="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors student-izin-row-{{ $subjectAttendance->student->id }}"
+                                 x-show="search === '' || {{ json_encode(mb_strtolower($subjectAttendance->student->name)) }}.includes(search.toLowerCase()) || {{ json_encode($subjectAttendance->student->nis ?? '') }}.includes(search)">
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <div class="relative shrink-0">
-                                        <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-amber-500 shadow-2xs"
-                                             src="{{ $subjectAttendance->student->photo_url }}" 
-                                             alt="{{ $subjectAttendance->student->name }}"
-                                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'">
-                                        <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-amber-500 border-2 border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[8px] text-white font-bold">
-                                            {{ strtoupper(substr($subjectAttendance->status, 0, 1)) }}
-                                        </span>
-                                    </div>
+                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-sky-500 shadow-2xs shrink-0"
+                                         src="{{ $subjectAttendance->student->photo_url }}" 
+                                         alt="{{ $subjectAttendance->student->name }}"
+                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'">
                                     <div class="truncate">
                                         <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{{ $subjectAttendance->student->name }}</p>
                                         <p class="text-[10px] text-slate-400 mt-0.5">NIS: {{ $subjectAttendance->student->nis ?? '-' }}</p>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <button type="button" 
-                                            onclick="openAnecdoteModal({{ $subjectAttendance->student->id }}, '{{ addslashes($subjectAttendance->student->name) }}', '{{ $subjectAttendance->student->photo_url }}', '{{ $subjectAttendance->student->nis ?? '-' }}')"
-                                            class="anecdote-btn w-7 h-7 rounded-xl flex items-center justify-center transition-all active:scale-90 relative {{ isset($anecdotesToday[$subjectAttendance->student->id]) && $anecdotesToday[$subjectAttendance->student->id]->hasAnyNote() ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-amber-950/40 border border-slate-200 dark:border-slate-700' }}" 
-                                            title="Catatan Anekdot" 
-                                            id="anecdote-badge-leave-{{ $subjectAttendance->student->id }}">
-                                        <span class="material-icons text-sm">rate_review</span>
-                                        @if(isset($anecdotesToday[$subjectAttendance->student->id]) && $anecdotesToday[$subjectAttendance->student->id]->hasAnyNote())
-                                            <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-                                        @endif
-                                    </button>
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase
-                                        @if($subjectAttendance->status == 'sakit') bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800 @endif
-                                        @if($subjectAttendance->status == 'izin') bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-200 dark:border-sky-800 @endif
-                                    ">
-                                        {{ ucfirst($subjectAttendance->status) }}
-                                    </span>
-                                </div>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                                    Izin
+                                </span>
                             </div>
                         @empty
-                            <div id="no-students-on-leave" class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
-                                Tidak ada siswa yang izin atau sakit hari ini.
+                            <div class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
+                                Tidak ada siswa yang berstatus izin hari ini.
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <!-- 4. TAB: SISWA SAKIT -->
+                    <div x-show="listTab === 'sakit'" class="max-h-[500px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="sakit-list" style="display: none;">
+                        @forelse($studentsSakit as $subjectAttendance)
+                            <div class="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors student-sakit-row-{{ $subjectAttendance->student->id }}"
+                                 x-show="search === '' || {{ json_encode(mb_strtolower($subjectAttendance->student->name)) }}.includes(search.toLowerCase()) || {{ json_encode($subjectAttendance->student->nis ?? '') }}.includes(search)">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-purple-500 shadow-2xs shrink-0"
+                                         src="{{ $subjectAttendance->student->photo_url }}" 
+                                         alt="{{ $subjectAttendance->student->name }}"
+                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'">
+                                    <div class="truncate">
+                                        <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{{ $subjectAttendance->student->name }}</p>
+                                        <p class="text-[10px] text-slate-400 mt-0.5">NIS: {{ $subjectAttendance->student->nis ?? '-' }}</p>
+                                    </div>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                    Sakit
+                                </span>
+                            </div>
+                        @empty
+                            <div class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
+                                Tidak ada siswa yang berstatus sakit hari ini.
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <!-- 5. TAB: SISWA ALPA / BOLOS -->
+                    <div x-show="listTab === 'alpa'" class="max-h-[500px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 no-scrollbar" id="alpa-list" style="display: none;">
+                        @php
+                            $alpaBolosStudents = $studentsAlpa->concat($studentsBolos);
+                        @endphp
+                        @forelse($alpaBolosStudents as $subjectAttendance)
+                            <div class="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors"
+                                 x-show="search === '' || {{ json_encode(mb_strtolower($subjectAttendance->student->name)) }}.includes(search.toLowerCase()) || {{ json_encode($subjectAttendance->student->nis ?? '') }}.includes(search)">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-rose-500 shadow-2xs shrink-0"
+                                         src="{{ $subjectAttendance->student->photo_url }}" 
+                                         alt="{{ $subjectAttendance->student->name }}"
+                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'">
+                                    <div class="truncate">
+                                        <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{{ $subjectAttendance->student->name }}</p>
+                                        <p class="text-[10px] text-slate-400 mt-0.5">NIS: {{ $subjectAttendance->student->nis ?? '-' }}</p>
+                                    </div>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase
+                                    @if($subjectAttendance->status === 'alpa') bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800 @else bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 border border-orange-200 dark:border-orange-800 @endif">
+                                    {{ ucfirst($subjectAttendance->status) }}
+                                </span>
+                            </div>
+                        @empty
+                            <div class="p-8 text-center text-xs text-slate-500 dark:text-slate-400 italic">
+                                Tidak ada siswa berstatus alpa atau bolos.
                             </div>
                         @endforelse
                     </div>
@@ -599,17 +663,17 @@
                                 Catatan Pengamatan Akademik:
                             </label>
                             <textarea id="anecdote-academic-note" rows="3" 
-                                      placeholder="Contoh: Memahami materi fungsi kuadrat dengan cepat, sangat aktif memimpin diskusi kelompok, perlu latihan tambahan soal nomor 4..." 
+                                      placeholder="Contoh: Memahami materi dengan cepat, aktif menjawab pertanyaan..." 
                                       class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"></textarea>
                         </div>
                     </div>
 
                     <!-- 2. TAB: KEHADIRAN -->
-                    <div x-show="anTab === 'attendance'" class="space-y-3.5" style="display: none;">
+                    <div x-show="anTab === 'attendance'" class="space-y-3.5">
                         <div class="flex items-center justify-between gap-2">
                             <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                                <span class="material-icons text-sm text-sky-500">schedule</span>
-                                <span>Kedisiplinan & Kehadiran Mapel</span>
+                                <span class="material-icons text-sm text-sky-500">fact_check</span>
+                                <span>Sentimen Ketertiban Kehadiran</span>
                             </label>
                             <span class="text-[10px] text-slate-400">Pilih salah satu</span>
                         </div>
@@ -618,40 +682,40 @@
                                 <input type="radio" name="attendance_sentiment" value="positive" class="sr-only peer">
                                 <div class="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-center peer-checked:bg-emerald-50 peer-checked:border-emerald-400 peer-checked:text-emerald-700 dark:peer-checked:bg-emerald-950/60 dark:peer-checked:text-emerald-300 dark:peer-checked:border-emerald-700 transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
                                     <span class="text-sm block">⏰</span>
-                                    <span class="text-[11px] font-bold block mt-1">Tepat Waktu / Disiplin</span>
+                                    <span class="text-[11px] font-bold block mt-1">Tepat Waktu</span>
                                 </div>
                             </label>
                             <label class="sentiment-option cursor-pointer">
                                 <input type="radio" name="attendance_sentiment" value="neutral" class="sr-only peer" checked>
                                 <div class="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-center peer-checked:bg-sky-50 peer-checked:border-sky-400 peer-checked:text-sky-700 dark:peer-checked:bg-sky-950/60 dark:peer-checked:text-sky-300 dark:peer-checked:border-sky-700 transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
                                     <span class="text-sm block">📋</span>
-                                    <span class="text-[11px] font-bold block mt-1">Normal / Izin Wajar</span>
+                                    <span class="text-[11px] font-bold block mt-1">Normal / Izin Sah</span>
                                 </div>
                             </label>
                             <label class="sentiment-option cursor-pointer">
                                 <input type="radio" name="attendance_sentiment" value="needs_guidance" class="sr-only peer">
                                 <div class="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-center peer-checked:bg-rose-50 peer-checked:border-rose-400 peer-checked:text-rose-700 dark:peer-checked:bg-rose-950/60 dark:peer-checked:text-rose-300 dark:peer-checked:border-rose-700 transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
                                     <span class="text-sm block">⚠️</span>
-                                    <span class="text-[11px] font-bold block mt-1">Perlu Diperhatikan</span>
+                                    <span class="text-[11px] font-bold block mt-1">Terlambat / Bolos</span>
                                 </div>
                             </label>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                                Catatan Kehadiran & Kedisiplinan:
+                                Catatan Pengamatan Kehadiran:
                             </label>
                             <textarea id="anecdote-attendance-note" rows="3" 
-                                      placeholder="Contoh: Terlambat 15 menit masuk kelas setelah istirahat, izin ke toilet lebih dari 20 menit, sering meminta izin keluar saat jam pelajaran..." 
+                                      placeholder="Contoh: Datang terlambat 15 menit karena kendaraan rusak..." 
                                       class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"></textarea>
                         </div>
                     </div>
 
                     <!-- 3. TAB: SIKAP & KARAKTER -->
-                    <div x-show="anTab === 'attitude'" class="space-y-3.5" style="display: none;">
+                    <div x-show="anTab === 'attitude'" class="space-y-3.5">
                         <div class="flex items-center justify-between gap-2">
                             <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                                <span class="material-icons text-sm text-emerald-500">favorite</span>
-                                <span>Observasi Karakter & Sikap</span>
+                                <span class="material-icons text-sm text-emerald-500">psychology</span>
+                                <span>Sentimen Karakter / Sikap</span>
                             </label>
                             <span class="text-[10px] text-slate-400">Pilih salah satu</span>
                         </div>
@@ -660,43 +724,43 @@
                                 <input type="radio" name="attitude_sentiment" value="positive" class="sr-only peer">
                                 <div class="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-center peer-checked:bg-emerald-50 peer-checked:border-emerald-400 peer-checked:text-emerald-700 dark:peer-checked:bg-emerald-950/60 dark:peer-checked:text-emerald-300 dark:peer-checked:border-emerald-700 transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
                                     <span class="text-sm block">👏</span>
-                                    <span class="text-[11px] font-bold block mt-1">Sopan & Teladan</span>
+                                    <span class="text-[11px] font-bold block mt-1">Sangat Terpuji</span>
                                 </div>
                             </label>
                             <label class="sentiment-option cursor-pointer">
                                 <input type="radio" name="attitude_sentiment" value="neutral" class="sr-only peer" checked>
                                 <div class="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-center peer-checked:bg-sky-50 peer-checked:border-sky-400 peer-checked:text-sky-700 dark:peer-checked:bg-sky-950/60 dark:peer-checked:text-sky-300 dark:peer-checked:border-sky-700 transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
-                                    <span class="text-sm block">🙂</span>
+                                    <span class="text-sm block">👍</span>
                                     <span class="text-[11px] font-bold block mt-1">Baik / Tertib</span>
                                 </div>
                             </label>
                             <label class="sentiment-option cursor-pointer">
                                 <input type="radio" name="attitude_sentiment" value="needs_guidance" class="sr-only peer">
                                 <div class="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-center peer-checked:bg-rose-50 peer-checked:border-rose-400 peer-checked:text-rose-700 dark:peer-checked:bg-rose-950/60 dark:peer-checked:text-rose-300 dark:peer-checked:border-rose-700 transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
-                                    <span class="text-sm block">🤝</span>
+                                    <span class="text-sm block">🚨</span>
                                     <span class="text-[11px] font-bold block mt-1">Perlu Pembinaan</span>
                                 </div>
                             </label>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                                Catatan Perilaku / Karakter:
+                                Catatan Pengamatan Sikap:
                             </label>
                             <textarea id="anecdote-attitude-note" rows="3" 
-                                      placeholder="Contoh: Sangat kooperatif membantu teman saat praktikum, berbicara tidak sopan saat ditegur guru, antusias membersihkan meja belajar..." 
+                                      placeholder="Contoh: Sangat kooperatif dalam kerja tim, membantu teman yang kesulitan..." 
                                       class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder:text-slate-400"></textarea>
                         </div>
                     </div>
 
-                    <!-- Tindak Lanjut & Pengaturan Visibilitas (Selalu Tampil) -->
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                    <!-- Tindak Lanjut & Visibilitas Orang Tua -->
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                                Rencana Tindak Lanjut Guru (Opsional):
+                                Rekomendasi Tindak Lanjut:
                             </label>
                             <input type="text" id="anecdote-follow-up" 
-                                   placeholder="Misal: Berikan tugas pengayaan, ajak bicara empat mata, koordinasi dengan Wali Kelas/BK..." 
-                                   class="w-full text-xs py-2 px-3 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500">
+                                   placeholder="Contoh: Diberikan apresiasi di depan kelas / koordinasi dengan wali kelas..." 
+                                   class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500">
                         </div>
 
                         <!-- Toggle Visibilitas Orang Tua -->
@@ -745,13 +809,14 @@
                 let lastScanTime = 0;
                 const scanCooldown = 2500;
                 const scheduleId = {{ $schedule->id }};
+                const totalStudentsCount = {{ $totalClassStudents }};
 
                 // Face Recognition Variables
                 const studentsWithPhotos = @json($studentsForFaceRecognition);
                 let faceMatcher = null;
                 let isModelsLoaded = false;
                 let faceScanInterval = null;
-                let currentMode = 'qr'; // 'qr' or 'face'
+                let currentMode = 'qr';
                 let consecutiveMatches = 0;
                 let currentFacingMode = 'user';
 
@@ -767,7 +832,15 @@
                 const leaveCount = document.getElementById('leave-count');
                 const noMissingStudents = document.getElementById('no-missing-students');
                 const leaveList = document.getElementById('leave-list');
-                const noStudentsOnLeave = document.getElementById('no-students-on-leave');
+                const izinList = document.getElementById('izin-list');
+                const sakitList = document.getElementById('sakit-list');
+                const alpaList = document.getElementById('alpa-list');
+
+                const tabCountUnmarked = document.getElementById('tab-count-unmarked');
+                const tabCountAttended = document.getElementById('tab-count-attended');
+                const tabCountIzin = document.getElementById('tab-count-izin');
+                const tabCountSakit = document.getElementById('tab-count-sakit');
+                const tabCountAlpa = document.getElementById('tab-count-alpa');
 
                 const tabQr = document.getElementById('tab-qr');
                 const tabFace = document.getElementById('tab-face');
@@ -791,6 +864,15 @@
                 let cameras = [];
                 let currentCameraIndex = 0;
 
+                function updateProgress() {
+                    const currentAttended = parseInt(attendedCount ? attendedCount.textContent : 0) || 0;
+                    const pct = totalStudentsCount > 0 ? Math.round((currentAttended / totalStudentsCount) * 100) : 0;
+                    const bar = document.getElementById('attendance-percent-bar');
+                    const label = document.getElementById('attendance-percent-label');
+                    if (bar) bar.style.width = `${pct}%`;
+                    if (label) label.textContent = `${pct}%`;
+                }
+
                 // === TABS SWITCH LOGIC (QR vs FACE AI) ===
                 if (tabQr && tabFace) {
                     tabQr.addEventListener('click', () => switchMode('qr'));
@@ -803,8 +885,8 @@
                     if (readerError) readerError.classList.add('hidden');
 
                     if (mode === 'qr') {
-                        tabQr.className = 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-white bg-sky-600 shadow-sm';
-                        tabFace.className = 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+                        tabQr.className = 'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 text-white bg-sky-600 shadow-sm';
+                        tabFace.className = 'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
 
                         if (faceScannerContainer) faceScannerContainer.classList.add('hidden');
                         if (qrScannerContainer) qrScannerContainer.classList.remove('hidden');
@@ -812,8 +894,8 @@
                         stopFaceScanner();
                         startQrScanner();
                     } else {
-                        tabFace.className = 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-white bg-sky-600 shadow-sm';
-                        tabQr.className = 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+                        tabFace.className = 'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 text-white bg-sky-600 shadow-sm';
+                        tabQr.className = 'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
 
                         if (qrScannerContainer) qrScannerContainer.classList.add('hidden');
                         if (faceScannerContainer) faceScannerContainer.classList.remove('hidden');
@@ -852,211 +934,159 @@
 
                         clearInterval(interval);
                         if (bar) bar.style.width = `100%`;
-                        if (text) text.textContent = `AI Siap Digunakan`;
-
-                        setTimeout(() => {
-                            if (overlay) overlay.classList.add('hidden');
-                        }, 400);
+                        if (text) text.textContent = `Memuat AI: 100%`;
 
                         isModelsLoaded = true;
+                        setTimeout(() => {
+                            if (overlay) overlay.classList.add('hidden');
+                        }, 300);
                         return true;
                     } catch (error) {
-                        if (typeof interval !== 'undefined') clearInterval(interval);
-                        console.error('Error loading face models:', error);
-                        if (faceStatus) faceStatus.textContent = 'Gagal memuat model wajah. Periksa koneksi jaringan.';
                         if (overlay) overlay.classList.add('hidden');
+                        console.error('Error loading face-api models:', error);
+                        if (faceStatus) faceStatus.textContent = 'Gagal memuat model AI.';
                         return false;
                     }
                 }
 
+                async function buildFaceMatcher() {
+                    const labeledDescriptors = [];
+                    for (const student of studentsWithPhotos) {
+                        if (student.face_descriptor) {
+                            try {
+                                const descArray = JSON.parse(student.face_descriptor);
+                                const floatArray = new Float32Array(descArray);
+                                labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(student.unique_id, [floatArray]));
+                                continue;
+                            } catch (e) {
+                                console.warn('Gagal parse descriptor untuk ' + student.name, e);
+                            }
+                        }
+
+                        try {
+                            const img = await faceapi.fetchImage(student.photo_url);
+                            const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                            if (detection) {
+                                labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(student.unique_id, [detection.descriptor]));
+                            }
+                        } catch (err) {
+                            console.warn(`Gagal memproses wajah untuk ${student.name}`);
+                        }
+                    }
+
+                    if (labeledDescriptors.length > 0) {
+                        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+                        return true;
+                    }
+                    return false;
+                }
+
                 async function startFaceScanner() {
-                    if (!await loadFaceModels()) return;
+                    const loaded = await loadFaceModels();
+                    if (!loaded) return;
 
                     if (!faceMatcher) {
-                        if (faceStatus) faceStatus.textContent = 'Memproses data foto kelas...';
-                        try {
-                            const labeledDescriptors = await loadLabeledImages();
-                            if (labeledDescriptors.length === 0) {
-                                if (faceStatus) faceStatus.textContent = 'Tidak ada data foto wajah siswa yang valid pada kelas ini.';
-                                return;
-                            }
-                            faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
-                        } catch (error) {
-                            if (faceStatus) faceStatus.textContent = 'Gagal memproses data wajah.';
-                            console.error(error);
+                        if (faceStatus) faceStatus.textContent = 'Menyiapkan database wajah kelas...';
+                        const built = await buildFaceMatcher();
+                        if (!built) {
+                            if (faceStatus) faceStatus.textContent = 'Tidak ada data foto siswa yang valid.';
                             return;
                         }
                     }
 
-                    if (faceStatus) faceStatus.textContent = 'Menyalakan kamera wajah...';
-                    navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: currentFacingMode }
-                    })
-                    .then(stream => {
-                        if (faceVideo) faceVideo.srcObject = stream;
-                    })
-                    .catch(err => {
-                        console.error("Gagal akses kamera:", err);
-                        if (readerError) {
-                            readerError.textContent = "Gagal mengakses kamera. Berikan izin akses kamera di browser Anda.";
-                            readerError.classList.remove('hidden');
-                        }
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: currentFacingMode }
+                        });
+                        faceVideo.srcObject = stream;
+                        if (faceStatus) faceStatus.textContent = 'Arahkan wajah siswa ke dalam lingkaran.';
 
-                        if (currentFacingMode !== 'user') {
-                            currentFacingMode = 'user';
-                            startFaceScanner();
-                        }
-                    });
+                        faceVideo.onplay = () => {
+                            const displaySize = { width: faceVideo.videoWidth, height: faceVideo.videoHeight };
+                            faceapi.matchDimensions(faceCanvas, displaySize);
+
+                            faceScanInterval = setInterval(async () => {
+                                if (currentMode !== 'face') return;
+                                const now = Date.now();
+                                if (now - lastScanTime < scanCooldown) return;
+
+                                const detections = await faceapi.detectAllFaces(faceVideo).withFaceLandmarks().withFaceDescriptors();
+                                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+                                const ctx = faceCanvas.getContext('2d');
+                                ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+
+                                if (detections.length > 0) {
+                                    const bestMatch = faceMatcher.findBestMatch(detections[0].descriptor);
+                                    if (bestMatch.label !== 'unknown') {
+                                        consecutiveMatches++;
+                                        const box = resizedDetections[0].detection.box;
+                                        const drawBox = new faceapi.draw.DrawBox(box, { 
+                                            label: `Terdeteksi (${consecutiveMatches}/2)`,
+                                            boxColor: '#10B981'
+                                        });
+                                        drawBox.draw(faceCanvas);
+
+                                        if (consecutiveMatches >= 2) {
+                                            lastScanTime = Date.now();
+                                            consecutiveMatches = 0;
+                                            onScanSuccess(bestMatch.label);
+                                        }
+                                    } else {
+                                        consecutiveMatches = 0;
+                                    }
+                                } else {
+                                    consecutiveMatches = 0;
+                                }
+                            }, 500);
+                        };
+                    } catch (err) {
+                        console.error('Gagal mengakses kamera depan/belakang:', err);
+                        if (faceStatus) faceStatus.textContent = 'Izin kamera ditolak atau tidak tersedia.';
+                    }
+                }
+
+                function stopFaceScanner() {
+                    if (faceScanInterval) clearInterval(faceScanInterval);
+                    if (faceVideo && faceVideo.srcObject) {
+                        faceVideo.srcObject.getTracks().forEach(track => track.stop());
+                        faceVideo.srcObject = null;
+                    }
+                    if (faceCanvas) {
+                        const ctx = faceCanvas.getContext('2d');
+                        ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                    }
                 }
 
                 if (faceSwitchButton) {
                     faceSwitchButton.addEventListener('click', () => {
                         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-
-                        if (faceVideo && faceVideo.srcObject) {
-                            faceVideo.srcObject.getTracks().forEach(track => track.stop());
-                        }
-                        if (faceCanvas && faceCanvas.getContext) {
-                            faceCanvas.getContext('2d').clearRect(0, 0, faceCanvas.width, faceCanvas.height);
-                        }
-
-                        if (faceStatus) faceStatus.textContent = 'Menukar kamera...';
+                        stopFaceScanner();
                         startFaceScanner();
                     });
                 }
 
-                function stopFaceScanner() {
-                    if (faceVideo && faceVideo.srcObject) {
-                        faceVideo.srcObject.getTracks().forEach(track => track.stop());
-                        faceVideo.srcObject = null;
-                    }
-                    if (faceScanInterval) {
-                        clearInterval(faceScanInterval);
-                        faceScanInterval = null;
-                    }
-                }
-
-                function loadLabeledImages() {
-                    return Promise.all(
-                        studentsWithPhotos.map(async student => {
-                            return new Promise(async (resolve) => {
-                                try {
-                                    if (student.face_descriptor) {
-                                        try {
-                                            const descArray = JSON.parse(student.face_descriptor);
-                                            const floatArray = new Float32Array(descArray);
-                                            resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [floatArray]));
-                                            return;
-                                        } catch (e) {
-                                            console.warn("Gagal parsing descriptor:", student.name, e);
-                                        }
-                                    }
-
-                                    const img = new Image();
-                                    img.crossOrigin = 'anonymous';
-                                    img.src = student.photo_url;
-
-                                    img.onload = async () => {
-                                        try {
-                                            const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 });
-                                            const detections = await faceapi.detectSingleFace(img, options).withFaceLandmarks().withFaceDescriptor();
-                                            if (!detections) {
-                                                resolve(null);
-                                                return;
-                                            }
-
-                                            const descriptorStr = JSON.stringify(Array.from(detections.descriptor));
-                                            fetch("{{ route('attendance.save_descriptor') }}", {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                                    'Accept': 'application/json'
-                                                },
-                                                body: JSON.stringify({
-                                                    unique_id: student.unique_id,
-                                                    face_descriptor: descriptorStr
-                                                })
-                                            });
-
-                                            resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [detections.descriptor]));
-                                        } catch (e) {
-                                            resolve(null);
-                                        }
-                                    };
-
-                                    img.onerror = () => resolve(null);
-                                } catch (err) {
-                                    resolve(null);
-                                }
-                            });
-                        })
-                    ).then(results => results.filter(res => res !== null));
-                }
-
-                if (faceVideo) {
-                    faceVideo.addEventListener('play', () => {
-                        const displaySize = { width: faceVideo.offsetWidth, height: faceVideo.offsetHeight };
-                        if (displaySize.width === 0 || displaySize.height === 0) return;
-
-                        faceapi.matchDimensions(faceCanvas, displaySize);
-                        if (faceStatus) faceStatus.textContent = 'Arahkan wajah ke kamera...';
-
-                        faceScanInterval = setInterval(async () => {
-                            if (faceVideo.paused || faceVideo.ended) return;
-
-                            const detections = await faceapi.detectAllFaces(faceVideo, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
-                                .withFaceLandmarks()
-                                .withFaceDescriptors();
-
-                            const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                            if (faceCanvas && faceCanvas.getContext) {
-                                faceCanvas.getContext('2d').clearRect(0, 0, faceCanvas.width, faceCanvas.height);
-                            }
-
-                            if (detections.length > 0) {
-                                const bestMatch = faceMatcher ? faceMatcher.findBestMatch(detections[0].descriptor) : { label: 'unknown' };
-                                if (bestMatch.label !== 'unknown') {
-                                    consecutiveMatches++;
-                                    if (faceStatus) faceStatus.textContent = `Wajah Dikenali! Tahan sebentar... (${consecutiveMatches}/3)`;
-
-                                    if (consecutiveMatches >= 3 && Date.now() - lastScanTime > scanCooldown) {
-                                        lastScanTime = Date.now();
-                                        processAttendance(bestMatch.label);
-                                        consecutiveMatches = 0;
-                                    }
-                                } else {
-                                    consecutiveMatches = 0;
-                                    if (faceStatus) faceStatus.textContent = 'Arahkan wajah ke dalam lingkaran...';
-                                }
-                            } else {
-                                consecutiveMatches = 0;
-                                if (faceStatus && faceStatus.textContent !== 'Menyiapkan kamera...') {
-                                    faceStatus.textContent = 'Arahkan wajah ke dalam lingkaran...';
-                                }
-                            }
-                        }, 500);
-                    });
-                }
-
-                // === QR SCANNER ===
+                // === QR CODE SCANNER ===
                 function startQrScanner() {
                     Html5Qrcode.getCameras().then(devices => {
                         if (devices && devices.length) {
                             cameras = devices;
-                            let backCameraIndex = cameras.findIndex(camera => camera.label.toLowerCase().includes('back'));
-                            currentCameraIndex = backCameraIndex !== -1 ? backCameraIndex : 0;
+                            let backCamera = devices.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('belakang') || c.label.toLowerCase().includes('environment'));
+                            currentCameraIndex = backCamera ? devices.indexOf(backCamera) : 0;
+                            startScannerWithCamera(devices[currentCameraIndex].id);
 
-                            startScannerWithCamera(cameras[currentCameraIndex].id);
-                            if (cameras.length > 1 && switchContainer) {
+                            if (devices.length > 1 && switchContainer) {
                                 switchContainer.classList.remove('hidden');
                             }
-                        } else { 
-                            throw new Error("Tidak ada kamera yang terdeteksi."); 
+                        } else {
+                            if (readerError) {
+                                readerError.textContent = "Kamera tidak ditemukan pada perangkat ini.";
+                                readerError.classList.remove('hidden');
+                            }
                         }
                     }).catch(err => {
                         if (readerError) {
-                            readerError.textContent = "Gagal mengakses kamera: " + err.message;
+                            readerError.textContent = "Gagal mengakses kamera. Berikan izin di browser.";
                             readerError.classList.remove('hidden');
                         }
                     });
@@ -1064,35 +1094,52 @@
 
                 function stopQrScanner() {
                     if (html5QrCode && html5QrCode.isScanning) {
-                        html5QrCode.stop().catch(err => console.error("Dead QR scanner", err));
+                        html5QrCode.stop().catch(err => console.error("Error stopping QR:", err));
                     }
                 }
 
                 function playSound(isSuccess) {
-                    const soundFile = isSuccess
-                        ? "{{ asset('sounds/success.mp3') }}"
-                        : "{{ asset('sounds/error.mp3') }}";
-
                     try {
-                        const audio = new Audio(soundFile);
-                        audio.play();
-                    } catch (e) {
-                        console.error("Gagal memutar audio:", e);
-                    }
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+
+                        if (isSuccess) {
+                            osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+                            osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+                            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                            osc.start(audioCtx.currentTime);
+                            osc.stop(audioCtx.currentTime + 0.25);
+                        } else {
+                            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                            osc.frequency.setValueAtTime(164.81, audioCtx.currentTime + 0.15);
+                            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                            osc.start(audioCtx.currentTime);
+                            osc.stop(audioCtx.currentTime + 0.35);
+                        }
+                    } catch (e) { }
                 }
 
-                function onScanSuccess(decodedText, decodedResult) {
-                    if (Date.now() - lastScanTime < scanCooldown) return;
-                    lastScanTime = Date.now();
-                    if (html5QrCode && html5QrCode.isScanning) {
+                function onScanSuccess(decodedText) {
+                    const now = Date.now();
+                    if (now - lastScanTime < scanCooldown) return;
+                    lastScanTime = now;
+
+                    if (currentMode === 'qr' && html5QrCode && html5QrCode.isScanning) {
                         html5QrCode.pause();
                     }
-                    processAttendance(decodedText);
+
+                    recordAttendance(decodedText);
                 }
 
-                function processAttendance(studentId) {
+                function recordAttendance(studentId) {
                     const dateInput = document.getElementById('attendance-date');
                     const selectedDate = dateInput ? dateInput.value : '{{ $selectedDate->format('Y-m-d') }}';
+
                     fetch("{{ route('teacher.subject.attendance.store') }}", {
                         method: 'POST',
                         headers: {
@@ -1122,8 +1169,11 @@
                         setTimeout(() => {
                             studentRow.remove();
                             if (noNoticeCount) {
-                                noNoticeCount.textContent = Math.max(0, parseInt(noNoticeCount.textContent) - 1);
+                                const nextCount = Math.max(0, parseInt(noNoticeCount.textContent) - 1);
+                                noNoticeCount.textContent = nextCount;
+                                if (tabCountUnmarked) tabCountUnmarked.textContent = nextCount;
                             }
+                            updateProgress();
                         }, 300);
                     }
                 }
@@ -1154,45 +1204,23 @@
                     `;
                     if (attendedList) attendedList.prepend(listItem);
                     if (attendedCount) {
-                        attendedCount.textContent = parseInt(attendedCount.textContent) + 1;
+                        const nextAttended = parseInt(attendedCount.textContent) + 1;
+                        attendedCount.textContent = nextAttended;
+                        if (tabCountAttended) tabCountAttended.textContent = nextAttended;
                     }
+                    updateProgress();
                 }
 
                 function addStudentToLeaveList(student, status) {
-                    if (noStudentsOnLeave) noStudentsOnLeave.classList.add('hidden');
-
-                    const statusClass = status === 'sakit'
-                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-200 dark:border-purple-800'
-                        : 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border-sky-200 dark:border-sky-800';
-
-                    const statusText = status.charAt(0).toUpperCase() + status.slice(1);
-                    const photoUrl = student.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&color=0284c7&background=e0f2fe`;
-
-                    const listItem = document.createElement('div');
-                    listItem.className = 'p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-amber-50/40 dark:bg-amber-950/20 transition-colors';
-                    listItem.innerHTML = `
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <div class="relative shrink-0">
-                                <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-amber-500 shadow-2xs"
-                                     src="${photoUrl}" 
-                                     alt="${student.name}"
-                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&color=0284c7&background=e0f2fe'">
-                                <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-amber-500 border-2 border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[8px] text-white font-bold">
-                                    ${status.charAt(0).toUpperCase()}
-                                </span>
-                            </div>
-                            <div class="truncate">
-                                <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">${student.name}</p>
-                                <p class="text-[10px] text-slate-400 mt-0.5">Status Khusus</p>
-                            </div>
-                        </div>
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase border ${statusClass}">
-                            ${statusText}
-                        </span>
-                    `;
-                    if (leaveList) leaveList.prepend(listItem);
                     if (leaveCount) {
                         leaveCount.textContent = parseInt(leaveCount.textContent) + 1;
+                    }
+                    if (status === 'izin' && tabCountIzin) {
+                        tabCountIzin.textContent = parseInt(tabCountIzin.textContent) + 1;
+                    } else if (status === 'sakit' && tabCountSakit) {
+                        tabCountSakit.textContent = parseInt(tabCountSakit.textContent) + 1;
+                    } else if ((status === 'alpa' || status === 'bolos') && tabCountAlpa) {
+                        tabCountAlpa.textContent = parseInt(tabCountAlpa.textContent) + 1;
                     }
                 }
 
@@ -1209,7 +1237,7 @@
                         modal.iconSvg.className = 'h-8 w-8 text-emerald-600 dark:text-emerald-400';
                         modal.title.textContent = 'Presensi Berhasil';
                         if (data.student) {
-                            if (data.student.status === 'sakit' || data.student.status === 'izin') {
+                            if (data.student.status === 'sakit' || data.student.status === 'izin' || data.student.status === 'alpa' || data.student.status === 'bolos') {
                                 addStudentToLeaveList(data.student, data.student.status);
                                 removeStudentFromNoNoticeList(data.student.id);
                             } else if (data.student.status === 'hadir') {
@@ -1351,57 +1379,53 @@
                     document.querySelectorAll('input[name="attendance_sentiment"]').forEach(r => r.checked = (r.value === 'neutral'));
                     document.querySelectorAll('input[name="attitude_sentiment"]').forEach(r => r.checked = (r.value === 'neutral'));
 
-                    // Tampilkan modal
-                    if (modal && dialog) {
-                        modal.classList.remove('opacity-0', 'pointer-events-none');
-                        modal.classList.add('opacity-100', 'pointer-events-auto');
-                        dialog.classList.remove('scale-95');
-                        dialog.classList.add('scale-100');
-                    }
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    dialog.classList.remove('scale-95');
 
-                    // Ambil data catatan eksisting via AJAX
-                    const curDate = dateInput ? dateInput.value : '{{ $selectedDate->format('Y-m-d') }}';
-                    fetch(`{{ route('teacher.anecdotes.get_student') }}?student_id=${studentId}&schedule_id=${scheduleId}&date=${curDate}`, {
+                    // Fetch existing anecdote if any
+                    const dateVal = document.getElementById('attendance-date')?.value || '{{ $selectedDate->format('Y-m-d') }}';
+                    fetch(`{{ route('teacher.anecdotes.show_json') }}?student_id=${studentId}&schedule_id=${scheduleId}&date=${dateVal}`, {
                         headers: {
-                            'Accept': 'application/json'
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (statusText) statusText.textContent = '';
-                        if (data.success && data.anecdote) {
-                            const an = data.anecdote;
-                            document.getElementById('anecdote-academic-note').value = an.academic_note || '';
-                            document.getElementById('anecdote-attendance-note').value = an.attendance_note || '';
-                            document.getElementById('anecdote-attitude-note').value = an.attitude_note || '';
-                            document.getElementById('anecdote-follow-up').value = an.follow_up || '';
-                            document.getElementById('anecdote-visible-to-parents').checked = !!an.is_visible_to_parents;
-
-                            const acRadio = document.querySelector(`input[name="academic_sentiment"][value="${an.academic_sentiment || 'neutral'}"]`);
-                            if (acRadio) acRadio.checked = true;
-
-                            const atRadio = document.querySelector(`input[name="attendance_sentiment"][value="${an.attendance_sentiment || 'neutral'}"]`);
-                            if (atRadio) atRadio.checked = true;
-
-                            const attRadio = document.querySelector(`input[name="attitude_sentiment"][value="${an.attitude_sentiment || 'neutral'}"]`);
-                            if (attRadio) attRadio.checked = true;
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success && res.data) {
+                            const d = res.data;
+                            if (d.academic_sentiment) {
+                                const r = document.querySelector(`input[name="academic_sentiment"][value="${d.academic_sentiment}"]`);
+                                if (r) r.checked = true;
+                            }
+                            if (d.attendance_sentiment) {
+                                const r = document.querySelector(`input[name="attendance_sentiment"][value="${d.attendance_sentiment}"]`);
+                                if (r) r.checked = true;
+                            }
+                            if (d.attitude_sentiment) {
+                                const r = document.querySelector(`input[name="attitude_sentiment"][value="${d.attitude_sentiment}"]`);
+                                if (r) r.checked = true;
+                            }
+                            document.getElementById('anecdote-academic-note').value = d.academic_notes || '';
+                            document.getElementById('anecdote-attendance-note').value = d.attendance_notes || '';
+                            document.getElementById('anecdote-attitude-note').value = d.attitude_notes || '';
+                            document.getElementById('anecdote-follow-up').value = d.follow_up || '';
+                            document.getElementById('anecdote-visible-to-parents').checked = !!d.is_visible_to_parents;
+                            if (statusText) statusText.textContent = 'Catatan tersimpan ditemukan.';
+                        } else {
+                            if (statusText) statusText.textContent = 'Belum ada catatan hari ini.';
                         }
                     })
-                    .catch(err => {
-                        if (statusText) statusText.textContent = 'Gagal memuat catatan sebelumnya.';
+                    .catch(() => {
+                        if (statusText) statusText.textContent = 'Gagal memuat riwayat catatan.';
                     });
                 };
 
                 window.closeAnecdoteModal = function() {
                     const modal = document.getElementById('anecdote-modal');
                     const dialog = document.getElementById('anecdote-modal-dialog');
-                    if (modal && dialog) {
-                        modal.classList.remove('opacity-100', 'pointer-events-auto');
-                        modal.classList.add('opacity-0', 'pointer-events-none');
-                        dialog.classList.remove('scale-100');
-                        dialog.classList.add('scale-95');
-                    }
-                    currentAnecdoteStudentId = null;
+                    if (modal) modal.classList.add('opacity-0', 'pointer-events-none');
+                    if (dialog) dialog.classList.add('scale-95');
                 };
 
                 window.saveAnecdote = function() {
@@ -1409,24 +1433,24 @@
 
                     const saveBtn = document.getElementById('save-anecdote-btn');
                     const statusText = document.getElementById('anecdote-status-text');
-                    const curDate = dateInput ? dateInput.value : '{{ $selectedDate->format('Y-m-d') }}';
+                    const dateVal = document.getElementById('attendance-date')?.value || '{{ $selectedDate->format('Y-m-d') }}';
 
                     const academicSentiment = document.querySelector('input[name="academic_sentiment"]:checked')?.value || 'neutral';
                     const attendanceSentiment = document.querySelector('input[name="attendance_sentiment"]:checked')?.value || 'neutral';
                     const attitudeSentiment = document.querySelector('input[name="attitude_sentiment"]:checked')?.value || 'neutral';
 
-                    const academicNote = document.getElementById('anecdote-academic-note').value;
-                    const attendanceNote = document.getElementById('anecdote-attendance-note').value;
-                    const attitudeNote = document.getElementById('anecdote-attitude-note').value;
+                    const academicNotes = document.getElementById('anecdote-academic-note').value;
+                    const attendanceNotes = document.getElementById('anecdote-attendance-note').value;
+                    const attitudeNotes = document.getElementById('anecdote-attitude-note').value;
                     const followUp = document.getElementById('anecdote-follow-up').value;
-                    const isVisibleToParents = document.getElementById('anecdote-visible-to-parents').checked;
+                    const isVisible = document.getElementById('anecdote-visible-to-parents').checked ? 1 : 0;
 
-                    const origBtnContent = saveBtn.innerHTML;
-                    saveBtn.disabled = true;
-                    saveBtn.innerHTML = `<span class="inline-block animate-spin mr-1">↻</span> Menyimpan...`;
-                    if (statusText) statusText.textContent = 'Menyimpan ke basis data...';
+                    if (saveBtn) {
+                        saveBtn.disabled = true;
+                        saveBtn.innerHTML = '<span class="material-icons text-sm animate-spin">sync</span><span>Menyimpan...</span>';
+                    }
 
-                    fetch("{{ route('teacher.anecdotes.store_update') }}", {
+                    fetch("{{ route('teacher.anecdotes.store_json') }}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1436,72 +1460,50 @@
                         body: JSON.stringify({
                             student_id: currentAnecdoteStudentId,
                             schedule_id: scheduleId,
-                            date: curDate,
-                            academic_note: academicNote,
+                            date: dateVal,
                             academic_sentiment: academicSentiment,
-                            attendance_note: attendanceNote,
                             attendance_sentiment: attendanceSentiment,
-                            attitude_note: attitudeNote,
                             attitude_sentiment: attitudeSentiment,
+                            academic_notes: academicNotes,
+                            attendance_notes: attendanceNotes,
+                            attitude_notes: attitudeNotes,
                             follow_up: followUp,
-                            is_visible_to_parents: isVisibleToParents ? 1 : 0
+                            is_visible_to_parents: isVisible
                         })
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        saveBtn.disabled = false;
-                        saveBtn.innerHTML = origBtnContent;
-
-                        if (data.success) {
-                            if (statusText) {
-                                statusText.className = 'text-xs text-emerald-600 dark:text-emerald-400 font-bold truncate';
-                                statusText.textContent = '✓ Catatan berhasil disimpan!';
-                            }
-
-                            // Update badge penanda visual pada kartu siswa
-                            const studentId = currentAnecdoteStudentId;
-                            const badges = [
-                                document.getElementById(`anecdote-badge-${studentId}`),
-                                document.getElementById(`anecdote-badge-attended-${studentId}`),
-                                document.getElementById(`anecdote-badge-leave-${studentId}`)
-                            ];
-
-                            badges.forEach(badge => {
-                                if (badge) {
-                                    if (data.anecdote.has_notes) {
-                                        badge.className = badge.className.replace(/bg-slate-\d+/g, '').replace(/text-slate-\d+/g, '');
-                                        badge.classList.add('bg-amber-100', 'text-amber-700', 'dark:bg-amber-950/80', 'dark:text-amber-300', 'border-amber-300', 'dark:border-amber-700', 'shadow-2xs');
-                                        if (!badge.querySelector('.bg-amber-500')) {
-                                            const dot = document.createElement('span');
-                                            dot.className = 'absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900';
-                                            badge.appendChild(dot);
-                                        }
-                                    } else {
-                                        const dot = badge.querySelector('.bg-amber-500');
-                                        if (dot) dot.remove();
-                                        badge.classList.remove('bg-amber-100', 'text-amber-700', 'dark:bg-amber-950/80', 'dark:text-amber-300', 'border-amber-300', 'dark:border-amber-700', 'shadow-2xs');
-                                        badge.classList.add('bg-slate-100', 'text-slate-500', 'dark:bg-slate-800', 'dark:text-slate-400');
-                                    }
+                    .then(r => r.json())
+                    .then(res => {
+                        if (saveBtn) {
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = '<span class="material-icons text-sm">save</span><span>Simpan Catatan</span>';
+                        }
+                        if (res.success) {
+                            if (statusText) statusText.innerHTML = '<span class="text-emerald-600 font-bold">✓ Catatan berhasil disimpan!</span>';
+                            
+                            // Update badge indicator
+                            const badge = document.getElementById(`anecdote-badge-${currentAnecdoteStudentId}`) || document.getElementById(`anecdote-badge-attended-${currentAnecdoteStudentId}`);
+                            if (badge) {
+                                badge.className = 'anecdote-btn w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90 relative bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-2xs';
+                                if (!badge.querySelector('.bg-amber-500')) {
+                                    const dot = document.createElement('span');
+                                    dot.className = 'absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900';
+                                    badge.appendChild(dot);
                                 }
-                            });
+                            }
 
                             setTimeout(() => {
                                 closeAnecdoteModal();
                             }, 800);
                         } else {
-                            if (statusText) {
-                                statusText.className = 'text-xs text-rose-600 dark:text-rose-400 font-bold truncate';
-                                statusText.textContent = data.message || 'Gagal menyimpan catatan.';
-                            }
+                            if (statusText) statusText.innerHTML = `<span class="text-rose-600 font-bold">${res.message || 'Gagal menyimpan'}</span>`;
                         }
                     })
-                    .catch(err => {
-                        saveBtn.disabled = false;
-                        saveBtn.innerHTML = origBtnContent;
-                        if (statusText) {
-                            statusText.className = 'text-xs text-rose-600 dark:text-rose-400 font-bold truncate';
-                            statusText.textContent = 'Terjadi kesalahan jaringan.';
+                    .catch(() => {
+                        if (saveBtn) {
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = '<span class="material-icons text-sm">save</span><span>Simpan Catatan</span>';
                         }
+                        if (statusText) statusText.innerHTML = '<span class="text-rose-600 font-bold">Kesalahan jaringan.</span>';
                     });
                 };
 
