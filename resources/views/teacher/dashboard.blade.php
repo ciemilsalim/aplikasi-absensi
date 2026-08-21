@@ -2,22 +2,25 @@
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
             <div>
-                <x-breadcrumb :breadcrumbs="[
-                    ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard')]
-                ]" />
-                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-                    @if($currentView === 'pembina_ekskul')
-                        Dasbor Pembina Ekskul
-                    @elseif($currentView === 'wali_kelas')
-                        Dasbor Wali Kelas
-                    @elseif($currentView === 'guru_mapel')
-                        Dasbor Guru Mata Pelajaran
-                    @elseif($currentView === 'fasilitator_kokurikuler')
-                        Dasbor Fasilitator Kokurikuler
-                    @else
-                        Dasbor & Presensi Guru
-                    @endif
-                </h1>
+                <div class="flex items-baseline gap-2 flex-wrap">
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                        Dasbor Guru
+                    </h1>
+                    <span class="text-xs sm:text-sm font-bold text-sky-600 dark:text-sky-400">
+                        &bull;
+                        @if($currentView === 'pembina_ekskul')
+                            Ekstrakurikuler
+                        @elseif($currentView === 'wali_kelas')
+                            Wali Kelas
+                        @elseif($currentView === 'guru_mapel')
+                            Mata Pelajaran
+                        @elseif($currentView === 'fasilitator_kokurikuler')
+                            Kokurikuler
+                        @else
+                            Presensi Mengajar
+                        @endif
+                    </span>
+                </div>
             </div>
             
             <div class="hidden sm:flex items-center gap-2">
@@ -38,36 +41,27 @@
 
     <div class="space-y-6">
 
-        {{-- === SWITCHER TAMPILAN PERAN GURU === --}}
+        {{-- === SWITCHER MODE AKTIVITAS GURU === --}}
         @php
             $roleCount = ($isHomeroomTeacher ? 1 : 0) + ($isSubjectTeacher ? 1 : 0) + ($isCocurricularFacilitator ? 1 : 0) + ($isExtracurricularCoach ? 1 : 0);
         @endphp
 
         @if($roleCount > 1)
-            <div class="bg-white dark:bg-slate-900 shadow-sm border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 overflow-x-auto no-scrollbar">
+            <div class="bg-white dark:bg-slate-900 shadow-2xs border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 overflow-x-auto no-scrollbar">
                 <div class="flex items-center space-x-1.5 min-w-max" role="tablist">
-                    @if($isHomeroomTeacher)
-                    <a href="{{ route('teacher.dashboard', ['view' => 'wali_kelas']) }}"
-                       class="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl transition-all duration-200
-                              {{ $currentView === 'wali_kelas' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                        <span class="material-icons text-base">groups</span>
-                        <span>Wali Kelas</span>
-                    </a>
-                    @endif
-
                     @if($isSubjectTeacher)
                     <a href="{{ route('teacher.dashboard', ['view' => 'guru_mapel']) }}"
-                       class="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl transition-all duration-200
-                              {{ $currentView === 'guru_mapel' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                       class="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                              {{ $currentView === 'guru_mapel' ? 'bg-sky-600 text-white shadow-sm shadow-sky-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         <span class="material-icons text-base">menu_book</span>
-                        <span>Guru Mapel</span>
+                        <span>Mata Pelajaran</span>
                     </a>
                     @endif
 
                     @if($isCocurricularFacilitator)
                     <a href="{{ route('teacher.dashboard', ['view' => 'fasilitator_kokurikuler']) }}"
-                       class="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl transition-all duration-200
-                              {{ $currentView === 'fasilitator_kokurikuler' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                       class="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                              {{ $currentView === 'fasilitator_kokurikuler' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         <span class="material-icons text-base">psychology</span>
                         <span>Kokurikuler</span>
                     </a>
@@ -75,10 +69,19 @@
 
                     @if($isExtracurricularCoach)
                     <a href="{{ route('teacher.dashboard', ['view' => 'pembina_ekskul']) }}"
-                       class="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl transition-all duration-200
-                              {{ $currentView === 'pembina_ekskul' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                        <span class="material-icons text-base">military_tech</span>
-                        <span>Ekskul</span>
+                       class="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                              {{ $currentView === 'pembina_ekskul' ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <span class="material-icons text-base">sports_soccer</span>
+                        <span>Ekstrakurikuler</span>
+                    </a>
+                    @endif
+
+                    @if($isHomeroomTeacher)
+                    <a href="{{ route('teacher.dashboard', ['view' => 'wali_kelas']) }}"
+                       class="flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                              {{ $currentView === 'wali_kelas' ? 'bg-sky-600 text-white shadow-sm shadow-sky-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <span class="material-icons text-base">groups</span>
+                        <span>Wali Kelas</span>
                     </a>
                     @endif
                 </div>
