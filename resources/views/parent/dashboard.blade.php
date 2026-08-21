@@ -204,6 +204,11 @@
                                     <span>Alpa</span>
                                 </span>
                             @endif
+                        @elseif($isOffDay ?? false)
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                <span>Libur Sekolah</span>
+                            </span>
                         @else
                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700">
                                 Belum tercatat
@@ -211,7 +216,7 @@
                         @endif
                     </div>
 
-                    <!-- Detail Jam Masuk & Pulang -->
+                    <!-- Detail Jam Masuk & Pulang / Keterangan Libur -->
                     <div class="pt-1">
                         @if($todayAtt && !in_array($todayAtt->status, ['izin', 'sakit', 'alpa']))
                             <div class="grid grid-cols-2 gap-3 text-xs">
@@ -246,6 +251,20 @@
                                     &bull; <em>"{{ $todayAtt->notes }}"</em>
                                 @endif
                             </p>
+                        @elseif($isOffDay ?? false)
+                            <div class="flex items-center gap-3 p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 text-xs">
+                                <div class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                    <span class="material-icons text-base">beach_access</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-900 dark:text-white">
+                                        {{ $offDayReason ?? ($isWeekend ? 'Libur Akhir Pekan' : 'Hari Libur Nasional / Kalender Pendidikan') }}
+                                    </p>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                        Hari ini libur. Tidak ada kegiatan belajar mengajar dan absensi.
+                                    </p>
+                                </div>
+                            </div>
                         @else
                             <p class="text-xs text-slate-500 dark:text-slate-400 italic">
                                 Belum ada catatan presensi anak untuk hari ini.

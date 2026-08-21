@@ -71,7 +71,26 @@ class DashboardController extends Controller
                                                return false;
                                            });
 
-        return view('parent.dashboard', compact('students', 'announcements', 'unreadNotifications'));
+        // Pengecekan hari libur akhir pekan dan tanggal merah / kalender pendidikan
+        $today = \Carbon\Carbon::today();
+        $isWeekend = $today->isWeekend();
+        $holidaysToday = \App\Models\Calendar::getHolidaysInRange($today, $today);
+        $todayHoliday = $holidaysToday->first(function($h) use ($today) {
+            return \App\Models\Calendar::isDateInHolidays($today, collect([$h]));
+        });
+        $isHoliday = $todayHoliday !== null;
+        $isOffDay = $isWeekend || $isHoliday;
+        $offDayReason = $todayHoliday ? $todayHoliday->title : ($isWeekend ? 'Libur Akhir Pekan (' . $today->translatedFormat('l') . ')' : null);
+
+        return view('parent.dashboard', compact(
+            'students', 
+            'announcements', 
+            'unreadNotifications',
+            'isOffDay',
+            'offDayReason',
+            'isWeekend',
+            'isHoliday'
+        ));
     }
 
     /**
