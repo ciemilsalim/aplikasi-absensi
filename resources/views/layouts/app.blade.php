@@ -180,6 +180,32 @@
         .dark .dock-shadow {
             box-shadow: 0 -4px 25px -2px rgba(0, 0, 0, 0.35), 0 -2px 8px -1px rgba(0, 0, 0, 0.25);
         }
+
+        /* Skeleton Loading Shimmer Animation */
+        .skeleton {
+            background: linear-gradient(
+                90deg,
+                rgba(226, 232, 240, 0.6) 25%,
+                rgba(241, 245, 249, 0.95) 50%,
+                rgba(226, 232, 240, 0.6) 75%
+            );
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite ease-in-out;
+        }
+        .dark .skeleton {
+            background: linear-gradient(
+                90deg,
+                rgba(30, 41, 59, 0.6) 25%,
+                rgba(51, 65, 85, 0.9) 50%,
+                rgba(30, 41, 59, 0.6) 75%
+            );
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite ease-in-out;
+        }
+        @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
 
