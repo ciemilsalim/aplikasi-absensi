@@ -245,6 +245,7 @@
                             backgroundColor: isDarkMode ? 'rgba(56, 189, 248, 0.15)' : 'rgba(2, 132, 199, 0.1)',
                             fill: true,
                             tension: 0.35,
+                            spanGaps: true,
                             pointBackgroundColor: isDarkMode ? '#38bdf8' : '#0284c7',
                             pointBorderColor: '#ffffff',
                             pointHoverRadius: 6,
@@ -281,7 +282,14 @@
                                 bodyFont: { family: '"Plus Jakarta Sans", Inter, sans-serif', size: 12 },
                                 padding: 12,
                                 cornerRadius: 12,
-                                callbacks: { label: (context) => ' Kehadiran: ' + context.parsed.y + '%' } 
+                                callbacks: { 
+                                    label: (context) => {
+                                        if (context.parsed.y !== null && context.parsed.y !== undefined) {
+                                            return ' Kehadiran: ' + context.parsed.y + '%';
+                                        }
+                                        return ' Belum ada data';
+                                    }
+                                } 
                             }
                         }
                     }

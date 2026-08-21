@@ -191,9 +191,21 @@ class DashboardController extends Controller
         $isHoliday = \App\Models\Calendar::isDateInHolidays($today, $holidaysToday);
         $isEffectiveSchoolDay = !$isWeekend && !$isHoliday;
 
-        $startDate = now()->subDays(6)->startOfDay();
+        // Ambil 5 hari sekolah efektif terakhir (Senin-Jumat)
+        $effectiveDates = [];
+        $checkDate = now()->copy();
+        $daysCounted = 0;
+        while (count($effectiveDates) < 5 && $daysCounted < 14) {
+            if (!$checkDate->isWeekend()) {
+                $effectiveDates[] = $checkDate->copy();
+            }
+            $checkDate->subDay();
+            $daysCounted++;
+        }
+        $effectiveDates = array_reverse($effectiveDates);
+
+        $startDate = !empty($effectiveDates) ? $effectiveDates[0]->copy()->startOfDay() : now()->subDays(6)->startOfDay();
         $endDate = now()->endOfDay();
-        $period = CarbonPeriod::create($startDate, $endDate);
 
         $weeklyAttendances = Attendance::whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
@@ -203,13 +215,26 @@ class DashboardController extends Controller
 
         $chartLabels = [];
         $chartData = [];
-        foreach ($period as $date) {
-            $chartLabels[] = $date->translatedFormat('D, d M');
+        $validPercentages = [];
+        foreach ($effectiveDates as $date) {
+            $chartLabels[] = $date->translatedFormat('d M');
             $dateString = $date->format('Y-m-d');
             $attendedCount = $weeklyAttendances->has($dateString) ? $weeklyAttendances[$dateString]->count() : 0;
-            $percentage = ($totalStudents > 0) ? round(($attendedCount / $totalStudents) * 100) : 0;
-            $chartData[] = $percentage;
+            if ($totalStudents > 0) {
+                if ($date->isToday() && $attendedCount === 0) {
+                    $chartData[] = null;
+                } else {
+                    $percentage = round(($attendedCount / $totalStudents) * 100);
+                    $chartData[] = $percentage;
+                    $validPercentages[] = $percentage;
+                }
+            } else {
+                $chartData[] = 0;
+            }
         }
+
+        $avgRate = count($validPercentages) > 0 ? round(array_sum($validPercentages) / count($validPercentages)) : 0;
+        $trendInsight = $avgRate >= 80 ? 'Stabil di atas target 80%' : ($avgRate >= 60 ? 'Perlu ditingkatkan menuju target 80%' : 'Perlu perhatian khusus wali kelas');
 
         // Siswa yang perlu perhatian khusus (dihitung aman di Collection tanpa memicu sql_mode ONLY_FULL_GROUP_BY error)
         $studentsForAttention = Student::whereIn('id', $studentIds)
@@ -239,6 +264,8 @@ class DashboardController extends Controller
             'totalStudents' => $totalStudents,
             'chartLabels' => $chartLabels,
             'chartData' => $chartData,
+            'avgRate' => $avgRate,
+            'trendInsight' => $trendInsight,
             'studentsForAttention' => $studentsForAttention,
             'studentsForAttentionWali' => $studentsForAttention,
             'dailyPresencePercentage' => $dailyPresencePercentage,

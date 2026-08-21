@@ -17,102 +17,95 @@
                      alt="{{ Auth::user()->name }}">
                 <div class="min-w-0">
                     <h2 class="text-base font-extrabold text-slate-900 dark:text-white leading-tight truncate">
-                        Halo, {{ $teacher->name }} 👋
+                        Halo, {{ explode(' ', $teacher->name)[0] }} 👋
                     </h2>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                        SMP Negeri 1 Biau &bull; Wali Kelas {{ $class->name }}
+                        Wali Kelas &bull; Kelas {{ $class->name }}
                     </p>
                 </div>
             </div>
             <a href="{{ route('teacher.attendance.charts') }}" class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 hover:text-sky-600 shadow-2xs shrink-0" title="Analitik">
                 <span class="material-icons text-xl text-sky-500">insights</span>
+            </a>
         </div>
 
-        <!-- HERO CARD: STATUS KEHADIRAN KELAS BINAAN HARI INI (PRIORITAS 1 WALI KELAS) -->
-        @php
-            $attendedTotal = $onTimeCount + $lateCount;
-            $presencePct = $totalStudents > 0 ? round(($attendedTotal / $totalStudents) * 100) : 0;
-        @endphp
+        <!-- HERO CARD: STATUS PRESENSI KELAS BINAAN (SEDERHANA, JELAS, BEBAS OVERLAP) -->
         <div class="rounded-3xl p-5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
-            <!-- Header Card: Info Kelas & Tanggal -->
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <!-- Header Card: Info Kelas & Status -->
+            <div class="flex items-start justify-between">
                 <div>
-                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-sky-600 dark:text-sky-400 block">
-                        PRESENSI KELAS {{ $class->name }} HARI INI
+                    <span class="text-xs font-black uppercase tracking-wider text-sky-600 dark:text-sky-400 block">
+                        KELAS {{ $class->name }}
                     </span>
-                    <p class="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                        {{ Carbon\Carbon::today()->translatedFormat('l, d F Y') }}
-                    </p>
+                    <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
+                        {{ $totalStudents }} Siswa
+                    </h3>
                 </div>
                 
-                @if($attendedTotal >= $totalStudents && $totalStudents > 0)
+                @if($dailyPresencePercentage > 0)
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span>100% Hadir</span>
-                    </span>
-                @elseif($attendedTotal > 0)
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
-                        <span>{{ $attendedTotal }}/{{ $totalStudents }} Hadir</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 {{ $dailyPresencePercentage >= 100 ? 'animate-pulse' : '' }}"></span>
+                        <span>{{ $dailyPresencePercentage >= 100 ? '100% Hadir' : 'Sesi Berjalan' }}</span>
                     </span>
                 @else
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                        Belum Ada Presensi
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        Belum dimulai
                     </span>
                 @endif
             </div>
 
-            <!-- Focal Metric & Progress Bar -->
-            <div class="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-850/70 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <div>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Tingkat Kehadiran</span>
-                    <div class="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                        {{ $presencePct }}%
+            <!-- Box Status Kehadiran Hari Ini -->
+            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850/60 border border-slate-100 dark:border-slate-800">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Presensi Hari Ini</p>
+                        <p class="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
+                            {{ Carbon\Carbon::today()->translatedFormat('l, d F Y') }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        @if($dailyPresencePercentage > 0)
+                            <span class="text-2xl font-black text-slate-900 dark:text-white">{{ $dailyPresencePercentage }}%</span>
+                        @else
+                            <span class="text-2xl font-black text-slate-400">—</span>
+                        @endif
                     </div>
                 </div>
-                <div class="border-l border-slate-200 dark:border-slate-700 pl-3">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Siswa Hadir</span>
-                    <div class="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
-                        {{ $attendedTotal }} <span class="text-xs font-semibold text-slate-500">/ {{ $totalStudents }}</span>
+
+                @if($dailyPresencePercentage > 0)
+                    <div class="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-750 text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-between flex-wrap gap-1">
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $onTimeCount }} tepat</span>
+                        <span>&bull;</span>
+                        <span class="text-amber-600 dark:text-amber-400 font-bold">{{ $lateCount }} telat</span>
+                        <span>&bull;</span>
+                        <span class="text-purple-600 dark:text-purple-400 font-bold">{{ $sickCount + $permitCount }} izin/sakit</span>
+                        <span>&bull;</span>
+                        <span class="text-rose-600 dark:text-rose-400 font-bold">{{ $alphaCount }} alpa</span>
                     </div>
-                </div>
+                @else
+                    <p class="mt-2 text-xs text-slate-400 dark:text-slate-500 italic">
+                        Belum ada data presensi siswa yang dicatat hari ini.
+                    </p>
+                @endif
             </div>
 
-            <!-- 4 Quick Counter Pills -->
-            <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
-                <div class="p-2 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-900/30">
-                    <span class="text-[9px] font-bold text-emerald-800 dark:text-emerald-300 uppercase block">Tepat</span>
-                    <span class="text-xs font-black text-emerald-700 dark:text-emerald-300">{{ $onTimeCount }}</span>
-                </div>
-                <div class="p-2 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/30">
-                    <span class="text-[9px] font-bold text-amber-800 dark:text-amber-300 uppercase block">Telat</span>
-                    <span class="text-xs font-black text-amber-700 dark:text-amber-300">{{ $lateCount }}</span>
-                </div>
-                <div class="p-2 rounded-2xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/50 dark:border-purple-900/30">
-                    <span class="text-[9px] font-bold text-purple-800 dark:text-purple-300 uppercase block">Sakit/Izin</span>
-                    <span class="text-xs font-black text-purple-700 dark:text-purple-300">{{ $permitCount + $sickCount }}</span>
-                </div>
-                <div class="p-2 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200/50 dark:border-rose-900/30">
-                    <span class="text-[9px] font-bold text-rose-800 dark:text-rose-300 uppercase block">Alpa</span>
-                    <span class="text-xs font-black text-rose-700 dark:text-rose-300">{{ $alphaCount }}</span>
-                </div>
-            </div>
-
-            <!-- Primary CTAs for Homeroom Class -->
-            <div class="grid grid-cols-2 gap-2 pt-1">
+            <!-- Action CTA: Primary (Scan QR) & Secondary (Kelola Presensi) -->
+            <div class="space-y-2 pt-1">
                 <a href="{{ route('scanner') }}" 
-                   class="min-h-[44px] py-2.5 px-3 flex items-center justify-center gap-1.5 rounded-2xl bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-bold text-xs shadow-md shadow-sky-600/20 transition-all text-center">
-                    <span class="material-icons text-base">qr_code_scanner</span>
+                   class="w-full min-h-[48px] py-3 px-4 flex items-center justify-center gap-2 rounded-2xl bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-bold text-sm shadow-md shadow-sky-600/20 active:scale-95 transition-all text-center">
+                    <span class="material-icons text-lg">qr_code_scanner</span>
                     <span>Scan QR Siswa</span>
                 </a>
+                
                 <button @click="showStudentManagementModal = true" 
-                        class="min-h-[44px] py-2.5 px-3 flex items-center justify-center gap-1.5 rounded-2xl bg-white hover:bg-slate-50 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 shadow-2xs transition-all text-center">
+                        class="w-full min-h-[44px] py-2.5 px-4 flex items-center justify-center gap-2 rounded-2xl bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-855 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 shadow-2xs transition-all text-center">
                     <span class="material-icons text-base text-slate-500">checklist</span>
                     <span>Kelola Presensi</span>
                 </button>
             </div>
         </div>
 
-        <!-- 4 QUICK ACTIONS (Maksimal 4 Tombol Aksi Cepat) -->
+        <!-- AKSI CEPAT (4 Tombol Aksi Cepat) -->
         <div>
             <div class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Aksi Cepat</div>
             <div class="grid grid-cols-4 gap-2.5">
@@ -135,13 +128,13 @@
                     <span class="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate w-full">Izin Siswa</span>
                 </a>
 
-                <!-- 3. Jurnal Mengajar -->
-                <a href="{{ route('teacher.journals.index') }}" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:bg-indigo-50 dark:hover:bg-slate-800 active:scale-95 transition-all text-center group">
+                <!-- 3. Siswa Kelas -->
+                <button @click="showStudentManagementModal = true" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:bg-indigo-50 dark:hover:bg-slate-800 active:scale-95 transition-all text-center group">
                     <div class="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
-                        <span class="material-icons text-xl">menu_book</span>
+                        <span class="material-icons text-xl">groups</span>
                     </div>
-                    <span class="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate w-full">Jurnal</span>
-                </a>
+                    <span class="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate w-full">Siswa</span>
+                </button>
 
                 <!-- 4. Rekap Laporan -->
                 <a href="{{ route('teacher.attendance.history') }}" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:bg-emerald-50 dark:hover:bg-slate-800 active:scale-95 transition-all text-center group">
@@ -151,102 +144,97 @@
                     <span class="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate w-full">Laporan</span>
                 </a>
             </div>
-        </div>iv>
-
-        <!-- KEHADIRAN TERBARU SISWA (Preview List 3-5 Item Standar 64-72px) -->
-        <div class="rounded-3xl p-5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-1">
-                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span class="material-icons text-sky-500 text-base">checklist</span>
-                    <span>Aktivitas Siswa Terkini</span>
-                </h3>
-                <button @click="showStudentManagementModal = true" class="text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5">
-                    <span>Lihat Semua ({{ $totalStudents }})</span>
-                    <span class="material-icons text-sm">chevron_right</span>
-                </button>
-            </div>
-
-            <div class="divide-y divide-slate-100 dark:divide-slate-800">
-                @forelse($studentsInClass->take(5) as $student)
-                    @php $attendance = $attendancesToday->get($student->id); @endphp
-                    <div class="py-3 flex items-center justify-between gap-3 min-h-[64px]">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <img class="h-10 w-10 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-800 shrink-0" 
-                                 src="{{ $student->photo_url }}" 
-                                 onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';" 
-                                 alt="{{ $student->name }}">
-                            <div class="min-w-0">
-                                <p class="font-bold text-xs text-slate-900 dark:text-white truncate">{{ $student->name }}</p>
-                                <p class="text-[11px] text-slate-400 truncate">
-                                    @if($attendance && $attendance->attendance_time && !in_array($attendance->status, ['izin', 'sakit', 'alpa']))
-                                        Masuk: {{ \Carbon\Carbon::parse($attendance->attendance_time)->format('H:i') }} WIB
-                                    @else
-                                        NIS: {{ $student->nis ?? '-' }}
-                                    @endif
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="shrink-0">
-                            @if($attendance)
-                                @if ($attendance->status === 'tepat_waktu')
-                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Hadir
-                                    </span>
-                                @elseif ($attendance->status === 'terlambat')
-                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/40">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Terlambat
-                                    </span>
-                                @elseif ($attendance->status === 'izin')
-                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 border border-purple-200/60 dark:border-purple-900/40">
-                                        Izin
-                                    </span>
-                                @elseif ($attendance->status === 'sakit')
-                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-900/40">
-                                        Sakit
-                                    </span>
-                                @elseif ($attendance->status === 'alpa')
-                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-400 border border-red-200/60 dark:border-red-900/40">
-                                        Alpa
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400">
-                                        Izin Keluar
-                                    </span>
-                                @endif
-                            @else
-                                <span class="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                    Belum Hadir
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-                @empty
-                    <p class="text-xs text-slate-400 py-4 text-center">Belum ada siswa di kelas ini.</p>
-                @endforelse
-            </div>
-
-            <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button @click="showStudentManagementModal = true" class="w-full min-h-[44px] py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-xs font-bold text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/80 transition-colors flex items-center justify-center gap-1.5">
-                    <span class="material-icons text-base text-sky-500">format_list_bulleted</span>
-                    <span>Buka & Kelola Presensi Siswa ({{ $totalStudents }})</span>
-                </button>
-            </div>
         </div>
 
-        <!-- TREN KEHADIRAN KELAS 7 HARI TERAKHIR (MOBILE) -->
+        <!-- DAFTAR SISWA BELUM HADIR / PERHATIAN (EXCEPTION-BASED WORKFLOW - PRIORITAS TINGGI) -->
         <div class="rounded-3xl p-5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-1">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span class="material-icons text-amber-500 text-base">person_search</span>
+                        <span>Siswa Belum Hadir</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                        @if($totalBelumAbsen > 0)
+                            {{ $totalBelumAbsen }} siswa belum mencatat kehadiran
+                        @else
+                            Seluruh siswa sudah terdata
+                        @endif
+                    </p>
+                </div>
+                @if($totalBelumAbsen > 0)
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                        {{ $totalBelumAbsen }} Siswa
+                    </span>
+                @endif
+            </div>
+
+            @if($totalBelumAbsen > 0)
+                <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                    @foreach($absentStudents->take(4) as $student)
+                        <div class="py-3 flex items-center justify-between gap-3 min-h-[56px]">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <img class="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0" 
+                                     src="{{ $student->photo_url }}" 
+                                     onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';" 
+                                     alt="{{ $student->name }}">
+                                <div class="min-w-0">
+                                    <p class="font-bold text-xs text-slate-900 dark:text-white truncate">{{ $student->name }}</p>
+                                    <p class="text-[10px] text-slate-400 truncate">NIS: {{ $student->nis ?? '-' }}</p>
+                                </div>
+                            </div>
+
+                            <div class="shrink-0">
+                                <button @click="showStudentManagementModal = true; mobileSearch = '{{ addslashes($student->name) }}'" 
+                                        class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 transition-colors">
+                                    Catat Status
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button @click="showStudentManagementModal = true; mobileSearch = ''; mobileStatusFilter = 'belum_hadir'" 
+                            class="w-full min-h-[40px] py-2 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-xs font-bold text-sky-600 dark:text-sky-400 border border-slate-200/80 dark:border-slate-700/80 transition-colors flex items-center justify-center gap-1.5">
+                        <span>Lihat Semua Siswa Belum Hadir ({{ $totalBelumAbsen }})</span>
+                        <span class="material-icons text-sm">chevron_right</span>
+                    </button>
+                </div>
+            @else
+                <div class="py-6 text-center">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-2.5">
+                        <span class="material-icons text-2xl">verified</span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-800 dark:text-white">Semua Siswa Telah Terdata</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Seluruh siswa tercatat hadir atau memiliki status kehadiran hari ini.</p>
+                </div>
+            @endif
+        </div>
+
+        <!-- TREN KEHADIRAN KELAS (5 SESI TERAKHIR) -->
+        <div class="rounded-3xl p-5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                         <span class="material-icons text-sky-500 text-base">show_chart</span>
-                        <span>Tren Kehadiran 7 Hari</span>
+                        <span>Tren Kehadiran</span>
                     </h3>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Stabilitas kehadiran kelas {{ $class->name }}</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">5 sesi terakhir &bull; Kelas {{ $class->name }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs font-extrabold text-sky-600 dark:text-sky-400">{{ $avgRate ?? 0 }}%</span>
+                    <span class="text-[10px] text-slate-400 block -mt-0.5">rata-rata</span>
                 </div>
             </div>
-            <div class="h-56 w-full">
+
+            <div class="h-40 w-full">
                 <canvas id="weeklyAttendanceChartMobile"></canvas>
+            </div>
+
+            <!-- Insight Box -->
+            <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-850/60 border border-slate-100 dark:border-slate-800 flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+                <span class="material-icons text-emerald-500 text-base">insights</span>
             </div>
         </div>
 

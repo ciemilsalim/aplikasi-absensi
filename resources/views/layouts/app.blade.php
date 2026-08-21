@@ -425,7 +425,7 @@
                             <a href="{{ route('teacher.attendance.dashboard') }}"
                                 class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isTeacherAtt ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">person_pin</span>
-                                <span class="text-[10px] {{ $isTeacherAtt ? 'font-bold' : 'font-medium' }} mt-0.5">Absen Guru</span>
+                                <span class="text-[10px] {{ $isTeacherAtt ? 'font-bold' : 'font-medium' }} mt-0.5">Presensi</span>
                             </a>
 
                             <!-- Elevated Scan QR Button -->

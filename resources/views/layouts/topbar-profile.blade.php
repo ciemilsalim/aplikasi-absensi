@@ -49,7 +49,7 @@
                 }
             @endphp
             <a href="{{ route('admin.teaching_journals.index') }}" 
-               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
+               class="relative hidden sm:inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
                title="Supervisi Jurnal Guru">
                 <span class="material-icons text-xl sm:text-lg">verified_user</span>
                 @if($topbarPendingJournals > 0)
@@ -58,7 +58,7 @@
             </a>
 
             <a href="{{ route('principal.dashboard') }}" 
-               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
+               class="relative hidden sm:inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
                title="Dasbor Eksekutif">
                 <span class="material-icons text-xl sm:text-lg">account_balance</span>
             </a>
@@ -67,7 +67,7 @@
         {{-- Notifications for Admin / Staff --}}
         @if(auth()->user()->hasAnyRole(['admin', 'operator']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
             <a href="{{ route('admin.leave_requests.index') }}" 
-               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               class="relative hidden sm:inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                title="Persetujuan Izin Siswa">
                 <span class="material-icons text-xl sm:text-lg">assignment_turned_in</span>
                 @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
@@ -76,7 +76,7 @@
             </a>
 
             <a href="{{ route('admin.chat.index') }}" 
-               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               class="relative hidden sm:inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                title="Pesan Orang Tua">
                 <span class="material-icons text-xl sm:text-lg">chat</span>
                 @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
@@ -101,7 +101,7 @@
             {{-- Homeroom Teacher Leave Approvals --}}
             @if(auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass)
             <a href="{{ route('teacher.leave_requests.index') }}" 
-               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               class="relative hidden sm:inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                title="Pengajuan Izin Masuk">
                 <span class="material-icons text-xl sm:text-lg">assignment_turned_in</span>
                 @if(isset($teacherPendingLeaveRequestsCount) && $teacherPendingLeaveRequestsCount > 0)
@@ -112,7 +112,7 @@
 
             {{-- Chat Notification --}}
             <a href="{{ route('chat.index') }}" 
-               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               class="relative hidden sm:inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                title="Obrolan">
                 <span class="material-icons text-xl sm:text-lg">chat</span>
                 @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
