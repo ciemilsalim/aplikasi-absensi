@@ -83,7 +83,7 @@
                             </div>
 
                             <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" 
-                               class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white text-xs font-bold shadow-md shadow-sky-600/25 transition-all shrink-0">
+                               class="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-4 sm:py-2.5 min-h-[44px] sm:min-h-[38px] rounded-xl bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white text-sm sm:text-xs font-bold shadow-md shadow-sky-600/25 transition-all shrink-0 w-full sm:w-auto">
                                 <span class="material-icons text-base">qr_code_scanner</span>
                                 <span>Buka Sesi Presensi</span>
                             </a>
@@ -127,7 +127,7 @@
                             </div>
 
                             <a href="{{ route('teacher.subject.attendance.scanner', ['schedule' => $schedule->id]) }}" 
-                               class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-bold transition-all shrink-0">
+                               class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:px-3 sm:py-2 min-h-[40px] sm:min-h-[36px] rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-bold transition-all shrink-0 w-full sm:w-auto">
                                 <span class="material-icons text-sm text-sky-500">qr_code_2</span>
                                 <span>Buka Presensi</span>
                             </a>

@@ -34,7 +34,7 @@
     @endif
 
     {{-- Action & Notification Icon Buttons --}}
-    <div class="flex items-center gap-x-1 sm:gap-x-1.5">
+    <div class="flex items-center gap-x-1.5 sm:gap-x-1.5">
         
         {{-- Notifications for Kepala Sekolah / Wakasek Kurikulum --}}
         @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum']))
@@ -49,36 +49,36 @@
                 }
             @endphp
             <a href="{{ route('admin.teaching_journals.index') }}" 
-               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
+               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
                title="Supervisi Jurnal Guru">
-                <span class="material-icons text-xl">verified_user</span>
+                <span class="material-icons text-xl sm:text-lg">verified_user</span>
                 @if($topbarPendingJournals > 0)
                     <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-amber-500 text-slate-950 text-[9px] font-black shadow-xs animate-pulse">{{ $topbarPendingJournals }}</span>
                 @endif
             </a>
 
             <a href="{{ route('principal.dashboard') }}" 
-               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
+               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors" 
                title="Dasbor Eksekutif">
-                <span class="material-icons text-xl">account_balance</span>
+                <span class="material-icons text-xl sm:text-lg">account_balance</span>
             </a>
         @endif
 
         {{-- Notifications for Admin / Staff --}}
         @if(auth()->user()->hasAnyRole(['admin', 'operator']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
             <a href="{{ route('admin.leave_requests.index') }}" 
-               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                title="Persetujuan Izin Siswa">
-                <span class="material-icons text-xl">assignment_turned_in</span>
+                <span class="material-icons text-xl sm:text-lg">assignment_turned_in</span>
                 @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
                     <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold shadow-xs animate-pulse">{{ $pendingLeaveRequestsCount }}</span>
                 @endif
             </a>
 
             <a href="{{ route('admin.chat.index') }}" 
-               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                title="Pesan Orang Tua">
-                <span class="material-icons text-xl">chat</span>
+                <span class="material-icons text-xl sm:text-lg">chat</span>
                 @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
                     <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold shadow-xs">{{ $totalUnreadMessagesCount }}</span>
                 @endif
@@ -101,9 +101,9 @@
             {{-- Homeroom Teacher Leave Approvals --}}
             @if(auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass)
             <a href="{{ route('teacher.leave_requests.index') }}" 
-               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                title="Pengajuan Izin Masuk">
-                <span class="material-icons text-xl">assignment_turned_in</span>
+                <span class="material-icons text-xl sm:text-lg">assignment_turned_in</span>
                 @if(isset($teacherPendingLeaveRequestsCount) && $teacherPendingLeaveRequestsCount > 0)
                     <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold shadow-xs animate-pulse">{{ $teacherPendingLeaveRequestsCount }}</span>
                 @endif
@@ -112,9 +112,9 @@
 
             {{-- Chat Notification --}}
             <a href="{{ route('chat.index') }}" 
-               class="relative inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+               class="relative inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                title="Obrolan">
-                <span class="material-icons text-xl">chat</span>
+                <span class="material-icons text-xl sm:text-lg">chat</span>
                 @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
                     <span class="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-white text-[9px] font-bold shadow-xs">{{ $totalUnreadMessagesCount }}</span>
                 @endif
@@ -123,7 +123,7 @@
 
         {{-- Dark Mode Toggle Button --}}
         <button @click="toggleDarkMode()" type="button" 
-                class="inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                class="inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 title="Ganti Mode Terang / Gelap">
             <span class="sr-only">Ganti Tema</span>
             <span x-show="!darkMode" class="material-icons text-xl text-amber-500">dark_mode</span>
@@ -137,7 +137,7 @@
     @auth
         <div x-data="{ open: false }" class="relative">
             <button @click="open = !open" 
-                    class="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                    class="flex items-center gap-2 p-1.5 sm:p-1 pl-1.5 pr-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 min-h-[40px] sm:min-h-[36px]">
                 <div class="relative">
                     <img class="h-8 w-8 rounded-full object-cover ring-2 ring-indigo-500/20 bg-slate-200 dark:bg-slate-700" 
                          src="{{ Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=818cf8&background=e0e7ff' }}" 

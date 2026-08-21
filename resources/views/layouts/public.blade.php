@@ -291,7 +291,8 @@
                      x-transition:leave-start="translate-y-0"
                      x-transition:leave-end="translate-y-full">
                      
-                    <div class="mx-auto h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-700 mb-5"></div>
+                    <!-- Drag Handle (Standard 36dp x 4dp) -->
+                    <div class="mx-auto h-1 w-9 rounded-full bg-slate-300 dark:bg-slate-700 mb-4"></div>
 
                     <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-100 dark:border-slate-800">
                         <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">

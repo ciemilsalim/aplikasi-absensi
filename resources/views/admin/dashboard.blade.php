@@ -64,14 +64,14 @@
                         </p>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-3 pt-2">
+                    <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
                         <a href="{{ route('scanner') }}" target="_blank" 
-                           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold shadow-md shadow-sky-500/25 transition-all transform hover:scale-105 active:scale-95">
+                           class="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-4 sm:py-2.5 min-h-[44px] sm:min-h-[38px] rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-sm sm:text-xs font-bold shadow-md shadow-sky-500/25 transition-all transform hover:scale-105 active:scale-95 w-full sm:w-auto">
                             <span class="material-icons text-base">qr_code_scanner</span>
                             <span>Buka Scanner Hadir</span>
                         </a>
                         <a href="{{ route('permit.scanner') }}" target="_blank" 
-                           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-xs font-bold border border-white/20 transition-all">
+                           class="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-4 sm:py-2.5 min-h-[44px] sm:min-h-[38px] rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-sm sm:text-xs font-bold border border-white/20 transition-all w-full sm:w-auto">
                             <span class="material-icons text-base">assignment</span>
                             <span>Buka Scanner Izin</span>
                         </a>

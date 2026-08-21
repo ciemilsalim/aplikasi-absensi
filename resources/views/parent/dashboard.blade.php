@@ -41,7 +41,7 @@
                 </div>
 
                 <a href="{{ route('parent.leave-requests.create') }}" 
-                   class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold shadow-md shadow-amber-500/25 transition-all transform hover:scale-105 active:scale-95 shrink-0">
+                   class="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-4 sm:py-2.5 min-h-[44px] sm:min-h-[38px] rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm sm:text-xs font-extrabold shadow-md shadow-amber-500/25 transition-all transform hover:scale-105 active:scale-95 shrink-0 w-full sm:w-auto">
                     <span class="material-icons text-base">add_circle</span>
                     <span>Ajukan Izin / Sakit</span>
                 </a>

@@ -250,7 +250,7 @@
                 </header>
 
                 <!-- Page Main Container -->
-                <main class="flex-1 py-6 sm:py-8 pb-24 lg:pb-8">
+                <main class="flex-1 py-5 sm:py-8 pb-28 lg:pb-8">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                         @if (isset($header))
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
@@ -499,8 +499,8 @@
                          x-transition:leave-start="translate-y-0"
                          x-transition:leave-end="translate-y-full">
                          
-                         <!-- Drag Handle -->
-                         <div class="mx-auto h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-700 mb-4"></div>
+                         <!-- Drag Handle (Standard 36dp x 4dp) -->
+                         <div class="mx-auto h-1 w-9 rounded-full bg-slate-300 dark:bg-slate-700 mb-4"></div>
 
                          <!-- Header -->
                          <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -952,11 +952,11 @@
 
                             <div class="mt-6 flex items-center justify-center gap-3">
                                 <button @click="showMobileLogoutConfirm = false" type="button" 
-                                        class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                                        class="flex-1 min-h-[48px] px-5 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
                                     Batal
                                 </button>
                                 <button @click="$refs.mobileLogoutForm.submit()" type="button" 
-                                        class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-600/25 transition-all active:scale-95">
+                                        class="flex-1 min-h-[48px] px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-md shadow-rose-600/25 transition-all active:scale-95">
                                     Ya, Keluar
                                 </button>
                             </div>
