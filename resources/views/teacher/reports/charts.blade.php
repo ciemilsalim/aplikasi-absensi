@@ -1,13 +1,17 @@
+@php
+    $classNameFormatted = str_starts_with($class->name, 'Kelas') ? $class->name : 'Kelas ' . $class->name;
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
             <div>
                 <x-breadcrumb :breadcrumbs="[
                     ['title' => 'Dasbor Wali Kelas', 'url' => route('teacher.dashboard', ['view' => 'wali_kelas'])],
-                    ['title' => 'Analitik Kelas', 'url' => route('teacher.attendance.charts')]
+                    ['title' => 'Analitik Kehadiran', 'url' => route('teacher.attendance.charts')]
                 ]" />
                 <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-                    Analitik Kehadiran - Kelas {{ $class->name }}
+                    Analitik Kehadiran &bull; {{ $classNameFormatted }}
                 </h1>
             </div>
 
@@ -174,6 +178,8 @@
                     this.$watch('filters.period_type', (val) => {
                         this.filters.period_value = 1;
                     });
+
+                    this.generateChart();
                 },
 
                 async generateChart() {

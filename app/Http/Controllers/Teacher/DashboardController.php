@@ -1271,7 +1271,7 @@ class DashboardController extends Controller
         $class = $teacher->homeroomClass;
         $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
 
-        return view('teacher.attendance.charts', compact('class', 'students'));
+        return view('teacher.reports.charts', compact('class', 'students'));
     }
 
     public function chartData(Request $request)
@@ -1282,115 +1282,140 @@ class DashboardController extends Controller
         }
 
         $class = $teacher->homeroomClass;
-        $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'period' => 'required|in:weekly,monthly'
+        $params = $request->validate([
+            'target_type' => 'required|in:class,student',
+            'period_type' => 'required|in:month,trimester,semester',
+            'year' => 'required|integer',
+            'period_value' => 'required|integer',
+            'student_id' => 'nullable|exists:students,id',
         ]);
 
-        $startDate = Carbon::parse($request->start_date)->startOfDay();
-        $endDate = Carbon::parse($request->end_date)->endOfDay();
-        $studentId = $request->student_id;
-        $periodType = $request->period;
+        $year = (int) $params['year'];
+        $months = [];
+        $labels = [];
 
-        $students = Student::where('school_class_id', $class->id);
-        if ($studentId && $studentId !== 'all') {
-            $students->where('id', $studentId);
+        if ($params['period_type'] === 'month') {
+            $months = [(int) $params['period_value']];
+            $labels = [Carbon::create()->month($months[0])->translatedFormat('F')];
+        } elseif ($params['period_type'] === 'trimester') {
+            $t = (int) $params['period_value'];
+            $months = [($t - 1) * 3 + 1, ($t - 1) * 3 + 2, ($t - 1) * 3 + 3];
+            foreach ($months as $m) {
+                $labels[] = Carbon::create()->month($m)->translatedFormat('F');
+            }
+        } elseif ($params['period_type'] === 'semester') {
+            $s = (int) $params['period_value'];
+            if ($s === 1) { // Ganjil: Jul - Dec
+                $months = [7, 8, 9, 10, 11, 12];
+            } else { // Genap: Jan - Jun
+                $months = [1, 2, 3, 4, 5, 6];
+            }
+            foreach ($months as $m) {
+                $labels[] = Carbon::create()->month($m)->translatedFormat('F');
+            }
         }
-        $students = $students->get();
-        $studentIds = $students->pluck('id');
-        $studentsCount = $students->count();
 
-        $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
-        $validDays = collect(CarbonPeriod::create($startDate, $endDate))->filter(function ($date) use ($holidays) {
-            return !$date->isWeekend() && !\App\Models\Calendar::isDateInHolidays($date, $holidays) && $date->startOfDay() <= now()->startOfDay();
-        });
+        $studentsQuery = Student::where('school_class_id', $class->id);
+        if ($params['target_type'] === 'student' && !empty($params['student_id'])) {
+            $studentsQuery->where('id', $params['student_id']);
+        }
 
-        $attendances = Attendance::whereIn('student_id', $studentIds)
-            ->whereBetween('attendance_time', [$startDate, $endDate])
-            ->get();
+        // Ambil data absensi
+        $students = $studentsQuery->with(['attendances' => function ($query) use ($year, $months) {
+            $query->whereYear('attendance_time', $year)
+                  ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+            if (session('active_semester_id')) {
+                $query->where('semester_id', session('active_semester_id'));
+            }
+        }])->get();
 
-        $totalHadir = $attendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
-        $totalSakit = $attendances->where('status', 'sakit')->count();
-        $totalIzin = $attendances->whereIn('status', ['izin', 'izin_keluar'])->count();
-        $totalAlpaTercatat = $attendances->where('status', 'alpa')->count();
+        $monthlyDataArray = [];
+        $totalSum = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
 
-        $maxPossible = $validDays->count() * $studentsCount;
-        $p_hadir = 0; $p_sakit = 0; $p_izin = 0; $p_alpa = 0;
-
-        if ($maxPossible > 0) {
-            $p_hadir = round(($totalHadir / $maxPossible) * 100, 1);
-            $p_sakit = round(($totalSakit / $maxPossible) * 100, 1);
-            $p_izin  = round(($totalIzin / $maxPossible) * 100, 1);
+        foreach ($months as $m) {
+            $startDate = Carbon::create($year, $m, 1)->startOfMonth();
+            $endDate = $startDate->copy()->endOfMonth();
             
-            $recorded = $totalHadir + $totalSakit + $totalIzin + $totalAlpaTercatat;
-            $unrecorded = $maxPossible - $recorded;
-            $totalAlpa = $totalAlpaTercatat + ($unrecorded > 0 ? $unrecorded : 0);
-            
-            $p_alpa  = round(($totalAlpa / $maxPossible) * 100, 1);
-        }
+            $holidays = \App\Models\Calendar::getHolidaysInRange($startDate, $endDate);
+            $selfStudyDays = \App\Models\Calendar::getSelfStudyDaysInRange($startDate, $endDate);
+            $period = CarbonPeriod::create($startDate, $endDate);
 
-        $summaryData = [
-            'hadir' => $p_hadir,
-            'sakit' => $p_sakit,
-            'izin' => $p_izin,
-            'alpa' => $p_alpa,
-        ];
+            $workdays = collect($period)->filter(function ($d) use ($holidays) {
+                return !$d->isWeekend() && !\App\Models\Calendar::isDateInHolidays($d, $holidays);
+            });
 
-        $trendLabels = [];
-        $trendData = [
-            'hadir' => [],
-            'sakit' => [],
-            'izin' => [],
-            'alpa' => []
-        ];
+            // Hanya hitung hari yang sudah berlalu (sampai hari ini)
+            $passedWorkdays = $workdays->filter(function ($d) {
+                return $d->startOfDay() <= now()->startOfDay();
+            });
 
-        $groupedDays = [];
-        foreach ($validDays as $day) {
-            if ($periodType === 'weekly') {
-                $label = 'Minggu ' . $day->weekOfMonth . ' ' . $day->translatedFormat('F');
-            } else {
-                $label = $day->translatedFormat('F Y');
-            }
-            if (!isset($groupedDays[$label])) {
-                $groupedDays[$label] = [];
-            }
-            $groupedDays[$label][] = $day->format('Y-m-d');
-        }
+            $hadirMonth = 0; $sakitMonth = 0; $izinMonth = 0; $alpaMonth = 0;
 
-        foreach ($groupedDays as $label => $days) {
-            $trendLabels[] = $label;
-            $maxPossGroup = count($days) * $studentsCount;
-            if ($maxPossGroup == 0) {
-                $trendData['hadir'][] = 0; $trendData['sakit'][] = 0;
-                $trendData['izin'][] = 0; $trendData['alpa'][] = 0;
-                continue;
-            }
+            foreach ($passedWorkdays as $wDate) {
+                $dateString = $wDate->format('Y-m-d');
+                $isSelfStudy = \App\Models\Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
 
-            $gHadir = 0; $gSakit = 0; $gIzin = 0; $gAlpa = 0;
-            foreach ($attendances as $att) {
-                if (in_array(Carbon::parse($att->attendance_time)->format('Y-m-d'), $days)) {
-                    if (in_array($att->status, ['tepat_waktu', 'terlambat'])) $gHadir++;
-                    elseif ($att->status == 'sakit') $gSakit++;
-                    elseif (in_array($att->status, ['izin', 'izin_keluar'])) $gIzin++;
-                    elseif ($att->status == 'alpa') $gAlpa++;
+                foreach ($students as $student) {
+                    $attendanceRecord = $student->attendances->firstWhere(function($item) use ($dateString) {
+                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
+                    });
+
+                    if ($isSelfStudy) {
+                        $hadirMonth++;
+                    } else {
+                        $status = $attendanceRecord ? $attendanceRecord->status : null;
+                        if (in_array($status, ['tepat_waktu', 'terlambat'])) $hadirMonth++;
+                        elseif ($status === 'sakit') $sakitMonth++;
+                        elseif (in_array($status, ['izin', 'izin_keluar'])) $izinMonth++;
+                        elseif ($status === 'alpa') $alpaMonth++;
+                    }
                 }
             }
+            
+            $totalStudentsCount = count($students);
+            $maxPossible = $passedWorkdays->count() * $totalStudentsCount;
+            
+            if ($maxPossible > 0) {
+                $p_hadir = round(($hadirMonth / $maxPossible) * 100, 1);
+                $p_sakit = round(($sakitMonth / $maxPossible) * 100, 1);
+                $p_izin  = round(($izinMonth / $maxPossible) * 100, 1);
+                
+                // Hari tanpa keterangan/belum absen dianggap Alpa
+                $recorded = $hadirMonth + $sakitMonth + $izinMonth + $alpaMonth;
+                $unrecorded = $maxPossible - $recorded;
+                $totalAlpa = $alpaMonth + ($unrecorded > 0 ? $unrecorded : 0);
+                
+                $p_alpa  = round(($totalAlpa / $maxPossible) * 100, 1);
+            } else {
+                $p_hadir = 0; $p_sakit = 0; $p_izin = 0; $p_alpa = 0;
+            }
 
-            $gRecorded = $gHadir + $gSakit + $gIzin + $gAlpa;
-            $gUnrecorded = $maxPossGroup - $gRecorded;
-            $gAlpaTotal = $gAlpa + ($gUnrecorded > 0 ? $gUnrecorded : 0);
+            $monthlyDataArray[] = [
+                'hadir' => $p_hadir,
+                'sakit' => $p_sakit,
+                'izin' => $p_izin,
+                'alpa' => $p_alpa,
+            ];
 
-            $trendData['hadir'][] = round(($gHadir / $maxPossGroup) * 100, 1);
-            $trendData['sakit'][] = round(($gSakit / $maxPossGroup) * 100, 1);
-            $trendData['izin'][] = round(($gIzin / $maxPossGroup) * 100, 1);
-            $trendData['alpa'][] = round(($gAlpaTotal / $maxPossGroup) * 100, 1);
+            // Akumulasi sum
+            $totalSum['hadir'] += $p_hadir;
+            $totalSum['sakit'] += $p_sakit;
+            $totalSum['izin'] += $p_izin;
+            $totalSum['alpa'] += $p_alpa;
+        }
+
+        $numMonths = count($months);
+        if ($numMonths > 0) {
+            $totalSum['hadir'] = round($totalSum['hadir'] / $numMonths, 1);
+            $totalSum['sakit'] = round($totalSum['sakit'] / $numMonths, 1);
+            $totalSum['izin'] = round($totalSum['izin'] / $numMonths, 1);
+            $totalSum['alpa'] = round($totalSum['alpa'] / $numMonths, 1);
         }
 
         return response()->json([
-            'summary' => $summaryData,
-            'trendLabels' => $trendLabels,
-            'trendData' => $trendData
+            'labels' => $labels,
+            'summary' => $totalSum,
+            'monthly' => $monthlyDataArray,
         ]);
     }
 
