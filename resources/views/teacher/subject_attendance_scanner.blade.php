@@ -1384,7 +1384,7 @@
 
                     // Fetch existing anecdote if any
                     const dateVal = document.getElementById('attendance-date')?.value || '{{ $selectedDate->format('Y-m-d') }}';
-                    fetch(`{{ route('teacher.anecdotes.show_json') }}?student_id=${studentId}&schedule_id=${scheduleId}&date=${dateVal}`, {
+                    fetch(`{{ route('teacher.anecdotes.get_student') }}?student_id=${studentId}&schedule_id=${scheduleId}&date=${dateVal}`, {
                         headers: {
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -1392,8 +1392,8 @@
                     })
                     .then(r => r.json())
                     .then(res => {
-                        if (res.success && res.data) {
-                            const d = res.data;
+                        if (res.success && res.anecdote) {
+                            const d = res.anecdote;
                             if (d.academic_sentiment) {
                                 const r = document.querySelector(`input[name="academic_sentiment"][value="${d.academic_sentiment}"]`);
                                 if (r) r.checked = true;
@@ -1406,9 +1406,9 @@
                                 const r = document.querySelector(`input[name="attitude_sentiment"][value="${d.attitude_sentiment}"]`);
                                 if (r) r.checked = true;
                             }
-                            document.getElementById('anecdote-academic-note').value = d.academic_notes || '';
-                            document.getElementById('anecdote-attendance-note').value = d.attendance_notes || '';
-                            document.getElementById('anecdote-attitude-note').value = d.attitude_notes || '';
+                            document.getElementById('anecdote-academic-note').value = d.academic_note || '';
+                            document.getElementById('anecdote-attendance-note').value = d.attendance_note || '';
+                            document.getElementById('anecdote-attitude-note').value = d.attitude_note || '';
                             document.getElementById('anecdote-follow-up').value = d.follow_up || '';
                             document.getElementById('anecdote-visible-to-parents').checked = !!d.is_visible_to_parents;
                             if (statusText) statusText.textContent = 'Catatan tersimpan ditemukan.';
@@ -1450,7 +1450,7 @@
                         saveBtn.innerHTML = '<span class="material-icons text-sm animate-spin">sync</span><span>Menyimpan...</span>';
                     }
 
-                    fetch("{{ route('teacher.anecdotes.store_json') }}", {
+                    fetch("{{ route('teacher.anecdotes.store_update') }}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1464,9 +1464,9 @@
                             academic_sentiment: academicSentiment,
                             attendance_sentiment: attendanceSentiment,
                             attitude_sentiment: attitudeSentiment,
-                            academic_notes: academicNotes,
-                            attendance_notes: attendanceNotes,
-                            attitude_notes: attitudeNotes,
+                            academic_note: academicNotes,
+                            attendance_note: attendanceNotes,
+                            attitude_note: attitudeNotes,
                             follow_up: followUp,
                             is_visible_to_parents: isVisible
                         })

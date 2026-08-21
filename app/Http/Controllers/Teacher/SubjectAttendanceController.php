@@ -89,16 +89,28 @@ class SubjectAttendanceController extends Controller
 
         $studentsWithoutNotice = $allClassStudents->whereNotIn('id', $studentIdsWithRecord)->values();
 
+        $hasFaceDescriptor = false;
+        try {
+            $hasFaceDescriptor = \Illuminate\Support\Facades\Schema::hasColumn('students', 'face_descriptor');
+        } catch (\Throwable $e) {
+            $hasFaceDescriptor = false;
+        }
+
+        $faceColumns = ['id', 'unique_id', 'name', 'photo', 'nis', 'school_class_id'];
+        if ($hasFaceDescriptor) {
+            $faceColumns[] = 'face_descriptor';
+        }
+
         $studentsForFaceRecognition = Student::where('school_class_id', $classId)
             ->whereNotNull('photo')
-            ->select('id', 'unique_id', 'name', 'photo', 'face_descriptor')
+            ->select($faceColumns)
             ->get()
             ->map(function ($student) {
                 return [
                     'unique_id' => $student->unique_id,
                     'name' => $student->name,
-                    'photo_url' => asset('storage/' . $student->photo),
-                    'face_descriptor' => $student->face_descriptor,
+                    'photo_url' => $student->photo_url,
+                    'face_descriptor' => $student->face_descriptor ?? null,
                 ];
             });
 
