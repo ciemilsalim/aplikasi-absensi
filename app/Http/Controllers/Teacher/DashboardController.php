@@ -627,6 +627,9 @@ class DashboardController extends Controller
         // Performa Kehadiran Ekskul 30 Hari Terakhir
         $thirtyDaysAgo = now()->subDays(30);
         $classPerformanceDataEkskul = [];
+        $totalSessions30Days = 0;
+        $totalPercentageSum = 0;
+
         foreach ($extracurriculars as $ekskul) {
             $totalSessions = ExtracurricularAttendance::where('extracurricular_id', $ekskul->id)
                 ->where('attendance_date', '>=', $thirtyDaysAgo->toDateString())
@@ -642,12 +645,26 @@ class DashboardController extends Controller
             $potentialAttendance = $totalMembers * $totalSessions;
             $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
 
+            $totalSessions30Days += $totalSessions;
+            $totalPercentageSum += $percentage;
+
             $classPerformanceDataEkskul[] = [
                 'label' => $ekskul->name,
                 'percentage' => $percentage,
                 'total_sessions' => $totalSessions,
             ];
         }
+
+        $avgAttendance30Days = count($classPerformanceDataEkskul) > 0 ? round($totalPercentageSum / count($classPerformanceDataEkskul)) : 0;
+
+        // Riwayat sesi latihan terakhir (5 sesi terbaru)
+        $recentPracticeSessions = ExtracurricularAttendance::whereIn('extracurricular_id', $ekskulIds)
+            ->select('extracurricular_id', 'attendance_date', DB::raw('count(*) as total_records'), DB::raw('SUM(CASE WHEN status="hadir" THEN 1 ELSE 0 END) as total_hadir'))
+            ->groupBy('extracurricular_id', 'attendance_date')
+            ->orderByDesc('attendance_date')
+            ->with('extracurricular')
+            ->take(5)
+            ->get();
 
         $teacherNote = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
 
@@ -657,6 +674,9 @@ class DashboardController extends Controller
             'studentsForAttentionEkskul' => $studentsForAttentionEkskul,
             'lastAttendanceSummaryEkskul' => $lastAttendanceSummaryEkskul,
             'classPerformanceDataEkskul' => $classPerformanceDataEkskul,
+            'recentPracticeSessions' => $recentPracticeSessions,
+            'totalSessions30Days' => $totalSessions30Days,
+            'avgAttendance30Days' => $avgAttendance30Days,
             'teacherNote' => $teacherNote,
         ];
     }

@@ -6,7 +6,17 @@
                     ['title' => 'Dasbor Guru', 'url' => route('teacher.dashboard')]
                 ]" />
                 <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-                    Dasbor & Presensi Guru
+                    @if($currentView === 'pembina_ekskul')
+                        Dasbor Pembina Ekskul
+                    @elseif($currentView === 'wali_kelas')
+                        Dasbor Wali Kelas
+                    @elseif($currentView === 'guru_mapel')
+                        Dasbor Guru Mata Pelajaran
+                    @elseif($currentView === 'fasilitator_kokurikuler')
+                        Dasbor Fasilitator Kokurikuler
+                    @else
+                        Dasbor & Presensi Guru
+                    @endif
                 </h1>
             </div>
             
