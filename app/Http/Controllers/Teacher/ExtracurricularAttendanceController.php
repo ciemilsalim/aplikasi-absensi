@@ -98,7 +98,7 @@ class ExtracurricularAttendanceController extends Controller
                 $session->sakit_count = $sessionAttendances->where('status', 'sakit')->count();
                 $session->izin_count = $sessionAttendances->where('status', 'izin')->count();
                 $session->alpa_count = $sessionAttendances->where('status', 'alpa')->count();
-                $session->extracurricular = Extracurricular::with('teachers')->find($session->extracurricular_id);
+                $session->extracurricular = Extracurricular::with('teachers')->withCount('students')->find($session->extracurricular_id);
                 return $session;
             });
 
