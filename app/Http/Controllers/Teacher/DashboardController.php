@@ -298,6 +298,43 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Status kehadiran sesi per jadwal hari ini
+        $attendedScheduleIdsToday = SubjectAttendance::whereIn('schedule_id', $schedulesToday->pluck('id'))
+            ->whereDate('created_at', $now->toDateString())
+            ->pluck('schedule_id')
+            ->unique()
+            ->toArray();
+
+        $activeSchedule = null;
+        $nextSchedule = null;
+        $currentTime = $now->format('H:i:s');
+
+        foreach ($schedulesToday as $sched) {
+            $startTime = Carbon::parse($sched->start_time)->format('H:i:s');
+            $endTime = Carbon::parse($sched->end_time)->format('H:i:s');
+            $hasAttended = in_array($sched->id, $attendedScheduleIdsToday);
+            $sched->has_attended_today = $hasAttended;
+
+            if ($currentTime >= $startTime && $currentTime <= $endTime) {
+                $sched->status_time = 'ongoing';
+                if (!$activeSchedule) {
+                    $activeSchedule = $sched;
+                }
+            } elseif ($currentTime < $startTime) {
+                $sched->status_time = 'upcoming';
+                if (!$nextSchedule && !$activeSchedule) {
+                    $nextSchedule = $sched;
+                }
+            } else {
+                $sched->status_time = $hasAttended ? 'completed' : 'missed';
+            }
+        }
+
+        $heroSchedule = $activeSchedule ?? $nextSchedule ?? $schedulesToday->first();
+        $totalSessionsToday = $schedulesToday->count();
+        $completedSessionsToday = count($attendedScheduleIdsToday);
+        $remainingSessionsToday = max(0, $totalSessionsToday - $completedSessionsToday);
+
         $lastAttendanceSummary = null;
         $lastAttendanceRecord = SubjectAttendance::where('teacher_id', $teacher->id)
             ->whereHas('schedule', function ($q) {
@@ -339,6 +376,8 @@ class DashboardController extends Controller
             $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
             $classPerformanceData[] = [
                 'label' => ($assignment->schoolClass?->name ?? 'Kelas') . ' - ' . ($assignment->subject?->name ?? 'Mapel'),
+                'className' => $assignment->schoolClass?->name ?? 'Kelas',
+                'subjectName' => $assignment->subject?->name ?? 'Mapel',
                 'percentage' => $percentage,
             ];
         }
@@ -360,6 +399,11 @@ class DashboardController extends Controller
         return [
             'schedulesToday' => $schedulesToday,
             'allSchedules' => $allSchedules,
+            'heroSchedule' => $heroSchedule,
+            'totalSessionsToday' => $totalSessionsToday,
+            'completedSessionsToday' => $completedSessionsToday,
+            'remainingSessionsToday' => $remainingSessionsToday,
+            'attendedScheduleIdsToday' => $attendedScheduleIdsToday,
             'studentsForAttentionMapel' => $studentsForAttention,
             'lastAttendanceSummary' => $lastAttendanceSummary,
             'classPerformanceData' => $classPerformanceData,

@@ -38,7 +38,7 @@
                 <div class="flex items-center space-x-1.5 min-w-max" role="tablist">
                     @if($isHomeroomTeacher)
                     <a href="{{ route('teacher.dashboard', ['view' => 'wali_kelas']) }}"
-                       class="flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                       class="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl transition-all duration-200
                               {{ $currentView === 'wali_kelas' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         <span class="material-icons text-base">groups</span>
                         <span>Wali Kelas</span>
@@ -47,28 +47,28 @@
 
                     @if($isSubjectTeacher)
                     <a href="{{ route('teacher.dashboard', ['view' => 'guru_mapel']) }}"
-                       class="flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                       class="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl transition-all duration-200
                               {{ $currentView === 'guru_mapel' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         <span class="material-icons text-base">menu_book</span>
-                        <span>Guru Mata Pelajaran</span>
+                        <span>Guru Mapel</span>
                     </a>
                     @endif
 
                     @if($isCocurricularFacilitator)
                     <a href="{{ route('teacher.dashboard', ['view' => 'fasilitator_kokurikuler']) }}"
-                       class="flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                       class="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl transition-all duration-200
                               {{ $currentView === 'fasilitator_kokurikuler' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         <span class="material-icons text-base">psychology</span>
-                        <span>Fasilitator Kokurikuler</span>
+                        <span>Kokurikuler</span>
                     </a>
                     @endif
 
                     @if($isExtracurricularCoach)
                     <a href="{{ route('teacher.dashboard', ['view' => 'pembina_ekskul']) }}"
-                       class="flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200
+                       class="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold rounded-xl transition-all duration-200
                               {{ $currentView === 'pembina_ekskul' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         <span class="material-icons text-base">military_tech</span>
-                        <span>Pembina Ekskul</span>
+                        <span>Ekskul</span>
                     </a>
                     @endif
                 </div>
