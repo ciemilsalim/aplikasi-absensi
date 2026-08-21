@@ -1021,6 +1021,9 @@
         </button>
     </div>
 
+    <!-- Global Student Photo Preview Modal -->
+    <x-photo-preview-modal />
+
     @stack('scripts')
     
     <script>

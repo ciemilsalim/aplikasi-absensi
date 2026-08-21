@@ -148,8 +148,10 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100 dark:border-slate-800">
                             <div class="flex items-center gap-3">
                                 <img src="{{ $anecdote->student->photo_url }}" alt="{{ $anecdote->student->name }}"
-                                     class="w-10 h-10 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0"
-                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($anecdote->student->name) }}&color=d97706&background=fef3c7'">
+                                     class="w-10 h-10 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar"
+                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($anecdote->student->name) }}&color=d97706&background=fef3c7'"
+                                     onclick="previewStudentPhoto('{{ $anecdote->student->photo_url }}', '{{ addslashes($anecdote->student->name) }}', 'Kelas {{ $anecdote->schoolClass?->name ?? '-' }} &bull; NIS {{ $anecdote->student->nis ?? '-' }}')"
+                                     title="Klik untuk memperbesar foto siswa">
                                 <div>
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">

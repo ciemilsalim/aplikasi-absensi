@@ -178,10 +178,12 @@
                             @if(isset($absentStudents) && $absentStudents->count() > 0)
                                 @foreach($absentStudents as $student)
                                     <div class="py-3 flex items-center gap-3">
-                                        <img class="h-9 w-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0"
+                                        <img class="h-9 w-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar"
                                              src="{{ $student->photo_url }}" 
                                              alt="{{ $student->name }}"
-                                             onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';">
+                                             onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';"
+                                             onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', 'NIS: {{ $student->nis ?? '-' }}')"
+                                             title="Klik untuk memperbesar foto siswa">
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                                                 {{ $student->name }}

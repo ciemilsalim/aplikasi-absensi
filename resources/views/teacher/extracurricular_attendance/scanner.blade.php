@@ -307,8 +307,10 @@
                                         @if(!empty($student->photo_url))
                                             <img src="{{ $student->photo_url }}" 
                                                  alt="{{ $student->name }}" 
-                                                 class="w-full h-full object-cover rounded-2xl" 
+                                                 class="w-full h-full object-cover rounded-2xl cursor-pointer hover:scale-105 active:scale-95 transition-all student-avatar" 
                                                  loading="lazy"
+                                                 onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', '{{ $student->schoolClass->name ?? '' }} {{ $student->nis ? '&bull; NIS ' . $student->nis : '' }}')"
+                                                 title="Klik untuk memperbesar foto siswa"
                                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                             <span style="display: none;" class="w-full h-full items-center justify-center font-extrabold text-xs">
                                                 {{ strtoupper(substr($student->name, 0, 1)) }}

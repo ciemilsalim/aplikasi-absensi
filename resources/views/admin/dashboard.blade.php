@@ -297,9 +297,11 @@
                     @forelse($studentsNotCheckedOut as $attendance)
                         <div class="p-4 flex items-center justify-between gap-3.5 hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
                             <div class="flex items-center gap-3 min-w-0">
-                                <img class="h-10 w-10 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0" 
+                                <img class="h-10 w-10 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar" 
                                      src="{{ $attendance->student->photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($attendance->student->name) . '&color=0284c7&background=e0f2fe' }}" 
-                                     alt="{{ $attendance->student->name }}">
+                                     alt="{{ $attendance->student->name }}"
+                                     onclick="previewStudentPhoto('{{ $attendance->student->photo_url ?? '' }}', '{{ addslashes($attendance->student->name) }}', '{{ $attendance->student->schoolClass->name ?? '' }} {{ $attendance->student->nis ? '&bull; NIS ' . $attendance->student->nis : '' }}')"
+                                     title="Klik untuk memperbesar foto siswa">
                                 <div class="min-w-0">
                                     <h4 class="text-xs font-bold text-slate-800 dark:text-white truncate">{{ $attendance->student->name }}</h4>
                                     <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">{{ $attendance->student->schoolClass->name ?? 'Tanpa Kelas' }}</p>

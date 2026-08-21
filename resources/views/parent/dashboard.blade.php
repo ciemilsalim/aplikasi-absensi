@@ -145,10 +145,12 @@
                 
                 <!-- Header Siswa (Identitas & Kelas) -->
                 <div class="flex items-center gap-3.5 pb-4 border-b border-slate-100 dark:border-slate-800">
-                    <img class="h-14 w-14 rounded-2xl object-cover ring-2 ring-slate-100 dark:ring-slate-800 bg-slate-800 shrink-0 shadow-sm" 
+                    <img class="h-14 w-14 rounded-2xl object-cover ring-2 ring-slate-100 dark:ring-slate-800 bg-slate-800 shrink-0 shadow-sm cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar" 
                          src="{{ $student->photo_url }}" 
                          onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';"
-                         alt="{{ $student->name }}">
+                         alt="{{ $student->name }}"
+                         onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', '{{ $student->schoolClass->name ?? '' }} {{ $student->nis ? '&bull; NIS ' . $student->nis : '' }}')"
+                         title="Klik untuk memperbesar foto siswa">
                     <div class="min-w-0 flex-1">
                         <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
                             {{ $student->name }}

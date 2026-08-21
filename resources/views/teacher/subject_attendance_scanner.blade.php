@@ -368,10 +368,12 @@
                                 <!-- Baris Atas: Foto, Nama, NIS & Tombol Anekdot -->
                                 <div class="flex items-center justify-between gap-2.5">
                                     <div class="flex items-center gap-2.5 min-w-0">
-                                        <img class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs"
+                                        <img class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar"
                                              src="{{ $student->photo_url }}" 
                                              alt="{{ $student->name }}"
-                                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe'">
+                                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe'"
+                                             onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', 'NIS: {{ $student->nis ?? '-' }}')"
+                                             title="Klik untuk memperbesar foto siswa">
                                         <div class="min-w-0">
                                             <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{{ $student->name }}</p>
                                             <p class="text-[11px] text-slate-400 mt-0.5">NIS: {{ $student->nis ?? '-' }}</p>
@@ -434,10 +436,12 @@
                                  x-show="search === '' || {{ json_encode(mb_strtolower($attendance->student->name)) }}.includes(search.toLowerCase()) || {{ json_encode($attendance->student->nis ?? '') }}.includes(search)">
                                 <div class="flex items-center gap-2.5 min-w-0">
                                     <div class="relative shrink-0">
-                                        <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-emerald-500 shadow-2xs"
+                                        <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-emerald-500 shadow-2xs cursor-pointer hover:ring-2 hover:ring-emerald-500/50 hover:scale-105 active:scale-95 transition-all student-avatar"
                                              src="{{ $attendance->student->photo_url }}" 
                                              alt="{{ $attendance->student->name }}"
-                                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($attendance->student->name) }}&color=0284c7&background=e0f2fe'">
+                                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($attendance->student->name) }}&color=0284c7&background=e0f2fe'"
+                                             onclick="previewStudentPhoto('{{ $attendance->student->photo_url }}', '{{ addslashes($attendance->student->name) }}', 'NIS: {{ $attendance->student->nis ?? '-' }}')"
+                                             title="Klik untuk memperbesar foto siswa">
                                         <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full flex items-center justify-center text-[8px] text-white font-bold">✓</span>
                                     </div>
                                     <div class="truncate">
@@ -474,10 +478,12 @@
                             <div class="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors student-izin-row-{{ $subjectAttendance->student->id }}"
                                  x-show="search === '' || {{ json_encode(mb_strtolower($subjectAttendance->student->name)) }}.includes(search.toLowerCase()) || {{ json_encode($subjectAttendance->student->nis ?? '') }}.includes(search)">
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-sky-500 shadow-2xs shrink-0"
+                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-sky-500 shadow-2xs shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar"
                                          src="{{ $subjectAttendance->student->photo_url }}" 
                                          alt="{{ $subjectAttendance->student->name }}"
-                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'">
+                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'"
+                                         onclick="previewStudentPhoto('{{ $subjectAttendance->student->photo_url }}', '{{ addslashes($subjectAttendance->student->name) }}', 'NIS: {{ $subjectAttendance->student->nis ?? '-' }}')"
+                                         title="Klik untuk memperbesar foto siswa">
                                     <div class="truncate">
                                         <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{{ $subjectAttendance->student->name }}</p>
                                         <p class="text-[10px] text-slate-400 mt-0.5">NIS: {{ $subjectAttendance->student->nis ?? '-' }}</p>
@@ -500,10 +506,12 @@
                             <div class="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors student-sakit-row-{{ $subjectAttendance->student->id }}"
                                  x-show="search === '' || {{ json_encode(mb_strtolower($subjectAttendance->student->name)) }}.includes(search.toLowerCase()) || {{ json_encode($subjectAttendance->student->nis ?? '') }}.includes(search)">
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-purple-500 shadow-2xs shrink-0"
+                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-purple-500 shadow-2xs shrink-0 cursor-pointer hover:ring-2 hover:ring-purple-500/50 hover:scale-105 active:scale-95 transition-all student-avatar"
                                          src="{{ $subjectAttendance->student->photo_url }}" 
                                          alt="{{ $subjectAttendance->student->name }}"
-                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'">
+                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'"
+                                         onclick="previewStudentPhoto('{{ $subjectAttendance->student->photo_url }}', '{{ addslashes($subjectAttendance->student->name) }}', 'NIS: {{ $subjectAttendance->student->nis ?? '-' }}')"
+                                         title="Klik untuk memperbesar foto siswa">
                                     <div class="truncate">
                                         <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{{ $subjectAttendance->student->name }}</p>
                                         <p class="text-[10px] text-slate-400 mt-0.5">NIS: {{ $subjectAttendance->student->nis ?? '-' }}</p>
@@ -529,10 +537,12 @@
                             <div class="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 dark:hover:bg-slate-850/50 transition-colors"
                                  x-show="search === '' || {{ json_encode(mb_strtolower($subjectAttendance->student->name)) }}.includes(search.toLowerCase()) || {{ json_encode($subjectAttendance->student->nis ?? '') }}.includes(search)">
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-rose-500 shadow-2xs shrink-0"
+                                    <img class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-rose-500 shadow-2xs shrink-0 cursor-pointer hover:ring-2 hover:ring-rose-500/50 hover:scale-105 active:scale-95 transition-all student-avatar"
                                          src="{{ $subjectAttendance->student->photo_url }}" 
                                          alt="{{ $subjectAttendance->student->name }}"
-                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'">
+                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($subjectAttendance->student->name) }}&color=0284c7&background=e0f2fe'"
+                                         onclick="previewStudentPhoto('{{ $subjectAttendance->student->photo_url }}', '{{ addslashes($subjectAttendance->student->name) }}', 'NIS: {{ $subjectAttendance->student->nis ?? '-' }}')"
+                                         title="Klik untuk memperbesar foto siswa">
                                     <div class="truncate">
                                         <p class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{{ $subjectAttendance->student->name }}</p>
                                         <p class="text-[10px] text-slate-400 mt-0.5">NIS: {{ $subjectAttendance->student->nis ?? '-' }}</p>

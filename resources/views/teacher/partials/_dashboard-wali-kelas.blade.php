@@ -178,10 +178,12 @@
                     @foreach($absentStudents->take(4) as $student)
                         <div class="py-3 flex items-center justify-between gap-3 min-h-[56px]">
                             <div class="flex items-center gap-3 min-w-0">
-                                <img class="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0" 
+                                <img class="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar" 
                                      src="{{ $student->photo_url }}" 
                                      onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';" 
-                                     alt="{{ $student->name }}">
+                                     alt="{{ $student->name }}"
+                                     onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', 'NIS: {{ $student->nis ?? '-' }}')"
+                                     title="Klik untuk memperbesar foto siswa">
                                 <div class="min-w-0">
                                     <p class="font-bold text-xs text-slate-900 dark:text-white truncate">{{ $student->name }}</p>
                                     <p class="text-[10px] text-slate-400 truncate">NIS: {{ $student->nis ?? '-' }}</p>
@@ -295,10 +297,12 @@
                              x-show="(mobileSearch === '' || {{ json_encode(mb_strtolower($student->name)) }}.includes(mobileSearch.toLowerCase())) && (mobileStatusFilter === 'all' || (mobileStatusFilter === 'belum_hadir' && {{ $attendance ? 'false' : 'true' }}) || (mobileStatusFilter === 'hadir' && ['tepat_waktu','terlambat'].includes('{{ $attendance->status ?? '' }}')) || (mobileStatusFilter === 'sakit' && '{{ $attendance->status ?? '' }}' === 'sakit') || (mobileStatusFilter === 'izin' && ['izin','izin_keluar'].includes('{{ $attendance->status ?? '' }}')) || (mobileStatusFilter === 'alpa' && '{{ $attendance->status ?? '' }}' === 'alpa'))">
                             <div class="flex items-center justify-between gap-2">
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <img class="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0" 
+                                    <img class="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar" 
                                          src="{{ $student->photo_url }}" 
                                          onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';" 
-                                         alt="{{ $student->name }}">
+                                         alt="{{ $student->name }}"
+                                         onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', 'NIS: {{ $student->nis ?? '-' }}')"
+                                         title="Klik untuk memperbesar foto siswa">
                                     <div class="min-w-0">
                                         <p class="font-bold text-xs text-slate-900 dark:text-white truncate">{{ $student->name }}</p>
                                         <p class="text-[10px] text-slate-400">NIS: {{ $student->nis ?? '-' }}</p>
@@ -707,7 +711,12 @@
                     <div class="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-60 overflow-y-auto no-scrollbar">
                         @forelse($studentsForAttentionWali as $student)
                             <div class="p-3.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
-                                <img src="{{ $student->photo_url }}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';" class="h-9 w-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0" alt="{{ $student->name }}">
+                                <img src="{{ $student->photo_url }}" 
+                                     onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';" 
+                                     class="h-9 w-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar" 
+                                     alt="{{ $student->name }}"
+                                     onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', 'NIS: {{ $student->nis ?? '-' }}')"
+                                     title="Klik untuk memperbesar foto siswa">
                                 <div class="min-w-0 flex-1">
                                     <p class="font-bold text-xs text-slate-800 dark:text-white truncate">{{ $student->name }}</p>
                                     <div class="flex gap-2 text-[10px] font-semibold mt-0.5">

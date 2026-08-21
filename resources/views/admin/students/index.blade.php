@@ -152,8 +152,18 @@ function sortable_link($title, $column, $sortBy, $sortDirection) {
                                     <tr class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600">
                                         <td class="p-4"><input type="checkbox" name="student_ids[]" x-model="selectedStudents" value="{{ $student->id }}" class="rounded border-gray-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500"></td>
                                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                            <div>{{ $student->name }}</div>
-                                            <div class="text-xs text-slate-500 dark:text-slate-400 font-normal sm:hidden">NIS: {{ $student->nis }} • {{ $student->schoolClass->name ?? '-' }}</div>
+                                            <div class="flex items-center gap-3">
+                                                <img src="{{ $student->photo_url }}" 
+                                                     onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';"
+                                                     class="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar" 
+                                                     alt="{{ $student->name }}"
+                                                     onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', '{{ $student->schoolClass->name ?? '-' }} &bull; NIS {{ $student->nis ?? '-' }}')"
+                                                     title="Klik untuk memperbesar foto siswa">
+                                                <div>
+                                                    <div class="font-bold">{{ $student->name }}</div>
+                                                    <div class="text-xs text-slate-500 dark:text-slate-400 font-normal sm:hidden">NIS: {{ $student->nis }} • {{ $student->schoolClass->name ?? '-' }}</div>
+                                                </div>
+                                            </div>
                                         </th>
                                         <td class="px-6 py-4 hidden sm:table-cell">
                                             {{ $student->nis }}
