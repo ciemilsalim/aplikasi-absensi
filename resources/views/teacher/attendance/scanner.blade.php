@@ -13,7 +13,7 @@
             </div>
 
             <a href="{{ route('teacher.attendance.dashboard') }}" 
-               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold shadow-2xs hover:bg-slate-50 transition-all">
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-750 transition-all">
                 <span class="material-icons text-sm">arrow_back</span>
                 <span>Kembali</span>
             </a>
@@ -24,96 +24,161 @@
     <style>
         body > footer, body > .back-to-top-button { display: none !important; }
         footer.mobile-footer { display: block !important; }
+        
+        @keyframes scanline {
+            0% { top: 10%; opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { top: 90%; opacity: 0; }
+        }
+        .scanline-effect {
+            animation: scanline 2.5s ease-in-out infinite;
+        }
     </style>
     @endpush
 
-    <div class="max-w-lg mx-auto py-4 sm:py-8 px-4 sm:px-0 space-y-4 pb-24 sm:pb-8">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
-            <div class="p-5 sm:p-6">
-                <!-- Status Messages -->
-                <div id="status-message" class="hidden mb-4 p-3.5 rounded-2xl text-center text-xs font-bold shadow-2xs"></div>
+    <div class="max-w-lg mx-auto py-3 sm:py-6 px-4 sm:px-0 space-y-4 pb-24 sm:pb-8">
+        
+        <!-- Status Messages Alert -->
+        <div id="status-message" class="hidden p-4 rounded-2xl text-center text-xs font-bold shadow-sm transition-all"></div>
 
-                <!-- Camera Container -->
-                <div class="relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden mb-4 shadow-inner ring-1 ring-white/10">
-                    <video id="video" class="absolute inset-0 w-full h-full object-cover" autoplay muted
-                        playsinline></video>
-                    <canvas id="overlay" class="absolute inset-0 w-full h-full"></canvas>
+        <!-- Main Card Pemindai -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+            
+            <!-- Card Header Mini -->
+            <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        {{ $hasPhoto ? 'Kamera Presensi Aktif' : 'Mode Perekaman Wajah' }}
+                    </span>
+                </div>
+                
+                <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    SMP Negeri 1 Biau
+                </span>
+            </div>
+
+            <div class="p-4 sm:p-5 space-y-4">
+                
+                <!-- Camera Container Viewport -->
+                <div class="relative aspect-[3/4] bg-slate-950 rounded-2xl overflow-hidden shadow-inner ring-1 ring-white/10">
+                    <video id="video" class="absolute inset-0 w-full h-full object-cover" autoplay muted playsinline></video>
+                    <canvas id="overlay" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
                     <!-- Face Guide Frame -->
-                    <div class="absolute inset-0 pointer-events-none flex items-center justify-center p-8 z-10">
-                        <div class="w-full h-full max-w-[260px] max-h-[340px] relative opacity-60">
+                    <div class="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
+                        <div class="w-full h-full max-w-[260px] max-h-[340px] relative">
                             <!-- Sudut Kiri Atas -->
-                            <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-sky-400 rounded-tl-xl animate-pulse"></div>
+                            <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-sky-400 rounded-tl-2xl shadow-sm"></div>
                             <!-- Sudut Kanan Atas -->
-                            <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-sky-400 rounded-tr-xl animate-pulse"></div>
+                            <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-sky-400 rounded-tr-2xl shadow-sm"></div>
                             <!-- Sudut Kiri Bawah -->
-                            <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-sky-400 rounded-bl-xl animate-pulse"></div>
+                            <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-sky-400 rounded-bl-2xl shadow-sm"></div>
                             <!-- Sudut Kanan Bawah -->
-                            <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-sky-400 rounded-br-xl animate-pulse"></div>
+                            <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-sky-400 rounded-br-2xl shadow-sm"></div>
 
-                            <!-- Frame Tengah -->
-                            <div class="absolute inset-4 border-2 border-dashed border-white/40 rounded-[90px]"></div>
+                            <!-- Frame Oval Tengah -->
+                            <div class="absolute inset-3 border-2 border-dashed border-white/30 rounded-[100px]"></div>
+
+                            <!-- Garis Laser Scanline -->
+                            <div class="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-sky-400 to-transparent scanline-effect shadow-lg shadow-sky-400/50 pointer-events-none"></div>
                         </div>
                     </div>
 
-                    <!-- Loading Indicator -->
+                    <!-- Floating Camera Flip Button -->
+                    <div class="absolute top-3 right-3 z-20">
+                        <button id="face-camera-switch-button" 
+                                class="w-10 h-10 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg active:scale-90 transition-transform" 
+                                title="Ganti Kamera">
+                            <span class="material-icons text-lg">flip_camera_ios</span>
+                        </button>
+                    </div>
+
+                    <!-- Floating Top Info Status -->
+                    <div class="absolute top-3 left-3 z-20">
+                        <div id="floating-match-badge" class="px-2.5 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                            <span id="match-status-text">Mendeteksi Wajah...</span>
+                        </div>
+                    </div>
+
+                    <!-- Loading Overlay Indicator -->
                     <div id="loading"
-                        class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-xs z-20">
+                        class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-sm z-30">
                         <svg class="animate-spin h-10 w-10 text-sky-500 mb-3" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor"
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
                         <div class="w-2/3 max-w-xs bg-slate-800 rounded-full h-2 mb-2 overflow-hidden hidden"
                             id="loading-bar-container">
-                            <div id="loading-bar" class="bg-sky-500 h-2 rounded-full transition-all duration-300 w-0">
-                            </div>
+                            <div id="loading-bar" class="bg-sky-500 h-2 rounded-full transition-all duration-300 w-0"></div>
                         </div>
-                        <p id="loading-text" class="text-white text-xs font-bold text-center">Memuat Model Wajah...</p>
+                        <p id="loading-text" class="text-white text-xs font-bold text-center">Memuat Model Wajah Biometrik...</p>
                     </div>
                 </div>
 
-                <div id="face-camera-switch-container" class="mb-4 text-center">
-                    <button id="face-camera-switch-button"
-                        class="text-xs text-sky-600 dark:text-sky-400 hover:underline font-bold inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200/60 dark:border-sky-900/40">
-                        <span class="material-icons text-sm">flip_camera_ios</span>
-                        <span>Ganti Kamera Depan/Belakang</span>
-                    </button>
+                <!-- Status Geolocation & Radius Card -->
+                <div class="bg-slate-50 dark:bg-slate-850 p-3.5 rounded-2xl border border-slate-200/60 dark:border-slate-800 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <span class="material-icons text-sky-500 text-base">near_me</span>
+                            <span>Verifikasi Lokasi Sekolah</span>
+                        </span>
+                        <span class="text-[11px] text-slate-400">Radius: {{ $settings['attendance_radius'] ?? 100 }}m</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between pt-1 border-t border-slate-200/40 dark:border-slate-800/80">
+                        <div id="location-status" class="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                            <span class="material-icons text-xs animate-spin">sync</span>
+                            <span>Mencari koordinat GPS...</span>
+                        </div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">
+                            Jarak: <span id="distance-debug" class="font-extrabold text-slate-800 dark:text-slate-200">-</span> m
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Controls -->
-                <div class="space-y-3">
+                <!-- Action CTA Controls -->
+                <div class="pt-1 space-y-2">
                     @if(!$hasPhoto)
-                        <div class="text-center text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/40 p-3 rounded-2xl text-xs">
+                        <div class="text-center text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/40 p-3 rounded-2xl text-xs">
                             <span class="font-bold block mb-0.5">Wajah Belum Terdaftar</span>
                             Posisikan wajah Anda tepat di dalam bingkai, lalu tekan tombol di bawah untuk mendaftarkan wajah.
                         </div>
                         <button id="btn-register" disabled
-                            class="w-full min-h-[48px] py-3 px-4 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-sky-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 active:scale-95">
-                            Ambil Foto & Daftarkan Wajah
+                            class="w-full min-h-[48px] py-3 px-4 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-sky-600/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 flex items-center justify-center gap-2">
+                            <span class="material-icons text-lg">face_retouching_natural</span>
+                            <span>Ambil Foto & Daftarkan Wajah</span>
                         </button>
                     @else
-                        <div id="attendance-info" class="text-center text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800">
-                            <span class="block font-semibold text-slate-800 dark:text-slate-200">Verifikasi Lokasi & Biometrik Wajah</span>
-                            <div id="location-status" class="mt-1 font-mono text-[11px] text-amber-600 dark:text-amber-400 font-bold">Mencari lokasi GPS...</div>
-                        </div>
                         <button id="btn-absent" disabled
-                            class="w-full min-h-[48px] py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 active:scale-95">
-                            Rekam Kehadiran
+                            class="w-full min-h-[50px] py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-emerald-600/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 flex items-center justify-center gap-2">
+                            <span class="material-icons text-lg">verified</span>
+                            <span>REKAM KEHADIRAN SEKARANG</span>
                         </button>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500 text-center">
+                            Tombol akan aktif otomatis saat wajah terverifikasi dan berada di dalam area sekolah.
+                        </p>
                     @endif
                 </div>
 
-                <!-- Location Distance Info -->
-                <div class="mt-3 text-[11px] text-slate-400 text-center flex items-center justify-center gap-1">
-                    <span class="material-icons text-xs">radar</span>
-                    <span>Jarak ke sekolah: <span id="distance-debug" class="font-bold text-slate-700 dark:text-slate-300">-</span> meter</span>
-                </div>
             </div>
         </div>
+
+        <!-- Petunjuk Singkat -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 space-y-1">
+            <p class="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <span class="material-icons text-sm text-sky-500">info</span>
+                <span>Petunjuk Pemindaian</span>
+            </p>
+            <p>1. Lepaskan kacamata hitam atau masker yang menutupi wajah.</p>
+            <p>2. Pastikan pencahayaan cukup terang dan menghadap langsung ke kamera.</p>
+            <p>3. Pastikan izin lokasi GPS dan kamera telah diaktifkan pada peramban web.</p>
+        </div>
+
     </div>
 
     @push('scripts')
@@ -135,6 +200,7 @@
             const locationStatus = document.getElementById('location-status');
             const distanceDebug = document.getElementById('distance-debug');
             const faceSwitchButton = document.getElementById('face-camera-switch-button');
+            const matchStatusText = document.getElementById('match-status-text');
 
             let currentStream;
             let faceMatcher;
@@ -154,7 +220,7 @@
                             if (labeledDescriptor) {
                                 faceMatcher = new faceapi.FaceMatcher([labeledDescriptor], 0.5);
                             } else {
-                                showError("Tidak ada data wajah valid untuk akun Anda. Pastikan foto profil Anda jelas (wajah terlihat).");
+                                showError("Tidak ada data wajah valid untuk akun Anda. Silakan daftarkan wajah ulang.");
                                 return;
                             }
                         } catch (error) {
@@ -168,12 +234,11 @@
                 } catch (error) {
                     if (typeof interval !== 'undefined') clearInterval(interval);
                     console.error('Error loading face models:', error);
-                    showError("Gagal memuat sistem: " + error.message);
+                    showError("Gagal memuat sistem biometrik: " + error.message);
                 }
             });
 
             // --- 2. Load Models ---
-            // Memuat model dari penyimpanan lokal (menghindari lambat/diblokir oleh CDN)
             const MODEL_URL = '{{ asset('models') }}';
 
             async function loadModels() {
@@ -189,7 +254,7 @@
                     if (progress > 90) progress = 90;
                     if (bar) bar.style.width = `${progress}%`;
                     loadingText.textContent = `Memuat Model: ${Math.round(progress)}%`;
-                }, 500);
+                }, 400);
 
                 await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
                 if (bar) bar.style.width = `33%`;
@@ -204,23 +269,25 @@
                 setTimeout(() => {
                     loading.classList.add('hidden');
                     if (barContainer) barContainer.classList.add('hidden');
-                }, 500);
+                }, 400);
             }
 
-            faceSwitchButton.addEventListener('click', () => {
-                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            if (faceSwitchButton) {
+                faceSwitchButton.addEventListener('click', () => {
+                    currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
 
-                if (currentStream) {
-                    currentStream.getTracks().forEach(track => track.stop());
-                }
+                    if (currentStream) {
+                        currentStream.getTracks().forEach(track => track.stop());
+                    }
 
-                const canvasContext = overlay.getContext('2d');
-                if (canvasContext) {
-                    canvasContext.clearRect(0, 0, overlay.width, overlay.height);
-                }
+                    const canvasContext = overlay.getContext('2d');
+                    if (canvasContext) {
+                        canvasContext.clearRect(0, 0, overlay.width, overlay.height);
+                    }
 
-                startVideo();
-            });
+                    startVideo();
+                });
+            }
 
             // --- 3. Camera Setup ---
             function startVideo() {
@@ -232,7 +299,7 @@
                         video.srcObject = stream;
                     })
                     .catch(err => {
-                        showError("Gagal mengakses kamera. Berikan perizinan kamera pada browser.");
+                        showError("Gagal mengakses kamera. Berikan izin kamera pada peramban web.");
 
                         if (currentFacingMode !== 'user') {
                             currentFacingMode = 'user';
@@ -263,11 +330,10 @@
                         registerFace(imageBase64, descriptorStr);
                     } else {
                         loading.classList.add('hidden');
-                        showError("Wajah tidak terdeteksi. Pastikan pencahayaan cukup dan wajah terlihat jelas.");
+                        showError("Wajah tidak terdeteksi. Pastikan pencahayaan cukup dan wajah terlihat jelas di bingkai.");
                     }
                 });
 
-                // Enable register button when video plays
                 video.addEventListener('playing', () => {
                     btnRegister.disabled = false;
                 });
@@ -275,7 +341,7 @@
 
             async function registerFace(imageBase64, descriptorStr) {
                 try {
-                    loadingText.textContent = "Menyimpan data...";
+                    loadingText.textContent = "Menyimpan data biometrik...";
                     const response = await fetch("{{ route('teacher.attendance.register_face') }}", {
                         method: 'POST',
                         headers: {
@@ -292,14 +358,14 @@
                     loading.classList.add('hidden');
 
                     if (data.success) {
-                        showSuccess("Registrasi berhasil! Memuat ulang...");
-                        setTimeout(() => location.reload(), 2000);
+                        showSuccess("Registrasi wajah berhasil! Memuat ulang...");
+                        setTimeout(() => location.reload(), 1500);
                     } else {
                         showError(data.message);
                     }
                 } catch (error) {
                     loading.classList.add('hidden');
-                    showError("Terjadi kesalahan server.");
+                    showError("Terjadi kesalahan koneksi saat menyimpan wajah.");
                 }
             }
 
@@ -307,7 +373,6 @@
             async function loadLabeledImages() {
                 if (!teacherPhotoUrl) return null;
 
-                // JIKA SUDAH ADA DESCRIPTOR DI DATABASE, GUNAKAN LANGSUNG
                 if (cachedDescriptor) {
                     try {
                         const descArray = JSON.parse(cachedDescriptor);
@@ -330,7 +395,7 @@
                             if (detections) {
                                 resolve(new faceapi.LabeledFaceDescriptors('me', [detections.descriptor]));
                             } else {
-                                console.warn("Wajah tidak terdeteksi pada foto profil Anda.");
+                                console.warn("Wajah tidak terdeteksi pada foto profil tersimpan.");
                                 resolve(null);
                             }
                         } catch (e) {
@@ -340,14 +405,13 @@
                     };
 
                     img.onerror = () => {
-                        console.error("Gagal memuat image profil guru (CORS/URL Invalid).");
+                        console.error("Gagal memuat image profil guru.");
                         reject(new Error("Gagal mengunduh foto profil."));
                     };
                 });
             }
 
             if (btnAbsent) {
-                // Run continuous detection
                 video.addEventListener('play', () => {
                     const displaySize = { width: video.offsetWidth, height: video.offsetHeight };
                     faceapi.matchDimensions(overlay, displaySize);
@@ -355,6 +419,9 @@
                     setInterval(async () => {
                         if (!faceMatcher || !isLocationValid) {
                             btnAbsent.disabled = true;
+                            if (matchStatusText) {
+                                matchStatusText.textContent = !isLocationValid ? "Menunggu GPS Valid..." : "Mencari Wajah...";
+                            }
                             return;
                         }
 
@@ -368,25 +435,29 @@
                                 const box = resizedDetections[0].detection.box;
 
                                 consecutiveMatches++;
-                                const drawBox = new faceapi.draw.DrawBox(box, { label: `Anda (${consecutiveMatches}/3)` });
+                                const drawBox = new faceapi.draw.DrawBox(box, { 
+                                    label: `Terverifikasi (${consecutiveMatches}/3)`,
+                                    boxColor: '#10B981'
+                                });
                                 drawBox.draw(overlay);
 
+                                if (matchStatusText) {
+                                    matchStatusText.textContent = `Wajah Cocok (${consecutiveMatches}/3)`;
+                                }
+
                                 if (consecutiveMatches >= 3) {
-                                    btnAbsent.disabled = false; // Enable button if face matches AND location valid
-                                    btnAbsent.classList.remove('bg-gray-400');
-                                    btnAbsent.classList.add('bg-green-600');
+                                    btnAbsent.disabled = false;
+                                    if (matchStatusText) matchStatusText.textContent = "Wajah Terverifikasi ✓";
                                 }
                             } else {
                                 consecutiveMatches = 0;
                                 btnAbsent.disabled = true;
-                                btnAbsent.classList.add('bg-gray-400');
-                                btnAbsent.classList.remove('bg-green-600');
+                                if (matchStatusText) matchStatusText.textContent = "Wajah Tidak Cocok";
                             }
                         } else {
                             consecutiveMatches = 0;
                             btnAbsent.disabled = true;
-                            btnAbsent.classList.add('bg-gray-400');
-                            btnAbsent.classList.remove('bg-green-600');
+                            if (matchStatusText) matchStatusText.textContent = "Arahkan Wajah ke Kamera";
                         }
                     }, 500);
                 });
@@ -395,7 +466,6 @@
                     loading.classList.remove('hidden');
                     loadingText.textContent = "Merekam kehadiran...";
 
-                    // Capture photo
                     const canvas = document.createElement('canvas');
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
@@ -426,22 +496,21 @@
                     loading.classList.add('hidden');
 
                     if (data.success) {
-                        showSuccess("Absensi Berhasil!");
-                        setTimeout(() => window.location.href = "{{ route('teacher.attendance.dashboard') }}", 2000);
+                        showSuccess("Absensi Berhasil Dicatat!");
+                        setTimeout(() => window.location.href = "{{ route('teacher.attendance.dashboard') }}", 1500);
                     } else {
                         showError(data.message);
                     }
                 } catch (error) {
                     loading.classList.add('hidden');
-                    showError("Gagal merekam kehadiran.");
+                    showError("Gagal merekam kehadiran. Periksa koneksi internet Anda.");
                 }
             }
 
             // --- 6. Geolocation Logic ---
             function startLocationTracking() {
                 if (!navigator.geolocation) {
-                    locationStatus.textContent = "Geolokasi tidak didukung browser ini.";
-                    locationStatus.className = "mt-1 font-mono text-xs text-red-500";
+                    locationStatus.innerHTML = '<span class="text-rose-600">Geolokasi tidak didukung peramban ini.</span>';
                     return;
                 }
 
@@ -451,14 +520,13 @@
                         validateLocation(position.coords);
                     },
                     (error) => {
-                        let msg = "Gagal mendapatkan lokasi.";
+                        let msg = "Gagal mendapatkan lokasi GPS.";
                         switch (error.code) {
                             case error.PERMISSION_DENIED: msg = "Izin lokasi ditolak."; break;
-                            case error.POSITION_UNAVAILABLE: msg = "Informasi lokasi tidak tersedia."; break;
-                            case error.TIMEOUT: msg = "Waktu permintaan lokasi habis."; break;
+                            case error.POSITION_UNAVAILABLE: msg = "Lokasi tidak tersedia."; break;
+                            case error.TIMEOUT: msg = "Permintaan lokasi habis waktu."; break;
                         }
-                        locationStatus.textContent = msg;
-                        locationStatus.className = "mt-1 font-mono text-xs text-red-500";
+                        locationStatus.innerHTML = `<span class="text-rose-600">${msg}</span>`;
                         isLocationValid = false;
                     },
                     { enableHighAccuracy: true }
@@ -475,10 +543,10 @@
 
                 if (distance <= maxRadius) {
                     isLocationValid = true;
-                    locationStatus.innerHTML = `<span class="text-green-600 font-bold">✓ Di dalam area sekolah (${Math.round(distance)}m)</span>`;
+                    locationStatus.innerHTML = `<span class="text-emerald-600 font-bold flex items-center gap-1"><span class="material-icons text-xs">check_circle</span> Di dalam area sekolah (${Math.round(distance)}m)</span>`;
                 } else {
                     isLocationValid = false;
-                    locationStatus.innerHTML = `<span class="text-red-600 font-bold">✗ Di luar jangkauan (${Math.round(distance)}m > ${maxRadius}m)</span>`;
+                    locationStatus.innerHTML = `<span class="text-rose-600 font-bold flex items-center gap-1"><span class="material-icons text-xs">cancel</span> Di luar jangkauan (${Math.round(distance)}m > ${maxRadius}m)</span>`;
                 }
             }
 
@@ -500,14 +568,13 @@
             // --- Helper Functions ---
             function showError(msg) {
                 statusMessage.textContent = msg;
-                statusMessage.className = "mb-4 p-4 rounded-lg text-center text-sm font-medium bg-red-100 text-red-700 block";
+                statusMessage.className = "p-4 rounded-2xl text-center text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 block shadow-xs";
             }
 
             function showSuccess(msg) {
                 statusMessage.textContent = msg;
-                statusMessage.className = "mb-4 p-4 rounded-lg text-center text-sm font-medium bg-green-100 text-green-700 block";
+                statusMessage.className = "p-4 rounded-2xl text-center text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 block shadow-xs";
             }
-
         </script>
     @endpush
 </x-app-layout>
