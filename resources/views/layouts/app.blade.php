@@ -3,6 +3,10 @@
     $isPrincipalUser = false;
     $pendingJournalsCount = 0;
     $pendingLeaveRequestsCount = 0;
+    $isChatConversation = (
+        request()->routeIs(['admin.chat.*', 'chat.*']) && 
+        (request()->filled('selectedParent') || request()->route('selectedParent') || request()->route('conversation') || (isset($selectedParent) && $selectedParent && $selectedParent->exists) || (isset($activeConversation) && $activeConversation))
+    );
     
     if (auth()->check()) {
         $user = auth()->user();
@@ -253,75 +257,76 @@
             <!-- Main Content Area -->
             <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out" :class="sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'">
                 
-                <!-- Sticky Top Navigation Bar -->
-                <header class="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-x-4 border-b border-slate-200/80 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 glass-header px-4 sm:px-6 lg:px-8 shadow-xs">
-                    
-                    <!-- Mobile Brand Logo -->
-                    <div class="flex items-center gap-3 lg:hidden">
-                        <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="flex items-center gap-2.5">
-                            <x-application-logo class="h-8 w-auto text-sky-600 dark:text-sky-500" />
-                            <div class="leading-tight">
-                                <span class="font-bold text-base text-slate-900 dark:text-white tracking-tight block">
-                                    {{ config('app.name', 'Presensi') }}
-                                </span>
-                                <span class="text-[10px] text-slate-500 dark:text-slate-400 block -mt-0.5 truncate max-w-[150px]">
-                                    {{ $appName ?? 'Portal Absensi' }}
-                                </span>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Desktop Sidebar Toggle Button -->
-                    <button @click="toggleSidebar()" type="button" 
-                            class="hidden lg:inline-flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            :title="sidebarCollapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'">
-                        <span class="material-icons text-2xl" x-text="sidebarCollapsed ? 'menu_open' : 'menu'"></span>
-                    </button>
-
-                    <!-- Topbar Profile, Academic Period & Utilities -->
-                    <div class="flex flex-1 gap-x-3 sm:gap-x-4 self-stretch items-center justify-end">
-                        @include('layouts.topbar-profile')
-                    </div>
-                </header>
-
-                <!-- Page Main Container -->
-                <main class="flex-1 py-5 sm:py-8 pb-28 lg:pb-8">
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-                        @if (isset($header))
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
-                                {{ $header }}
-                            </div>
-                        @endif
-
-                        {{ $slot }}
-                    </div>
-                </main>
-
-                <!-- Footer Desktop (Hidden on Mobile to eliminate clutter with bottom dock) -->
-                <footer class="mt-auto hidden lg:block border-t border-slate-200/80 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/50 py-4 px-4 sm:px-6 text-center text-xs text-slate-500 dark:text-slate-400">
-                    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-                        <div class="flex items-center gap-1.5 justify-center">
-                            <span class="font-semibold text-slate-700 dark:text-slate-300">{{ config('app.name', 'Presensi') }}</span>
-                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">v2.5</span>
-                            <span>&copy; {{ date('Y') }}</span>
-                        </div>
-                        <div class="flex items-center gap-3 text-[11px]">
-                            <a href="{{ route('guide') }}" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors flex items-center gap-1">
-                                <span class="material-icons text-xs text-sky-500">auto_stories</span>
-                                <span>Panduan Pengguna</span>
+                    <!-- Sticky Top Navigation Bar -->
+                    <header class="{{ $isChatConversation ? 'hidden lg:flex' : 'flex' }} sticky top-0 z-30 h-16 shrink-0 items-center justify-between gap-x-4 border-b border-slate-200/80 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 glass-header px-4 sm:px-6 lg:px-8 shadow-xs">
+                        
+                        <!-- Mobile Brand Logo -->
+                        <div class="flex items-center gap-3 lg:hidden">
+                            <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="flex items-center gap-2.5">
+                                <x-application-logo class="h-8 w-auto text-sky-600 dark:text-sky-500" />
+                                <div class="leading-tight">
+                                    <span class="font-bold text-base text-slate-900 dark:text-white tracking-tight block">
+                                        {{ config('app.name', 'Presensi') }}
+                                    </span>
+                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 block -mt-0.5 truncate max-w-[150px]">
+                                        {{ $appName ?? 'Portal Absensi' }}
+                                    </span>
+                                </div>
                             </a>
-                            <span class="text-slate-300 dark:text-slate-700">&bull;</span>
-                            <a href="{{ route('about') }}" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Tentang Sistem</a>
-                            <span class="text-slate-300 dark:text-slate-700">&bull;</span>
-                            <a href="https://www.zahradev.online" target="_blank" class="hover:text-sky-600 dark:hover:text-sky-400 font-medium transition-colors">ZahraDev</a>
                         </div>
-                    </div>
-                </footer>
-            </div>
 
-            <!-- Mobile Floating Bottom Navigation Dock -->
-            @auth
-                <nav class="fixed bottom-0 inset-x-0 bg-white/95 dark:bg-slate-900/95 glass-header border-t border-slate-200/90 dark:border-slate-800 z-40 px-2 sm:px-4 lg:hidden dock-shadow safe-area-pb">
+                        <!-- Desktop Sidebar Toggle Button -->
+                        <button @click="toggleSidebar()" type="button" 
+                                class="hidden lg:inline-flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                :title="sidebarCollapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'">
+                            <span class="material-icons text-2xl" x-text="sidebarCollapsed ? 'menu_open' : 'menu'"></span>
+                        </button>
+
+                        <!-- Topbar Profile, Academic Period & Utilities -->
+                        <div class="flex flex-1 gap-x-3 sm:gap-x-4 self-stretch items-center justify-end">
+                            @include('layouts.topbar-profile')
+                        </div>
+                    </header>
+
+                    <!-- Page Main Container -->
+                    <main class="flex-1 {{ $isChatConversation ? 'p-0 sm:p-0 pb-0 lg:pb-0 h-[100dvh] lg:h-[calc(100vh-4rem)] overflow-hidden flex flex-col' : 'py-5 sm:py-8 pb-28 lg:pb-8' }}">
+                        <div class="{{ $isChatConversation ? 'w-full h-full p-0 max-w-full flex flex-col flex-1 overflow-hidden' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6' }}">
+                            @if (isset($header) && !$isChatConversation)
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
+                                    {{ $header }}
+                                </div>
+                            @endif
+
+                            {{ $slot }}
+                        </div>
+                    </main>
+
+                    <!-- Footer Desktop (Hidden on Mobile or in Chat View) -->
+                    <footer class="mt-auto hidden {{ $isChatConversation ? '' : 'lg:block' }} border-t border-slate-200/80 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/50 py-4 px-4 sm:px-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+                            <div class="flex items-center gap-1.5 justify-center">
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">{{ config('app.name', 'Presensi') }}</span>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">v2.5</span>
+                                <span>&copy; {{ date('Y') }}</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-[11px]">
+                                <a href="{{ route('guide') }}" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors flex items-center gap-1">
+                                    <span class="material-icons text-xs text-sky-500">auto_stories</span>
+                                    <span>Panduan Pengguna</span>
+                                </a>
+                                <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+                                <a href="{{ route('about') }}" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Tentang Sistem</a>
+                                <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+                                <a href="https://www.zahradev.online" target="_blank" class="hover:text-sky-600 dark:hover:text-sky-400 font-medium transition-colors">ZahraDev</a>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+
+                <!-- Mobile Floating Bottom Navigation Dock (Hidden on Chat Conversation) -->
+                @auth
+                    @if(!$isChatConversation)
+                    <nav class="fixed bottom-0 inset-x-0 bg-white/95 dark:bg-slate-900/95 glass-header border-t border-slate-200/90 dark:border-slate-800 z-40 px-2 sm:px-4 lg:hidden dock-shadow safe-area-pb">
                     <div class="flex justify-around items-center max-w-lg mx-auto h-16">
                         
                         <!-- Role: Kepala Sekolah & Wakasek Kurikulum (Executive) -->
@@ -544,6 +549,7 @@
 
                     </div>
                 </nav>
+                @endif
 
                 <!-- Modern Mobile Menu Bottom Sheet Drawer -->
                 <div x-show="mobileMenuOpen" class="relative z-50 lg:hidden" style="display: none;" x-transition>

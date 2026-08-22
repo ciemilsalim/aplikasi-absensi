@@ -33,6 +33,7 @@ class AdminChatController extends Controller
         // Langkah 2: Ambil semua data secara efisien dengan Eager Loading untuk menghindari N+1 problem.
         $parents = ParentModel::with([
             'user', 
+            'students.schoolClass',
             // Muat relasi percakapan beserta semua pesannya
             'adminConversation.messages' => function ($query) {
                 // Urutkan pesan di sini agar mudah mengambil yang terbaru nanti
@@ -44,6 +45,25 @@ class AdminChatController extends Controller
 
         // Langkah 3: Proses data di memori (bukan di database loop) untuk performa.
         $parents = $parents->map(function ($parent) use ($adminId) {
+            // Format identitas siswa kontekstual
+            $studentsCount = $parent->students->count();
+            if ($studentsCount === 1) {
+                $student = $parent->students->first();
+                $className = $student->schoolClass->name ?? '-';
+                $parent->student_subtitle = "Wali • {$student->name} ({$className})";
+                $parent->student_name = $student->name;
+                $parent->student_class = $className;
+            } elseif ($studentsCount > 1) {
+                $firstStudent = $parent->students->first();
+                $parent->student_subtitle = "Wali • {$firstStudent->name} +" . ($studentsCount - 1) . " siswa";
+                $parent->student_name = $parent->students->pluck('name')->join(', ');
+                $parent->student_class = $parent->students->pluck('schoolClass.name')->filter()->join(', ');
+            } else {
+                $parent->student_subtitle = "Orang Tua / Wali Siswa";
+                $parent->student_name = null;
+                $parent->student_class = null;
+            }
+
             if ($parent->adminConversation) {
                 $messages = $parent->adminConversation->messages;
                 
@@ -56,10 +76,14 @@ class AdminChatController extends Controller
                 // Ambil waktu pesan terakhir (pesan pertama karena sudah diurutkan desc)
                 $lastMessage = $messages->first();
                 $parent->last_message_at = $lastMessage ? $lastMessage->created_at : null;
+                $parent->last_message_body = $lastMessage ? $lastMessage->body : null;
+                $parent->last_message_sender_id = $lastMessage ? $lastMessage->user_id : null;
             } else {
-                // Fallback jika percakapan tidak ditemukan (seharusnya tidak terjadi)
+                // Fallback jika percakapan tidak ditemukan
                 $parent->unread_messages_count = 0;
                 $parent->last_message_at = null;
+                $parent->last_message_body = null;
+                $parent->last_message_sender_id = null;
             }
             return $parent;
         })
@@ -70,11 +94,25 @@ class AdminChatController extends Controller
         $activeConversation = null;
 
         if ($selectedParent && $selectedParent->exists) {
+            $selectedParent->loadMissing(['user', 'students.schoolClass']);
+            $studentsCount = $selectedParent->students->count();
+            if ($studentsCount === 1) {
+                $student = $selectedParent->students->first();
+                $className = $student->schoolClass->name ?? '-';
+                $selectedParent->student_subtitle = "Wali • {$student->name} ({$className})";
+            } elseif ($studentsCount > 1) {
+                $firstStudent = $selectedParent->students->first();
+                $selectedParent->student_subtitle = "Wali • {$firstStudent->name} +" . ($studentsCount - 1) . " siswa";
+            } else {
+                $selectedParent->student_subtitle = "Orang Tua / Wali Siswa";
+            }
+
             // Ambil percakapan dari relasi yang sudah dimuat untuk efisiensi
-            $activeConversation = $parents->firstWhere('id', $selectedParent->id)->adminConversation;
+            $foundParent = $parents->firstWhere('id', $selectedParent->id);
+            $activeConversation = $foundParent ? $foundParent->adminConversation : AdminConversation::firstOrCreate(['parent_id' => $selectedParent->id, 'admin_id' => $adminId]);
             
             if ($activeConversation) {
-                $messages = $activeConversation->messages()->with('user')->get()->groupBy(function($message) {
+                $messages = $activeConversation->messages()->with('user')->orderBy('created_at', 'asc')->get()->groupBy(function($message) {
                     return $message->created_at->format('Y-m-d');
                 });
                 $activeConversation->messages()->where('user_id', '!=', $adminId)->whereNull('read_at')->update(['read_at' => now()]);
