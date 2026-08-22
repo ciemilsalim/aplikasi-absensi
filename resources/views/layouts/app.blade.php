@@ -227,11 +227,13 @@
     <!-- Page Loader -->
     <div id="page-loader" class="loader-container">
         <div class="flex flex-col items-center gap-3">
-            <div class="relative flex items-center justify-center">
-                <div class="w-14 h-14 rounded-full border-3 border-sky-100 dark:border-slate-800 border-t-sky-600 dark:border-t-sky-500 animate-spin"></div>
-                <span class="material-icons absolute text-sky-600 dark:text-sky-400 text-2xl">qr_code_scanner</span>
+            <div class="w-12 h-12 rounded-2xl bg-white/90 dark:bg-slate-850/90 shadow-xl shadow-slate-200/50 dark:shadow-slate-950/50 flex items-center justify-center border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-sm">
+                <svg class="w-6 h-6 animate-spin text-sky-600 dark:text-sky-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3.5"></circle>
+                    <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
             </div>
-            <p class="text-xs font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Memuat Presensi...</p>
+            <p class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Memuat Aplikasi...</p>
         </div>
     </div>
 
