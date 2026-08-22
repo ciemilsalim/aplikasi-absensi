@@ -2,6 +2,7 @@
     $teacherScheduleId = null;
     $isPrincipalUser = false;
     $pendingJournalsCount = 0;
+    $pendingLeaveRequestsCount = 0;
     
     if (auth()->check()) {
         $user = auth()->user();
@@ -12,6 +13,14 @@
                     $pendingJournalsCount = \App\Models\TeachingJournal::where('is_verified', false)->count();
                 } catch (\Throwable $e) {
                     $pendingJournalsCount = 0;
+                }
+            }
+        } elseif ($user->hasAnyRole(['admin', 'operator', 'satpam'])) {
+            if (\Illuminate\Support\Facades\Schema::hasTable('leave_requests')) {
+                try {
+                    $pendingLeaveRequestsCount = \App\Models\LeaveRequest::where('status', 'menunggu')->count();
+                } catch (\Throwable $e) {
+                    $pendingLeaveRequestsCount = 0;
                 }
             }
         } elseif ($user->role === 'teacher' || $user->hasRole('teacher')) {
@@ -376,21 +385,28 @@
                         @elseif(in_array(auth()->user()->role, ['admin', 'operator', 'satpam']) || auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
                             @php $isAdminDash = request()->routeIs('admin.dashboard'); @endphp
                             <a href="{{ route('admin.dashboard') }}"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isAdminDash ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full min-h-[44px] {{ $isAdminDash ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
                                 <span class="material-icons text-2xl group-hover:scale-110 transition-transform">dashboard</span>
                                 <span class="text-[10px] {{ $isAdminDash ? 'font-bold' : 'font-medium' }} mt-0.5">Dasbor</span>
                             </a>
                             
-                            <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
-                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">swap_horiz</span>
-                                <span class="text-[10px] font-medium mt-0.5">SIPADA</span>
+                            @php $isLeaveReq = request()->routeIs('admin.leave_requests.*'); @endphp
+                            <a href="{{ route('admin.leave_requests.index') }}"
+                                class="nav-item group relative flex flex-col items-center justify-center py-1 w-full min-h-[44px] {{ $isLeaveReq ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
+                                <div class="relative">
+                                    <span class="material-icons text-2xl group-hover:scale-110 transition-transform">assignment_turned_in</span>
+                                    @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
+                                        <span class="absolute -top-1 -right-2 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-xs animate-pulse">{{ $pendingLeaveRequestsCount }}</span>
+                                    @endif
+                                </div>
+                                <span class="text-[10px] {{ $isLeaveReq ? 'font-bold' : 'font-medium' }} mt-0.5">Izin Siswa</span>
                             </a>
                             
                             <!-- Elevated Scan QR Button -->
                             <div class="relative -mt-6 flex flex-col items-center justify-center">
                                 <a href="{{ route('scanner') }}"
-                                    class="flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-600/30 border-4 border-slate-50 dark:border-slate-950 transition-all transform hover:scale-105 active:scale-95">
+                                    class="flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-600/30 border-4 border-slate-50 dark:border-slate-950 transition-all transform hover:scale-105 active:scale-95"
+                                    title="Pemindai Kehadiran QR">
                                     <span class="material-icons text-2xl">qr_code_scanner</span>
                                 </a>
                                 <span class="text-[9px] font-bold mt-1 text-slate-700 dark:text-slate-300">Scan QR</span>
@@ -398,17 +414,19 @@
 
                             @php $isAdminChat = request()->routeIs('admin.chat.*'); @endphp
                             <a href="{{ route('admin.chat.index') }}"
-                                class="nav-item group relative flex flex-col items-center justify-center py-1 w-full {{ $isAdminChat ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
-                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">chat</span>
-                                @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
-                                    <span class="absolute top-0 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-xs">{{ $totalUnreadMessagesCount }}</span>
-                                @endif
+                                class="nav-item group relative flex flex-col items-center justify-center py-1 w-full min-h-[44px] {{ $isAdminChat ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400' }} transition-all duration-200">
+                                <div class="relative">
+                                    <span class="material-icons text-2xl group-hover:scale-110 transition-transform">chat</span>
+                                    @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
+                                        <span class="absolute top-0 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-xs">{{ $totalUnreadMessagesCount }}</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] {{ $isAdminChat ? 'font-bold' : 'font-medium' }} mt-0.5">Pesan</span>
                             </a>
 
                             <button @click="mobileMenuOpen = true"
-                                class="nav-item group flex flex-col items-center justify-center py-1 w-full text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
-                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">more_horiz</span>
+                                class="nav-item group flex flex-col items-center justify-center py-1 w-full min-h-[44px] text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all duration-200">
+                                <span class="material-icons text-2xl group-hover:scale-110 transition-transform">grid_view</span>
                                 <span class="text-[10px] font-medium mt-0.5">Lainnya</span>
                             </button>
 
@@ -748,43 +766,101 @@
                                              <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Absensi Harian</span>
                                          </a>
 
-                                         <a href="{{ route('permit.scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all group">
-                                             <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                                 <span class="material-icons text-xl">assignment</span>
-                                             </div>
-                                             <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Izin Keluar</span>
-                                             <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Izin Meninggalkan Sekolah</span>
-                                         </a>
-                                     </div>
-                                 </div>
+                                  
+                                  <!-- 1. Kategori: Manajemen Presensi & Persetujuan -->
+                                  <div>
+                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Manajemen Presensi & Persetujuan</div>
+                                      <div class="grid grid-cols-2 gap-2.5">
+                                          <a href="{{ route('admin.leave_requests.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all col-span-2 min-h-[44px]">
+                                              <div class="p-2 bg-amber-500 text-white rounded-xl shadow-xs">
+                                                  <span class="material-icons text-lg">assignment_turned_in</span>
+                                              </div>
+                                              <div class="flex-1 min-w-0">
+                                                  <div class="text-xs font-bold truncate">Persetujuan Izin Siswa</div>
+                                                  <div class="text-[10px] text-amber-700/80 dark:text-amber-300/80">Tindak lanjuti permohonan izin/sakit</div>
+                                              </div>
+                                              @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
+                                                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white shadow-xs">{{ $pendingLeaveRequestsCount }}</span>
+                                              @endif
+                                          </a>
 
-                                 <div>
-                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Laporan & Rekap</div>
-                                     <div class="grid grid-cols-2 gap-2.5 mb-3">
-                                         <a href="{{ route('admin.reports.create') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-emerald-50 dark:hover:bg-slate-800 transition-all">
-                                             <span class="material-icons text-emerald-600 dark:text-emerald-400 text-xl">bar_chart</span>
-                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Laporan Siswa</span>
-                                         </a>
-                                         <a href="{{ route('admin.reports.teacher.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-teal-50 dark:hover:bg-slate-800 transition-all">
-                                             <span class="material-icons text-teal-600 dark:text-teal-400 text-xl">analytics</span>
-                                             <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Laporan Guru</span>
-                                         </a>
-                                     </div>
-                                 </div>
+                                          <a href="{{ route('scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-sky-50 dark:hover:bg-slate-800 transition-all group min-h-[44px]">
+                                              <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
+                                                  <span class="material-icons text-xl">qr_code_scanner</span>
+                                              </div>
+                                              <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Hadir/Pulang</span>
+                                              <span class="text-[10px] text-slate-500 dark:text-slate-400">Pemindai Kiosk</span>
+                                          </a>
 
-                                 <div>
-                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Aplikasi Terintegrasi</div>
-                                     <a href="{{ route('sso.lms') }}" @click="console.log('[SSO Presensi Mobile] Mengalihkan ke LMS Mokopani via SSO:', '{{ route('sso.lms') }}'); mobileMenuOpen = false;" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all mb-3">
-                                         <div class="p-2 bg-white/20 rounded-xl backdrop-blur-xs">
-                                             <span class="material-icons text-xl text-white">school</span>
-                                         </div>
-                                         <div>
-                                             <h4 class="text-xs font-bold">LMS Mokopani</h4>
-                                             <p class="text-[10px] text-indigo-100">Buka ruang kelas daring & tugas</p>
-                                         </div>
-                                         <span class="material-icons text-sm ml-auto opacity-75">open_in_new</span>
-                                     </a>
-                                 </div>
+                                          <a href="{{ route('permit.scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all group min-h-[44px]">
+                                              <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
+                                                  <span class="material-icons text-xl">assignment</span>
+                                              </div>
+                                              <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Izin Keluar</span>
+                                              <span class="text-[10px] text-slate-500 dark:text-slate-400">Izin Siswa</span>
+                                          </a>
+
+                                          <a href="{{ route('admin.reports.create') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-emerald-50 dark:hover:bg-slate-800 transition-all min-h-[44px]">
+                                              <span class="material-icons text-emerald-600 dark:text-emerald-400 text-xl">bar_chart</span>
+                                              <div class="min-w-0">
+                                                  <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 block truncate">Laporan Siswa</span>
+                                                  <span class="text-[9px] text-slate-400 block truncate">Rekap kehadiran</span>
+                                              </div>
+                                          </a>
+
+                                          <a href="{{ route('admin.reports.teacher.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-teal-50 dark:hover:bg-slate-800 transition-all min-h-[44px]">
+                                              <span class="material-icons text-teal-600 dark:text-teal-400 text-xl">analytics</span>
+                                              <div class="min-w-0">
+                                                  <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 block truncate">Laporan Guru</span>
+                                                  <span class="text-[9px] text-slate-400 block truncate">Kehadiran pendidik</span>
+                                              </div>
+                                          </a>
+                                      </div>
+                                  </div>
+
+                                  <!-- 2. Kategori: Data & Integrasi Sekolah -->
+                                  <div>
+                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Data Sekolah & Integrasi</div>
+                                      <div class="space-y-2.5">
+                                          <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all min-h-[44px]">
+                                              <div class="p-2 bg-sky-600 text-white rounded-xl shadow-xs">
+                                                  <span class="material-icons text-lg">swap_horiz</span>
+                                              </div>
+                                              <div class="flex-1 min-w-0">
+                                                  <div class="text-xs font-bold truncate">Portal Data SIPADA</div>
+                                                  <div class="text-[10px] text-slate-500 dark:text-slate-400">Pangkalan data siswa & guru</div>
+                                              </div>
+                                              <span class="material-icons text-xs text-slate-400">open_in_new</span>
+                                          </a>
+
+                                          <a href="{{ route('sso.lms') }}" @click="console.log('[SSO Presensi Mobile] Mengalihkan ke LMS Mokopani via SSO:', '{{ route('sso.lms') }}'); mobileMenuOpen = false;" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all min-h-[44px]">
+                                              <div class="p-2 bg-white/20 rounded-xl backdrop-blur-xs">
+                                                  <span class="material-icons text-lg text-white">school</span>
+                                              </div>
+                                              <div class="flex-1 min-w-0">
+                                                  <div class="text-xs font-bold truncate">LMS Mokopani</div>
+                                                  <div class="text-[10px] text-indigo-100">Buka ruang kelas daring & tugas</div>
+                                              </div>
+                                              <span class="material-icons text-sm text-white/80">open_in_new</span>
+                                          </a>
+                                      </div>
+                                  </div>
+
+                                  <!-- 3. Kategori: Pengaturan & Bantuan -->
+                                  <div>
+                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Pengaturan & Bantuan</div>
+                                      <div class="grid grid-cols-2 gap-2.5">
+                                          <a href="{{ route('guide') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all min-h-[44px]">
+                                              <span class="material-icons text-sky-600 dark:text-sky-400 text-lg">auto_stories</span>
+                                              <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Panduan</span>
+                                          </a>
+
+                                          <a href="{{ route('admin.settings.appearance') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all min-h-[44px]">
+                                              <span class="material-icons text-slate-600 dark:text-slate-400 text-lg">palette</span>
+                                              <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Tampilan</span>
+                                          </a>
+                                      </div>
+                                  </div>
 
                              <!-- Teacher Section -->
                              @elseif(auth()->user()->role === 'teacher' || auth()->user()->hasRole('teacher'))

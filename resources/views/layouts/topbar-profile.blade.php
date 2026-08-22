@@ -123,7 +123,7 @@
 
         {{-- Dark Mode Toggle Button --}}
         <button @click="toggleDarkMode()" type="button" 
-                class="inline-flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                class="inline-flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 title="Ganti Mode Terang / Gelap">
             <span class="sr-only">Ganti Tema</span>
             <span x-show="!darkMode" class="material-icons text-xl text-amber-500">dark_mode</span>
@@ -137,7 +137,7 @@
     @auth
         <div x-data="{ open: false }" class="relative">
             <button @click="open = !open" 
-                    class="flex items-center gap-2 p-1.5 sm:p-1 pl-1.5 pr-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 min-h-[40px] sm:min-h-[36px]">
+                    class="flex items-center gap-2 p-1.5 sm:p-1 pl-1.5 pr-2 sm:pr-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 min-h-[44px] sm:min-h-[36px]">
                 <div class="relative">
                     <img class="h-8 w-8 rounded-full object-cover ring-2 ring-indigo-500/20 bg-slate-200 dark:bg-slate-750" 
                          src="{{ Auth::user()->profile_photo_url }}" 

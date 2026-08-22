@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\SchoolClass;
-use App\Models\Student; // Impor model Student
-use App\Models\StudentPermit; // Impor model StudentPermit
+use App\Models\Student;
+use App\Models\StudentPermit;
+use App\Models\LeaveRequest;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -47,20 +48,26 @@ class DashboardController extends Controller
         $allAttendancesToday = (clone $attendancesQuery)->get();
         
         $totalAllStudents = Student::count();
+        $totalRecorded = $allAttendancesToday->count();
+        $hasAttendanceData = ($totalRecorded > 0);
+
         $totalPresent = $allAttendancesToday->whereIn('status', ['tepat_waktu', 'terlambat'])->count();
-        $totalAbsent = $totalAllStudents - $allAttendancesToday->count();
-        
-        $overallAttendancePercentage = ($totalAllStudents > 0) ? round(($totalPresent / $totalAllStudents) * 100) : 0;
-        $overallAbsentPercentage = ($totalAllStudents > 0) ? round(($totalAbsent / $totalAllStudents) * 100) : 0;
-        
         $totalOnTime = $allAttendancesToday->where('status', 'tepat_waktu')->count();
         $totalLate = $allAttendancesToday->where('status', 'terlambat')->count();
+        $totalIzin = $allAttendancesToday->where('status', 'izin')->count();
+        $totalSakit = $allAttendancesToday->where('status', 'sakit')->count();
+        $totalAlpa = $allAttendancesToday->where('status', 'alpa')->count();
+        
+        // Siswa belum tercatat presensi (belum ada data)
+        $totalUnrecorded = max(0, $totalAllStudents - $totalRecorded);
+
+        // Kalkulasi persentase dengan aman
+        $overallAttendancePercentage = ($totalAllStudents > 0 && $hasAttendanceData) ? round(($totalPresent / $totalAllStudents) * 100) : 0;
+        $overallAbsentPercentage = ($totalAllStudents > 0 && $hasAttendanceData) ? round(($totalAlpa / $totalAllStudents) * 100) : 0;
+        
         $totalEffectivelyAttended = $totalOnTime + $totalLate;
         $overallOnTimePercentage = ($totalEffectivelyAttended > 0) ? round(($totalOnTime / $totalEffectivelyAttended) * 100) : 0;
         $overallLatenessPercentage = ($totalEffectivelyAttended > 0) ? round(($totalLate / $totalEffectivelyAttended) * 100) : 0;
-        
-        $totalIzin = $allAttendancesToday->where('status', 'izin')->count();
-        $totalSakit = $allAttendancesToday->where('status', 'sakit')->count();
 
         $allClassesWithStudents = SchoolClass::withCount('students')->get();
         $attendancesByClass = $allAttendancesToday->whereIn('status', ['tepat_waktu', 'terlambat'])->groupBy('student.school_class_id');
@@ -68,8 +75,24 @@ class DashboardController extends Controller
             $totalStudentsInClass = $class->students_count;
             $attendedCount = isset($attendancesByClass[$class->id]) ? $attendancesByClass[$class->id]->count() : 0;
             $percentage = ($totalStudentsInClass > 0) ? round(($attendedCount / $totalStudentsInClass) * 100) : 0;
-            return (object)['name' => $class->name, 'percentage' => $percentage, 'ratio' => "{$attendedCount} / {$totalStudentsInClass} Siswa Hadir"];
+            return (object)[
+                'name' => $class->name,
+                'percentage' => $percentage,
+                'ratio' => "{$attendedCount} / {$totalStudentsInClass} Hadir",
+                'attended' => $attendedCount,
+                'total' => $totalStudentsInClass
+            ];
         });
+
+        // Jumlah permohonan izin pending
+        $pendingLeaveRequestsCount = 0;
+        if (\Illuminate\Support\Facades\Schema::hasTable('leave_requests')) {
+            try {
+                $pendingLeaveRequestsCount = LeaveRequest::where('status', 'menunggu')->count();
+            } catch (\Throwable $e) {
+                $pendingLeaveRequestsCount = 0;
+            }
+        }
 
         // --- FILTER TABEL ---
         $attendances = (clone $attendancesQuery)
@@ -82,13 +105,13 @@ class DashboardController extends Controller
             ->latest('attendance_time')
             ->paginate(15);
         
-        // Mengambil data siswa yang sedang izin keluar
+        // Siswa yang sedang izin keluar
         $studentsOnPermit = StudentPermit::with(['student.schoolClass'])
             ->whereDate('time_out', $selectedDate)
             ->whereNull('time_in')
             ->get();
 
-        // BARU: Mengambil data siswa yang belum absen pulang
+        // Siswa yang hadir tapi belum absen pulang
         $studentsNotCheckedOut = Attendance::with(['student.schoolClass'])
             ->whereDate('attendance_time', $selectedDate)
             ->whereNotNull('attendance_time')
@@ -103,15 +126,24 @@ class DashboardController extends Controller
             'attendances' => $attendances,
             'selectedDate' => $selectedDate,
             'classes' => $classes,
+            'hasAttendanceData' => $hasAttendanceData,
+            'totalAllStudents' => $totalAllStudents,
+            'totalRecorded' => $totalRecorded,
+            'totalPresent' => $totalPresent,
+            'totalOnTime' => $totalOnTime,
+            'totalLate' => $totalLate,
+            'totalIzin' => $totalIzin,
+            'totalSakit' => $totalSakit,
+            'totalAlpa' => $totalAlpa,
+            'totalUnrecorded' => $totalUnrecorded,
             'overallAttendancePercentage' => $overallAttendancePercentage,
             'overallAbsentPercentage' => $overallAbsentPercentage,
             'overallOnTimePercentage' => $overallOnTimePercentage,
             'overallLatenessPercentage' => $overallLatenessPercentage,
-            'totalIzin' => $totalIzin,
-            'totalSakit' => $totalSakit,
             'classAttendanceStats' => $classAttendanceStats,
             'studentsOnPermit' => $studentsOnPermit,
-            'studentsNotCheckedOut' => $studentsNotCheckedOut, // Kirim data baru ke view
+            'studentsNotCheckedOut' => $studentsNotCheckedOut,
+            'pendingLeaveRequestsCount' => $pendingLeaveRequestsCount,
             'isEffectiveDaysSet' => $this->checkEffectiveDaysSet(),
         ]);
     }
