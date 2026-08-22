@@ -38,8 +38,18 @@ class DashboardController extends Controller
                         ? Carbon::createFromFormat('Y-m-d', $request->tanggal)
                         : Carbon::today();
 
+        // --- FILTER SISWA AKTIF ---
+        $activeStudentsQuery = Student::query()
+            ->when(\Illuminate\Support\Facades\Schema::hasColumn('students', 'status'), function ($q) {
+                return $q->where('status', 'aktif');
+            });
+        
+        $activeStudentIds = (clone $activeStudentsQuery)->pluck('id');
+        $totalAllStudents = (clone $activeStudentsQuery)->count();
+
         $attendancesQuery = Attendance::with(['student.schoolClass'])
                                       ->whereDate('attendance_time', $selectedDate)
+                                      ->whereIn('student_id', $activeStudentIds)
                                       ->when(session('active_semester_id'), function ($q) {
                                           return $q->where('semester_id', session('active_semester_id'));
                                       });
@@ -47,7 +57,6 @@ class DashboardController extends Controller
         // --- STATISTIK ---
         $allAttendancesToday = (clone $attendancesQuery)->get();
         
-        $totalAllStudents = Student::count();
         $totalRecorded = $allAttendancesToday->count();
         $hasAttendanceData = ($totalRecorded > 0);
 
@@ -58,7 +67,7 @@ class DashboardController extends Controller
         $totalSakit = $allAttendancesToday->where('status', 'sakit')->count();
         $totalAlpa = $allAttendancesToday->where('status', 'alpa')->count();
         
-        // Siswa belum tercatat presensi (belum ada data)
+        // Siswa aktif yang belum tercatat presensi
         $totalUnrecorded = max(0, $totalAllStudents - $totalRecorded);
 
         // Kalkulasi persentase dengan aman
@@ -69,7 +78,13 @@ class DashboardController extends Controller
         $overallOnTimePercentage = ($totalEffectivelyAttended > 0) ? round(($totalOnTime / $totalEffectivelyAttended) * 100) : 0;
         $overallLatenessPercentage = ($totalEffectivelyAttended > 0) ? round(($totalLate / $totalEffectivelyAttended) * 100) : 0;
 
-        $allClassesWithStudents = SchoolClass::withCount('students')->get();
+        // Hitung rombel hanya untuk siswa aktif
+        $allClassesWithStudents = SchoolClass::withCount(['students' => function ($q) {
+            $q->when(\Illuminate\Support\Facades\Schema::hasColumn('students', 'status'), function ($sq) {
+                return $sq->where('status', 'aktif');
+            });
+        }])->get();
+
         $attendancesByClass = $allAttendancesToday->whereIn('status', ['tepat_waktu', 'terlambat'])->groupBy('student.school_class_id');
         $classAttendanceStats = $allClassesWithStudents->map(function ($class) use ($attendancesByClass) {
             $totalStudentsInClass = $class->students_count;
@@ -105,15 +120,17 @@ class DashboardController extends Controller
             ->latest('attendance_time')
             ->paginate(15);
         
-        // Siswa yang sedang izin keluar
+        // Siswa aktif yang sedang izin keluar
         $studentsOnPermit = StudentPermit::with(['student.schoolClass'])
             ->whereDate('time_out', $selectedDate)
+            ->whereIn('student_id', $activeStudentIds)
             ->whereNull('time_in')
             ->get();
 
-        // Siswa yang hadir tapi belum absen pulang
+        // Siswa aktif yang hadir tapi belum absen pulang
         $studentsNotCheckedOut = Attendance::with(['student.schoolClass'])
             ->whereDate('attendance_time', $selectedDate)
+            ->whereIn('student_id', $activeStudentIds)
             ->whereNotNull('attendance_time')
             ->whereNull('checkout_time')
             ->whereNotIn('status', ['izin', 'sakit', 'alpa', 'izin_keluar'])

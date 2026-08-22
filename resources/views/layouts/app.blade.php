@@ -742,66 +742,48 @@
 
                              <!-- Admin / Operator Section -->
                              @elseif(in_array(auth()->user()->role, ['admin', 'operator', 'satpam']) || auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
-                                 <div>
-                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Pemindai & Persetujuan</div>
-                                     <div class="grid grid-cols-2 gap-2.5">
-                                         <a href="{{ route('admin.leave_requests.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all col-span-2">
-                                             <div class="p-2 bg-amber-500 text-white rounded-xl shadow-xs">
-                                                 <span class="material-icons text-lg">assignment_turned_in</span>
-                                             </div>
-                                             <div class="flex-1 min-w-0">
-                                                 <div class="text-xs font-bold truncate">Persetujuan Izin Siswa</div>
-                                                 <div class="text-[10px] text-amber-700/80 dark:text-amber-300/80">Tindak lanjuti permohonan</div>
-                                             </div>
-                                             @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
-                                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white">{{ $pendingLeaveRequestsCount }}</span>
-                                             @endif
-                                         </a>
-
-                                         <a href="{{ route('scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-sky-50 dark:hover:bg-slate-800 transition-all group">
-                                             <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                                 <span class="material-icons text-xl">qr_code_scanner</span>
-                                             </div>
-                                             <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Masuk/Pulang</span>
-                                             <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Absensi Harian</span>
-                                         </a>
-
                                   
                                   <!-- 1. Kategori: Manajemen Presensi & Persetujuan -->
-                                  <div>
-                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Manajemen Presensi & Persetujuan</div>
-                                      <div class="grid grid-cols-2 gap-2.5">
-                                          <a href="{{ route('admin.leave_requests.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all col-span-2 min-h-[44px]">
-                                              <div class="p-2 bg-amber-500 text-white rounded-xl shadow-xs">
-                                                  <span class="material-icons text-lg">assignment_turned_in</span>
-                                              </div>
-                                              <div class="flex-1 min-w-0">
-                                                  <div class="text-xs font-bold truncate">Persetujuan Izin Siswa</div>
-                                                  <div class="text-[10px] text-amber-700/80 dark:text-amber-300/80">Tindak lanjuti permohonan izin/sakit</div>
-                                              </div>
-                                              @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
-                                                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white shadow-xs">{{ $pendingLeaveRequestsCount }}</span>
-                                              @endif
-                                          </a>
+                                  <div class="space-y-2.5">
+                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Manajemen Presensi & Persetujuan</div>
+                                      
+                                      <!-- Persetujuan Izin Siswa (Full Width) -->
+                                      <a href="{{ route('admin.leave_requests.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-all min-h-[44px]">
+                                          <div class="p-2 bg-amber-500 text-white rounded-xl shadow-xs shrink-0">
+                                              <span class="material-icons text-lg">assignment_turned_in</span>
+                                          </div>
+                                          <div class="flex-1 min-w-0">
+                                              <div class="text-xs font-bold truncate">Persetujuan Izin Siswa</div>
+                                              <div class="text-[10px] text-amber-700/80 dark:text-amber-300/80 truncate">Tindak lanjuti permohonan izin/sakit</div>
+                                          </div>
+                                          @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
+                                              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white shadow-xs shrink-0">{{ $pendingLeaveRequestsCount }}</span>
+                                          @endif
+                                      </a>
 
+                                      <!-- Pemindai Lapangan (2 Grid) -->
+                                      <div class="grid grid-cols-2 gap-2.5">
                                           <a href="{{ route('scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-sky-50 dark:hover:bg-slate-800 transition-all group min-h-[44px]">
                                               <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
                                                   <span class="material-icons text-xl">qr_code_scanner</span>
                                               </div>
-                                              <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Hadir/Pulang</span>
-                                              <span class="text-[10px] text-slate-500 dark:text-slate-400">Pemindai Kiosk</span>
+                                              <span class="text-xs font-bold text-slate-800 dark:text-white truncate w-full">Scan Hadir/Pulang</span>
+                                              <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Pemindai Kiosk</span>
                                           </a>
 
                                           <a href="{{ route('permit.scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all group min-h-[44px]">
                                               <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
                                                   <span class="material-icons text-xl">assignment</span>
                                               </div>
-                                              <span class="text-xs font-bold text-slate-800 dark:text-white">Scan Izin Keluar</span>
-                                              <span class="text-[10px] text-slate-500 dark:text-slate-400">Izin Siswa</span>
+                                              <span class="text-xs font-bold text-slate-800 dark:text-white truncate w-full">Scan Izin Keluar</span>
+                                              <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Izin Siswa</span>
                                           </a>
+                                      </div>
 
+                                      <!-- Rekap Laporan (2 Grid) -->
+                                      <div class="grid grid-cols-2 gap-2.5">
                                           <a href="{{ route('admin.reports.create') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-emerald-50 dark:hover:bg-slate-800 transition-all min-h-[44px]">
-                                              <span class="material-icons text-emerald-600 dark:text-emerald-400 text-xl">bar_chart</span>
+                                              <span class="material-icons text-emerald-600 dark:text-emerald-400 text-xl shrink-0">bar_chart</span>
                                               <div class="min-w-0">
                                                   <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 block truncate">Laporan Siswa</span>
                                                   <span class="text-[9px] text-slate-400 block truncate">Rekap kehadiran</span>
@@ -809,7 +791,7 @@
                                           </a>
 
                                           <a href="{{ route('admin.reports.teacher.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-teal-50 dark:hover:bg-slate-800 transition-all min-h-[44px]">
-                                              <span class="material-icons text-teal-600 dark:text-teal-400 text-xl">analytics</span>
+                                              <span class="material-icons text-teal-600 dark:text-teal-400 text-xl shrink-0">analytics</span>
                                               <div class="min-w-0">
                                                   <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 block truncate">Laporan Guru</span>
                                                   <span class="text-[9px] text-slate-400 block truncate">Kehadiran pendidik</span>
@@ -819,45 +801,44 @@
                                   </div>
 
                                   <!-- 2. Kategori: Data & Integrasi Sekolah -->
-                                  <div>
-                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Data Sekolah & Integrasi</div>
-                                      <div class="space-y-2.5">
-                                          <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all min-h-[44px]">
-                                              <div class="p-2 bg-sky-600 text-white rounded-xl shadow-xs">
-                                                  <span class="material-icons text-lg">swap_horiz</span>
-                                              </div>
-                                              <div class="flex-1 min-w-0">
-                                                  <div class="text-xs font-bold truncate">Portal Data SIPADA</div>
-                                                  <div class="text-[10px] text-slate-500 dark:text-slate-400">Pangkalan data siswa & guru</div>
-                                              </div>
-                                              <span class="material-icons text-xs text-slate-400">open_in_new</span>
-                                          </a>
+                                  <div class="space-y-2.5">
+                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Data Sekolah & Integrasi</div>
+                                      
+                                      <a href="{{ env('SIPADA_URL', 'http://localhost:8000') }}/dashboard" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all min-h-[44px]">
+                                          <div class="p-2 bg-sky-600 text-white rounded-xl shadow-xs shrink-0">
+                                              <span class="material-icons text-lg">swap_horiz</span>
+                                          </div>
+                                          <div class="flex-1 min-w-0">
+                                              <div class="text-xs font-bold truncate">Portal Data SIPADA</div>
+                                              <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate">Pangkalan data siswa & guru</div>
+                                          </div>
+                                          <span class="material-icons text-xs text-slate-400 shrink-0">open_in_new</span>
+                                      </a>
 
-                                          <a href="{{ route('sso.lms') }}" @click="console.log('[SSO Presensi Mobile] Mengalihkan ke LMS Mokopani via SSO:', '{{ route('sso.lms') }}'); mobileMenuOpen = false;" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all min-h-[44px]">
-                                              <div class="p-2 bg-white/20 rounded-xl backdrop-blur-xs">
-                                                  <span class="material-icons text-lg text-white">school</span>
-                                              </div>
-                                              <div class="flex-1 min-w-0">
-                                                  <div class="text-xs font-bold truncate">LMS Mokopani</div>
-                                                  <div class="text-[10px] text-indigo-100">Buka ruang kelas daring & tugas</div>
-                                              </div>
-                                              <span class="material-icons text-sm text-white/80">open_in_new</span>
-                                          </a>
-                                      </div>
+                                      <a href="{{ route('sso.lms') }}" @click="console.log('[SSO Presensi Mobile] Mengalihkan ke LMS Mokopani via SSO:', '{{ route('sso.lms') }}'); mobileMenuOpen = false;" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md hover:from-indigo-700 hover:to-indigo-800 transition-all min-h-[44px]">
+                                          <div class="p-2 bg-white/20 rounded-xl backdrop-blur-xs shrink-0">
+                                              <span class="material-icons text-lg text-white">school</span>
+                                          </div>
+                                          <div class="flex-1 min-w-0">
+                                              <div class="text-xs font-bold truncate">LMS Mokopani</div>
+                                              <div class="text-[10px] text-indigo-100 truncate">Buka ruang kelas daring & tugas</div>
+                                          </div>
+                                          <span class="material-icons text-sm text-white/80 shrink-0">open_in_new</span>
+                                      </a>
                                   </div>
 
                                   <!-- 3. Kategori: Pengaturan & Bantuan -->
-                                  <div>
-                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Pengaturan & Bantuan</div>
+                                  <div class="space-y-2.5">
+                                      <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Pengaturan & Bantuan</div>
                                       <div class="grid grid-cols-2 gap-2.5">
                                           <a href="{{ route('guide') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all min-h-[44px]">
-                                              <span class="material-icons text-sky-600 dark:text-sky-400 text-lg">auto_stories</span>
-                                              <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Panduan</span>
+                                              <span class="material-icons text-sky-600 dark:text-sky-400 text-lg shrink-0">auto_stories</span>
+                                              <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Panduan</span>
                                           </a>
 
                                           <a href="{{ route('admin.settings.appearance') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all min-h-[44px]">
-                                              <span class="material-icons text-slate-600 dark:text-slate-400 text-lg">palette</span>
-                                              <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Tampilan</span>
+                                              <span class="material-icons text-slate-600 dark:text-slate-400 text-lg shrink-0">palette</span>
+                                              <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Tampilan</span>
                                           </a>
                                       </div>
                                   </div>

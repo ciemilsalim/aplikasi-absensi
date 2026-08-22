@@ -137,7 +137,7 @@
                     <div>
                         <h3 class="text-base font-bold text-slate-900 dark:text-white">Status Kehadiran Hari Ini</h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400">
-                            Total <span class="font-semibold text-slate-700 dark:text-slate-300">{{ $totalAllStudents }} Siswa</span> terdaftar dalam sistem
+                            Total <span class="font-semibold text-slate-700 dark:text-slate-300">{{ $totalAllStudents }} Siswa Aktif</span> terdaftar dalam sistem
                         </p>
                     </div>
                 </div>
