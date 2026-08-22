@@ -87,7 +87,9 @@
                                     <img class="h-11 w-11 rounded-2xl object-cover ring-2 {{ $isSelected ? 'ring-sky-400' : 'ring-slate-200 dark:ring-slate-700' }}" 
                                          src="{{ $parent->user && $parent->user->profile_photo_path ? asset('storage/' . $parent->user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($parent->name) . '&color=0284c7&background=e0f2fe' }}" 
                                          alt="{{ $parent->name }}">
-                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"></span>
+                                    @if($parent->is_online)
+                                        <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" title="Sedang Online"></span>
+                                    @endif
                                 </div>
 
                                 <!-- Contact Info -->
@@ -162,7 +164,9 @@
                                         <img class="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl object-cover ring-2 ring-sky-500/30" 
                                              src="{{ $selectedParent->user && $selectedParent->user->profile_photo_path ? asset('storage/' . $selectedParent->user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($selectedParent->name) . '&color=0284c7&background=e0f2fe' }}" 
                                              alt="{{ $selectedParent->name }}">
-                                        <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"></span>
+                                        @if($selectedParent->is_online)
+                                            <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" title="Sedang Online"></span>
+                                        @endif
                                     </div>
 
                                     <!-- Contact Name & Contextual Student Subtitle -->
@@ -174,11 +178,18 @@
                                             <span class="text-[11px] font-semibold text-sky-600 dark:text-sky-400 truncate">
                                                 {{ $selectedParent->student_subtitle ?? 'Orang Tua / Wali Siswa' }}
                                             </span>
-                                            <span class="text-slate-300 dark:text-slate-700 hidden sm:inline">&bull;</span>
-                                            <span class="hidden sm:inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                Online
-                                            </span>
+                                            @if($selectedParent->is_online)
+                                                <span class="text-slate-300 dark:text-slate-700 hidden sm:inline">&bull;</span>
+                                                <span class="hidden sm:inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                    Online
+                                                </span>
+                                            @elseif($selectedParent->user && $selectedParent->user->last_seen_at)
+                                                <span class="text-slate-300 dark:text-slate-700 hidden sm:inline">&bull;</span>
+                                                <span class="hidden sm:inline-flex items-center text-[10px] text-slate-400 font-medium">
+                                                    {{ \Carbon\Carbon::parse($selectedParent->user->last_seen_at)->diffForHumans() }}
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>

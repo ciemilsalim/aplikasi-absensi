@@ -64,6 +64,9 @@ class AdminChatController extends Controller
                 $parent->student_class = null;
             }
 
+            // Status Online (aktif dalam 5 menit terakhir)
+            $parent->is_online = ($parent->user && $parent->user->last_seen_at && \Carbon\Carbon::parse($parent->user->last_seen_at)->gt(now()->subMinutes(5)));
+
             if ($parent->adminConversation) {
                 $messages = $parent->adminConversation->messages;
                 
@@ -106,6 +109,8 @@ class AdminChatController extends Controller
             } else {
                 $selectedParent->student_subtitle = "Orang Tua / Wali Siswa";
             }
+
+            $selectedParent->is_online = ($selectedParent->user && $selectedParent->user->last_seen_at && \Carbon\Carbon::parse($selectedParent->user->last_seen_at)->gt(now()->subMinutes(5)));
 
             // Ambil percakapan dari relasi yang sudah dimuat untuk efisiensi
             $foundParent = $parents->firstWhere('id', $selectedParent->id);

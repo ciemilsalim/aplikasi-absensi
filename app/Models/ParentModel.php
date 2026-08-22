@@ -37,4 +37,17 @@ class ParentModel extends Model
         // Namun, untuk relasi murni, lebih baik definisikan seperti ini.
         return $this->hasOne(AdminConversation::class, 'parent_id');
     }
+
+    /**
+     * Memeriksa apakah akun orang tua sedang online
+     */
+    public function isOnline(): bool
+    {
+        return $this->user ? $this->user->isOnline() : false;
+    }
+
+    public function getIsOnlineAttribute(): bool
+    {
+        return $this->isOnline();
+    }
 }

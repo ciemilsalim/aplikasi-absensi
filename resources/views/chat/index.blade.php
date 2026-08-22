@@ -63,6 +63,9 @@
                                class="w-full text-left p-4 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors {{ $isActive ? 'bg-sky-50/80 dark:bg-sky-950/40 border-l-4 border-sky-500' : '' }}">
                                 <div class="relative shrink-0">
                                     <img class="h-11 w-11 rounded-2xl object-cover ring-2 ring-slate-100 dark:ring-slate-800" src="{{ $otherUser->profile_photo_path ? asset('storage/' . $otherUser->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($otherUser->name ?? 'User') . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ $otherUser->name ?? 'User' }}">
+                                    @if(isset($otherUser) && $otherUser->isOnline())
+                                        <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" title="Sedang Online"></span>
+                                    @endif
                                 </div>
                                 <div class="flex-grow min-w-0">
                                     <div class="flex items-center justify-between mb-0.5">
@@ -117,9 +120,12 @@
                                     }
                                 @endphp
 
-                                <div class="relative">
+                                <div class="relative shrink-0">
                                     @if(isset($activeOtherUser))
                                         <img class="h-10 w-10 rounded-2xl object-cover ring-2 ring-slate-100 dark:ring-slate-800" src="{{ $activeOtherUser->profile_photo_path ? asset('storage/' . $activeOtherUser->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($activeOtherUser->name) . '&color=7F9CF5&background=EBF4FF' }}" alt="{{ $activeOtherUser->name }}">
+                                        @if($activeOtherUser->isOnline())
+                                            <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" title="Sedang Online"></span>
+                                        @endif
                                     @else
                                         <div class="h-10 w-10 rounded-2xl bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center font-bold">
                                             <span class="material-icons text-base">person</span>

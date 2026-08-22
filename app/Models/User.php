@@ -109,6 +109,19 @@ class User extends Authenticatable
     }
 
     /**
+     * Memeriksa apakah pengguna sedang aktif / online (aktif dalam 5 menit terakhir).
+     */
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at !== null && \Carbon\Carbon::parse($this->last_seen_at)->gt(now()->subMinutes(5));
+    }
+
+    public function getIsOnlineAttribute(): bool
+    {
+        return $this->isOnline();
+    }
+
+    /**
      * Mendapatkan URL foto profil pengguna dengan fallback aman bila file tidak ditemukan di disk.
      */
     public function getProfilePhotoUrlAttribute(): string
