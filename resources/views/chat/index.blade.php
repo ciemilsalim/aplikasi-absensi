@@ -10,9 +10,15 @@
         </div>
     </x-slot>
 
-    <div class="py-0">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
-            <div class="flex h-[calc(100vh-12rem)] min-h-[500px]">
+    <div x-data="{
+        messageText: '',
+        autoExpand(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+        }
+    }" class="h-full flex flex-col flex-1 overflow-hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden h-full flex-1 flex">
+            <div class="flex flex-1 w-full h-full overflow-hidden">
                 
                 <!-- Sidebar Kontak -->
                 <div class="w-full lg:w-80 xl:w-96 border-r border-slate-200/80 dark:border-slate-800 flex flex-col shrink-0 @if($activeConversation) hidden lg:flex @endif">
@@ -184,19 +190,27 @@
                                 @endforelse
                             </div>
 
-                            <!-- Input Form -->
-                            <div class="p-4 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800 shrink-0">
-                                <form action="{{ request()->routeIs('chat.admin') ? route('chat.store_admin_message', $activeConversation) : route('chat.store_message', $activeConversation) }}" method="POST">
+                            <!-- Input Form (Pinned Bottom Composer) -->
+                            <div class="p-3 sm:p-4 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800 shrink-0 safe-area-pb">
+                                <form x-ref="chatForm" action="{{ request()->routeIs('chat.admin') ? route('chat.store_admin_message', $activeConversation) : route('chat.store_message', $activeConversation) }}" method="POST" class="flex items-end gap-2">
                                     @csrf
-                                    <div class="flex items-center gap-2">
-                                        <input name="body" type="text" 
-                                               class="flex-grow text-xs font-semibold px-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15 placeholder-slate-400" 
-                                               placeholder="Tulis pesan Anda di sini..." 
-                                               autocomplete="off" 
-                                               required />
+                                    <div class="flex-grow min-w-0">
+                                        <textarea x-ref="messageInput"
+                                                  name="body" 
+                                                  rows="1"
+                                                  x-model="messageText"
+                                                  @input="autoExpand($el)"
+                                                  @keydown.enter.exact="if(!window.matchMedia('(max-width: 640px)').matches) { $event.preventDefault(); if(messageText.trim().length > 0) $refs.chatForm.requestSubmit(); }"
+                                                  class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 focus:bg-white dark:focus:bg-slate-850 border border-transparent transition-all resize-none max-h-32 min-h-[44px] leading-relaxed no-scrollbar" 
+                                                  placeholder="Tulis pesan... (Enter untuk kirim, Shift+Enter baris baru)" 
+                                                  autocomplete="off" 
+                                                  required></textarea>
+                                    </div>
+                                    <div class="shrink-0 mb-0.5">
                                         <button type="submit" 
-                                                class="inline-flex items-center justify-center p-3 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 shrink-0">
-                                            <span class="material-icons text-lg">send</span>
+                                                class="inline-flex items-center justify-center w-11 h-11 min-h-[44px] min-w-[44px] rounded-2xl bg-sky-600 hover:bg-sky-500 active:scale-95 text-white shadow-md shadow-sky-600/25 transition-all"
+                                                title="Kirim Pesan">
+                                            <span class="material-icons text-xl">send</span>
                                         </button>
                                     </div>
                                 </form>

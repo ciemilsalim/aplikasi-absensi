@@ -21,9 +21,17 @@
             this.messageText = text;
             this.showTemplates = false;
             this.$nextTick(() => {
-                const input = document.getElementById('chat-message-input');
-                if (input) input.focus();
+                const el = this.$refs.messageInput;
+                if (el) {
+                    el.style.height = 'auto';
+                    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+                    el.focus();
+                }
             });
+        },
+        autoExpand(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 120) + 'px';
         }
     }" class="h-full flex flex-col flex-1 overflow-hidden">
         
@@ -284,31 +292,33 @@
                                     </div>
                                 </div>
 
-                                <form action="{{ route('admin.chat.store_message', $activeConversation) }}" method="POST" class="flex items-center gap-2">
+                                <form x-ref="chatForm" action="{{ route('admin.chat.store_message', $activeConversation) }}" method="POST" class="flex items-end gap-2">
                                     @csrf
                                     
                                     <!-- Attachment / Templates Button -->
                                     <button type="button" 
                                             @click="showTemplates = !showTemplates" 
-                                            class="inline-flex items-center justify-center w-11 h-11 min-h-[44px] min-w-[44px] rounded-2xl text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                                            class="inline-flex items-center justify-center w-11 h-11 min-h-[44px] min-w-[44px] rounded-2xl text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 mb-0.5"
                                             title="Template Pesan & Aksi Cepat">
                                         <span class="material-icons text-2xl" :class="showTemplates ? 'rotate-45' : ''">add_circle_outline</span>
                                     </button>
 
-                                    <!-- Text Input -->
+                                    <!-- Auto-expanding Textarea Input -->
                                     <div class="flex-grow min-w-0">
-                                        <input id="chat-message-input"
-                                               name="body" 
-                                               type="text" 
-                                               x-model="messageText"
-                                               class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 focus:bg-white dark:focus:bg-slate-850 border border-transparent transition-all" 
-                                               placeholder="Tulis pesan..." 
-                                               autocomplete="off" 
-                                               required />
+                                        <textarea x-ref="messageInput"
+                                                  name="body" 
+                                                  rows="1"
+                                                  x-model="messageText"
+                                                  @input="autoExpand($el)"
+                                                  @keydown.enter.exact="if(!window.matchMedia('(max-width: 640px)').matches) { $event.preventDefault(); if(messageText.trim().length > 0) $refs.chatForm.requestSubmit(); }"
+                                                  class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 focus:bg-white dark:focus:bg-slate-850 border border-transparent transition-all resize-none max-h-32 min-h-[44px] leading-relaxed no-scrollbar" 
+                                                  placeholder="Tulis pesan... (Enter untuk kirim, Shift+Enter baris baru)" 
+                                                  autocomplete="off" 
+                                                  required></textarea>
                                     </div>
 
                                     <!-- Send Button -->
-                                    <div class="shrink-0">
+                                    <div class="shrink-0 mb-0.5">
                                         <button type="submit" 
                                                 class="inline-flex items-center justify-center w-11 h-11 min-h-[44px] min-w-[44px] rounded-2xl bg-sky-600 hover:bg-sky-500 active:scale-95 text-white shadow-md shadow-sky-600/30 transition-all"
                                                 title="Kirim Pesan">
