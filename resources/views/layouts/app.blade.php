@@ -222,7 +222,7 @@
     </style>
 </head>
 
-<body class="h-full antialiased bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans selection:bg-sky-500 selection:text-white pb-20 lg:pb-0">
+<body class="h-full antialiased bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans selection:bg-sky-500 selection:text-white {{ $isChatConversation ? 'p-0 pb-0 overflow-hidden h-[100dvh]' : 'pb-20 lg:pb-0' }}">
     
     <!-- Page Loader -->
     <div id="page-loader" class="loader-container">
@@ -235,7 +235,7 @@
         </div>
     </div>
 
-    <div id="page-content" class="content-wrapper">
+    <div id="page-content" class="content-wrapper {{ $isChatConversation ? 'h-full overflow-hidden' : '' }}">
         <div x-data="{ 
             sidebarOpen: false, 
             mobileMenuOpen: false,
@@ -245,7 +245,7 @@
                 this.sidebarCollapsed = !this.sidebarCollapsed;
                 localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
             }
-        }" class="relative min-h-screen flex flex-col">
+        }" class="relative {{ $isChatConversation ? 'h-full max-h-full overflow-hidden' : 'min-h-screen' }} flex flex-col">
 
 
             <!-- Sidebar Desktop (Fixed Left) -->

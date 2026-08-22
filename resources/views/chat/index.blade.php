@@ -100,9 +100,9 @@
                 </div>
 
                 <!-- Area Obrolan -->
-                <div class="flex-1 flex flex-col @if(!$activeConversation) hidden lg:flex @else flex @endif bg-slate-50/50 dark:bg-slate-950/50">
+                <div class="flex-1 flex flex-col @if(!$activeConversation) hidden lg:flex @else fixed inset-0 z-50 lg:static lg:z-auto @endif bg-slate-50/50 dark:bg-slate-950/50 h-full overflow-hidden">
                     @if($activeConversation)
-                        <div class="flex flex-col h-full">
+                        <div class="flex flex-col h-full overflow-hidden">
                             <!-- Header Obrolan Aktif -->
                             <div class="p-4 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 flex items-center gap-3 shrink-0">
                                 <a href="{{ route('chat.index') }}" class="lg:hidden p-1.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
@@ -156,7 +156,7 @@
                             </div>
 
                             <!-- Pesan Container -->
-                            <div id="messages-container" class="flex-grow p-6 overflow-y-auto space-y-4">
+                            <div id="messages-container" class="flex-grow p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4">
                                 @forelse($messages as $date => $dailyMessages)
                                     <div class="flex justify-center my-4">
                                         <span class="px-3 py-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 rounded-full shadow-2xs border border-slate-200/60 dark:border-slate-700">

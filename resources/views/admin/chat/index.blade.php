@@ -143,7 +143,7 @@
                 <!-- ========================================== -->
                 <!-- 2. AREA PERCAKAPAN (Chat Conversation)     -->
                 <!-- ========================================== -->
-                <div id="chat-area" class="w-full lg:w-2/3 xl:flex-1 flex-col @if(!$selectedParent) hidden lg:flex @else flex @endif h-full bg-slate-100/70 dark:bg-slate-950/60 overflow-hidden">
+                <div id="chat-area" class="w-full lg:w-2/3 xl:flex-1 @if(!$selectedParent) hidden lg:flex @else fixed inset-0 z-50 lg:static lg:z-auto @endif flex flex-col h-full bg-slate-100/70 dark:bg-slate-950/60 overflow-hidden">
                     @if($selectedParent)
                         <div class="flex flex-col h-full w-full overflow-hidden">
                             
@@ -207,7 +207,7 @@
                             </div>
 
                             <!-- 2.2 MESSAGE STREAM CONTAINER -->
-                            <div id="messages-container" class="flex-1 p-3.5 sm:p-5 overflow-y-auto space-y-3">
+                            <div id="messages-container" class="flex-1 p-3.5 sm:p-5 overflow-y-auto overscroll-contain space-y-3">
                                 @forelse($messages as $date => $dailyMessages)
                                     
                                     <!-- Subtle Date Separator -->
