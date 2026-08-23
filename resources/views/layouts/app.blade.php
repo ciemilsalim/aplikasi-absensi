@@ -242,6 +242,7 @@
             sidebarOpen: false, 
             mobileMenuOpen: false,
             showMobileLogoutConfirm: false,
+            showNoScheduleModal: false,
             sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
             toggleSidebar() {
                 this.sidebarCollapsed = !this.sidebarCollapsed;
@@ -467,8 +468,10 @@
                                             <span class="material-icons text-2xl">qr_code_scanner</span>
                                         </a>
                                     @else
-                                        <button @click="alert('Tidak ada jadwal mengajar aktif hari ini untuk melakukan presensi mata pelajaran.')"
-                                            class="flex items-center justify-center h-14 w-14 rounded-full bg-slate-400 dark:bg-slate-700 text-white shadow-lg border-4 border-slate-50 dark:border-slate-950 transition-all">
+                                        <button @click="showNoScheduleModal = true"
+                                            type="button"
+                                            class="flex items-center justify-center h-14 w-14 rounded-full bg-slate-400 dark:bg-slate-700 hover:bg-slate-500 text-white shadow-lg border-4 border-slate-50 dark:border-slate-950 transition-all active:scale-95 cursor-pointer"
+                                            title="Scan QR Presensi Mapel">
                                             <span class="material-icons text-2xl">qr_code_scanner</span>
                                         </button>
                                     @endif
@@ -1067,6 +1070,60 @@
                                 <button @click="$refs.mobileLogoutForm.submit()" type="button" 
                                         class="flex-1 min-h-[48px] px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-md shadow-rose-600/25 transition-all active:scale-95">
                                     Ya, Keluar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Modal Pemberitahuan Tidak Ada Jadwal Mengajar Aktif -->
+                <template x-if="showNoScheduleModal">
+                    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" 
+                         role="dialog" 
+                         aria-modal="true"
+                         @keydown.escape.window="showNoScheduleModal = false">
+                        
+                        <!-- Backdrop Overlay -->
+                        <div class="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity" 
+                             x-show="showNoScheduleModal"
+                             x-transition:enter="ease-out duration-200" 
+                             x-transition:enter-start="opacity-0" 
+                             x-transition:enter-end="opacity-100" 
+                             x-transition:leave="ease-in duration-150" 
+                             x-transition:leave-start="opacity-100" 
+                             x-transition:leave-end="opacity-0" 
+                             @click="showNoScheduleModal = false"></div>
+                        
+                        <!-- Modal Content Box -->
+                        <div @click.away="showNoScheduleModal = false" 
+                             x-show="showNoScheduleModal" 
+                             x-transition:enter="ease-out duration-200" 
+                             x-transition:enter-start="opacity-0 scale-95 translate-y-2" 
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0" 
+                             x-transition:leave="ease-in duration-150" 
+                             x-transition:leave-start="opacity-100 scale-100 translate-y-0" 
+                             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                             class="relative bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200/80 dark:border-slate-800 max-w-sm w-full text-center z-10 transform transition-all">
+                            
+                            <!-- Warning Badge Icon -->
+                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-500 dark:text-amber-400 mb-4 ring-8 ring-amber-500/10">
+                                <span class="material-icons text-3xl">event_busy</span>
+                            </div>
+                            
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Tidak Ada Jadwal Mengajar</h3>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                Tidak ada jadwal mengajar aktif hari ini untuk melakukan presensi mata pelajaran.
+                            </p>
+
+                            <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+                                <a href="{{ route('teacher.dashboard') }}" 
+                                   class="w-full min-h-[44px] px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 transition-colors text-center inline-flex items-center justify-center gap-1.5">
+                                    <span class="material-icons text-base">dashboard</span>
+                                    <span>Cek Dasbor</span>
+                                </a>
+                                <button @click="showNoScheduleModal = false" type="button" 
+                                        class="w-full min-h-[44px] px-4 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-sky-600/25 transition-all active:scale-95 text-center">
+                                    Tutup
                                 </button>
                             </div>
                         </div>
