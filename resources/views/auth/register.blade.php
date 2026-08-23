@@ -59,7 +59,7 @@
                     </p>
                 </div>
 
-                <div class="mt-8">
+                <div class="mt-8" x-data="{ showPass: false, showConfirmPass: false }">
                     <form method="POST" action="{{ route('register') }}" class="space-y-4">
                         @csrf
                         
@@ -98,9 +98,15 @@
                             </label>
                             <div class="relative">
                                 <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">lock_outline</span>
-                                <input id="password" type="password" name="password" required autocomplete="new-password"
-                                       class="w-full text-xs font-semibold pl-10 pr-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15"
+                                <input id="password" :type="showPass ? 'text' : 'password'" name="password" required autocomplete="new-password"
+                                       class="w-full text-xs font-semibold pl-10 pr-11 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15"
                                        placeholder="Minimal 8 karakter" />
+                                <button type="button" 
+                                        @click="showPass = !showPass" 
+                                        class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
+                                        title="Tampilkan / Sembunyikan Kata Sandi">
+                                    <span class="material-icons text-sm" x-text="showPass ? 'visibility_off' : 'visibility'"></span>
+                                </button>
                             </div>
                             <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
                         </div>
@@ -112,9 +118,15 @@
                             </label>
                             <div class="relative">
                                 <span class="material-icons absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">lock_reset</span>
-                                <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password"
-                                       class="w-full text-xs font-semibold pl-10 pr-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15"
+                                <input id="password_confirmation" :type="showConfirmPass ? 'text' : 'password'" name="password_confirmation" required autocomplete="new-password"
+                                       class="w-full text-xs font-semibold pl-10 pr-11 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15"
                                        placeholder="Ulangi kata sandi" />
+                                <button type="button" 
+                                        @click="showConfirmPass = !showConfirmPass" 
+                                        class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
+                                        title="Tampilkan / Sembunyikan Konfirmasi Kata Sandi">
+                                    <span class="material-icons text-sm" x-text="showConfirmPass ? 'visibility_off' : 'visibility'"></span>
+                                </button>
                             </div>
                             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1.5" />
                         </div>
