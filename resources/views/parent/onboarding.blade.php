@@ -424,7 +424,7 @@
                 },
 
                 get matchedStudent() {
-                    if (!this.selectedClassId || !this.typedStudentName || this.typedStudentName.trim().length < 2) {
+                    if (!this.selectedClassId || !this.typedStudentName || this.typedStudentName.trim().length < 4) {
                         return null;
                     }
 
