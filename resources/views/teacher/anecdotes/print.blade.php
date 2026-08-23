@@ -112,12 +112,15 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 9pt;
+            table-layout: fixed;
         }
         table.custom-table th, 
         table.custom-table td {
             border: 1px solid #cbd5e1;
             padding: 6px 8px;
             vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         table.custom-table th {
             background-color: #f8fafc;
@@ -199,14 +202,14 @@
             <table class="custom-table mb-6">
                 <thead>
                     <tr>
-                        <th class="w-8">No</th>
-                        <th class="w-20">Tanggal</th>
-                        <th class="w-40">Nama Siswa / NIS</th>
-                        <th class="w-16">Kelas</th>
-                        <th class="w-1/4">Catatan Akademik</th>
-                        <th class="w-1/4">Catatan Kehadiran</th>
-                        <th class="w-1/4">Catatan Sikap / Perilaku</th>
-                        <th class="w-36">Tindak Lanjut</th>
+                        <th class="w-[4%]">No</th>
+                        <th class="w-[9%]">Tanggal</th>
+                        <th class="w-[22%]">Nama Siswa / NIS</th>
+                        <th class="w-[8%]">Kelas</th>
+                        <th class="w-[16%]">Catatan Akademik</th>
+                        <th class="w-[16%]">Catatan Kehadiran</th>
+                        <th class="w-[16%]">Catatan Sikap / Perilaku</th>
+                        <th class="w-[9%]">Tindak Lanjut</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -222,10 +225,10 @@
                             <td class="text-center font-bold text-slate-600">{{ $idx + 1 }}</td>
                             <td class="text-center whitespace-nowrap">{{ $an->date->format('d/m/Y') }}</td>
                             <td>
-                                <strong class="text-slate-900 block">{{ $an->student->name }}</strong>
-                                <span class="text-[8pt] text-slate-500">NIS: {{ $an->student->nis ?? '-' }}</span>
+                                <strong class="text-slate-900 block font-bold leading-snug">{{ $an->student->name }}</strong>
+                                <span class="text-[8pt] text-slate-500 block mt-0.5">NIS: {{ $an->student->nis ?? '-' }}</span>
                             </td>
-                            <td class="text-center">{{ $an->schoolClass?->name ?? '-' }}</td>
+                            <td class="text-center whitespace-nowrap">{{ $an->schoolClass?->name ?? '-' }}</td>
                             <td>
                                 <span class="font-bold text-[8pt] text-indigo-700">{{ $sentimentTags[$an->academic_sentiment] ?? '' }}</span>
                                 <p class="mt-0.5 text-slate-800">{{ $an->academic_note ?: '-' }}</p>
@@ -238,7 +241,7 @@
                                 <span class="font-bold text-[8pt] text-emerald-700">{{ $sentimentTags[$an->attitude_sentiment] ?? '' }}</span>
                                 <p class="mt-0.5 text-slate-800">{{ $an->attitude_note ?: '-' }}</p>
                             </td>
-                            <td class="text-[8.5pt] text-slate-700">
+                            <td class="text-[8.5pt] text-slate-700 text-center">
                                 {{ $an->follow_up ?: '-' }}
                             </td>
                         </tr>
