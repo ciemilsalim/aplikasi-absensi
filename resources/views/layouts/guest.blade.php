@@ -97,10 +97,16 @@
                 @yield('content')
             </main>
 
-            <footer class="w-full bg-white/50 dark:bg-slate-900/50 border-t border-slate-200/60 dark:border-slate-800/80 py-6 mt-auto">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400 text-xs space-y-1">
-                    <p>&copy; {{ date('Y') }} {{ $appName ?? config('app.name') }} &bull; Sistem Presensi Terpadu</p>
-                    <p class="text-[11px] text-slate-400">Dikembangkan dengan standar antarmuka modern & responsif</p>
+            <footer class="w-full bg-white/80 dark:bg-slate-900/80 border-t border-slate-200/80 dark:border-slate-800/80 py-4 mt-auto">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <div class="flex items-center gap-1.5 justify-center">
+                        <span class="font-semibold text-slate-700 dark:text-slate-300">{{ config('app.name', 'Presensi') }}</span>
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">v2.5</span>
+                        <span>&copy; {{ date('Y') }}</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-[11px]">
+                        <a href="https://www.zahradev.online" target="_blank" class="hover:text-sky-600 dark:hover:text-sky-400 font-medium transition-colors">ZahraDev</a>
+                    </div>
                 </div>
             </footer>
         </div>

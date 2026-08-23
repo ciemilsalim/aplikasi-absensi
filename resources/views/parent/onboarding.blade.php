@@ -393,9 +393,23 @@
 
     </main>
 
-    <!-- Footer Sederhana -->
-    <footer class="py-4 text-center text-xs text-slate-400 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <p>&copy; {{ date('Y') }} {{ config('app.name', 'Presensi') }} &bull; Sistem Presensi Digital Sekolah</p>
+    <!-- Footer Konsisten Dasbor -->
+    <footer class="py-4 px-4 sm:px-6 border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 justify-center">
+                <span class="font-semibold text-slate-700 dark:text-slate-300">{{ config('app.name', 'Presensi') }}</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">v2.5</span>
+                <span>&copy; {{ date('Y') }}</span>
+            </div>
+            <div class="flex items-center gap-3 text-[11px]">
+                <a href="{{ route('parent.guide') }}" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors flex items-center gap-1">
+                    <span class="material-icons text-xs text-sky-500">auto_stories</span>
+                    <span>Panduan Pengguna</span>
+                </a>
+                <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+                <a href="https://www.zahradev.online" target="_blank" class="hover:text-sky-600 dark:hover:text-sky-400 font-medium transition-colors">ZahraDev</a>
+            </div>
+        </div>
     </footer>
 
     <!-- JavaScript Alpine App -->
