@@ -33,15 +33,15 @@
             el.style.height = 'auto';
             el.style.height = Math.min(el.scrollHeight, 120) + 'px';
         }
-    }" class="h-full flex flex-col flex-1 overflow-hidden">
+    }" class="h-full flex flex-col flex-1 min-h-0 min-w-0 overflow-hidden">
         
-        <div class="bg-white dark:bg-slate-900 h-full flex-1 flex overflow-hidden border-0 lg:border lg:border-slate-200/80 lg:dark:border-slate-800 lg:rounded-3xl shadow-xs">
-            <div class="flex flex-1 w-full h-full overflow-hidden">
+        <div class="bg-white dark:bg-slate-900 h-full flex-1 flex min-h-0 min-w-0 overflow-hidden border-0 lg:border lg:border-slate-200/80 lg:dark:border-slate-800 lg:rounded-3xl shadow-xs">
+            <div class="flex flex-1 w-full h-full min-h-0 min-w-0 overflow-hidden">
                 
                 <!-- ========================================== -->
                 <!-- 1. SIDEBAR KONTAK (Daftar Orang Tua / Chat) -->
                 <!-- ========================================== -->
-                <div id="contact-sidebar" class="w-full lg:w-80 xl:w-96 border-r border-slate-200/80 dark:border-slate-800 flex flex-col shrink-0 @if($selectedParent) hidden lg:flex @else flex @endif bg-white dark:bg-slate-900">
+                <div id="contact-sidebar" class="w-full lg:w-80 xl:w-96 border-r border-slate-200/80 dark:border-slate-800 flex flex-col shrink-0 min-h-0 @if($selectedParent) hidden lg:flex @else flex @endif bg-white dark:bg-slate-900">
                     
                     <!-- Header Sidebar -->
                     <div class="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50/60 dark:bg-slate-850/40">
@@ -145,9 +145,9 @@
                 <!-- ========================================== -->
                 <!-- 2. AREA PERCAKAPAN (Chat Conversation)     -->
                 <!-- ========================================== -->
-                <div id="chat-area" class="w-full lg:w-2/3 xl:flex-1 @if(!$selectedParent) hidden lg:flex @else fixed inset-0 z-50 lg:static lg:z-auto @endif flex flex-col h-full bg-slate-100/70 dark:bg-slate-950/60 overflow-hidden">
+                <div id="chat-area" class="w-full lg:flex-1 @if(!$selectedParent) hidden lg:flex @else fixed inset-0 z-50 lg:static lg:z-auto @endif flex flex-col h-full min-h-0 min-w-0 bg-slate-100/70 dark:bg-slate-950/60 overflow-hidden">
                     @if($selectedParent)
-                        <div class="flex flex-col h-full w-full overflow-hidden">
+                        <div class="flex flex-col h-full w-full min-h-0 min-w-0 overflow-hidden">
                             
                             <!-- 2.1 HEADER CHAT (Focused 64-70px Header) -->
                             <div class="h-16 shrink-0 px-3 sm:px-5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between z-20 shadow-2xs">
@@ -218,7 +218,7 @@
                             </div>
 
                             <!-- 2.2 MESSAGE STREAM CONTAINER -->
-                            <div id="messages-container" class="flex-1 p-3.5 sm:p-5 overflow-y-auto overscroll-contain space-y-3">
+                            <div id="messages-container" class="flex-1 min-h-0 p-3.5 sm:p-5 overflow-y-auto overscroll-contain space-y-3">
                                 @forelse($messages as $date => $dailyMessages)
                                     
                                     <!-- Subtle Date Separator -->

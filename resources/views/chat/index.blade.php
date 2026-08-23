@@ -16,12 +16,12 @@
             el.style.height = 'auto';
             el.style.height = Math.min(el.scrollHeight, 120) + 'px';
         }
-    }" class="h-full flex flex-col flex-1 overflow-hidden">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden h-full flex-1 flex">
-            <div class="flex flex-1 w-full h-full overflow-hidden">
+    }" class="h-full flex flex-col flex-1 min-h-0 min-w-0 overflow-hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden h-full flex-1 flex min-h-0 min-w-0">
+            <div class="flex flex-1 w-full h-full min-h-0 min-w-0 overflow-hidden">
                 
                 <!-- Sidebar Kontak -->
-                <div class="w-full lg:w-80 xl:w-96 border-r border-slate-200/80 dark:border-slate-800 flex flex-col shrink-0 @if($activeConversation) hidden lg:flex @endif">
+                <div class="w-full lg:w-80 xl:w-96 border-r border-slate-200/80 dark:border-slate-800 flex flex-col shrink-0 min-h-0 @if($activeConversation) hidden lg:flex @endif">
                     <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-850/40">
                         <div class="flex items-center gap-2">
                             <span class="material-icons text-sky-500 text-lg">forum</span>
@@ -103,9 +103,9 @@
                 </div>
 
                 <!-- Area Obrolan -->
-                <div class="flex-1 flex flex-col @if(!$activeConversation) hidden lg:flex @else fixed inset-0 z-50 lg:static lg:z-auto @endif bg-slate-50/50 dark:bg-slate-950/50 h-full overflow-hidden">
+                <div class="flex-1 flex flex-col min-h-0 min-w-0 @if(!$activeConversation) hidden lg:flex @else fixed inset-0 z-50 lg:static lg:z-auto @endif bg-slate-50/50 dark:bg-slate-950/50 h-full overflow-hidden">
                     @if($activeConversation)
-                        <div class="flex flex-col h-full overflow-hidden">
+                        <div class="flex flex-col h-full w-full min-h-0 min-w-0 overflow-hidden">
                             <!-- Header Obrolan Aktif -->
                             <div class="p-4 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 flex items-center gap-3 shrink-0">
                                 <a href="{{ route('chat.index') }}" class="lg:hidden p-1.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
@@ -162,7 +162,7 @@
                             </div>
 
                             <!-- Pesan Container -->
-                            <div id="messages-container" class="flex-grow p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4">
+                            <div id="messages-container" class="flex-grow min-h-0 p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4">
                                 @forelse($messages as $date => $dailyMessages)
                                     <div class="flex justify-center my-4">
                                         <span class="px-3 py-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 rounded-full shadow-2xs border border-slate-200/60 dark:border-slate-700">
