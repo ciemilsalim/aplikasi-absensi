@@ -24,7 +24,14 @@ class DashboardController extends Controller
             return redirect()->route('profile.edit')->with('warning', 'Harap lengkapi data profil Anda terlebih dahulu.');
         }
 
-        $pendingRequests = $parent ? $parent->studentRequests()->with('student.schoolClass')->where('status', 'pending')->get() : collect();
+        $pendingRequests = collect();
+        if ($parent) {
+            try {
+                $pendingRequests = $parent->studentRequests()->with('student.schoolClass')->where('status', 'pending')->get();
+            } catch (\Throwable $e) {
+                $pendingRequests = collect();
+            }
+        }
 
         $students = $parent ? $parent->students()->with([
             'attendances' => function($query){
