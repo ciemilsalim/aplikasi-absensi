@@ -315,6 +315,27 @@ Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(
         Route::delete('/request/{studentId}', [ParentOnboardingController::class, 'removeRequest'])->name('remove_request');
         Route::post('/complete', [ParentOnboardingController::class, 'complete'])->name('complete');
     });
+
+    // Diagnostic Route
+    Route::get('/diag', function() {
+        try {
+            $user = auth()->user();
+            return response()->json([
+                'status' => 'success',
+                'user' => $user ? $user->only(['id', 'name', 'email', 'role']) : 'Not Logged In',
+                'parent' => $user && $user->parent ? $user->parent->toArray() : null,
+                'students_count' => $user && $user->parent ? $user->parent->students()->count() : 0,
+                'has_requests_table' => \Illuminate\Support\Facades\Schema::hasTable('parent_student_requests'),
+            ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        }
+    })->name('diag');
 });
 
 // == GRUP RUTE GURU ==
