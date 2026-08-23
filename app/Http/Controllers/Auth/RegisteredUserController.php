@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
+use Illuminate\Support\Facades\Validator;
+
 class RegisteredUserController extends Controller
 {
     /**
@@ -30,11 +32,22 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+            'password' => ['required', 'confirmed', Rules\Password::min(8)],
+        ], [
+            'name.required' => 'Harap isi Nama Lengkap Anda.',
+            'name.string' => 'Nama Lengkap harus berupa teks.',
+            'name.max' => 'Nama Lengkap tidak boleh lebih dari 255 karakter.',
+            'email.required' => 'Harap isi Alamat Email Anda.',
+            'email.email' => 'Format Alamat Email tidak valid (contoh: nama@email.com).',
+            'email.max' => 'Alamat Email tidak boleh lebih dari 255 karakter.',
+            'email.unique' => 'Alamat Email ini sudah terdaftar. Silakan gunakan email lain atau masuk di halaman login.',
+            'password.required' => 'Harap isi Kata Sandi Anda.',
+            'password.min' => 'Kata Sandi minimal harus terdiri dari 8 karakter.',
+            'password.confirmed' => 'Konfirmasi Kata Sandi tidak cocok dengan Kata Sandi yang dimasukkan.',
+        ])->validate();
 
         // 1. Buat user baru dengan peran 'parent'
         $user = User::create([
