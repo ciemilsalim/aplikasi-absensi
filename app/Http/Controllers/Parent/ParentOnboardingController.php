@@ -69,21 +69,69 @@ class ParentOnboardingController extends Controller
     }
 
     /**
-     * Langkah 2: Proses verifikasi & pengajuan klaim anak (Auto-match vs Manual Pending)
+     * Langkah 2: Proses verifikasi & pengajuan klaim anak (Matching Nama 90% Similarity / NIS)
      */
     public function verifyStudent(Request $request)
     {
         $request->validate([
             'school_class_id' => ['required', 'exists:school_classes,id'],
-            'student_id' => ['required', 'exists:students,id'],
+            'student_id' => ['nullable', 'exists:students,id'],
+            'student_name' => ['required_without:student_id', 'nullable', 'string', 'max:255'],
             'verification_code' => ['nullable', 'string', 'max:100'],
             'relationship' => ['nullable', 'string', 'max:50'],
         ]);
 
         $parent = Auth::user()->parent;
-        $student = Student::where('id', $request->student_id)
-            ->where('school_class_id', $request->school_class_id)
-            ->firstOrFail();
+        $classStudents = Student::where('school_class_id', $request->school_class_id)->get();
+
+        $student = null;
+
+        // 1. Jika ID siswa dikirim langsung (dari klik rekomendasi)
+        if ($request->filled('student_id')) {
+            $student = $classStudents->firstWhere('id', $request->student_id);
+        }
+
+        // 2. Jika nama siswa diketik teks -> cari dengan algoritma kemiripan 90% (similar_text)
+        if (!$student && $request->filled('student_name')) {
+            $typedName = strtolower(trim($request->student_name));
+            $bestMatch = null;
+            $maxPercent = 0;
+
+            foreach ($classStudents as $candidate) {
+                $candidateName = strtolower(trim($candidate->name));
+                $percent = 0;
+                similar_text($typedName, $candidateName, $percent);
+
+                // Cek pencocokan substring jika nama dipanggil singkat (misal: "Ahmad" -> "Ahmad Fathir")
+                if ($percent < 85 && (str_contains($candidateName, $typedName) || str_contains($typedName, $candidateName))) {
+                    $lenMin = min(strlen($typedName), strlen($candidateName));
+                    $lenMax = max(strlen($typedName), strlen($candidateName));
+                    if ($lenMax > 0) {
+                        $subPercent = ($lenMin / $lenMax) * 100;
+                        if ($subPercent > $percent) {
+                            $percent = $subPercent;
+                        }
+                    }
+                }
+
+                if ($percent > $maxPercent) {
+                    $maxPercent = $percent;
+                    $bestMatch = $candidate;
+                }
+            }
+
+            // Ambang batas kemiripan 85% - 90%
+            if ($bestMatch && $maxPercent >= 85) {
+                $student = $bestMatch;
+            }
+        }
+
+        if (!$student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nama siswa tidak ditemukan atau kemiripan di bawah 90% pada kelas yang dipilih. Harap periksa kembali ejaan nama anak Anda.',
+            ], 422);
+        }
 
         // Cek jika siswa sudah terhubung sebelumnya
         if ($parent->students()->where('student_id', $student->id)->exists()) {
@@ -109,7 +157,7 @@ class ParentOnboardingController extends Controller
         $inputCode = trim($request->verification_code ?? '');
         $isAutoMatch = false;
 
-        // Logika Auto-Match Hibrida: Cocokkan NIS atau Kode Unik QR (Case Insensitive)
+        // Logika Auto-Match: Jika NIS/Token cocok ATAU jika kemiripan nama 90%+
         if (!empty($inputCode)) {
             $nisMatch = !empty($student->nis) && strtolower($inputCode) === strtolower(trim($student->nis));
             $uniqueMatch = !empty($student->unique_id) && strtolower($inputCode) === strtolower(trim($student->unique_id));
@@ -129,7 +177,7 @@ class ParentOnboardingController extends Controller
                     'relationship' => $request->relationship ?? 'Orang Tua',
                     'verification_code' => $inputCode,
                     'status' => 'approved',
-                    'notes' => 'Terverifikasi otomatis via NIS/Token cocok.',
+                    'notes' => 'Terverifikasi otomatis via NIS cocok.',
                     'verified_at' => now(),
                 ]
             );
@@ -137,7 +185,7 @@ class ParentOnboardingController extends Controller
             return response()->json([
                 'success' => true,
                 'auto_approved' => true,
-                'message' => 'Selamat! Data siswa berhasil terverifikasi dan terhubung secara otomatis.',
+                'message' => 'Selamat! Data siswa (' . $student->name . ') berhasil terverifikasi dan terhubung secara otomatis.',
                 'student' => $student->load('schoolClass'),
             ]);
         } else {
@@ -148,13 +196,13 @@ class ParentOnboardingController extends Controller
                 'relationship' => $request->relationship ?? 'Orang Tua',
                 'verification_code' => $inputCode,
                 'status' => 'pending',
-                'notes' => 'Pengajuan dari laman onboarding orang tua baru.',
+                'notes' => 'Pengajuan dari orang tua via pencocokan nama (' . $student->name . ').',
             ]);
 
             return response()->json([
                 'success' => true,
                 'auto_approved' => false,
-                'message' => 'Pengajuan pengikatan anak berhasil dikirim! Pihak sekolah (Admin / Wali Kelas) akan melakukan verifikasi.',
+                'message' => 'Pengajuan pengikatan anak (' . $student->name . ') berhasil dikirim! Pihak sekolah akan melakukan verifikasi.',
                 'student' => $student->load('schoolClass'),
             ]);
         }

@@ -206,18 +206,33 @@
                     </select>
                 </div>
 
-                <!-- 2. Pilih Nama Siswa -->
+                <!-- 2. Ketik Nama Siswa (Text Input dengan Deteksi Kemiripan 90% Tanpa NIS) -->
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        2. Pilih Nama Siswa <span class="text-rose-500">*</span>
+                        2. Ketik Nama Anak Anda <span class="text-rose-500">*</span>
                     </label>
-                    <select x-model="selectedStudentId" :disabled="!selectedClassId" required
-                            class="w-full py-2.5 px-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 disabled:opacity-50 transition-all">
-                        <option value="">-- Pilih Nama Siswa --</option>
-                        <template x-for="s in availableStudents" :key="s.id">
-                            <option :value="s.id" x-text="s.name + (s.nis ? ' (NIS: ' + s.nis + ')' : '')"></option>
-                        </template>
-                    </select>
+                    <input type="text" x-model="typedStudentName" :disabled="!selectedClassId" required
+                           placeholder="Contoh: Ketik nama anak Anda..."
+                           class="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 disabled:opacity-50 transition-all">
+
+                    <!-- Kartu Hasil Pencocokan Kemiripan 90% (HANYA MENAMPILKAN NAMA TANPA NIS) -->
+                    <div x-show="matchedStudent" x-cloak class="mt-2 p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700/80 flex items-center justify-between gap-3 shadow-2xs">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="material-icons text-emerald-600 dark:text-emerald-400 text-xl shrink-0">check_circle</span>
+                            <div class="min-w-0">
+                                <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 block">Siswa Ditemukan di Database</span>
+                                <strong class="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white block truncate" x-text="matchedStudent?.nameOnly"></strong>
+                            </div>
+                        </div>
+                        <button type="button" @click="typedStudentName = matchedStudent.nameOnly; selectedStudentId = matchedStudent.student.id"
+                                class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-extrabold shadow-2xs transition-all shrink-0">
+                            Pilih Siswa Ini
+                        </button>
+                    </div>
+
+                    <div x-show="typedStudentName.trim().length >= 3 && !matchedStudent && selectedClassId" x-cloak class="mt-1.5 text-[10px] text-amber-600 dark:text-amber-400 italic">
+                        ⚠️ Belum ditemukan siswa dengan kemiripan 90% di kelas ini. Periksa kembali ejaan nama anak Anda.
+                    </div>
                 </div>
 
                 <!-- 3. NIS / Kode Verifikasi (Optional for auto-match) -->
@@ -249,7 +264,7 @@
                     </select>
                 </div>
 
-                <button type="submit" :disabled="loading || !selectedStudentId"
+                <button type="submit" :disabled="loading || (!selectedStudentId && !typedStudentName.trim())"
                         class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-sky-600 dark:hover:bg-sky-500 font-bold text-xs shadow-md flex items-center justify-center gap-1.5 transition-all disabled:opacity-50">
                     <span class="material-icons text-base">add_circle_outline</span>
                     <span>Hubungkan Siswa Ini</span>
@@ -400,6 +415,7 @@
                 pendingRequests: config.pendingRequests || [],
                 selectedClassId: '',
                 selectedStudentId: '',
+                typedStudentName: '',
                 verificationCode: '',
                 relationship: 'Orang Tua',
                 loading: false,
@@ -412,8 +428,76 @@
                     return cls ? (cls.students || []) : [];
                 },
 
+                get matchedStudent() {
+                    if (!this.selectedClassId || !this.typedStudentName || this.typedStudentName.trim().length < 2) {
+                        return null;
+                    }
+
+                    const search = this.typedStudentName.trim().toLowerCase();
+                    const students = this.availableStudents;
+                    let bestMatch = null;
+                    let maxScore = 0;
+
+                    for (const s of students) {
+                        const candidate = s.name.trim().toLowerCase();
+                        let score = 0;
+
+                        if (candidate === search) {
+                            score = 100;
+                        } else if (candidate.includes(search) || search.includes(candidate)) {
+                            const lenMin = Math.min(search.length, candidate.length);
+                            const lenMax = Math.max(search.length, candidate.length);
+                            score = (lenMin / lenMax) * 100;
+                        } else {
+                            score = this.calcSimilarity(search, candidate);
+                        }
+
+                        if (score > maxScore) {
+                            maxScore = score;
+                            bestMatch = s;
+                        }
+                    }
+
+                    if (bestMatch && maxScore >= 80) {
+                        return {
+                            student: bestMatch,
+                            score: Math.round(maxScore),
+                            nameOnly: bestMatch.name
+                        };
+                    }
+
+                    return null;
+                },
+
+                calcSimilarity(s1, s2) {
+                    let longer = s1.length >= s2.length ? s1 : s2;
+                    let shorter = s1.length < s2.length ? s1 : s2;
+                    if (longer.length === 0) return 100;
+
+                    let costs = [];
+                    for (let i = 0; i <= s1.length; i++) {
+                        let lastValue = i;
+                        for (let j = 0; j <= s2.length; j++) {
+                            if (i === 0) costs[j] = j;
+                            else {
+                                if (j > 0) {
+                                    let newValue = costs[j - 1];
+                                    if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
+                                        newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                                    }
+                                    costs[j - 1] = lastValue;
+                                    lastValue = newValue;
+                                }
+                            }
+                        }
+                        if (i > 0) costs[s2.length] = lastValue;
+                    }
+                    return ((longer.length - costs[s2.length]) / parseFloat(longer.length)) * 100;
+                },
+
                 onClassChange() {
                     this.selectedStudentId = '';
+                    this.typedStudentName = '';
                 },
 
                 showAlert(msg, type = 'success') {
@@ -460,8 +544,10 @@
                 },
 
                 async submitStep2() {
-                    if (!this.selectedStudentId || !this.selectedClassId) {
-                        this.showAlert('Harap pilih kelas dan nama siswa.', 'error');
+                    const targetStudentId = this.matchedStudent ? this.matchedStudent.student.id : this.selectedStudentId;
+
+                    if ((!targetStudentId && !this.typedStudentName.trim()) || !this.selectedClassId) {
+                        this.showAlert('Harap pilih kelas dan ketik nama anak Anda.', 'error');
                         return;
                     }
 
@@ -475,7 +561,8 @@
                             },
                             body: JSON.stringify({
                                 school_class_id: this.selectedClassId,
-                                student_id: this.selectedStudentId,
+                                student_id: targetStudentId,
+                                student_name: this.typedStudentName,
                                 verification_code: this.verificationCode,
                                 relationship: this.relationship
                             })
@@ -499,6 +586,7 @@
 
                             // Reset form penambahan anak
                             this.selectedStudentId = '';
+                            this.typedStudentName = '';
                             this.verificationCode = '';
                         } else {
                             this.showAlert(data.message || 'Gagal mengirim pengajuan.', 'error');
