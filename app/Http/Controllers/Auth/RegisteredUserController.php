@@ -63,11 +63,20 @@ class RegisteredUserController extends Controller
         }
 
         // 2. Buat juga data parent yang terhubung dengan user baru
-        // Nomor HP bisa ditambahkan nanti oleh admin atau di halaman profil
-        ParentModel::create([
-            'user_id' => $user->id,
-            'name' => $request->name,
-        ]);
+        try {
+            ParentModel::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'name' => $request->name,
+                    'is_onboarding_completed' => false,
+                ]
+            );
+        } catch (\Throwable $e) {
+            ParentModel::firstOrCreate(
+                ['user_id' => $user->id],
+                ['name' => $request->name]
+            );
+        }
 
         event(new Registered($user));
 

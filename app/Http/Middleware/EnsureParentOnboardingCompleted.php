@@ -20,28 +20,40 @@ class EnsureParentOnboardingCompleted
     {
         $user = Auth::user();
 
-        if ($user && ($user->role === 'parent' || $user->hasRole('parent'))) {
-            $parent = $user->parent;
+        // 1. Lompati middleware jika user tidak login atau sedang di rute otentikasi publik (login, register, logout, dll)
+        if (!$user || $request->routeIs(['login', 'register', 'logout', 'password.*'])) {
+            return $next($request);
+        }
 
-            // Jika entri ParentModel belum ada, buat otomatis
-            if (!$parent) {
-                $parent = \App\Models\ParentModel::create([
-                    'user_id' => $user->id,
-                    'name' => $user->name,
-                    'is_onboarding_completed' => false,
-                ]);
-            }
+        // 2. Cek peran orang tua
+        if ($user->role === 'parent' || $user->hasRole('parent')) {
+            try {
+                $parent = $user->parent;
 
-            $isOnboardingRoute = $request->routeIs('parent.onboarding.*');
+                // Jika entri ParentModel belum ada, buat otomatis
+                if (!$parent) {
+                    $parent = \App\Models\ParentModel::create([
+                        'user_id' => $user->id,
+                        'name' => $user->name,
+                        'is_onboarding_completed' => false,
+                    ]);
+                }
 
-            // Jika belum selesai onboarding & mengakses rute aplikasi lain -> arahkan ke onboarding
-            if (!$parent->is_onboarding_completed && !$isOnboardingRoute) {
-                return redirect()->route('parent.onboarding.index');
-            }
+                $isOnboardingRoute = $request->routeIs('parent.onboarding.*');
+                $isCompleted = (bool) ($parent->is_onboarding_completed ?? false);
 
-            // Jika sudah selesai onboarding & mencoba buka laman onboarding lagi -> arahkan ke dasbor
-            if ($parent->is_onboarding_completed && $isOnboardingRoute) {
-                return redirect()->route('parent.dashboard');
+                // Jika belum selesai onboarding & mengakses rute aplikasi lain -> arahkan ke onboarding
+                if (!$isCompleted && !$isOnboardingRoute) {
+                    return redirect()->route('parent.onboarding.index');
+                }
+
+                // Jika sudah selesai onboarding & mencoba buka laman onboarding lagi -> arahkan ke dasbor
+                if ($isCompleted && $isOnboardingRoute) {
+                    return redirect()->route('parent.dashboard');
+                }
+            } catch (\Throwable $e) {
+                // Abaikan kesalahan jika kolom database di server produksi belum dimigrasi
+                return $next($request);
             }
         }
 
