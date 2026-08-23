@@ -46,11 +46,6 @@ class EnsureParentOnboardingCompleted
                 if (!$isCompleted && !$isOnboardingRoute) {
                     return redirect()->route('parent.onboarding.index');
                 }
-
-                // Jika sudah selesai onboarding & mencoba buka laman onboarding lagi -> arahkan ke dasbor
-                if ($isCompleted && $isOnboardingRoute) {
-                    return redirect()->route('parent.dashboard');
-                }
             } catch (\Throwable $e) {
                 // Abaikan kesalahan jika kolom database di server produksi belum dimigrasi
                 return $next($request);
