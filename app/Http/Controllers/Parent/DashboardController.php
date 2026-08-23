@@ -24,7 +24,9 @@ class DashboardController extends Controller
             return redirect()->route('profile.edit')->with('warning', 'Harap lengkapi data profil Anda terlebih dahulu.');
         }
 
-        $students = $parent->students()->with([
+        $pendingRequests = $parent ? $parent->studentRequests()->with('student.schoolClass')->where('status', 'pending')->get() : collect();
+
+        $students = $parent ? $parent->students()->with([
             'attendances' => function($query){
                 $query->orderByDesc('attendance_time')->take(10);
             }, 
@@ -33,7 +35,7 @@ class DashboardController extends Controller
             'extracurricularAttendances' => function($query) {
                 $query->orderByDesc('attendance_date')->take(5);
             }
-        ])->get();
+        ])->get() : collect();
 
         foreach ($students as $student) {
             $student->today_attendance = \App\Models\Attendance::where('student_id', $student->id)
@@ -84,6 +86,7 @@ class DashboardController extends Controller
 
         return view('parent.dashboard', compact(
             'students', 
+            'pendingRequests',
             'announcements', 
             'unreadNotifications',
             'isOffDay',

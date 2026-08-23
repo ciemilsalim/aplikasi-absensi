@@ -586,19 +586,17 @@
                     </li>
                     @endif
 
-                    @if(auth()->user()->hasAnyRole(['admin', 'operator']))
-                    @php $isAdminChatActive = request()->routeIs('admin.chat.*'); @endphp
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator']) || (auth()->user()->teacher && auth()->user()->teacher->homeroomClass))
+                    @php $isParentVerifActive = request()->routeIs('admin.parent_verification.*'); @endphp
                     <li>
-                        <a href="{{ route('admin.chat.index') }}" :title="sidebarCollapsed ? 'Pesan Orang Tua' : ''" 
-                           class="{{ $isAdminChatActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                        <a href="{{ route('admin.parent_verification.index') }}" :title="sidebarCollapsed ? 'Verifikasi Klaim Ortu' : ''" 
+                           class="{{ $isParentVerifActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                            :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
                             <span class="flex gap-x-3 items-center">
-                                <span class="material-icons text-xl shrink-0 text-sky-500">chat</span>
-                                <span x-show="!sidebarCollapsed" class="truncate">Pesan Ortu</span>
+                                <span class="material-icons text-xl shrink-0 text-amber-500">how_to_reg</span>
+                                <span x-show="!sidebarCollapsed" class="truncate">Verifikasi Klaim Ortu</span>
                             </span>
-                            @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
-                                <span x-show="!sidebarCollapsed" class="inline-flex items-center justify-center h-4.5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-xs">{{ $totalUnreadMessagesCount }}</span>
-                            @elseif($isAdminChatActive)
+                            @if($isParentVerifActive)
                                 <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
                             @endif
                         </a>

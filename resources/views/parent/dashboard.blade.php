@@ -48,6 +48,43 @@
             </div>
         </div>
 
+        {{-- Banner Pengajuan Menunggu Verifikasi Sekolah --}}
+        @if(isset($pendingRequests) && $pendingRequests->isNotEmpty())
+            <div class="bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300/80 dark:border-amber-700/60 p-4 sm:p-5 rounded-3xl shadow-2xs space-y-3">
+                <div class="flex items-start gap-3.5">
+                    <div class="p-2.5 bg-amber-500 text-white rounded-2xl shadow-xs shrink-0">
+                        <span class="material-icons text-xl">hourglass_top</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                            <h4 class="font-bold text-amber-950 dark:text-amber-100 text-xs sm:text-sm">
+                                Pengajuan Penghubungan Anak Menunggu Verifikasi Sekolah
+                            </h4>
+                            <a href="{{ route('parent.onboarding.index') }}" class="text-xs font-bold text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100 underline shrink-0">
+                                Ubah / Kelola
+                            </a>
+                        </div>
+                        <p class="text-xs text-amber-800/90 dark:text-amber-200/90 mt-1 leading-relaxed">
+                            Pengajuan Anda sedang ditinjau oleh Admin / Wali Kelas. Setelah disetujui, seluruh fitur dan Laporan Presensi akan otomatis aktif.
+                        </p>
+                        <div class="mt-2.5 space-y-1.5">
+                            @foreach($pendingRequests as $pReq)
+                                <div class="flex items-center justify-between p-2.5 bg-white/80 dark:bg-slate-900/60 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 text-xs">
+                                    <div class="min-w-0">
+                                        <strong class="text-slate-900 dark:text-white font-bold block truncate">{{ $pReq->student?->name }}</strong>
+                                        <span class="text-[10px] text-slate-500 truncate block">Kelas {{ $pReq->student?->schoolClass?->name ?? '-' }} &bull; Hubungan: {{ $pReq->relationship }}</span>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-800 shrink-0">
+                                        ⏳ Menunggu Verifikasi
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- Notifikasi / Peringatan Kehadiran --}}
         @if($unreadNotifications->isNotEmpty())
             <div class="space-y-3">

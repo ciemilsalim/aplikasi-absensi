@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ContentSecurityPolicyMiddleware::class,
             \App\Http\Middleware\UpdateLastSeenMiddleware::class,
             \App\Http\Middleware\SetAcademicPeriod::class,
+            \App\Http\Middleware\EnsureParentOnboardingCompleted::class,
         ]);
 
         // Mendaftarkan alias untuk middleware peran
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'scanner.access' => \App\Http\Middleware\ScannerAccessMiddleware::class,
             'role' => \App\Http\Middleware\CheckRoleMiddleware::class,
             'sipada.redirect'=> \App\Http\Middleware\RedirectToSipada::class,
+            'parent.onboarding' => \App\Http\Middleware\EnsureParentOnboardingCompleted::class,
         ]);
     })
     ->withSchedule(function ($schedule) {

@@ -33,6 +33,8 @@ use App\Http\Controllers\Admin\UserController; // Controller baru
 // Parent Controller
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
 use App\Http\Controllers\Parent\LeaveRequestController as ParentLeaveRequestController;
+use App\Http\Controllers\Parent\ParentOnboardingController;
+use App\Http\Controllers\Admin\ParentVerificationController;
 
 // Teacher Controller
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
@@ -290,6 +292,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('/teaching-journals/teacher/{teacher}', [AdminTeachingJournalController::class, 'show'])->name('teaching_journals.show');
             Route::post('/teaching-journals/{journal}/verify', [AdminTeachingJournalController::class, 'verify'])->name('teaching_journals.verify');
             Route::post('/teaching-journals/batch-verify', [AdminTeachingJournalController::class, 'batchVerify'])->name('teaching_journals.batch_verify');
+            
+            // Verifikasi Klaim Orang Tua (Dapat diakses Admin/Operator/Wali Kelas)
+            Route::get('/parent-verifications', [ParentVerificationController::class, 'index'])->name('parent_verification.index');
+            Route::post('/parent-verifications/{parentRequest}/approve', [ParentVerificationController::class, 'approve'])->name('parent_verification.approve');
+            Route::post('/parent-verifications/{parentRequest}/reject', [ParentVerificationController::class, 'reject'])->name('parent_verification.reject');
         }
     );
 });
@@ -299,6 +306,15 @@ Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(
     Route::get('/dashboard', [ParentDashboardController::class, 'index'])->name('dashboard');
     Route::get('/guide', [ParentDashboardController::class, 'guide'])->name('guide');
     Route::resource('leave-requests', ParentLeaveRequestController::class)->only(['index', 'create', 'store']);
+
+    // Onboarding Orang Tua Baru
+    Route::prefix('onboarding')->name('onboarding.')->group(function () {
+        Route::get('/', [ParentOnboardingController::class, 'index'])->name('index');
+        Route::post('/step1', [ParentOnboardingController::class, 'updateContact'])->name('step1');
+        Route::post('/verify-student', [ParentOnboardingController::class, 'verifyStudent'])->name('verify_student');
+        Route::delete('/request/{studentId}', [ParentOnboardingController::class, 'removeRequest'])->name('remove_request');
+        Route::post('/complete', [ParentOnboardingController::class, 'complete'])->name('complete');
+    });
 });
 
 // == GRUP RUTE GURU ==

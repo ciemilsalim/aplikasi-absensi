@@ -11,7 +11,7 @@ class ParentModel extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'parents';
-    protected $fillable = ['user_id', 'name', 'phone_number', 'photo'];
+    protected $fillable = ['user_id', 'name', 'phone_number', 'photo', 'is_onboarding_completed', 'address'];
 
     // Relasi ke model User (satu orang tua memiliki satu akun login)
     public function user()
@@ -23,6 +23,12 @@ class ParentModel extends Model
     public function students()
     {
         return $this->belongsToMany(Student::class, 'parent_student', 'parent_id', 'student_id');
+    }
+
+    // Relasi ke pengajuan verifikasi siswa oleh orang tua
+    public function studentRequests()
+    {
+        return $this->hasMany(ParentStudentRequest::class, 'parent_id');
     }
     
     // Relasi ke model LeaveRequest
