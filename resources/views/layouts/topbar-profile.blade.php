@@ -89,7 +89,7 @@
         @if((auth()->user()->role === 'teacher' && auth()->user()->teacher?->homeroomClass) || auth()->user()->role === 'parent')
             
             {{-- Quick Create Leave Request (Parent) --}}
-            @if(auth()->user()->role === 'parent')
+            @if(auth()->user()->role === 'parent' && auth()->user()->parent && auth()->user()->parent->students()->exists())
             <a href="{{ route('parent.leave-requests.create') }}" 
                class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200/60 dark:border-amber-900/40 text-xs font-bold transition-all shadow-2xs" 
                title="Buat Pengajuan Izin Baru">

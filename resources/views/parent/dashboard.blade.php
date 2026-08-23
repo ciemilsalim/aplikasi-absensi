@@ -51,11 +51,13 @@
                         <span class="material-icons text-base">person_add</span>
                         <span>Hubungkan Anak</span>
                     </a>
-                    <a href="{{ route('parent.leave-requests.create') }}" 
-                       class="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 text-xs font-extrabold shadow-md shadow-amber-500/25 transition-all transform hover:scale-105 active:scale-95">
-                        <span class="material-icons text-base">add_circle</span>
-                        <span>Ajukan Izin / Sakit</span>
-                    </a>
+                    @if(isset($students) && $students->isNotEmpty())
+                        <a href="{{ route('parent.leave-requests.create') }}" 
+                           class="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 text-xs font-extrabold shadow-md shadow-amber-500/25 transition-all transform hover:scale-105 active:scale-95">
+                            <span class="material-icons text-base">add_circle</span>
+                            <span>Ajukan Izin / Sakit</span>
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>

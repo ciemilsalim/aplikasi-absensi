@@ -527,6 +527,7 @@
                             </a>
 
                             <!-- Elevated Action: Ajukan Izin Cepat -->
+                            @if(auth()->user()->parent && auth()->user()->parent->students()->exists())
                             <div class="relative -mt-6 flex flex-col items-center justify-center">
                                 <a href="{{ route('parent.leave-requests.create') }}"
                                     class="flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 border-4 border-slate-50 dark:border-slate-950 transition-all transform hover:scale-105 active:scale-95">
@@ -534,6 +535,7 @@
                                 </a>
                                 <span class="text-[9px] font-bold mt-1 text-slate-700 dark:text-slate-300">Ajukan Izin</span>
                             </div>
+                            @endif
 
                             @php $isParentChat = request()->routeIs('chat.*'); @endphp
                             <a href="{{ route('chat.index') }}"

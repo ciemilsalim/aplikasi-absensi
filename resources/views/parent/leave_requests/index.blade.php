@@ -11,11 +11,13 @@
                 </h1>
             </div>
 
-            <a href="{{ route('parent.leave-requests.create') }}" 
-               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-600/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 shrink-0">
-                <span class="material-icons text-base">add_circle</span>
-                <span>Buat Pengajuan Baru</span>
-            </a>
+            @if(auth()->user()->parent && auth()->user()->parent->students()->exists())
+                <a href="{{ route('parent.leave-requests.create') }}" 
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-600/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 shrink-0">
+                    <span class="material-icons text-base">add_circle</span>
+                    <span>Buat Pengajuan Baru</span>
+                </a>
+            @endif
         </div>
     </x-slot>
 
