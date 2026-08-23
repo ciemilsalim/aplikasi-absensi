@@ -91,26 +91,40 @@ class ParentOnboardingController extends Controller
             $student = $classStudents->firstWhere('id', $request->student_id);
         }
 
-        // 2. Jika nama siswa diketik teks -> cari dengan algoritma kemiripan 90% (similar_text)
+        // 2. Jika nama siswa diketik teks -> cari dengan algoritma pencocokan kata & kemiripan 90%
         if (!$student && $request->filled('student_name')) {
             $typedName = strtolower(trim($request->student_name));
+            $typedWords = array_filter(explode(' ', $typedName));
             $bestMatch = null;
             $maxPercent = 0;
 
             foreach ($classStudents as $candidate) {
                 $candidateName = strtolower(trim($candidate->name));
+                $candidateWords = array_filter(explode(' ', $candidateName));
                 $percent = 0;
-                similar_text($typedName, $candidateName, $percent);
 
-                // Cek pencocokan substring jika nama dipanggil singkat (misal: "Ahmad" -> "Ahmad Fathir")
-                if ($percent < 85 && (str_contains($candidateName, $typedName) || str_contains($typedName, $candidateName))) {
-                    $lenMin = min(strlen($typedName), strlen($candidateName));
-                    $lenMax = max(strlen($typedName), strlen($candidateName));
-                    if ($lenMax > 0) {
-                        $subPercent = ($lenMin / $lenMax) * 100;
-                        if ($subPercent > $percent) {
-                            $percent = $subPercent;
+                // A. Cek jika seluruh kata yang diketik ada dalam kata-kata nama candidate
+                $allWordsMatch = count($typedWords) > 0;
+                foreach ($typedWords as $tw) {
+                    $foundWord = false;
+                    foreach ($candidateWords as $cw) {
+                        if (str_starts_with($cw, $tw) || str_contains($cw, $tw)) {
+                            $foundWord = true;
+                            break;
                         }
+                    }
+                    if (!$foundWord) {
+                        $allWordsMatch = false;
+                        break;
+                    }
+                }
+
+                if ($allWordsMatch) {
+                    $percent = 100;
+                } else {
+                    similar_text($typedName, $candidateName, $percent);
+                    if ($percent < 80 && (str_contains($candidateName, $typedName) || str_contains($typedName, $candidateName))) {
+                        $percent = 90;
                     }
                 }
 
@@ -120,8 +134,8 @@ class ParentOnboardingController extends Controller
                 }
             }
 
-            // Ambang batas kemiripan 85% - 90%
-            if ($bestMatch && $maxPercent >= 85) {
+            // Ambang batas kemiripan
+            if ($bestMatch && $maxPercent >= 75) {
                 $student = $bestMatch;
             }
         }

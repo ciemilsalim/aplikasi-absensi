@@ -227,11 +227,6 @@
                         <button type="button" @click="typedStudentName = matchedStudent.nameOnly; selectedStudentId = matchedStudent.student.id"
                                 class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-extrabold shadow-2xs transition-all shrink-0">
                             Pilih Siswa Ini
-                        </button>
-                    </div>
-
-                    <div x-show="typedStudentName.trim().length >= 3 && !matchedStudent && selectedClassId" x-cloak class="mt-1.5 text-[10px] text-amber-600 dark:text-amber-400 italic">
-                        ⚠️ Belum ditemukan siswa dengan kemiripan 90% di kelas ini. Periksa kembali ejaan nama anak Anda.
                     </div>
                 </div>
 
@@ -434,20 +429,27 @@
                     }
 
                     const search = this.typedStudentName.trim().toLowerCase();
+                    const typedWords = search.split(/\s+/).filter(w => w.length > 0);
                     const students = this.availableStudents;
                     let bestMatch = null;
                     let maxScore = 0;
 
                     for (const s of students) {
                         const candidate = s.name.trim().toLowerCase();
+                        const candidateWords = candidate.split(/\s+/).filter(w => w.length > 0);
                         let score = 0;
 
-                        if (candidate === search) {
+                        // Cek jika seluruh kata yang diketik ada di dalam kata-kata nama siswa
+                        const allWordsMatch = typedWords.length > 0 && typedWords.every(tw => 
+                            candidateWords.some(cw => cw.startsWith(tw) || cw.includes(tw))
+                        );
+
+                        if (allWordsMatch) {
+                            score = 100;
+                        } else if (candidate === search) {
                             score = 100;
                         } else if (candidate.includes(search) || search.includes(candidate)) {
-                            const lenMin = Math.min(search.length, candidate.length);
-                            const lenMax = Math.max(search.length, candidate.length);
-                            score = (lenMin / lenMax) * 100;
+                            score = 95;
                         } else {
                             score = this.calcSimilarity(search, candidate);
                         }
@@ -458,7 +460,7 @@
                         }
                     }
 
-                    if (bestMatch && maxScore >= 80) {
+                    if (bestMatch && maxScore >= 75) {
                         return {
                             student: bestMatch,
                             score: Math.round(maxScore),
