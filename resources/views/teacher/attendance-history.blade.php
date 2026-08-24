@@ -357,7 +357,7 @@
                                     @endphp
                                     <td class="px-1.5 sm:px-2 py-2 text-center whitespace-nowrap {{ $date->isSunday() ? 'bg-rose-50/25 dark:bg-rose-950/10' : '' }}">
                                         <button 
-                                            @click="openModal('{{ $attendanceId }}', '{{ $student->id }}', '{{ $student->name }}', '{{ $dateString }}', '{{ $status }}')"
+                                            @click="openModal('{{ $attendanceId }}', '{{ $student->id }}', '{{ addslashes($student->name) }}', '{{ $dateString }}', '{{ $status }}')"
                                             class="w-8 h-8 sm:w-7 sm:h-7 inline-flex items-center justify-center text-[11px] rounded-xl transition-transform hover:scale-110 active:scale-90 {{ $badgeColor }}"
                                             title="Klik untuk mengubah catatan absensi">
                                             {{ $statusText }}

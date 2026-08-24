@@ -381,7 +381,7 @@
                                 $stPercent = (count($dates) > 0) ? round(($stHadir / count($dates)) * 100) : 0;
                             @endphp
                             <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors"
-                                x-show="(searchQuery === '' || '{{ mb_strtolower($student->name) }}'.includes(searchQuery.toLowerCase()) || '{{ $student->nis }}'.includes(searchQuery) || '{{ mb_strtolower($student->schoolClass->name ?? '') }}'.includes(searchQuery.toLowerCase())) && (statusFilter === 'all' || (statusFilter === 'alpa' && {{ $stAlpa }} > 0) || (statusFilter === 'leave' && ({{ $stSakit }} > 0 || {{ $stIzin }} > 0)) || (statusFilter === 'perfect' && {{ $stPercent }} === 100))">
+                                x-show="(searchQuery === '' || {{ json_encode(mb_strtolower($student->name)) }}.includes(searchQuery.toLowerCase()) || {{ json_encode($student->nis ?? '') }}.includes(searchQuery) || {{ json_encode(mb_strtolower($student->schoolClass->name ?? '')) }}.includes(searchQuery.toLowerCase())) && (statusFilter === 'all' || (statusFilter === 'alpa' && {{ $stAlpa }} > 0) || (statusFilter === 'leave' && ({{ $stSakit }} > 0 || {{ $stIzin }} > 0)) || (statusFilter === 'perfect' && {{ $stPercent }} === 100))">
                                 
                                 <!-- Sticky Student Name Cell (Explicit Identity) -->
                                 <td class="sticky left-0 bg-white dark:bg-slate-900 px-3.5 sm:px-4 py-2.5 font-bold text-slate-900 dark:text-white z-10 w-40 min-w-40 max-w-40 sm:w-56 sm:min-w-56 sm:max-w-56 shadow-[3px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[3px_0_10px_-2px_rgba(0,0,0,0.4)] border-r border-slate-200/60 dark:border-slate-750">

@@ -300,7 +300,7 @@
                                  data-student-name="{{ mb_strtolower($student->name) }}"
                                  data-student-nis="{{ $student->nis ?? '' }}"
                                  data-category="{{ $category }}"
-                                 x-show="(activeTab === '{{ $category }}') && (searchQuery === '' || '{{ mb_strtolower($student->name) }}'.includes(searchQuery.toLowerCase()) || '{{ $student->nis }}'.includes(searchQuery))">
+                                 x-show="(activeTab === '{{ $category }}') && (searchQuery === '' || {{ json_encode(mb_strtolower($student->name)) }}.includes(searchQuery.toLowerCase()) || {{ json_encode($student->nis ?? '') }}.includes(searchQuery))">
                                 
                                 <div class="flex items-center gap-3 min-w-0">
                                     <div class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-extrabold text-xs flex items-center justify-center shrink-0 border border-amber-200/60 dark:border-amber-800 overflow-hidden shadow-2xs">
