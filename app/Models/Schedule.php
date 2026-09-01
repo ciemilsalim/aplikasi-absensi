@@ -137,4 +137,18 @@ class Schedule extends Model
 
         return $dayNames[$this->day_of_week] ?? (is_numeric($this->day_of_week) ? 'Hari ' . $this->day_of_week : (string)$this->day_of_week);
     }
+
+    /**
+     * Mendapatkan daftar siswa yang mengikuti jadwal ini.
+     */
+    public function getEnrolledStudents()
+    {
+        if ($this->teachingAssignment) {
+            return $this->teachingAssignment->getEnrolledStudents();
+        }
+        if ($this->school_class_id) {
+            return Student::where('school_class_id', $this->school_class_id)->orderBy('name')->get();
+        }
+        return collect();
+    }
 }

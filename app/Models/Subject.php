@@ -9,7 +9,12 @@ class Subject extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'code', 'description'];
+    protected $fillable = ['name', 'code', 'description', 'category', 'religion_key'];
+
+    public function isReligion(): bool
+    {
+        return $this->category === 'religion';
+    }
 
     /**
      * Guru yang mengajar mata pelajaran ini.

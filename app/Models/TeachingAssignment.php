@@ -25,4 +25,54 @@ class TeachingAssignment extends Model
     {
         return $this->belongsTo(Teacher::class);
     }
+
+    /**
+     * Siswa yang terdaftar secara manual (override pivot) pada penugasan ini.
+     */
+    public function students()
+    {
+        return $this->belongsToMany(Student::class, 'teaching_assignment_student');
+    }
+
+    /**
+     * Jadwal pelajaran yang terkait.
+     */
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
+    /**
+     * Mendapatkan daftar siswa yang diampu pada penugasan/mapel ini.
+     * Logika Hybrid:
+     * 1. Jika ada siswa yang dipilih eksplisit di pivot, gunakan daftar tersebut.
+     * 2. Jika mapel adalah mapel agama, ambil siswa di kelas yang agamanya cocok.
+     * 3. Default: ambil seluruh siswa di kelas.
+     */
+    public function getEnrolledStudents()
+    {
+        // 1. Cek jika ada custom siswa di pivot
+        $hasCustomStudents = $this->relationLoaded('students') 
+            ? $this->students->isNotEmpty() 
+            : $this->students()->exists();
+
+        if ($hasCustomStudents) {
+            return $this->relationLoaded('students') ? $this->students : $this->students()->orderBy('name')->get();
+        }
+
+        // 2. Cek jika mapel agama
+        $subject = $this->relationLoaded('subject') ? $this->subject : $this->subject()->first();
+        if ($subject && $subject->category === 'religion' && !empty($subject->religion_key)) {
+            $religionKey = strtolower(trim($subject->religion_key));
+            return Student::where('school_class_id', $this->school_class_id)
+                ->where(function ($q) use ($religionKey) {
+                    $q->whereRaw('LOWER(religion) = ?', [$religionKey]);
+                })
+                ->orderBy('name')
+                ->get();
+        }
+
+        // 3. Default: seluruh siswa di kelas
+        return Student::where('school_class_id', $this->school_class_id)->orderBy('name')->get();
+    }
 }

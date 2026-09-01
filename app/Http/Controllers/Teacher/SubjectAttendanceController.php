@@ -83,7 +83,7 @@ class SubjectAttendanceController extends Controller
         $studentsBolos = $subjectAttendancesToday->where('status', 'bolos');
         $studentIdsWithRecord = $subjectAttendancesToday->pluck('student_id')->all();
 
-        $allClassStudents = Student::where('school_class_id', $classId)->orderBy('name', 'asc')->get();
+        $allClassStudents = $schedule->getEnrolledStudents();
         $totalClassStudents = $allClassStudents->count();
         $attendancePercentage = $totalClassStudents > 0 ? round(($attendedStudents->count() / $totalClassStudents) * 100) : 0;
 
@@ -96,15 +96,8 @@ class SubjectAttendanceController extends Controller
             $hasFaceDescriptor = false;
         }
 
-        $faceColumns = ['id', 'unique_id', 'name', 'photo', 'nis', 'school_class_id'];
-        if ($hasFaceDescriptor) {
-            $faceColumns[] = 'face_descriptor';
-        }
-
-        $studentsForFaceRecognition = Student::where('school_class_id', $classId)
+        $studentsForFaceRecognition = $allClassStudents
             ->whereNotNull('photo')
-            ->select($faceColumns)
-            ->get()
             ->map(function ($student) {
                 return [
                     'unique_id' => $student->unique_id,
@@ -112,7 +105,8 @@ class SubjectAttendanceController extends Controller
                     'photo_url' => $student->photo_url,
                     'face_descriptor' => $student->face_descriptor ?? null,
                 ];
-            });
+            })
+            ->values();
 
         // Catatan Anekdot siswa pada jadwal dan tanggal ini (aman jika tabel belum dimigrasi)
         $anecdotesToday = collect();
@@ -518,6 +512,8 @@ class SubjectAttendanceController extends Controller
                 return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
             }
 
+            $students = $assignment->getEnrolledStudents();
+
             $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
                 ->pluck('day_of_week')
                 ->unique()
@@ -744,6 +740,8 @@ class SubjectAttendanceController extends Controller
             if (!$assignment) {
                 return back()->with('error', 'Jadwal mengajar tidak ditemukan untuk kombinasi ini.');
             }
+
+            $students = $assignment->getEnrolledStudents();
 
             $scheduleDays = Schedule::where('teaching_assignment_id', $assignment->id)
                 ->pluck('day_of_week')

@@ -19,6 +19,7 @@ class Student extends Model
         'name',
         'nis',
         'school_class_id',
+        'religion',
         'unique_id',
         'photo',
         'face_descriptor',
