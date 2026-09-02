@@ -182,13 +182,15 @@ class ScheduleController extends Controller
                         'notes' => $att['notes'] ?? null,
                     ]);
                 } else {
+                    $attTime = $isPastDate ? $date->copy()->setTime(7, 30, 0) : now();
                     SubjectAttendance::create([
                         'schedule_id' => $scheduleId,
                         'student_id' => $att['student_id'],
                         'teacher_id' => $teacherId,
                         'status' => $att['status'],
                         'notes' => $att['notes'] ?? null,
-                        'created_at' => $date->startOfDay(), // Pastikan jamnya konsisten jika input manual masa lalu
+                        'created_at' => $attTime,
+                        'updated_at' => $attTime,
                     ]);
                 }
             }

@@ -618,10 +618,14 @@ class SubjectAttendanceController extends Controller
             'cocurricular_id' => 'nullable|exists:cocurriculars,id',
         ]);
 
-        $teacher = Auth::user()->teacher;
+        $user = Auth::user();
+        $teacher = $user?->teacher;
+        $isExecutive = $user?->hasAnyRole(['admin', 'operator', 'kepala_sekolah', 'kepala sekolah', 'headmaster']);
+
         $date = Carbon::parse($request->date);
         $dayOfWeek = $date->dayOfWeekIso;
 
+        $assignment = null;
         if ($request->filled('cocurricular_id')) {
             $schedule = Schedule::where('schedule_type', 'cocurricular')
                 ->where('cocurricular_id', $request->cocurricular_id)
@@ -629,10 +633,14 @@ class SubjectAttendanceController extends Controller
                 ->where('day_of_week', $dayOfWeek)
                 ->first();
         } else {
-            $assignment = TeachingAssignment::where('teacher_id', $teacher->id)
-                ->where('school_class_id', $request->school_class_id)
-                ->where('subject_id', $request->subject_id)
-                ->first();
+            $assignmentQuery = TeachingAssignment::where('school_class_id', $request->school_class_id)
+                ->where('subject_id', $request->subject_id);
+
+            if (!$isExecutive && $teacher) {
+                $assignmentQuery->where('teacher_id', $teacher->id);
+            }
+
+            $assignment = $assignmentQuery->first();
 
             if (!$assignment) {
                 return back()->with('error', 'Jadwal mengajar tidak ditemukan.');
@@ -645,6 +653,21 @@ class SubjectAttendanceController extends Controller
 
         if (!$schedule) {
             return back()->with('error', 'Tidak ada jadwal untuk hari yang dipilih. Data tidak dapat dibuat.');
+        }
+
+        // Tentukan ID guru pencatat
+        $recordedByTeacherId = $teacher?->id;
+        if (!$recordedByTeacherId) {
+            $recordedByTeacherId = $schedule->teacher_id ?? $assignment?->teacher_id;
+        }
+
+        // Tentukan waktu kehadiran spesifik berdasarkan jam mulai jadwal (default 07:30:00 jika tidak diset)
+        $startTimeStr = $schedule->start_time ?: '07:30:00';
+        try {
+            $attendanceTime = Carbon::parse($startTimeStr);
+            $attendanceDateTime = $date->copy()->setTime($attendanceTime->hour, $attendanceTime->minute, $attendanceTime->second);
+        } catch (\Throwable $e) {
+            $attendanceDateTime = $date->copy()->setTime(7, 30, 0);
         }
 
         $attendance = SubjectAttendance::where('student_id', $request->student_id)
@@ -661,19 +684,25 @@ class SubjectAttendanceController extends Controller
         }
 
         if ($attendance) {
-            $attendance->update([
-                'status' => $request->status,
-                'teacher_id' => $teacher->id,
-            ]);
+            $attendance->status = $request->status;
+            if ($recordedByTeacherId) {
+                $attendance->teacher_id = $recordedByTeacherId;
+            }
+            $attendance->save();
         } else {
-            SubjectAttendance::create([
-                'student_id' => $request->student_id,
-                'schedule_id' => $schedule->id,
-                'status' => $request->status,
-                'teacher_id' => $teacher->id,
-                'created_at' => $date,
-                'updated_at' => $date,
-            ]);
+            $activeYear = \App\Models\AcademicYear::getActive();
+            $activeSemester = \App\Models\Semester::getActive();
+
+            $newAttendance = new SubjectAttendance();
+            $newAttendance->student_id = $request->student_id;
+            $newAttendance->schedule_id = $schedule->id;
+            $newAttendance->status = $request->status;
+            $newAttendance->teacher_id = $recordedByTeacherId;
+            $newAttendance->academic_year_id = session('active_academic_year_id') ?: $activeYear?->id;
+            $newAttendance->semester_id = session('active_semester_id') ?: $activeSemester?->id;
+            $newAttendance->created_at = $attendanceDateTime;
+            $newAttendance->updated_at = $attendanceDateTime;
+            $newAttendance->save();
         }
 
         return back()->with('success', 'Data kehadiran berhasil diperbarui.');

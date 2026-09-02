@@ -38,7 +38,7 @@
     </x-slot>
 
     <div x-data="{
-        viewMode: 'cards',
+        viewMode: (new URLSearchParams(window.location.search).get('tab')) || localStorage.getItem('teacher_preview_tab') || 'matrix',
         showModal: false,
         studentId: '',
         studentName: '',
@@ -46,6 +46,10 @@
         studentPhoto: '',
         date: '',
         currentStatus: '',
+        switchTab(mode) {
+            this.viewMode = mode;
+            try { localStorage.setItem('teacher_preview_tab', mode); } catch (e) {}
+        },
         openModal(id, name, nis, photo, dateVal, status) {
             this.studentId = id;
             this.studentName = name;
@@ -140,13 +144,13 @@
         <!-- Mode Tampilan Switcher & Period Info Card -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-xs border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl self-start sm:self-auto">
-                <button @click="viewMode = 'cards'" 
+                <button @click="switchTab('cards')" 
                         :class="viewMode === 'cards' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium'"
                         class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs transition-all">
                     <span class="material-icons text-sm">view_agenda</span>
                     <span>Ringkasan</span>
                 </button>
-                <button @click="viewMode = 'matrix'" 
+                <button @click="switchTab('matrix')" 
                         :class="viewMode === 'matrix' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium'"
                         class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs transition-all">
                     <span class="material-icons text-sm">grid_on</span>
