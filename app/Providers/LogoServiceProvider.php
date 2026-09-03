@@ -34,8 +34,8 @@ class LogoServiceProvider extends ServiceProvider
 
             if (Auth::check()) {
                 try {
-                    // Notifikasi untuk Admin
-                    if ($user->role === 'admin') {
+                    // Notifikasi untuk Admin / Operator / TU
+                    if ($user->hasAnyRole(['admin', 'operator', 'satpam', 'tu', 'tata_usaha'])) {
                         $pendingLeaveRequestsCount = LeaveRequest::where('status', 'pending')->count();
                         // Hitung pesan belum dibaca dari semua orang tua
                         $totalUnreadMessagesCount = AdminMessage::where('user_id', '!=', $user->id)->whereNull('read_at')->count();

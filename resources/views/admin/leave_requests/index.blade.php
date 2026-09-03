@@ -24,7 +24,7 @@
     </x-slot>
 
     <div x-data="{ 
-            activeTab: '{{ request('manual_page') ? 'manual' : (request('processed_page') ? 'processed' : ($pendingRequests->count() > 0 ? 'pending' : 'manual')) }}',
+            activeTab: '{{ request('manual_page') ? 'manual' : (request('processed_page') ? 'processed' : (isset($pendingRequests) && $pendingRequests->count() > 0 ? 'pending' : 'manual')) }}',
             isManualModalOpen: false,
             isEditModalOpen: false,
             editData: {
@@ -49,14 +49,16 @@
                 const dd = String(today.getDate()).padStart(2, '0');
                 const todayStr = `${yyyy}-${mm}-${dd}`;
                 
-                document.getElementById('manual_start_date').value = todayStr;
+                const startInput = document.getElementById('manual_start_date');
+                const endInput = document.getElementById('manual_end_date');
+                if (startInput) startInput.value = todayStr;
                 
                 const target = new Date();
                 target.setDate(today.getDate() + (days - 1));
                 const tYyyy = target.getFullYear();
                 const tMm = String(target.getMonth() + 1).padStart(2, '0');
                 const tDd = String(target.getDate()).padStart(2, '0');
-                document.getElementById('manual_end_date').value = `${tYyyy}-${tMm}-${tDd}`;
+                if (endInput) endInput.value = `${tYyyy}-${tMm}-${tDd}`;
             },
             loadStudentsByClass(classId) {
                 if (!classId) {
@@ -110,7 +112,7 @@
                 <span>{{ session('error') }}</span>
             </div>
         @endif
-        @if ($errors->any())
+        @if (isset($errors) && $errors->any())
             <div class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs font-semibold shadow-xs">
                 <div class="font-bold flex items-center gap-1.5 mb-1 text-sm">
                     <span class="material-icons text-base">warning</span>
@@ -137,7 +139,7 @@
                     </span>
                 </div>
                 <div class="mt-2 flex items-baseline gap-2">
-                    <span class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{{ $pendingRequests->count() }}</span>
+                    <span class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{{ isset($pendingRequests) ? $pendingRequests->count() : 0 }}</span>
                     <span class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">Perlu tinjau</span>
                 </div>
             </div>
@@ -153,7 +155,7 @@
                     </span>
                 </div>
                 <div class="mt-2 flex items-baseline gap-2">
-                    <span class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{{ $manualInterventions->total() }}</span>
+                    <span class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{{ isset($manualInterventions) ? $manualInterventions->total() : 0 }}</span>
                     <span class="text-[10px] text-sky-600 dark:text-sky-400 font-semibold">Tersinkronisasi</span>
                 </div>
             </div>
@@ -169,7 +171,7 @@
                     </span>
                 </div>
                 <div class="mt-2 flex items-baseline gap-2">
-                    <span class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{{ $processedRequests->total() }}</span>
+                    <span class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{{ isset($processedRequests) ? $processedRequests->total() : 0 }}</span>
                     <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Diproses</span>
                 </div>
             </div>
@@ -198,7 +200,7 @@
                     class="flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap"
                     :class="activeTab === 'manual' ? 'bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'">
                 <span class="material-icons text-base">bolt</span>
-                <span>Intervensi Manual ({{ $manualInterventions->total() }})</span>
+                <span>Intervensi Manual ({{ isset($manualInterventions) ? $manualInterventions->total() : 0 }})</span>
             </button>
 
             <button type="button" @click="activeTab = 'pending'" 
@@ -206,7 +208,7 @@
                     :class="activeTab === 'pending' ? 'bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'">
                 <span class="material-icons text-base">pending_actions</span>
                 <span>Pengajuan Ortu</span>
-                @if($pendingRequests->count() > 0)
+                @if(isset($pendingRequests) && $pendingRequests->count() > 0)
                     <span class="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold leading-none">{{ $pendingRequests->count() }}</span>
                 @endif
             </button>
@@ -215,12 +217,12 @@
                     class="flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap"
                     :class="activeTab === 'processed' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'">
                 <span class="material-icons text-base">history</span>
-                <span>Riwayat Ortu Selesai ({{ $processedRequests->total() }})</span>
+                <span>Riwayat Ortu Selesai ({{ isset($processedRequests) ? $processedRequests->total() : 0 }})</span>
             </button>
         </div>
 
         {{-- ========================================================================= --}}
-        {{-- TAB 1: DAFTAR INTERVENSI MANUAL TU & ADMIN (DEFAULT & FITUR UTAMA)      --}}
+        {{-- TAB 1: DAFTAR INTERVENSI MANUAL TU & ADMIN                              --}}
         {{-- ========================================================================= --}}
         <div x-show="activeTab === 'manual'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
             
@@ -241,9 +243,11 @@
                     <div>
                         <select name="class_id" class="w-full py-2 px-3 text-xs rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 dark:text-white">
                             <option value="">Semua Kelas</option>
-                            @foreach($classes as $c)
-                                <option value="{{ $c->id }}" {{ request('class_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
-                            @endforeach
+                            @if(isset($classes))
+                                @foreach($classes as $c)
+                                    <option value="{{ $c->id }}" {{ request('class_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
 
@@ -264,103 +268,110 @@
 
             {{-- LIST: MOBILE CARDS (Visible on mobile, hidden on tablet/desktop) --}}
             <div class="block sm:hidden space-y-3">
-                @forelse ($manualInterventions as $item)
-                    <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
-                        {{-- Top row: Student & Class --}}
-                        <div class="flex items-start justify-between gap-2">
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-xs">
-                                    {{ strtoupper(substr($item->student->name ?? 'S', 0, 1)) }}
+                @if(isset($manualInterventions))
+                    @forelse ($manualInterventions as $item)
+                        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+                            {{-- Top row: Student & Class --}}
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-xs">
+                                        {{ strtoupper(substr($item->student?->name ?? 'S', 0, 1)) }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <h4 class="font-extrabold text-slate-900 dark:text-white text-xs truncate">{{ $item->student?->name ?? 'Siswa' }}</h4>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400">Kelas: <span class="font-bold text-slate-700 dark:text-slate-300">{{ $item->student?->schoolClass?->name ?? '-' }}</span></p>
+                                    </div>
                                 </div>
-                                <div class="min-w-0">
-                                    <h4 class="font-extrabold text-slate-900 dark:text-white text-xs truncate">{{ $item->student->name ?? 'Siswa' }}</h4>
-                                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Kelas: <span class="font-bold text-slate-700 dark:text-slate-300">{{ $item->student->schoolClass->name ?? '-' }}</span></p>
-                                </div>
-                            </div>
-                            
-                            {{-- Type Badge --}}
-                            <span class="px-2.5 py-1 rounded-xl text-[10px] font-extrabold uppercase shrink-0 {{ $item->type == 'sakit' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/60' }}">
-                                {{ $item->type }}
-                            </span>
-                        </div>
-
-                        {{-- Middle row: Dates & Source --}}
-                        <div class="flex flex-wrap items-center gap-2 text-[11px]">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">
-                                <span class="material-icons text-xs text-slate-400">calendar_today</span>
-                                <span>{{ $item->start_date->format('d M Y') }} @if($item->start_date->ne($item->end_date)) s/d {{ $item->end_date->format('d M Y') }} @endif</span>
-                            </span>
-
-                            {{-- Source Badge --}}
-                            @php
-                                $source = $item->submission_source ?? 'whatsapp';
-                            @endphp
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase
-                                {{ $source == 'whatsapp' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : '' }}
-                                {{ $source == 'telepon' ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800' : '' }}
-                                {{ $source == 'surat' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800' : '' }}
-                                {{ $source == 'lisan' ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800' : '' }}
-                                {{ !in_array($source, ['whatsapp','telepon','surat','lisan']) ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' : '' }}
-                            ">
-                                <span class="material-icons text-xs">
-                                    {{ $source == 'whatsapp' ? 'chat' : ($source == 'telepon' ? 'call' : ($source == 'surat' ? 'description' : 'record_voice_over')) }}
-                                </span>
-                                <span>{{ ucfirst($source) }}</span>
-                            </span>
-                        </div>
-
-                        {{-- Reason --}}
-                        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
-                            <p class="italic">"{{ $item->reason }}"</p>
-                            @if($item->attachment)
-                                <a href="{{ asset('storage/' . $item->attachment) }}" target="_blank" 
-                                   class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline mt-1.5">
-                                    <span class="material-icons text-xs">attachment</span>
-                                    <span>Lihat Foto / Surat Bukti</span>
-                                </a>
-                            @endif
-                        </div>
-
-                        {{-- Footer: Staf Input & Action Buttons --}}
-                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                            <span class="text-[10px] text-slate-400">
-                                Diinput oleh: <b class="text-slate-600 dark:text-slate-300">{{ $item->creator->name ?? ($item->approver->name ?? 'Admin/TU') }}</b>
-                            </span>
-
-                            <div class="flex items-center gap-1.5">
-                                <button type="button" @click="openEditModal({{ $item->id }})" 
-                                        class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors"
-                                        title="Edit Intervensi">
-                                    <span class="material-icons text-sm">edit</span>
-                                </button>
                                 
-                                <form action="{{ route('admin.leave_requests.destroy', $item) }}" method="POST" 
-                                      onsubmit="return confirm('Apakah Anda yakin ingin membatalkan izin siswa ini? Data presensi harian & mapel akan dinetralkan kembali.');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 transition-colors"
-                                            title="Batalkan & Hapus Izin">
-                                        <span class="material-icons text-sm">delete</span>
+                                {{-- Type Badge --}}
+                                <span class="px-2.5 py-1 rounded-xl text-[10px] font-extrabold uppercase shrink-0 {{ $item->type == 'sakit' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/60' }}">
+                                    {{ $item->type }}
+                                </span>
+                            </div>
+
+                            {{-- Middle row: Dates & Source --}}
+                            <div class="flex flex-wrap items-center gap-2 text-[11px]">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">
+                                    <span class="material-icons text-xs text-slate-400">calendar_today</span>
+                                    <span>
+                                        {{ $item->start_date ? $item->start_date->format('d M Y') : '-' }} 
+                                        @if($item->start_date && $item->end_date && !$item->start_date->isSameDay($item->end_date)) 
+                                            s/d {{ $item->end_date->format('d M Y') }} 
+                                        @endif
+                                    </span>
+                                </span>
+
+                                {{-- Source Badge --}}
+                                @php
+                                    $source = $item->submission_source ?? 'whatsapp';
+                                @endphp
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase
+                                    {{ $source == 'whatsapp' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : '' }}
+                                    {{ $source == 'telepon' ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800' : '' }}
+                                    {{ $source == 'surat' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800' : '' }}
+                                    {{ $source == 'lisan' ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800' : '' }}
+                                    {{ !in_array($source, ['whatsapp','telepon','surat','lisan']) ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' : '' }}
+                                ">
+                                    <span class="material-icons text-xs">
+                                        {{ $source == 'whatsapp' ? 'chat' : ($source == 'telepon' ? 'call' : ($source == 'surat' ? 'description' : 'record_voice_over')) }}
+                                    </span>
+                                    <span>{{ ucfirst($source) }}</span>
+                                </span>
+                            </div>
+
+                            {{-- Reason --}}
+                            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-855 border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
+                                <p class="italic">"{{ $item->reason }}"</p>
+                                @if($item->attachment)
+                                    <a href="{{ asset('storage/' . $item->attachment) }}" target="_blank" 
+                                       class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline mt-1.5">
+                                        <span class="material-icons text-xs">attachment</span>
+                                        <span>Lihat Foto / Surat Bukti</span>
+                                    </a>
+                                @endif
+                            </div>
+
+                            {{-- Footer: Staf Input & Action Buttons --}}
+                            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                                <span class="text-[10px] text-slate-400">
+                                    Diinput oleh: <b class="text-slate-600 dark:text-slate-300">{{ $item->creator?->name ?? ($item->approver?->name ?? 'Admin/TU') }}</b>
+                                </span>
+
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" @click="openEditModal({{ $item->id }})" 
+                                            class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors"
+                                            title="Edit Intervensi">
+                                        <span class="material-icons text-sm">edit</span>
                                     </button>
-                                </form>
+                                    
+                                    <form action="{{ route('admin.leave_requests.destroy', $item) }}" method="POST" 
+                                          onsubmit="return confirm('Apakah Anda yakin ingin membatalkan izin siswa ini? Data presensi harian & mapel akan dinetralkan kembali.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" 
+                                                class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 transition-colors"
+                                                title="Batalkan & Hapus Izin">
+                                            <span class="material-icons text-sm">delete</span>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                @empty
-                    <div class="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-center">
-                        <span class="material-icons text-4xl text-slate-300 dark:text-slate-600 mb-2">assignment_turned_in</span>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Belum ada data intervensi izin manual.</p>
-                        <button type="button" @click="isManualModalOpen = true" class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline">
-                            <span>+ Input Izin Sekarang</span>
-                        </button>
-                    </div>
-                @endforelse
+                    @empty
+                        <div class="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-center">
+                            <span class="material-icons text-4xl text-slate-300 dark:text-slate-600 mb-2">assignment_turned_in</span>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Belum ada data intervensi izin manual.</p>
+                            <button type="button" @click="isManualModalOpen = true" class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline">
+                                <span>+ Input Izin Sekarang</span>
+                            </button>
+                        </div>
+                    @endforelse
 
-                {{-- Pagination for Mobile --}}
-                <div class="pt-2">
-                    {{ $manualInterventions->links() }}
-                </div>
+                    {{-- Pagination for Mobile --}}
+                    <div class="pt-2">
+                        {{ $manualInterventions->links() }}
+                    </div>
+                @endif
             </div>
 
             {{-- DESKTOP / TABLET TABLE VIEW --}}
@@ -378,89 +389,98 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                            @forelse ($manualInterventions as $item)
-                            <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors">
-                                <td class="px-5 py-3.5">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-xs">
-                                            {{ strtoupper(substr($item->student->name ?? 'S', 0, 1)) }}
+                            @if(isset($manualInterventions))
+                                @forelse ($manualInterventions as $item)
+                                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors">
+                                    <td class="px-5 py-3.5">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-xs">
+                                                {{ strtoupper(substr($item->student?->name ?? 'S', 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <p class="font-extrabold text-slate-900 dark:text-white text-xs">{{ $item->student?->name ?? 'Siswa' }}</p>
+                                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Kelas: <span class="font-bold text-slate-700 dark:text-slate-300">{{ $item->student?->schoolClass?->name ?? '-' }}</span></p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p class="font-extrabold text-slate-900 dark:text-white text-xs">{{ $item->student->name ?? 'Siswa' }}</p>
-                                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Kelas: <span class="font-bold text-slate-700 dark:text-slate-300">{{ $item->student->schoolClass->name ?? '-' }}</span></p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-5 py-3.5 whitespace-nowrap">
-                                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold">
-                                        <span class="material-icons text-xs text-slate-400">date_range</span>
-                                        <span>{{ $item->start_date->format('d M Y') }} @if($item->start_date->ne($item->end_date)) - {{ $item->end_date->format('d M Y') }} @endif</span>
-                                    </div>
-                                </td>
-                                <td class="px-5 py-3.5 whitespace-nowrap">
-                                    <div class="flex flex-col gap-1">
-                                        <span class="inline-block w-fit px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase {{ $item->type == 'sakit' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300' }}">
-                                            {{ $item->type }}
-                                        </span>
-                                        @php $source = $item->submission_source ?? 'whatsapp'; @endphp
-                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                                            <span class="material-icons text-xs {{ $source == 'whatsapp' ? 'text-emerald-500' : ($source == 'telepon' ? 'text-sky-500' : 'text-amber-500') }}">
-                                                {{ $source == 'whatsapp' ? 'chat' : ($source == 'telepon' ? 'call' : ($source == 'surat' ? 'description' : 'record_voice_over')) }}
+                                    </td>
+                                    <td class="px-5 py-3.5 whitespace-nowrap">
+                                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold">
+                                            <span class="material-icons text-xs text-slate-400">date_range</span>
+                                            <span>
+                                                {{ $item->start_date ? $item->start_date->format('d M Y') : '-' }} 
+                                                @if($item->start_date && $item->end_date && !$item->start_date->isSameDay($item->end_date)) 
+                                                    - {{ $item->end_date->format('d M Y') }} 
+                                                @endif
                                             </span>
-                                            <span>{{ ucfirst($source) }}</span>
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="px-5 py-3.5 max-w-xs">
-                                    <p class="text-xs text-slate-700 dark:text-slate-300 line-clamp-2">"{{ $item->reason }}"</p>
-                                    @if($item->attachment)
-                                        <a href="{{ asset('storage/' . $item->attachment) }}" target="_blank" 
-                                           class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline mt-0.5">
-                                            <span class="material-icons text-xs">attachment</span>
-                                            <span>Lampiran Bukti</span>
-                                        </a>
-                                    @endif
-                                </td>
-                                <td class="px-5 py-3.5 whitespace-nowrap text-slate-600 dark:text-slate-400">
-                                    <span class="font-bold text-slate-800 dark:text-slate-200">{{ $item->creator->name ?? ($item->approver->name ?? 'Admin/TU') }}</span>
-                                    <p class="text-[10px] text-slate-400">{{ $item->created_at->diffForHumans() }}</p>
-                                </td>
-                                <td class="px-5 py-3.5 whitespace-nowrap text-center">
-                                    <div class="flex items-center justify-center gap-1.5">
-                                        <button type="button" @click="openEditModal({{ $item->id }})" 
-                                                class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1">
-                                            <span class="material-icons text-xs">edit</span>
-                                            <span>Edit</span>
-                                        </button>
-
-                                        <form action="{{ route('admin.leave_requests.destroy', $item) }}" method="POST" 
-                                              onsubmit="return confirm('Apakah Anda yakin ingin membatalkan izin siswa ini? Data presensi harian & mapel akan dinetralkan kembali.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" 
-                                                    class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-300 text-xs font-bold transition-all flex items-center gap-1">
-                                                <span class="material-icons text-xs">delete</span>
-                                                <span>Batal</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-3.5 whitespace-nowrap">
+                                        <div class="flex flex-col gap-1">
+                                            <span class="inline-block w-fit px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase {{ $item->type == 'sakit' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300' }}">
+                                                {{ $item->type }}
+                                            </span>
+                                            @php $source = $item->submission_source ?? 'whatsapp'; @endphp
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                                <span class="material-icons text-xs {{ $source == 'whatsapp' ? 'text-emerald-500' : ($source == 'telepon' ? 'text-sky-500' : 'text-amber-500') }}">
+                                                    {{ $source == 'whatsapp' ? 'chat' : ($source == 'telepon' ? 'call' : ($source == 'surat' ? 'description' : 'record_voice_over')) }}
+                                                </span>
+                                                <span>{{ ucfirst($source) }}</span>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-3.5 max-w-xs">
+                                        <p class="text-xs text-slate-700 dark:text-slate-300 line-clamp-2">"{{ $item->reason }}"</p>
+                                        @if($item->attachment)
+                                            <a href="{{ asset('storage/' . $item->attachment) }}" target="_blank" 
+                                               class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline mt-0.5">
+                                                <span class="material-icons text-xs">attachment</span>
+                                                <span>Lampiran Bukti</span>
+                                            </a>
+                                        @endif
+                                    </td>
+                                    <td class="px-5 py-3.5 whitespace-nowrap text-slate-600 dark:text-slate-400">
+                                        <span class="font-bold text-slate-800 dark:text-slate-200">{{ $item->creator?->name ?? ($item->approver?->name ?? 'Admin/TU') }}</span>
+                                        <p class="text-[10px] text-slate-400">{{ $item->created_at ? $item->created_at->diffForHumans() : '-' }}</p>
+                                    </td>
+                                    <td class="px-5 py-3.5 whitespace-nowrap text-center">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <button type="button" @click="openEditModal({{ $item->id }})" 
+                                                    class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1">
+                                                <span class="material-icons text-xs">edit</span>
+                                                <span>Edit</span>
                                             </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-xs text-slate-400 italic">
-                                    Belum ada data intervensi izin manual.
-                                </td>
-                            </tr>
-                            @endforelse
+
+                                            <form action="{{ route('admin.leave_requests.destroy', $item) }}" method="POST" 
+                                                  onsubmit="return confirm('Apakah Anda yakin ingin membatalkan izin siswa ini? Data presensi harian & mapel akan dinetralkan kembali.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                        class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-300 text-xs font-bold transition-all flex items-center gap-1">
+                                                    <span class="material-icons text-xs">delete</span>
+                                                    <span>Batal</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="6" class="px-6 py-12 text-center text-xs text-slate-400 italic">
+                                        Belum ada data intervensi izin manual.
+                                    </td>
+                                </tr>
+                                @endforelse
+                            @endif
                         </tbody>
                     </table>
                 </div>
 
                 {{-- Pagination Desktop --}}
-                <div class="p-4 border-t border-slate-100 dark:border-slate-800">
-                    {{ $manualInterventions->links() }}
-                </div>
+                @if(isset($manualInterventions))
+                    <div class="p-4 border-t border-slate-100 dark:border-slate-800">
+                        {{ $manualInterventions->links() }}
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -481,63 +501,65 @@
 
                 {{-- Mobile Cards for Pending Requests --}}
                 <div class="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
-                    @forelse ($pendingRequests as $req)
-                        <div class="p-4 space-y-3">
-                            <div class="flex items-start justify-between gap-2">
-                                <div>
-                                    <h4 class="font-extrabold text-slate-900 dark:text-white text-xs">{{ $req->student->name }}</h4>
-                                    <p class="text-[10px] text-slate-500">Kelas: <b class="text-slate-700 dark:text-slate-300">{{ $req->student->schoolClass->name ?? '-' }}</b> • Ortu: {{ $req->parent->name ?? '-' }}</p>
-                                </div>
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase {{ $req->type == 'sakit' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300' }}">
-                                    {{ $req->type }}
-                                </span>
-                            </div>
-
-                            <div class="text-[11px] text-slate-600 dark:text-slate-400">
-                                <span class="font-bold text-slate-800 dark:text-slate-200">Rentang:</span> {{ $req->start_date->format('d M Y') }} - {{ $req->end_date->format('d M Y') }}
-                            </div>
-
-                            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 text-xs text-slate-700 dark:text-slate-300">
-                                "{{ $req->reason }}"
-                                @if($req->attachment)
-                                    <div class="mt-1">
-                                        <a href="{{ asset('storage/' . $req->attachment) }}" target="_blank" class="text-[11px] font-bold text-sky-600 dark:text-sky-400 underline">Lihat Lampiran</a>
+                    @if(isset($pendingRequests))
+                        @forelse ($pendingRequests as $req)
+                            <div class="p-4 space-y-3">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <h4 class="font-extrabold text-slate-900 dark:text-white text-xs">{{ $req->student?->name ?? 'Siswa' }}</h4>
+                                        <p class="text-[10px] text-slate-500">Kelas: <b class="text-slate-700 dark:text-slate-300">{{ $req->student?->schoolClass?->name ?? '-' }}</b> • Ortu: {{ $req->parent?->name ?? '-' }}</p>
                                     </div>
-                                @endif
-                            </div>
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase {{ $req->type == 'sakit' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300' }}">
+                                        {{ $req->type }}
+                                    </span>
+                                </div>
 
-                            {{-- Approve & Reject Actions --}}
-                            <div class="flex items-center gap-2 pt-1" x-data="{ showRejectInput: false }">
-                                <form action="{{ route('admin.leave_requests.approve', $req) }}" method="POST" class="flex-1" onsubmit="return confirm('Setujui izin ini?');">
-                                    @csrf
-                                    <button type="submit" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs">
-                                        Setujui
+                                <div class="text-[11px] text-slate-600 dark:text-slate-400">
+                                    <span class="font-bold text-slate-800 dark:text-slate-200">Rentang:</span> {{ $req->start_date ? $req->start_date->format('d M Y') : '-' }} - {{ $req->end_date ? $req->end_date->format('d M Y') : '-' }}
+                                </div>
+
+                                <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 text-xs text-slate-700 dark:text-slate-300">
+                                    "{{ $req->reason }}"
+                                    @if($req->attachment)
+                                        <div class="mt-1">
+                                            <a href="{{ asset('storage/' . $req->attachment) }}" target="_blank" class="text-[11px] font-bold text-sky-600 dark:text-sky-400 underline">Lihat Lampiran</a>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                {{-- Approve & Reject Actions --}}
+                                <div class="flex items-center gap-2 pt-1" x-data="{ showRejectInput: false }">
+                                    <form action="{{ route('admin.leave_requests.approve', $req) }}" method="POST" class="flex-1" onsubmit="return confirm('Setujui izin ini?');">
+                                        @csrf
+                                        <button type="submit" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs">
+                                            Setujui
+                                        </button>
+                                    </form>
+                                    <button type="button" @click="showRejectInput = !showRejectInput" class="py-2 px-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">
+                                        Tolak
                                     </button>
-                                </form>
-                                <button type="button" @click="showRejectInput = !showRejectInput" class="py-2 px-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">
-                                    Tolak
-                                </button>
-                                
-                                <div x-show="showRejectInput" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-                                    <div class="bg-white dark:bg-slate-850 p-5 rounded-2xl max-w-sm w-full shadow-2xl">
-                                        <h4 class="text-xs font-bold text-slate-900 dark:text-white mb-2">Tolak Izin {{ $req->student->name }}</h4>
-                                        <form action="{{ route('admin.leave_requests.reject', $req) }}" method="POST">
-                                            @csrf
-                                            <input type="text" name="rejection_reason" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-900" placeholder="Alasan penolakan..." required />
-                                            <div class="flex justify-end gap-2 mt-3">
-                                                <button type="button" @click="showRejectInput = false" class="px-3 py-1.5 text-xs text-slate-500">Batal</button>
-                                                <button type="submit" class="px-3 py-1.5 bg-rose-600 text-white rounded-xl text-xs font-bold">Kirim Tolak</button>
-                                            </div>
-                                        </form>
+                                    
+                                    <div x-show="showRejectInput" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+                                        <div class="bg-white dark:bg-slate-850 p-5 rounded-2xl max-w-sm w-full shadow-2xl">
+                                            <h4 class="text-xs font-bold text-slate-900 dark:text-white mb-2">Tolak Izin {{ $req->student?->name ?? 'Siswa' }}</h4>
+                                            <form action="{{ route('admin.leave_requests.reject', $req) }}" method="POST">
+                                                @csrf
+                                                <input type="text" name="rejection_reason" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-white" placeholder="Alasan penolakan..." required />
+                                                <div class="flex justify-end gap-2 mt-3">
+                                                    <button type="button" @click="showRejectInput = false" class="px-3 py-1.5 text-xs text-slate-500">Batal</button>
+                                                    <button type="submit" class="px-3 py-1.5 bg-rose-600 text-white rounded-xl text-xs font-bold">Kirim Tolak</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    @empty
-                        <div class="p-8 text-center text-xs text-slate-400 italic">
-                            Tidak ada pengajuan izin yang menunggu persetujuan.
-                        </div>
-                    @endforelse
+                        @empty
+                            <div class="p-8 text-center text-xs text-slate-400 italic">
+                                Tidak ada pengajuan izin yang menunggu persetujuan.
+                            </div>
+                        @endforelse
+                    @endif
                 </div>
 
                 {{-- Desktop Table for Pending Requests --}}
@@ -552,82 +574,84 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                            @forelse ($pendingRequests as $req)
-                            <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-300 font-bold flex items-center justify-center shrink-0 border border-sky-100 dark:border-sky-900/40">
-                                            {{ strtoupper(substr($req->student->name, 0, 1)) }}
+                            @if(isset($pendingRequests))
+                                @forelse ($pendingRequests as $req)
+                                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-300 font-bold flex items-center justify-center shrink-0 border border-sky-100 dark:border-sky-900/40">
+                                                {{ strtoupper(substr($req->student?->name ?? 'S', 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{{ $req->student?->name ?? 'Siswa' }}</p>
+                                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Kelas: <span class="font-semibold text-slate-700 dark:text-slate-300">{{ $req->student?->schoolClass?->name ?? '-' }}</span></p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p class="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{{ $req->student->name }}</p>
-                                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Kelas: <span class="font-semibold text-slate-700 dark:text-slate-300">{{ $req->student->schoolClass->name ?? '-' }}</span></p>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                                            <span class="material-icons text-xs text-slate-400">date_range</span>
+                                            <span>{{ $req->start_date ? $req->start_date->format('d M Y') : '-' }} - {{ $req->end_date ? $req->end_date->format('d M Y') : '-' }}</span>
                                         </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
-                                        <span class="material-icons text-xs text-slate-400">date_range</span>
-                                        <span>{{ $req->start_date->format('d M Y') }} - {{ $req->end_date->format('d M Y') }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase {{ $req->type == 'sakit' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300' }}">
-                                            {{ $req->type }}
-                                        </span>
-                                    </div>
-                                    <p class="text-xs text-slate-600 dark:text-slate-400 max-w-sm">{{ $req->reason }}</p>
-                                    @if($req->attachment)
-                                        <a href="{{ asset('storage/' . $req->attachment) }}" target="_blank" 
-                                           class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline mt-1.5">
-                                            <span class="material-icons text-xs">attachment</span>
-                                            <span>Lihat Dokumen / Surat</span>
-                                        </a>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 relative text-center">
-                                    <div class="flex items-center justify-center gap-2" x-data="{ showRejectForm: false }">
-                                        <form action="{{ route('admin.leave_requests.approve', $req) }}" method="POST" onsubmit="return confirm('Anda yakin ingin menyetujui pengajuan izin ini?');">
-                                            @csrf
-                                            <button type="submit" 
-                                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs transition-all active:scale-95">
-                                                <span class="material-icons text-sm">check</span>
-                                                <span>Setujui</span>
-                                            </button>
-                                        </form>
-                                        
-                                        <button @click="showRejectForm = !showRejectForm" 
-                                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-900/40 text-xs font-bold transition-all active:scale-95">
-                                            <span class="material-icons text-sm">close</span>
-                                            <span>Tolak</span>
-                                        </button>
-
-                                        <div x-show="showRejectForm" @click.away="showRejectForm = false" 
-                                             class="absolute right-6 top-12 w-72 bg-white dark:bg-slate-850 p-4 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-30 text-left" 
-                                             style="display: none;" x-transition>
-                                            <form action="{{ route('admin.leave_requests.reject', $req) }}" method="POST">
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase {{ $req->type == 'sakit' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300' }}">
+                                                {{ $req->type }}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-slate-600 dark:text-slate-400 max-w-sm">{{ $req->reason }}</p>
+                                        @if($req->attachment)
+                                            <a href="{{ asset('storage/' . $req->attachment) }}" target="_blank" 
+                                               class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline mt-1.5">
+                                                <span class="material-icons text-xs">attachment</span>
+                                                <span>Lihat Dokumen / Surat</span>
+                                            </a>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 relative text-center">
+                                        <div class="flex items-center justify-center gap-2" x-data="{ showRejectForm: false }">
+                                            <form action="{{ route('admin.leave_requests.approve', $req) }}" method="POST" onsubmit="return confirm('Anda yakin ingin menyetujui pengajuan izin ini?');">
                                                 @csrf
-                                                <label class="text-xs font-bold text-slate-800 dark:text-white block mb-1">Alasan Penolakan</label>
-                                                <input type="text" name="rejection_reason" 
-                                                       class="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700" 
-                                                       placeholder="Tulis alasan singkat..." required />
-                                                <div class="flex justify-end gap-2 mt-3">
-                                                    <button type="button" @click="showRejectForm = false" class="px-2.5 py-1 text-xs font-bold text-slate-500">Batal</button>
-                                                    <button type="submit" class="px-3 py-1 rounded-lg bg-rose-600 text-white text-xs font-bold shadow-xs">Kirim Tolak</button>
-                                                </div>
+                                                <button type="submit" 
+                                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs transition-all active:scale-95">
+                                                    <span class="material-icons text-sm">check</span>
+                                                    <span>Setujui</span>
+                                                </button>
                                             </form>
+                                            
+                                            <button @click="showRejectForm = !showRejectForm" 
+                                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-900/40 text-xs font-bold transition-all active:scale-95">
+                                                <span class="material-icons text-sm">close</span>
+                                                <span>Tolak</span>
+                                            </button>
+
+                                            <div x-show="showRejectForm" @click.away="showRejectForm = false" 
+                                                 class="absolute right-6 top-12 w-72 bg-white dark:bg-slate-850 p-4 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-30 text-left" 
+                                                 style="display: none;" x-transition>
+                                                <form action="{{ route('admin.leave_requests.reject', $req) }}" method="POST">
+                                                    @csrf
+                                                    <label class="text-xs font-bold text-slate-800 dark:text-white block mb-1">Alasan Penolakan</label>
+                                                    <input type="text" name="rejection_reason" 
+                                                           class="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-white" 
+                                                           placeholder="Tulis alasan singkat..." required />
+                                                    <div class="flex justify-end gap-2 mt-3">
+                                                        <button type="button" @click="showRejectForm = false" class="px-2.5 py-1 text-xs font-bold text-slate-500">Batal</button>
+                                                        <button type="submit" class="px-3 py-1 rounded-lg bg-rose-600 text-white text-xs font-bold shadow-xs">Kirim Tolak</button>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="4" class="px-6 py-10 text-center text-xs text-slate-400 italic">
-                                    Tidak ada pengajuan izin yang sedang menunggu proses saat ini.
-                                </td>
-                            </tr>
-                            @endforelse
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="px-6 py-10 text-center text-xs text-slate-400 italic">
+                                        Tidak ada pengajuan izin yang sedang menunggu proses saat ini.
+                                    </td>
+                                </tr>
+                                @endforelse
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -657,43 +681,47 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                            @forelse ($processedRequests as $req)
-                            <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors">
-                                <td class="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
-                                    {{ $req->student->name ?? '-' }}
-                                </td>
-                                <td class="px-5 py-3.5 font-semibold">
-                                    {{ $req->start_date->format('d M Y') }}
-                                </td>
-                                <td class="px-5 py-3.5">
-                                    @if ($req->status == 'approved')
-                                        <span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Disetujui
-                                        </span>
-                                    @elseif ($req->status == 'rejected')
-                                        <span class="inline-flex items-center gap-1 bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Ditolak
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-5 py-3.5 text-slate-500 dark:text-slate-400 font-medium">
-                                    {{ $req->approver->name ?? '-' }}
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="4" class="px-5 py-8 text-center text-xs text-slate-400 italic">
-                                    Belum ada riwayat pengajuan izin orang tua yang diproses.
-                                </td>
-                            </tr>
-                            @endforelse
+                            @if(isset($processedRequests))
+                                @forelse ($processedRequests as $req)
+                                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors">
+                                    <td class="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
+                                        {{ $req->student?->name ?? 'Siswa' }}
+                                    </td>
+                                    <td class="px-5 py-3.5 font-semibold">
+                                        {{ $req->start_date ? $req->start_date->format('d M Y') : '-' }}
+                                    </td>
+                                    <td class="px-5 py-3.5">
+                                        @if ($req->status == 'approved')
+                                            <span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Disetujui
+                                            </span>
+                                        @elseif ($req->status == 'rejected')
+                                            <span class="inline-flex items-center gap-1 bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Ditolak
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-5 py-3.5 text-slate-500 dark:text-slate-400 font-medium">
+                                        {{ $req->approver?->name ?? '-' }}
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="px-5 py-8 text-center text-xs text-slate-400 italic">
+                                        Belum ada riwayat pengajuan izin orang tua yang diproses.
+                                    </td>
+                                </tr>
+                                @endforelse
+                            @endif
                         </tbody>
                     </table>
                 </div>
 
-                <div class="p-4 border-t border-slate-100 dark:border-slate-800">
-                    {{ $processedRequests->links() }}
-                </div>
+                @if(isset($processedRequests))
+                    <div class="p-4 border-t border-slate-100 dark:border-slate-800">
+                        {{ $processedRequests->links() }}
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -747,9 +775,11 @@
                                 <select x-model="selectedClassId" @change="loadStudentsByClass($event.target.value)" 
                                         class="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500">
                                     <option value="">-- Pilih Kelas --</option>
-                                    @foreach($classes as $cls)
-                                        <option value="{{ $cls->id }}">{{ $cls->name }} ({{ $cls->students->count() }} siswa)</option>
-                                    @endforeach
+                                    @if(isset($classes))
+                                        @foreach($classes as $cls)
+                                            <option value="{{ $cls->id }}">{{ $cls->name }} ({{ $cls->students->count() }} siswa)</option>
+                                        @endforeach
+                                    @endif
                                 </select>
                             </div>
                             

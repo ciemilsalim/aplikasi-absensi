@@ -27,8 +27,11 @@ class LeaveRequestController extends Controller
         // 1. Ambil pengajuan dari orang tua yang masih 'pending'
         $pendingRequests = LeaveRequest::where('status', 'pending')
             ->where(function($q) {
-                $q->whereNull('submission_source')
-                  ->orWhere('submission_source', 'aplikasi_ortu');
+                $q->whereNull('created_by')
+                  ->where(function($sq) {
+                      $sq->whereNull('submission_source')
+                        ->orWhere('submission_source', 'aplikasi_ortu');
+                  });
             })
             ->with(['student.schoolClass', 'parent'])
             ->oldest()
@@ -37,7 +40,10 @@ class LeaveRequestController extends Controller
         // 2. Ambil daftar Intervensi Manual oleh Admin/TU (terbaru)
         $manualInterventionsQuery = LeaveRequest::where(function($q) {
                 $q->whereNotNull('created_by')
-                  ->orWhereNotIn('submission_source', ['aplikasi_ortu']);
+                  ->orWhere(function($sq) {
+                      $sq->whereNotNull('submission_source')
+                        ->where('submission_source', '!=', 'aplikasi_ortu');
+                  });
             })
             ->with(['student.schoolClass', 'creator', 'approver'])
             ->latest();
@@ -182,10 +188,10 @@ class LeaveRequestController extends Controller
         return response()->json([
             'id' => $leaveRequest->id,
             'student_id' => $leaveRequest->student_id,
-            'student_name' => $leaveRequest->student->name,
-            'class_name' => $leaveRequest->student->schoolClass->name ?? '-',
-            'start_date' => $leaveRequest->start_date->format('Y-m-d'),
-            'end_date' => $leaveRequest->end_date->format('Y-m-d'),
+            'student_name' => $leaveRequest->student?->name ?? 'Siswa',
+            'class_name' => $leaveRequest->student?->schoolClass?->name ?? '-',
+            'start_date' => $leaveRequest->start_date ? $leaveRequest->start_date->format('Y-m-d') : '',
+            'end_date' => $leaveRequest->end_date ? $leaveRequest->end_date->format('Y-m-d') : '',
             'type' => $leaveRequest->type,
             'submission_source' => $leaveRequest->submission_source ?? 'whatsapp',
             'reason' => $leaveRequest->reason,
@@ -249,7 +255,7 @@ class LeaveRequestController extends Controller
             Storage::disk('public')->delete($leaveRequest->attachment);
         }
 
-        $studentName = $leaveRequest->student->name ?? 'Siswa';
+        $studentName = $leaveRequest->student?->name ?? 'Siswa';
         $leaveRequest->delete();
 
         return redirect()->route('admin.leave_requests.index')
