@@ -809,11 +809,14 @@
 
                             <div x-show="!isLoadingStudents && studentsInClass.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                                 <template x-for="std in studentsInClass" :key="std.id">
-                                    <label :class="selectedStudentIds.includes(std.id) ? 'bg-sky-50 dark:bg-sky-950/60 border-sky-300 dark:border-sky-800' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'" 
+                                    <label :class="selectedStudentIds.includes(std.id) ? 'bg-sky-50 dark:bg-sky-950/60 border-sky-300 dark:border-sky-800 ring-1 ring-sky-400/30' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'" 
                                            class="flex items-center gap-2.5 p-2 rounded-xl border cursor-pointer hover:border-sky-400 transition-all text-xs">
                                         <input type="checkbox" name="student_ids[]" :value="std.id" x-model="selectedStudentIds" 
                                                class="rounded border-slate-300 dark:border-slate-700 text-sky-600 focus:ring-sky-500/20" />
-                                        <span class="font-bold text-slate-800 dark:text-slate-200 truncate" x-text="std.name"></span>
+                                        <div class="flex items-center gap-1.5 min-w-0">
+                                            <span class="font-bold text-slate-800 dark:text-slate-200 truncate" x-text="std.name"></span>
+                                            <span x-show="std.nis" class="text-[10px] text-slate-400 shrink-0" x-text="'(' + std.nis + ')'"></span>
+                                        </div>
                                     </label>
                                 </template>
                             </div>

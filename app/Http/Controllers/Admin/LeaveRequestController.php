@@ -52,7 +52,7 @@ class LeaveRequestController extends Controller
             $search = $request->search;
             $manualInterventionsQuery->whereHas('student', function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%");
+                  ->orWhere('nis', 'like', "%{$search}%");
             });
         }
 
@@ -106,16 +106,15 @@ class LeaveRequestController extends Controller
         }
 
         $students = Student::where('school_class_id', $classId)
-            ->select('id', 'name', 'nisn', 'photo', 'gender')
+            ->select('id', 'name', 'nis', 'photo')
             ->orderBy('name', 'asc')
             ->get()
             ->map(function($student) {
                 return [
                     'id' => $student->id,
                     'name' => $student->name,
-                    'nisn' => $student->nisn,
+                    'nis' => $student->nis,
                     'photo_url' => $student->photo_url,
-                    'gender' => $student->gender,
                 ];
             });
 
