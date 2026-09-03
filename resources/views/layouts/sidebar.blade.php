@@ -583,12 +583,12 @@
                     @if(auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
                     @php $isAdminLeaveActive = request()->routeIs('admin.leave_requests.*'); @endphp
                     <li>
-                        <a href="{{ route('admin.leave_requests.index') }}" :title="sidebarCollapsed ? 'Pengajuan Izin Siswa' : ''" 
+                        <a href="{{ route('admin.leave_requests.index') }}" :title="sidebarCollapsed ? 'Izin & Intervensi Siswa' : ''" 
                            class="{{ $isAdminLeaveActive ? 'bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300 font-bold border border-amber-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-amber-600 hover:bg-amber-50/50 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
                            :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
                             <span class="flex gap-x-3 items-center">
                                 <span class="material-icons text-xl shrink-0 text-amber-500">assignment_turned_in</span>
-                                <span x-show="!sidebarCollapsed" class="truncate">Pengajuan Izin</span>
+                                <span x-show="!sidebarCollapsed" class="truncate">Izin & Intervensi Siswa</span>
                             </span>
                             @if(isset($pendingLeaveRequestsCount) && $pendingLeaveRequestsCount > 0)
                                 <span x-show="!sidebarCollapsed" class="inline-flex items-center justify-center h-4.5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-xs">{{ $pendingLeaveRequestsCount }}</span>

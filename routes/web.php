@@ -192,14 +192,23 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         }
     );
 
+    // Pengajuan & Intervensi Izin Siswa (Dapat diakses oleh Admin & Tata Usaha / Operator)
+    Route::middleware(['role:admin,operator,tu,tata_usaha'])->group(
+        function () {
+            Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
+            Route::get('/leave-requests/students-by-class', [AdminLeaveRequestController::class, 'studentsByClass'])->name('leave_requests.students_by_class');
+            Route::post('/leave-requests/manual', [AdminLeaveRequestController::class, 'storeManual'])->name('leave_requests.store_manual');
+            Route::get('/leave-requests/{leaveRequest}/edit', [AdminLeaveRequestController::class, 'edit'])->name('leave_requests.edit');
+            Route::put('/leave-requests/{leaveRequest}', [AdminLeaveRequestController::class, 'update'])->name('leave_requests.update');
+            Route::delete('/leave-requests/{leaveRequest}', [AdminLeaveRequestController::class, 'destroy'])->name('leave_requests.destroy');
+            Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
+            Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
+        }
+    );
+
     // Rute yang HANYA bisa diakses oleh Admin (Tetap Aktif)
     Route::middleware(['role:admin'])->group(
         function () {
-            // Pengajuan Izin
-            Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
-            Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
-            Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
-
             // Obrolan Admin
             Route::get('/chat/{selectedParent?}', [AdminChatController::class, 'index'])->name('chat.index');
             Route::post('/chat/conversations/{conversation}', [AdminChatController::class, 'storeMessage'])->name('chat.store_message');
