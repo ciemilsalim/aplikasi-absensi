@@ -834,7 +834,10 @@ class DashboardController extends Controller
         }
 
         $class = $teacher->homeroomClass;
-        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $students = $class->students()->orderBy('name')->get();
+        if ($students->isEmpty()) {
+            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        }
         $studentIds = $students->pluck('id');
 
         $request->validate([
@@ -926,7 +929,10 @@ class DashboardController extends Controller
         }
 
         $class = $teacher->homeroomClass;
-        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $students = $class->students()->orderBy('name')->get();
+        if ($students->isEmpty()) {
+            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        }
         $studentIds = $students->pluck('id');
 
         $request->validate([
@@ -1121,13 +1127,29 @@ class DashboardController extends Controller
             ];
         }
 
-        $students = Student::where('school_class_id', $class->id)
+        $students = $class->students()
             ->with(['attendances' => function ($query) use ($year, $months) {
                 $query->whereYear('attendance_time', $year)
                       ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                if (session('active_semester_id')) {
+                    $query->where('semester_id', session('active_semester_id'));
+                }
             }])
             ->orderBy('name')
             ->get();
+
+        if ($students->isEmpty()) {
+            $students = Student::where('school_class_id', $class->id)
+                ->with(['attendances' => function ($query) use ($year, $months) {
+                    $query->whereYear('attendance_time', $year)
+                          ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                    if (session('active_semester_id')) {
+                        $query->where('semester_id', session('active_semester_id'));
+                    }
+                }])
+                ->orderBy('name')
+                ->get();
+        }
 
         $reportData = $students->map(function ($student) use ($months, $trimesterMap, $year) {
             $studentData = [
@@ -1275,7 +1297,10 @@ class DashboardController extends Controller
         }
 
         $class = $teacher->homeroomClass;
-        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $students = $class->students()->orderBy('name')->get();
+        if ($students->isEmpty()) {
+            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        }
 
         return view('teacher.reports.charts', compact('class', 'students'));
     }
@@ -1321,19 +1346,33 @@ class DashboardController extends Controller
             }
         }
 
-        $studentsQuery = Student::where('school_class_id', $class->id);
         if ($params['target_type'] === 'student' && !empty($params['student_id'])) {
-            $studentsQuery->where('id', $params['student_id']);
-        }
+            $students = Student::where('id', $params['student_id'])->with(['attendances' => function ($query) use ($year, $months) {
+                $query->whereYear('attendance_time', $year)
+                      ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                if (session('active_semester_id')) {
+                    $query->where('semester_id', session('active_semester_id'));
+                }
+            }])->get();
+        } else {
+            $students = $class->students()->with(['attendances' => function ($query) use ($year, $months) {
+                $query->whereYear('attendance_time', $year)
+                      ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                if (session('active_semester_id')) {
+                    $query->where('semester_id', session('active_semester_id'));
+                }
+            }])->get();
 
-        // Ambil data absensi
-        $students = $studentsQuery->with(['attendances' => function ($query) use ($year, $months) {
-            $query->whereYear('attendance_time', $year)
-                  ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
-            if (session('active_semester_id')) {
-                $query->where('semester_id', session('active_semester_id'));
+            if ($students->isEmpty()) {
+                $students = Student::where('school_class_id', $class->id)->with(['attendances' => function ($query) use ($year, $months) {
+                    $query->whereYear('attendance_time', $year)
+                          ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                    if (session('active_semester_id')) {
+                        $query->where('semester_id', session('active_semester_id'));
+                    }
+                }])->get();
             }
-        }])->get();
+        }
 
         $monthlyDataArray = [];
         $totalSum = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
@@ -1434,7 +1473,10 @@ class DashboardController extends Controller
         }
 
         $class = $teacher->homeroomClass;
-        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $students = $class->students()->orderBy('name')->get();
+        if ($students->isEmpty()) {
+            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        }
         $studentIds = $students->pluck('id');
 
         $request->validate([
