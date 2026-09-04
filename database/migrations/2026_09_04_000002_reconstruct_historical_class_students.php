@@ -4,8 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use App\Models\SchoolClass;
 use App\Models\Student;
-use App\Models\TeachingAssignment;
-use App\Models\Schedule;
+use App\Models\AcademicYear;
+use App\Models\Semester;
 
 return new class extends Migration
 {
@@ -16,65 +16,100 @@ return new class extends Migration
     {
         $now = now();
 
-        // 1. Backfill tabel school_classes, teaching_assignments, dan schedules jika academic_year_id masih NULL
+        // 1. Dapatkan Tahun Ajaran 2025/2026 secara dinamis
+        $year2025 = AcademicYear::where('name', 'like', '%2025%')->first() ?? AcademicYear::orderBy('id')->first();
+        if (!$year2025) {
+            return;
+        }
+
+        $semesters2025 = Semester::where('academic_year_id', $year2025->id)->get();
+        if ($semesters2025->isEmpty()) {
+            return;
+        }
+
+        // 2. Backfill tabel school_classes, teaching_assignments, dan schedules jika academic_year_id masih NULL
         DB::table('school_classes')
             ->whereNull('academic_year_id')
             ->where('created_at', '<', '2026-07-01')
             ->update([
-                'academic_year_id' => 1,
-                'semester_id' => 1,
+                'academic_year_id' => $year2025->id,
+                'semester_id' => $semesters2025->first()->id,
             ]);
 
         DB::table('teaching_assignments')
             ->whereNull('academic_year_id')
             ->where('created_at', '<', '2026-07-01')
             ->update([
-                'academic_year_id' => 1,
-                'semester_id' => 1,
+                'academic_year_id' => $year2025->id,
+                'semester_id' => $semesters2025->first()->id,
             ]);
 
         DB::table('schedules')
             ->whereNull('academic_year_id')
             ->where('created_at', '<', '2026-07-01')
             ->update([
-                'academic_year_id' => 1,
-                'semester_id' => 1,
+                'academic_year_id' => $year2025->id,
+                'semester_id' => $semesters2025->first()->id,
             ]);
 
-        // 2. Pastikan kelas-kelas historis Tahun Ajaran 2025/2026 tersedia di database
-        $historicalClasses = [
-            1 => ['name' => 'Kelas 7A', 'level_id' => 1, 'teacher_id' => 2],
-            2 => ['name' => 'Kelas 9A', 'level_id' => 3, 'teacher_id' => 1],
-            3 => ['name' => 'Kelas 8A', 'level_id' => 2, 'teacher_id' => 4],
-            4 => ['name' => 'Kelas 7B', 'level_id' => 1, 'teacher_id' => 3],
-            5 => ['name' => 'Kelas 7C', 'level_id' => 1, 'teacher_id' => 5],
-            7 => ['name' => 'X-1', 'level_id' => 1, 'teacher_id' => 15],
-            8 => ['name' => 'X-2', 'level_id' => 1, 'teacher_id' => 16],
-            9 => ['name' => 'XI-1', 'level_id' => 2, 'teacher_id' => 17],
+        // 3. Mapping dinamis kelas ke daftar NIS siswa
+        $classMapping = [
+            'Kelas 9A' => ['1200', '1201', '1202', '1203', '1204', '1205', '1206', '1207'],
+            'Kelas 8A' => ['1208', '1209', '1210', '1211', '1212', '1213', '1214', '1215'],
+            'Kelas 7B' => ['1216', '1217', '1218', '1219', '1220', '1221', '1222', '1223', '1224', '1225', '1226', '1227', '1228'],
+            'Kelas 7A' => ['1001', '1002', '1003', '1004', '1005', '1010', '1301', '1400', '1401', '20240027', '20240028', '20240029', '20240030', '20240031', '20240032', '20240033', '20240034', '20240035', '20240036', '20240037', '20240038', '20240039', '20240040', '20240041', '20240042', '20240043', '20240044', '20240045', '20240046', '20240047', '20240048', '20240049', '20240050'],
+            'Kelas 7C' => ['20240001', '20240002', '20240003', '20240004', '20240005', '20240006', '20240007', '20240008', '20240009', '20240010', '20240011', '20240012', '20240013', '20240014', '20240015', '20240016', '20240017', '20240018', '20240019', '20240020', '20240021', '20240022', '20240023', '20240024', '20240025', '20240026', '3121539431', '0127573197', '0123309910', '0124534914', '0128316927', '0114768421', '0117970706'],
+            'X-1' => ['20250101', '20250102', '20250103', '20250104', '20250105', '20250106', '20250107', '20250108', '20250109', '20250110'],
+            'X-2' => ['20250201', '20250202', '20250203', '20250204', '20250205', '20250206', '20250207', '20250208', '20250209', '20250210'],
+            'XI-1' => ['20250301', '20250302', '20250303', '20250304', '20250305', '20250306', '20250307', '20250308', '20250309', '20250310'],
         ];
 
-        foreach ($historicalClasses as $id => $classData) {
-            $existingClass = DB::table('school_classes')->where('id', $id)->first();
-            if (!$existingClass) {
-                DB::table('school_classes')->insert([
-                    'id' => $id,
-                    'name' => $classData['name'],
-                    'level_id' => $classData['level_id'],
-                    'teacher_id' => $classData['teacher_id'],
-                    'academic_year_id' => 1,
-                    'semester_id' => 1,
-                    'created_at' => $now,
-                    'updated_at' => $now,
+        foreach ($classMapping as $className => $nisList) {
+            $class = SchoolClass::withoutGlobalScopes()
+                ->where('name', $className)
+                ->where(function($q) use ($year2025) {
+                    $q->where('academic_year_id', $year2025->id)
+                      ->orWhereNull('academic_year_id')
+                      ->orWhere('created_at', '<', '2026-07-01');
+                })
+                ->first();
+
+            if (!$class) {
+                $class = SchoolClass::create([
+                    'name' => $className,
+                    'level_id' => str_contains($className, '7') || str_contains($className, 'X-') ? 1 : (str_contains($className, '8') || str_contains($className, 'XI-') ? 2 : 3),
+                    'academic_year_id' => $year2025->id,
+                    'semester_id' => $semesters2025->first()->id,
                 ]);
             } else {
-                DB::table('school_classes')->where('id', $id)->update([
-                    'academic_year_id' => 1,
-                    'semester_id' => 1,
-                ]);
+                if ($class->academic_year_id != $year2025->id) {
+                    DB::table('school_classes')->where('id', $class->id)->update(['academic_year_id' => $year2025->id]);
+                }
+            }
+
+            $students = Student::whereIn('nis', $nisList)
+                ->orWhere('school_class_id', $class->id)
+                ->get();
+
+            foreach ($semesters2025 as $sem) {
+                foreach ($students as $st) {
+                    DB::table('class_student')->updateOrInsert(
+                        [
+                            'student_id' => $st->id,
+                            'semester_id' => $sem->id,
+                        ],
+                        [
+                            'school_class_id' => $class->id,
+                            'academic_year_id' => $year2025->id,
+                            'updated_at' => $now,
+                            'created_at' => $now,
+                        ]
+                    );
+                }
             }
         }
 
-        // 3. Sinkronisasi schedules.school_class_id dari teaching_assignments
+        // 4. Sinkronisasi schedules.school_class_id dari teaching_assignments
         $schedules = DB::table('schedules as s')
             ->join('teaching_assignments as ta', 's.teaching_assignment_id', '=', 'ta.id')
             ->whereNull('s.school_class_id')
@@ -86,44 +121,6 @@ return new class extends Migration
                 ->where('id', $item->schedule_id)
                 ->update(['school_class_id' => $item->school_class_id]);
         }
-
-        // 4. Rekonstruksi relasi siswa ke kelas (class_student) untuk Tahun 2025/2026
-        $classStudentsYear1 = [
-            1 => [1, 2, 3, 5, 6, 43, 44, 45, 72, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95],
-            2 => [7, 8, 9, 10, 11, 12, 13, 14],
-            3 => [15, 16, 17, 18, 19, 20, 21, 22],
-            4 => [23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35],
-            5 => [46, 47, 48, 49, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 96, 97, 98, 99, 100, 101, 102],
-            7 => [125, 126, 127, 128, 129, 130, 131, 132, 133, 134],
-            8 => [135, 136, 137, 138, 139, 140, 141, 142, 143, 144],
-            9 => [145, 146, 147, 148, 149, 150, 151, 152, 153, 154],
-        ];
-
-        $semestersYear1 = [1, 2];
-
-        foreach ($semestersYear1 as $semesterId) {
-            foreach ($classStudentsYear1 as $classId => $studentIds) {
-                foreach ($studentIds as $studentId) {
-                    $studentExists = DB::table('students')->where('id', $studentId)->exists();
-                    if (!$studentExists) {
-                        continue;
-                    }
-
-                    DB::table('class_student')->updateOrInsert(
-                        [
-                            'student_id' => $studentId,
-                            'semester_id' => $semesterId,
-                        ],
-                        [
-                            'school_class_id' => $classId,
-                            'academic_year_id' => 1,
-                            'updated_at' => $now,
-                            'created_at' => $now,
-                        ]
-                    );
-                }
-            }
-        }
     }
 
     /**
@@ -131,6 +128,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::table('class_student')->whereIn('semester_id', [1, 2])->delete();
+        $year2025 = AcademicYear::where('name', 'like', '%2025%')->first();
+        if ($year2025) {
+            DB::table('class_student')->where('academic_year_id', $year2025->id)->delete();
+        }
     }
 };

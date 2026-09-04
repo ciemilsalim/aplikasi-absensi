@@ -291,6 +291,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'students'])->name('extracurriculars.students');
             Route::post('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'assignStudents'])->name('extracurriculars.assign_students');
             Route::delete('extracurriculars/{extracurricular}/students/{student}', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'removeStudent'])->name('extracurriculars.remove_student');
+
+            // Sinkronisasi Database Otomatis HPanel / Multi-Semester
+            Route::get('/sync-database-hpanel', function() {
+                require public_path('sync-hpanel.php');
+            })->name('admin.sync_database_hpanel');
         }
     );
 
