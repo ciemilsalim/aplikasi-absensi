@@ -108,8 +108,22 @@ class SchoolClassController extends Controller
 
     public function showAssignForm(SchoolClass $school_class)
     {
+        $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+
         $studentsInClass = $school_class->students()->orderBy('name')->get();
-        $studentsWithoutClass = Student::whereNull('school_class_id')->orderBy('name')->get();
+
+        // Cari ID siswa yang sudah terdaftar di kelas manapun pada semester aktif ini
+        $assignedStudentIds = \Illuminate\Support\Facades\DB::table('class_student')
+            ->where('semester_id', $activeSemesterId)
+            ->pluck('student_id')
+            ->toArray();
+
+        // Tampilkan siswa yang belum memiliki kelas di semester ini (atau fallback whereNull school_class_id)
+        $studentsWithoutClass = Student::where(function($q) use ($assignedStudentIds) {
+                $q->whereNotIn('id', $assignedStudentIds);
+            })
+            ->orderBy('name')
+            ->get();
 
         return view('admin.classes.assign', [
             'class' => $school_class,
@@ -126,12 +140,44 @@ class SchoolClassController extends Controller
             'students_to_remove' => 'nullable|array',
         ]);
 
-        if ($request->has('students_to_add')) {
-            Student::whereIn('id', $request->students_to_add)->update(['school_class_id' => $request->school_class_id]);
+        $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+        $activeSemester = \App\Models\Semester::find($activeSemesterId);
+        $activeYearId = $activeSemester?->academic_year_id ?? \App\Models\Semester::where('is_active', true)->value('academic_year_id');
+        $isCurrentActivePeriod = $activeSemester?->is_active ?? true;
+
+        $now = now();
+
+        if ($request->has('students_to_add') && !empty($request->students_to_add)) {
+            foreach ($request->students_to_add as $studentId) {
+                \Illuminate\Support\Facades\DB::table('class_student')->updateOrInsert(
+                    [
+                        'student_id' => $studentId,
+                        'semester_id' => $activeSemesterId,
+                    ],
+                    [
+                        'school_class_id' => $request->school_class_id,
+                        'academic_year_id' => $activeYearId,
+                        'updated_at' => $now,
+                        'created_at' => $now,
+                    ]
+                );
+            }
+
+            if ($isCurrentActivePeriod) {
+                Student::whereIn('id', $request->students_to_add)->update(['school_class_id' => $request->school_class_id]);
+            }
         }
 
-        if ($request->has('students_to_remove')) {
-            Student::whereIn('id', $request->students_to_remove)->update(['school_class_id' => null]);
+        if ($request->has('students_to_remove') && !empty($request->students_to_remove)) {
+            \Illuminate\Support\Facades\DB::table('class_student')
+                ->where('school_class_id', $request->school_class_id)
+                ->where('semester_id', $activeSemesterId)
+                ->whereIn('student_id', $request->students_to_remove)
+                ->delete();
+
+            if ($isCurrentActivePeriod) {
+                Student::whereIn('id', $request->students_to_remove)->update(['school_class_id' => null]);
+            }
         }
 
         return redirect()->route('admin.classes.assign', $request->school_class_id)->with('success', 'Data siswa di kelas berhasil diperbarui.');

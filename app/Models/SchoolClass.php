@@ -10,14 +10,41 @@ class SchoolClass extends Model
 {
     use HasFactory, \App\Traits\ScopedByAcademicPeriod, SoftDeletes;
     
-    // Asumsi Anda memiliki kolom 'level_id' di tabel 'school_classes'
     protected $fillable = ['name', 'teacher_id', 'level_id', 'semester_id', 'academic_year_id']; 
+
+    /**
+     * Override scope agar kelas pada tahun ajaran yang dipilih otomatis aktif
+     * di seluruh semester dalam tahun ajaran tersebut (Ganjil & Genap)
+     */
+    protected static function bootScopedByAcademicPeriod()
+    {
+        static::addGlobalScope('academic_period', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            if (session()->has('active_academic_year_id')) {
+                $builder->where('school_classes.academic_year_id', session('active_academic_year_id'));
+            } elseif (session()->has('active_semester_id')) {
+                $builder->where(function ($q) {
+                    $q->where('school_classes.semester_id', session('active_semester_id'))
+                      ->orWhere('school_classes.academic_year_id', session('active_academic_year_id'));
+                });
+            }
+        });
+
+        static::creating(function ($model) {
+            if (session()->has('active_semester_id') && empty($model->semester_id)) {
+                $model->semester_id = session('active_semester_id');
+                $model->academic_year_id = session('active_academic_year_id');
+            }
+        });
+    }
 
     public function students() 
     { 
-        if (session()->has('active_semester_id') && \Illuminate\Support\Facades\Schema::hasTable('class_student')) {
+        $activeSemesterId = session('active_semester_id') 
+            ?? \App\Models\Semester::where('is_active', true)->value('id');
+
+        if ($activeSemesterId && \Illuminate\Support\Facades\Schema::hasTable('class_student')) {
             return $this->belongsToMany(Student::class, 'class_student')
-                        ->wherePivot('semester_id', session('active_semester_id'));
+                        ->wherePivot('semester_id', $activeSemesterId);
         }
         return $this->hasMany(Student::class, 'school_class_id'); 
     }

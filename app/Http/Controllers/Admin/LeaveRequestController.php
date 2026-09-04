@@ -105,20 +105,25 @@ class LeaveRequestController extends Controller
             return response()->json(['students' => []]);
         }
 
-        $students = Student::where('school_class_id', $classId)
-            ->select('id', 'name', 'nis', 'photo')
-            ->orderBy('name', 'asc')
-            ->get()
-            ->map(function($student) {
-                return [
-                    'id' => $student->id,
-                    'name' => $student->name,
-                    'nis' => $student->nis,
-                    'photo_url' => $student->photo_url,
-                ];
-            });
+        $schoolClass = SchoolClass::find($classId);
+        $students = collect();
+        if ($schoolClass) {
+            $students = $schoolClass->students()->orderBy('name', 'asc')->get();
+        }
+        if ($students->isEmpty()) {
+            $students = Student::where('school_class_id', $classId)->orderBy('name', 'asc')->get();
+        }
 
-        return response()->json(['students' => $students]);
+        $formatted = $students->map(function($student) {
+            return [
+                'id' => $student->id,
+                'name' => $student->name,
+                'nis' => $student->nis,
+                'photo_url' => $student->photo_url,
+            ];
+        });
+
+        return response()->json(['students' => $formatted]);
     }
 
     /**
