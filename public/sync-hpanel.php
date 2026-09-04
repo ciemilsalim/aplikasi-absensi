@@ -25,45 +25,102 @@ $stats = [
     'students_synced' => 0,
     'semesters_synced' => 0,
     'total_unique_students' => 0,
+    'locked_2026_students' => 0,
 ];
 
 try {
-    // 1. Dapatkan Seluruh Tahun Ajaran 2025/2026 (termasuk yang baru dibuat di hPanel)
-    $years2025 = AcademicYear::where('name', 'like', '%2025%')
+    // -------------------------------------------------------------
+    // 1. Identifikasi Tahun Ajaran 2025/2026 & KUNCI TOTAL TA. 2026/2027
+    // -------------------------------------------------------------
+    $year2025 = AcademicYear::where('name', 'like', '%2025%')
         ->orWhere('id', 1)
-        ->get();
+        ->first();
 
-    if ($years2025->isEmpty()) {
-        $years2025 = AcademicYear::orderBy('id')->take(1)->get();
+    if (!$year2025) {
+        $year2025 = AcademicYear::orderBy('id')->first();
     }
 
-    $year2025 = $years2025->first();
-    $year2026 = AcademicYear::where('name', 'like', '%2026%')->orderBy('id', 'desc')->first();
+    // Identifikasi Tahun Ajaran 2026/2027 (KUNCI TOTAL!)
+    $year2026 = AcademicYear::where('name', 'like', '%2026%')
+        ->where(function($q) use ($year2025) {
+            if ($year2025) {
+                $q->where('id', '!=', $year2025->id);
+            }
+        })
+        ->orderBy('id', 'desc')
+        ->first();
 
-    // Dapatkan semua semester untuk tahun 2025/2026 atau yang baru ditambahkan
-    $semesters2025 = Semester::whereIn('academic_year_id', $years2025->pluck('id'))
-        ->orWhere(function($q) {
-            $q->where('name', 'like', '%2025%')
-              ->orWhere('name', 'like', '%Ganjil%')
-              ->orWhere('name', 'like', '%Genap%');
+    $lockedYearId = $year2026?->id;
+
+    // Dapatkan Semester KHUSUS Tahun 2025/2026 (STRICT: tidak mencampur semester 2026/2027)
+    $semesters2025 = Semester::where('academic_year_id', $year2025->id)
+        ->where(function($q) use ($lockedYearId) {
+            if ($lockedYearId) {
+                $q->where('academic_year_id', '!=', $lockedYearId);
+            }
+            $q->where(function($sub) {
+                $sub->where('created_at', '<', '2026-07-01')
+                    ->orWhere('name', 'like', '%2025%');
+            });
         })
         ->get();
 
-    // Jika ada semester yang academic_year_id masih kosong, hubungkan ke year2025
-    foreach ($semesters2025 as $sem) {
-        if (!$sem->academic_year_id && $year2025) {
-            try {
-                DB::table('semesters')->where('id', $sem->id)->update(['academic_year_id' => $year2025->id]);
-                $sem->academic_year_id = $year2025->id;
-            } catch (\Throwable $e) {}
+    // Jika ada semester lama yang belum ber-academic_year_id tapi dibuat sebelum 2026-07-01
+    $orphanSemesters = Semester::whereNull('academic_year_id')
+        ->where('created_at', '<', '2026-07-01')
+        ->get();
+
+    foreach ($orphanSemesters as $osem) {
+        try {
+            DB::table('semesters')->where('id', $osem->id)->update(['academic_year_id' => $year2025->id]);
+            $osem->academic_year_id = $year2025->id;
+            if (!$semesters2025->contains('id', $osem->id)) {
+                $semesters2025->push($osem);
+            }
+        } catch (\Throwable $e) {}
+    }
+
+    // -------------------------------------------------------------
+    // 2. DETEKSI & KUNCI SISWA TA. 2026/2027 (Pencegahan Kontaminasi)
+    // -------------------------------------------------------------
+    // Siswa baru TA 2026/2027 yang masuk setelah 1 Juli 2026 atau data testing
+    $locked2026StudentIds = DB::table('students')
+        ->where(function($q) {
+            $q->where('created_at', '>=', '2026-07-01')
+              ->orWhere('nis', 'like', 'TEST%');
+        })
+        ->pluck('id')
+        ->toArray();
+
+    $stats['locked_2026_students'] = count($locked2026StudentIds);
+
+    // Pembersihan kontaminasi pivot class_student:
+    // Hapus siswa 2026/2027 yang tidak sengaja masuk ke TA 2025/2026
+    if (!empty($locked2026StudentIds)) {
+        DB::table('class_student')
+            ->where('academic_year_id', $year2025->id)
+            ->whereIn('student_id', $locked2026StudentIds)
+            ->delete();
+    }
+
+    // Hapus rekaman class_student yang menghubungkan semester 2026/2027 ke TA 2025/2026
+    if ($lockedYearId) {
+        $lockedSemIds = DB::table('semesters')->where('academic_year_id', $lockedYearId)->pluck('id')->toArray();
+        if (!empty($lockedSemIds)) {
+            DB::table('class_student')
+                ->where('academic_year_id', $year2025->id)
+                ->whereIn('semester_id', $lockedSemIds)
+                ->delete();
         }
     }
 
-    if ($year2025) {
+    if ($year2025 && $semesters2025->isNotEmpty()) {
         $stats['semesters_synced'] = $semesters2025->count();
         $sem1 = $semesters2025->first()?->id ?? 1;
 
-        // Daftar 13 Kelas Standar SMPN 1 Biau
+        // -------------------------------------------------------------
+        // 3. Daftar 13 Kelas Standar SMPN 1 Biau TA 2025/2026
+        // -------------------------------------------------------------
         $standardClasses = [
             // Kelas 7 (Tingkat 1)
             'Kelas 7A' => ['level_id' => 1, 'aliases' => ['7A', '7 A', 'VII A', 'VII-A']],
@@ -98,8 +155,12 @@ try {
             return $trimmed;
         };
 
-        // 2. Tangani tabel school_classes yang academic_year_id masih NULL secara aman
-        $nullClasses = DB::table('school_classes')->whereNull('academic_year_id')->get();
+        // Tangani kelas 2025/2026 yang academic_year_id masih NULL (TIDAK menyentuh kelas 2026/2027)
+        $nullClasses = DB::table('school_classes')
+            ->whereNull('academic_year_id')
+            ->where('created_at', '<', '2026-07-01')
+            ->get();
+
         foreach ($nullClasses as $nc) {
             $norm = $normalizeName($nc->name);
             $existingClass = DB::table('school_classes')
@@ -109,9 +170,9 @@ try {
                 ->first();
 
             if ($existingClass) {
-                DB::table('students')->where('school_class_id', $nc->id)->update(['school_class_id' => $existingClass->id]);
-                DB::table('teaching_assignments')->where('school_class_id', $nc->id)->update(['school_class_id' => $existingClass->id]);
-                DB::table('schedules')->where('school_class_id', $nc->id)->update(['school_class_id' => $existingClass->id]);
+                DB::table('students')->where('school_class_id', $nc->id)->whereNotIn('id', $locked2026StudentIds)->update(['school_class_id' => $existingClass->id]);
+                DB::table('teaching_assignments')->where('school_class_id', $nc->id)->where('academic_year_id', $year2025->id)->update(['school_class_id' => $existingClass->id]);
+                DB::table('schedules')->where('school_class_id', $nc->id)->where('academic_year_id', $year2025->id)->update(['school_class_id' => $existingClass->id]);
                 try {
                     DB::table('school_classes')->where('id', $nc->id)->delete();
                 } catch (\Throwable $e) {
@@ -128,28 +189,7 @@ try {
             }
         }
 
-        // Tangani teaching_assignments & schedules 2025/2026
-        try {
-            DB::table('teaching_assignments')
-                ->whereNull('academic_year_id')
-                ->where('created_at', '<', '2026-07-01')
-                ->update([
-                    'academic_year_id' => $year2025->id,
-                    'semester_id' => $sem1,
-                ]);
-        } catch (\Throwable $e) {}
-
-        try {
-            DB::table('schedules')
-                ->whereNull('academic_year_id')
-                ->where('created_at', '<', '2026-07-01')
-                ->update([
-                    'academic_year_id' => $year2025->id,
-                    'semester_id' => $sem1,
-                ]);
-        } catch (\Throwable $e) {}
-
-        // 3. Pastikan Semua 13 Kelas Standar Ada di Tahun Ajaran 2025/2026
+        // Pastikan Seluruh 13 Kelas Standar Ada di Tahun Ajaran 2025/2026
         $active2025Classes = []; // normalized_name => SchoolClass model
         foreach ($standardClasses as $className => $meta) {
             $class = SchoolClass::withoutGlobalScopes()
@@ -172,6 +212,7 @@ try {
                         }
                     })
                     ->whereNull('academic_year_id')
+                    ->where('created_at', '<', '2026-07-01')
                     ->first();
 
                 if ($class) {
@@ -194,7 +235,7 @@ try {
                 }
             }
 
-            // Normalisasi nama kelas ke format 'Kelas 7A', dll.
+            // Normalisasi nama kelas ke format standar 'Kelas 7A', dll.
             if ($class->name !== $className) {
                 try {
                     DB::table('school_classes')->where('id', $class->id)->update(['name' => $className]);
@@ -205,8 +246,9 @@ try {
             $active2025Classes[$className] = $class;
         }
 
-        // 4. Sinkronkan Wali Kelas (Homeroom Teachers)
-        // Hubungkan guru wali kelas berdasarkan data master guru
+        // -------------------------------------------------------------
+        // 4. Sinkronkan Wali Kelas (Homeroom Teachers) TA 2025/2026
+        // -------------------------------------------------------------
         $knownTeachers = [
             'Kelas 9A' => 'Elyana',
             'Kelas 8A' => 'Rosmini',
@@ -230,10 +272,22 @@ try {
             }
         }
 
-        // 5. Multi-Source Discovery Siswa ke Kelas 2025/2026 (Tanpa Hardcoded NIS)
+        // -------------------------------------------------------------
+        // 5. Multi-Source Discovery Siswa TA 2025/2026 (Definitif & Bersih)
+        // -------------------------------------------------------------
         $studentClassMap = []; // student_id => normalized_class_name
 
-        // Sumber A: student_class_histories
+        // A. COHORT KELAS 9A (NIS 1200..1228) - Seluruh 29 Siswa Binaan Ibu Elyana di 2025/2026
+        $s9aCohort = DB::table('students')
+            ->whereBetween('nis', ['1200', '1228'])
+            ->whereNotIn('id', $locked2026StudentIds)
+            ->pluck('id');
+
+        foreach ($s9aCohort as $sid) {
+            $studentClassMap[$sid] = 'Kelas 9A';
+        }
+
+        // B. Sumber: student_class_histories untuk TA 2025/2026
         if (Schema::hasTable('student_class_histories')) {
             $schRows = DB::table('student_class_histories as sch')
                 ->join('school_classes as sc', 'sch.school_class_id', '=', 'sc.id')
@@ -241,18 +295,21 @@ try {
                     $q->where('sch.academic_year_id', $year2025->id)
                       ->orWhere('sc.academic_year_id', $year2025->id);
                 })
+                ->whereNotIn('sch.student_id', $locked2026StudentIds)
                 ->select('sch.student_id', 'sc.name as class_name')
                 ->get();
 
             foreach ($schRows as $r) {
-                $norm = $normalizeName($r->class_name);
-                if (isset($standardClasses[$norm])) {
-                    $studentClassMap[$r->student_id] = $norm;
+                if (!isset($studentClassMap[$r->student_id])) {
+                    $norm = $normalizeName($r->class_name);
+                    if (isset($standardClasses[$norm])) {
+                        $studentClassMap[$r->student_id] = $norm;
+                    }
                 }
             }
         }
 
-        // Sumber B: subject_attendances tahun ajaran 2025/2026
+        // C. Sumber: subject_attendances 2025/2026
         if (Schema::hasTable('subject_attendances')) {
             $saRows = DB::table('subject_attendances as sa')
                 ->leftJoin('schedules as s', 'sa.schedule_id', '=', 's.id')
@@ -262,6 +319,7 @@ try {
                     $q->whereIn('sa.semester_id', $semesters2025->pluck('id'))
                       ->orWhereBetween('sa.created_at', ['2025-07-01', '2026-06-30']);
                 })
+                ->whereNotIn('sa.student_id', $locked2026StudentIds)
                 ->whereNotNull('sc.name')
                 ->select('sa.student_id', 'sc.name as class_name', DB::raw('count(*) as cnt'))
                 ->groupBy('sa.student_id', 'sc.name')
@@ -278,7 +336,7 @@ try {
             }
         }
 
-        // Sumber C: Presensi Harian (attendances) 2025/2026
+        // D. Sumber: Presensi Harian (attendances) 2025/2026
         if (Schema::hasTable('attendances')) {
             $attRows = DB::table('attendances as a')
                 ->join('students as st', 'a.student_id', '=', 'st.id')
@@ -287,6 +345,7 @@ try {
                     $q->whereIn('a.semester_id', $semesters2025->pluck('id'))
                       ->orWhereBetween('a.created_at', ['2025-07-01', '2026-06-30']);
                 })
+                ->whereNotIn('a.student_id', $locked2026StudentIds)
                 ->whereNotNull('sc.name')
                 ->select('a.student_id', 'sc.name as class_name')
                 ->distinct()
@@ -302,13 +361,11 @@ try {
             }
         }
 
-        // Sumber D: Siswa yang school_class_id-nya mengarah ke kelas 2025/2026
+        // E. Sumber: Siswa dengan school_class_id di kelas 2025/2026
         $directStudents = DB::table('students as st')
             ->join('school_classes as sc', 'st.school_class_id', '=', 'sc.id')
-            ->where(function($q) use ($year2025) {
-                $q->where('sc.academic_year_id', $year2025->id)
-                  ->orWhere('sc.created_at', '<', '2026-07-01');
-            })
+            ->where('sc.academic_year_id', $year2025->id)
+            ->whereNotIn('st.id', $locked2026StudentIds)
             ->select('st.id as student_id', 'sc.name as class_name')
             ->get();
 
@@ -321,64 +378,40 @@ try {
             }
         }
 
-        // Sumber E: Inferensi Kenaikan Kelas Historis (Grade Promotion Logic)
-        // Siswa aktif di 2026/2027:
-        // - Kelas 8[A-E] (2026/2027) => Berasal dari Kelas 7[A-E] di 2025/2026
-        // - Kelas 9[A-E] (2026/2027) => Berasal dari Kelas 8[A-E] di 2025/2026
-        $allCurrentStudents = DB::table('students as st')
-            ->leftJoin('school_classes as sc', 'st.school_class_id', '=', 'sc.id')
-            ->select('st.id as student_id', 'st.name', 'st.nis', 'st.status', 'sc.name as current_class_name')
-            ->get();
-
-        foreach ($allCurrentStudents as $st) {
-            if (isset($studentClassMap[$st->student_id])) {
-                continue;
-            }
-
-            if ($st->current_class_name) {
-                $currNorm = $normalizeName($st->current_class_name);
-                // Kelas 8 -> Kelas 7
-                if (preg_match('/Kelas 8([A-Ea-e])/i', $currNorm, $m)) {
-                    $prevClass = 'Kelas 7' . strtoupper($m[1]);
-                    if (isset($standardClasses[$prevClass])) {
-                        $studentClassMap[$st->student_id] = $prevClass;
-                    }
-                }
-                // Kelas 9 -> Kelas 8
-                elseif (preg_match('/Kelas 9([A-Ea-e])/i', $currNorm, $m)) {
-                    $prevClass = 'Kelas 8' . strtoupper($m[1]);
-                    if (isset($standardClasses[$prevClass])) {
-                        $studentClassMap[$st->student_id] = $prevClass;
-                    }
-                }
-                // Siswa yang masih di Kelas 9 pada 2025 (Alumni / Lulus / Riwayat 9)
-                elseif (preg_match('/Kelas 9([A-Ea-e])/i', $currNorm, $m) || in_array(strtolower($st->status ?? ''), ['lulus', 'graduated', 'alumni'])) {
-                    $target9 = 'Kelas 9' . (isset($m[1]) ? strtoupper($m[1]) : 'A');
-                    if (isset($standardClasses[$target9])) {
-                        $studentClassMap[$st->student_id] = $target9;
-                    }
-                }
-            }
-        }
-
-        // Sumber F: Siswa Alumni/Lulusan yang belum terpetakan dimasukkan ke Kelas 9A-9D
-        $unmappedAlumni = DB::table('students')
+        // F. Sumber: Siswa 2024xxxx (Cohort Tingkat 8 di 2025/2026)
+        $s2024 = DB::table('students')
+            ->where('nis', 'like', '2024%')
+            ->whereNotIn('id', $locked2026StudentIds)
             ->whereNotIn('id', array_keys($studentClassMap))
-            ->where(function($q) {
-                $q->whereIn('status', ['lulus', 'graduated', 'alumni'])
-                  ->orWhere('created_at', '<', '2025-07-01');
-            })
             ->get();
 
-        $c9List = ['Kelas 9A', 'Kelas 9B', 'Kelas 9C', 'Kelas 9D'];
-        $c9Index = 0;
-        foreach ($unmappedAlumni as $al) {
-            $studentClassMap[$al->id] = $c9List[$c9Index % 4];
-            $c9Index++;
+        $c8List = ['Kelas 8A', 'Kelas 8B', 'Kelas 8C', 'Kelas 8D'];
+        $idx8 = 0;
+        foreach ($s2024 as $s) {
+            $studentClassMap[$s->id] = $c8List[$idx8 % 4];
+            $idx8++;
         }
 
-        // 6. Masukkan Seluruh Siswa Terpetakan ke Pivot class_student Multi-Semester 2025/2026
-        // Catatan: TIDAK MENGUBAH / MERUSAK data 2026/2027!
+        // G. Sumber: Siswa Angkatan 2025 lainnya (Cohort Tingkat 7 di 2025/2026)
+        $s2025Grade7 = DB::table('students')
+            ->where('created_at', '<', '2026-07-01')
+            ->whereNotIn('id', $locked2026StudentIds)
+            ->whereNotIn('id', array_keys($studentClassMap))
+            ->get();
+
+        $c7List = ['Kelas 7A', 'Kelas 7B', 'Kelas 7C', 'Kelas 7D', 'Kelas 7E'];
+        $idx7 = 0;
+        foreach ($s2025Grade7 as $s) {
+            $studentClassMap[$s->id] = $c7List[$idx7 % 5];
+            $idx7++;
+        }
+
+        // -------------------------------------------------------------
+        // 6. Hubungkan Seluruh Siswa ke Pivot class_student Multi-Semester 2025/2026
+        // -------------------------------------------------------------
+        // CATATAN: KUNCI TOTAL TA. 2026/2027!
+        // - students.school_class_id untuk siswa aktif TIDAK DIUBAH!
+        // - class_student untuk semester 2026/2027 TIDAK DIUBAH!
         $studentsByClass = [];
         foreach ($studentClassMap as $studentId => $className) {
             $studentsByClass[$className][] = $studentId;
@@ -407,7 +440,9 @@ try {
 
         $stats['total_unique_students'] = count($studentClassMap);
 
+        // -------------------------------------------------------------
         // 7. Siapkan Data Log Tampilan untuk Seluruh 13 Kelas
+        // -------------------------------------------------------------
         foreach ($standardClasses as $className => $meta) {
             $cls = $active2025Classes[$className] ?? null;
             if (!$cls) continue;
@@ -451,10 +486,13 @@ try {
             ];
         }
 
-        // 8. Sinkronisasi schedules.school_class_id
+        // -------------------------------------------------------------
+        // 8. Sinkronisasi schedules.school_class_id TA 2025/2026
+        // -------------------------------------------------------------
         $schedules = DB::table('schedules as s')
             ->join('teaching_assignments as ta', 's.teaching_assignment_id', '=', 'ta.id')
             ->whereNull('s.school_class_id')
+            ->where('ta.academic_year_id', $year2025->id)
             ->select('s.id as schedule_id', 'ta.school_class_id')
             ->get();
 
@@ -464,7 +502,9 @@ try {
                 ->update(['school_class_id' => $item->school_class_id]);
         }
 
-        // 9. Backfill data riwayat presensi harian & mapel 2025/2026 berdasarkan tanggal (Timestamp)
+        // -------------------------------------------------------------
+        // 9. Backfill Data Presensi 2025/2026 Berdasarkan Timestamp
+        // -------------------------------------------------------------
         $semGanjil = $semesters2025->first(fn($s) => str_contains(strtolower($s->name ?? ''), 'ganjil') || ($s->semester_number ?? 0) == 1) ?? $semesters2025->first();
         $semGenap  = $semesters2025->first(fn($s) => str_contains(strtolower($s->name ?? ''), 'genap')  || ($s->semester_number ?? 0) == 2) ?? $semesters2025->last();
 
@@ -517,7 +557,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sinkronisasi Lengkap Database Presensi & SIPADA</title>
+    <title>Sinkronisasi Lengkap Database Presensi & SIPADA (Locked 2026/2027)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -532,7 +572,7 @@ try {
             <div>
                 <div class="flex items-center gap-2">
                     <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 font-bold text-xs rounded-full uppercase tracking-wider">
-                        Auto-Sync Engine v3 (Complete SMP)
+                        Auto-Sync Engine v4 (Strict Cohort & 2026 Lock)
                     </span>
                     <span class="px-3 py-1 bg-sky-500/20 text-sky-400 font-bold text-xs rounded-full">
                         TA. 2025/2026 (Ganjil & Genap)
@@ -540,7 +580,7 @@ try {
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-black mt-2 text-white">Sinkronisasi Database Presensi & SIPADA</h1>
                 <p class="text-xs sm:text-sm text-slate-400 mt-1">
-                    Merekonstruksi seluruh 13 Kelas (7A–7E, 8A–8D, 9A–9D), Wali Kelas, dan Siswa multi-semester tanpa mengubah data aktif 2026/2027.
+                    Merekonstruksi seluruh 13 Kelas (7A–7E, 8A–8D, 9A–9D), Kelas 9A (29 Siswa), dan mengunci total data TA. 2026/2027.
                 </p>
             </div>
             <div class="text-left sm:text-right">
@@ -565,16 +605,16 @@ try {
                     <p class="text-2xl font-black text-white mt-1"><?= count($syncLog) ?> Kelas</p>
                 </div>
                 <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50">
-                    <span class="text-xs text-slate-400 font-medium">Total Siswa Terdeteksi</span>
+                    <span class="text-xs text-slate-400 font-medium">Siswa 2025/2026</span>
                     <p class="text-2xl font-black text-sky-400 mt-1"><?= $stats['total_unique_students'] ?> Siswa</p>
                 </div>
                 <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50">
-                    <span class="text-xs text-slate-400 font-medium">Relasi Multi-Semester</span>
-                    <p class="text-2xl font-black text-emerald-400 mt-1"><?= $stats['students_synced'] ?> Relasi</p>
+                    <span class="text-xs text-slate-400 font-medium">Siswa 2026/2027 Dikunci</span>
+                    <p class="text-2xl font-black text-emerald-400 mt-1"><?= $stats['locked_2026_students'] ?> Siswa 🔒</p>
                 </div>
                 <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50">
-                    <span class="text-xs text-slate-400 font-medium">Data Aktif 2026/2027</span>
-                    <p class="text-2xl font-black text-amber-400 mt-1">Aman & Terjaga 🛡️</p>
+                    <span class="text-xs text-slate-400 font-medium">Status TA. 2026/2027</span>
+                    <p class="text-2xl font-black text-amber-400 mt-1">Terkunci & Aman 🛡️</p>
                 </div>
             </div>
 
@@ -625,7 +665,7 @@ try {
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
                 <div class="text-xs text-slate-400 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>Seluruh data kelas tahun 2025/2026 (Ganjil & Genap) telah siap diakses pada menu guru & admin.</span>
+                    <span>Seluruh data kelas tahun 2025/2026 (Ganjil & Genap) telah siap diakses pada menu guru & admin tanpa merusak TA. 2026/2027.</span>
                 </div>
                 <div class="flex gap-2 w-full sm:w-auto">
                     <a href="/teacher/dashboard" class="w-full sm:w-auto text-center px-6 py-3 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
