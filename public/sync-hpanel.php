@@ -34,31 +34,61 @@ try {
     if ($year2025) {
         $semesters2025 = Semester::where('academic_year_id', $year2025->id)->get();
         $stats['semesters_synced'] = $semesters2025->count();
+        $sem1 = $semesters2025->first()?->id ?? 1;
 
-        // 2. Backfill kolom academic_year_id & semester_id jika masih NULL
-        DB::table('school_classes')
-            ->whereNull('academic_year_id')
-            ->where('created_at', '<', '2026-07-01')
-            ->update([
-                'academic_year_id' => $year2025->id,
-                'semester_id' => $semesters2025->first()?->id ?? 1,
-            ]);
+        // 2. Tangani tabel school_classes yang academic_year_id masih NULL secara aman (tanpa memicu duplicate key constraint)
+        $nullClasses = DB::table('school_classes')->whereNull('academic_year_id')->get();
+        foreach ($nullClasses as $nc) {
+            $existingClass = DB::table('school_classes')
+                ->where('name', $nc->name)
+                ->where('academic_year_id', $year2025->id)
+                ->where('id', '!=', $nc->id)
+                ->first();
 
-        DB::table('teaching_assignments')
-            ->whereNull('academic_year_id')
-            ->where('created_at', '<', '2026-07-01')
-            ->update([
-                'academic_year_id' => $year2025->id,
-                'semester_id' => $semesters2025->first()?->id ?? 1,
-            ]);
+            if ($existingClass) {
+                // Pindahkan referensi siswa & teaching_assignments ke kelas yang sudah ada
+                DB::table('students')->where('school_class_id', $nc->id)->update(['school_class_id' => $existingClass->id]);
+                DB::table('teaching_assignments')->where('school_class_id', $nc->id)->update(['school_class_id' => $existingClass->id]);
+                DB::table('schedules')->where('school_class_id', $nc->id)->update(['school_class_id' => $existingClass->id]);
+                
+                // Hapus atau beri nama unik agar tidak memicu unique index
+                try {
+                    DB::table('school_classes')->where('id', $nc->id)->delete();
+                } catch (\Throwable $e) {
+                    DB::table('school_classes')->where('id', $nc->id)->update(['name' => $nc->name . ' (archived-' . $nc->id . ')']);
+                }
+            } else {
+                try {
+                    DB::table('school_classes')->where('id', $nc->id)->update([
+                        'academic_year_id' => $year2025->id,
+                        'semester_id' => $sem1,
+                    ]);
+                } catch (\Throwable $e) {
+                    // Abaikan jika ada benturan constraint
+                }
+            }
+        }
 
-        DB::table('schedules')
-            ->whereNull('academic_year_id')
-            ->where('created_at', '<', '2026-07-01')
-            ->update([
-                'academic_year_id' => $year2025->id,
-                'semester_id' => $semesters2025->first()?->id ?? 1,
-            ]);
+        // Tangani teaching_assignments & schedules
+        try {
+            DB::table('teaching_assignments')
+                ->whereNull('academic_year_id')
+                ->where('created_at', '<', '2026-07-01')
+                ->update([
+                    'academic_year_id' => $year2025->id,
+                    'semester_id' => $sem1,
+                ]);
+        } catch (\Throwable $e) {}
+
+        try {
+            DB::table('schedules')
+                ->whereNull('academic_year_id')
+                ->where('created_at', '<', '2026-07-01')
+                ->update([
+                    'academic_year_id' => $year2025->id,
+                    'semester_id' => $sem1,
+                ]);
+        } catch (\Throwable $e) {}
 
         // 3. Mapping dinamis kelas ke daftar NIS siswa
         $classMapping = [
@@ -72,28 +102,45 @@ try {
             'XI-1' => ['20250301', '20250302', '20250303', '20250304', '20250305', '20250306', '20250307', '20250308', '20250309', '20250310'],
         ];
 
+        // Cari guru Elyana jika ada
+        $elyanaTeacher = Teacher::where('name', 'like', '%Elyana%')->first();
+
         foreach ($classMapping as $className => $nisList) {
-            // Dapatkan atau buat kelas untuk 2025/2026
+            // Prioritaskan kelas yang sudah ada dengan academic_year_id = year2025
             $class = SchoolClass::withoutGlobalScopes()
                 ->where('name', $className)
-                ->where(function($q) use ($year2025) {
-                    $q->where('academic_year_id', $year2025->id)
-                      ->orWhereNull('academic_year_id')
-                      ->orWhere('created_at', '<', '2026-07-01');
-                })
+                ->where('academic_year_id', $year2025->id)
                 ->first();
 
             if (!$class) {
-                $class = SchoolClass::create([
-                    'name' => $className,
-                    'level_id' => str_contains($className, '7') || str_contains($className, 'X-') ? 1 : (str_contains($className, '8') || str_contains($className, 'XI-') ? 2 : 3),
-                    'academic_year_id' => $year2025->id,
-                    'semester_id' => $semesters2025->first()?->id ?? 1,
-                ]);
-            } else {
-                if ($class->academic_year_id != $year2025->id) {
-                    DB::table('school_classes')->where('id', $class->id)->update(['academic_year_id' => $year2025->id]);
+                $class = SchoolClass::withoutGlobalScopes()
+                    ->where('name', $className)
+                    ->whereNull('academic_year_id')
+                    ->first();
+
+                if ($class) {
+                    try {
+                        DB::table('school_classes')->where('id', $class->id)->update([
+                            'academic_year_id' => $year2025->id,
+                            'semester_id' => $sem1,
+                        ]);
+                    } catch (\Throwable $e) {}
+                } else {
+                    $class = SchoolClass::create([
+                        'name' => $className,
+                        'level_id' => str_contains($className, '7') || str_contains($className, 'X-') ? 1 : (str_contains($className, '8') || str_contains($className, 'XI-') ? 2 : 3),
+                        'academic_year_id' => $year2025->id,
+                        'semester_id' => $sem1,
+                    ]);
                 }
+            }
+
+            // Hubungkan Ibu Elyana ke Kelas 9A pada 2025/2026
+            if ($elyanaTeacher && str_contains($className, '9A')) {
+                try {
+                    DB::table('school_classes')->where('id', $class->id)->update(['teacher_id' => $elyanaTeacher->id]);
+                    $class->teacher_id = $elyanaTeacher->id;
+                } catch (\Throwable $e) {}
             }
 
             $stats['classes_synced']++;
@@ -103,7 +150,7 @@ try {
                 ->orWhere('school_class_id', $class->id)
                 ->get();
 
-            $homeroomName = $class->homeroomTeacher?->name ?? 'Belum Ditentukan';
+            $homeroomName = $class->homeroomTeacher?->name ?? ($class->teacher_id && $elyanaTeacher && $class->teacher_id == $elyanaTeacher->id ? $elyanaTeacher->name : 'Belum Ditentukan');
 
             $syncLog[] = [
                 'class_id' => $class->id,
@@ -117,19 +164,21 @@ try {
             // Isi class_student untuk setiap semester di tahun 2025/2026
             foreach ($semesters2025 as $sem) {
                 foreach ($students as $st) {
-                    DB::table('class_student')->updateOrInsert(
-                        [
-                            'student_id' => $st->id,
-                            'semester_id' => $sem->id,
-                        ],
-                        [
-                            'school_class_id' => $class->id,
-                            'academic_year_id' => $year2025->id,
-                            'updated_at' => $now,
-                            'created_at' => $now,
-                        ]
-                    );
-                    $stats['students_synced']++;
+                    try {
+                        DB::table('class_student')->updateOrInsert(
+                            [
+                                'student_id' => $st->id,
+                                'semester_id' => $sem->id,
+                                'academic_year_id' => $year2025->id,
+                            ],
+                            [
+                                'school_class_id' => $class->id,
+                                'updated_at' => $now,
+                                'created_at' => $now,
+                            ]
+                        );
+                        $stats['students_synced']++;
+                    } catch (\Throwable $e) {}
                 }
             }
         }
@@ -169,7 +218,7 @@ try {
     <div class="max-w-4xl w-full bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
         <div class="flex items-center justify-between border-b border-slate-700 pb-5">
             <div>
-                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 font-bold text-xs rounded-full uppercase tracking-wider">Auto-Sync Engine</span>
+                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 font-bold text-xs rounded-full uppercase tracking-wider">Auto-Sync Engine v2</span>
                 <h1 class="text-2xl font-black mt-2 text-white">Sinkronisasi Database Presensi & SIPADA</h1>
                 <p class="text-xs text-slate-400 mt-1">Memperbaiki dan merekonstruksi relasi kelas, wali kelas, dan siswa multi-semester.</p>
             </div>

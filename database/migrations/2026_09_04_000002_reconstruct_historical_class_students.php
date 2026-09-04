@@ -27,30 +27,53 @@ return new class extends Migration
             return;
         }
 
-        // 2. Backfill tabel school_classes, teaching_assignments, dan schedules jika academic_year_id masih NULL
-        DB::table('school_classes')
-            ->whereNull('academic_year_id')
-            ->where('created_at', '<', '2026-07-01')
-            ->update([
-                'academic_year_id' => $year2025->id,
-                'semester_id' => $semesters2025->first()->id,
-            ]);
+        // 2. Backfill tabel school_classes, teaching_assignments, dan schedules jika academic_year_id masih NULL secara aman
+        $nullClasses = DB::table('school_classes')->whereNull('academic_year_id')->get();
+        foreach ($nullClasses as $nc) {
+            $existingClass = DB::table('school_classes')
+                ->where('name', $nc->name)
+                ->where('academic_year_id', $year2025->id)
+                ->where('id', '!=', $nc->id)
+                ->first();
 
-        DB::table('teaching_assignments')
-            ->whereNull('academic_year_id')
-            ->where('created_at', '<', '2026-07-01')
-            ->update([
-                'academic_year_id' => $year2025->id,
-                'semester_id' => $semesters2025->first()->id,
-            ]);
+            if ($existingClass) {
+                DB::table('students')->where('school_class_id', $nc->id)->update(['school_class_id' => $existingClass->id]);
+                DB::table('teaching_assignments')->where('school_class_id', $nc->id)->update(['school_class_id' => $existingClass->id]);
+                DB::table('schedules')->where('school_class_id', $nc->id)->update(['school_class_id' => $existingClass->id]);
+                try {
+                    DB::table('school_classes')->where('id', $nc->id)->delete();
+                } catch (\Throwable $e) {
+                    DB::table('school_classes')->where('id', $nc->id)->update(['name' => $nc->name . ' (archived-' . $nc->id . ')']);
+                }
+            } else {
+                try {
+                    DB::table('school_classes')->where('id', $nc->id)->update([
+                        'academic_year_id' => $year2025->id,
+                        'semester_id' => $semesters2025->first()->id,
+                    ]);
+                } catch (\Throwable $e) {}
+            }
+        }
 
-        DB::table('schedules')
-            ->whereNull('academic_year_id')
-            ->where('created_at', '<', '2026-07-01')
-            ->update([
-                'academic_year_id' => $year2025->id,
-                'semester_id' => $semesters2025->first()->id,
-            ]);
+        try {
+            DB::table('teaching_assignments')
+                ->whereNull('academic_year_id')
+                ->where('created_at', '<', '2026-07-01')
+                ->update([
+                    'academic_year_id' => $year2025->id,
+                    'semester_id' => $semesters2025->first()->id,
+                ]);
+        } catch (\Throwable $e) {}
+
+        try {
+            DB::table('schedules')
+                ->whereNull('academic_year_id')
+                ->where('created_at', '<', '2026-07-01')
+                ->update([
+                    'academic_year_id' => $year2025->id,
+                    'semester_id' => $semesters2025->first()->id,
+                ]);
+        } catch (\Throwable $e) {}
 
         // 3. Mapping dinamis kelas ke daftar NIS siswa
         $classMapping = [
