@@ -75,21 +75,34 @@ class ReportController extends Controller
             foreach($months as $m) $labels[] = Carbon::create()->month($m)->translatedFormat('F');
         }
 
-        $studentsQuery = Student::query();
         if ($params['target_type'] === 'class') {
-            $studentsQuery->where('school_class_id', $params['school_class_id']);
-        } else {
-            $studentsQuery->where('id', $params['student_id']);
-        }
+            $targetClass = SchoolClass::find($params['school_class_id']);
+            $students = $targetClass ? $targetClass->students()->with(['attendances' => function ($query) use ($year, $months) {
+                $query->whereYear('attendance_time', $year)
+                      ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                if (session('active_semester_id')) {
+                    $query->where('semester_id', session('active_semester_id'));
+                }
+            }])->get() : collect();
 
-        // Ambil data absensi
-        $students = $studentsQuery->with(['attendances' => function ($query) use ($year, $months) {
-            $query->whereYear('attendance_time', $year)
-                  ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
-            if (session('active_semester_id')) {
-                $query->where('semester_id', session('active_semester_id'));
+            if ($students->isEmpty() && $targetClass) {
+                $students = Student::where('school_class_id', $targetClass->id)->with(['attendances' => function ($query) use ($year, $months) {
+                    $query->whereYear('attendance_time', $year)
+                          ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                    if (session('active_semester_id')) {
+                        $query->where('semester_id', session('active_semester_id'));
+                    }
+                }])->get();
             }
-        }])->get();
+        } else {
+            $students = Student::where('id', $params['student_id'])->with(['attendances' => function ($query) use ($year, $months) {
+                $query->whereYear('attendance_time', $year)
+                      ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                if (session('active_semester_id')) {
+                    $query->where('semester_id', session('active_semester_id'));
+                }
+            }])->get();
+        }
 
         $monthlyDataArray = [];
         $totalSum = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
@@ -242,7 +255,10 @@ class ReportController extends Controller
         $startDate = $date->copy()->startOfMonth();
         $endDate = $date->copy()->endOfMonth();
 
-        $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        $students = $class->students()->orderBy('name')->get();
+        if ($students->isEmpty()) {
+            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+        }
 
         $attendances = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
@@ -279,16 +295,29 @@ class ReportController extends Controller
         $date = Carbon::createFromFormat('Y-m', $request->month);
         $monthName = $date->translatedFormat('F Y');
 
-        $students = Student::where('school_class_id', $class->id)
+        $students = $class->students()
             ->with(['attendances' => function ($query) use ($date) {
-            $query->whereYear('attendance_time', $date->year)
-                ->whereMonth('attendance_time', $date->month);
-            if (session('active_semester_id')) {
-                $query->where('semester_id', session('active_semester_id'));
-            }
-        }])
+                $query->whereYear('attendance_time', $date->year)
+                    ->whereMonth('attendance_time', $date->month);
+                if (session('active_semester_id')) {
+                    $query->where('semester_id', session('active_semester_id'));
+                }
+            }])
             ->orderBy('name')
             ->get();
+
+        if ($students->isEmpty()) {
+            $students = Student::where('school_class_id', $class->id)
+                ->with(['attendances' => function ($query) use ($date) {
+                    $query->whereYear('attendance_time', $date->year)
+                        ->whereMonth('attendance_time', $date->month);
+                    if (session('active_semester_id')) {
+                        $query->where('semester_id', session('active_semester_id'));
+                    }
+                }])
+                ->orderBy('name')
+                ->get();
+        }
 
         $startDate = $date->copy()->startOfMonth();
         $endDate = $date->copy()->endOfMonth();
@@ -384,7 +413,7 @@ class ReportController extends Controller
             ];
         }
 
-        $students = Student::where('school_class_id', $class->id)
+        $students = $class->students()
             ->with(['attendances' => function ($query) use ($year, $months) {
                 $query->whereYear('attendance_time', $year)
                       ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
@@ -394,6 +423,19 @@ class ReportController extends Controller
             }])
             ->orderBy('name')
             ->get();
+
+        if ($students->isEmpty()) {
+            $students = Student::where('school_class_id', $class->id)
+                ->with(['attendances' => function ($query) use ($year, $months) {
+                    $query->whereYear('attendance_time', $year)
+                          ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                    if (session('active_semester_id')) {
+                        $query->where('semester_id', session('active_semester_id'));
+                    }
+                }])
+                ->orderBy('name')
+                ->get();
+        }
 
         $reportData = $students->map(function ($student) use ($months, $trimesterMap, $year) {
             $studentData = [

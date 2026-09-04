@@ -60,19 +60,26 @@ class TeachingAssignment extends Model
             return $this->relationLoaded('students') ? $this->students : $this->students()->orderBy('name')->get();
         }
 
-        // 2. Cek jika mapel agama
+        // 2. Ambil siswa dari kelas (mendukung multi-semester class_student & fallback)
+        $schoolClass = $this->relationLoaded('schoolClass') ? $this->schoolClass : $this->schoolClass()->first();
+        $classStudents = collect();
+        if ($schoolClass) {
+            $classStudents = $schoolClass->students()->orderBy('name')->get();
+        }
+        if ($classStudents->isEmpty() && $this->school_class_id) {
+            $classStudents = Student::where('school_class_id', $this->school_class_id)->orderBy('name')->get();
+        }
+
+        // 3. Cek jika mapel agama
         $subject = $this->relationLoaded('subject') ? $this->subject : $this->subject()->first();
         if ($subject && $subject->category === 'religion' && !empty($subject->religion_key)) {
             $religionKey = strtolower(trim($subject->religion_key));
-            return Student::where('school_class_id', $this->school_class_id)
-                ->where(function ($q) use ($religionKey) {
-                    $q->whereRaw('LOWER(religion) = ?', [$religionKey]);
-                })
-                ->orderBy('name')
-                ->get();
+            return $classStudents->filter(function ($student) use ($religionKey) {
+                return strtolower(trim((string)$student->religion)) === $religionKey;
+            })->values();
         }
 
-        // 3. Default: seluruh siswa di kelas
-        return Student::where('school_class_id', $this->school_class_id)->orderBy('name')->get();
+        // 4. Default: seluruh siswa di kelas
+        return $classStudents;
     }
 }

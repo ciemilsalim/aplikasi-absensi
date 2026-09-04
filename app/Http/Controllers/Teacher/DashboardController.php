@@ -149,7 +149,13 @@ class DashboardController extends Controller
         $today = Carbon::today();
         $thirtyDaysAgo = now()->subDays(30);
 
-        $studentsInClass = $class ? Student::where('school_class_id', $class->id)->orderBy('name')->get() : collect();
+        $studentsInClass = collect();
+        if ($class) {
+            $studentsInClass = $class->students()->orderBy('name')->get();
+            if ($studentsInClass->isEmpty()) {
+                $studentsInClass = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+            }
+        }
         $studentIds = $studentsInClass->pluck('id');
 
         $attendancesToday = Attendance::whereIn('student_id', $studentIds)

@@ -146,6 +146,13 @@ class Schedule extends Model
         if ($this->teachingAssignment) {
             return $this->teachingAssignment->getEnrolledStudents();
         }
+        $schoolClass = $this->relationLoaded('schoolClass') ? $this->schoolClass : $this->schoolClass()->first();
+        if ($schoolClass) {
+            $classStudents = $schoolClass->students()->orderBy('name')->get();
+            if ($classStudents->isNotEmpty()) {
+                return $classStudents;
+            }
+        }
         if ($this->school_class_id) {
             return Student::where('school_class_id', $this->school_class_id)->orderBy('name')->get();
         }
