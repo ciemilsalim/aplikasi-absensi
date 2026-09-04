@@ -51,13 +51,34 @@ class TeachingAssignment extends Model
      */
     public function getEnrolledStudents()
     {
+        $activeSemesterId = session('active_semester_id') 
+            ?? \App\Models\Semester::where('is_active', true)->value('id');
+        $isCurrentActiveSemester = $activeSemesterId 
+            ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') 
+            : true;
+
         // 1. Cek jika ada custom siswa di pivot
         $hasCustomStudents = $this->relationLoaded('students') 
             ? $this->students->isNotEmpty() 
             : $this->students()->exists();
 
         if ($hasCustomStudents) {
-            return $this->relationLoaded('students') ? $this->students : $this->students()->orderBy('name')->get();
+            $query = $this->relationLoaded('students') ? $this->students : $this->students();
+            if ($isCurrentActiveSemester && !$this->relationLoaded('students')) {
+                $query->where(function($q) {
+                    $q->where('students.status', 'aktif')
+                      ->orWhereNull('students.status')
+                      ->orWhere('students.status', '');
+                })->whereNotIn('students.status', Student::$inactiveStatuses);
+            }
+            $students = $this->relationLoaded('students') ? $query : $query->orderBy('name')->get();
+            if ($isCurrentActiveSemester && $this->relationLoaded('students')) {
+                $students = $students->filter(function($s) {
+                    $st = strtolower(trim((string)($s->status ?? '')));
+                    return (empty($st) || $st === 'aktif') && !in_array($st, Student::$inactiveStatuses);
+                })->values();
+            }
+            return $students;
         }
 
         // 2. Ambil siswa dari kelas (mendukung multi-semester class_student & fallback)
@@ -67,7 +88,15 @@ class TeachingAssignment extends Model
             $classStudents = $schoolClass->students()->orderBy('name')->get();
         }
         if ($classStudents->isEmpty() && $this->school_class_id) {
-            $classStudents = Student::where('school_class_id', $this->school_class_id)->orderBy('name')->get();
+            $query = Student::where('school_class_id', $this->school_class_id);
+            if ($isCurrentActiveSemester) {
+                $query->where(function($q) {
+                    $q->where('status', 'aktif')
+                      ->orWhereNull('status')
+                      ->orWhere('status', '');
+                })->whereNotIn('status', Student::$inactiveStatuses);
+            }
+            $classStudents = $query->orderBy('name')->get();
         }
 
         // 3. Cek jika mapel agama

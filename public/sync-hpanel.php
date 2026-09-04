@@ -562,6 +562,44 @@ try {
         }
     }
 
+    // -------------------------------------------------------------
+    // 10. Pembersihan & Audit Siswa Tidak Aktif di TA. 2026/2027
+    // -------------------------------------------------------------
+    $activeSemester = Semester::where('is_active', true)->first();
+    $inactiveList = Student::$inactiveStatuses ?? ['tidak_aktif', 'nonaktif', 'lulus', 'pindah', 'mutasi', 'keluar', 'berhenti', 'drop_out', 'alumni'];
+    
+    // Cari semua siswa yang berstatus tidak aktif di database
+    $inactiveStudentsData = DB::table('students')
+        ->leftJoin('school_classes', 'students.school_class_id', '=', 'school_classes.id')
+        ->whereIn('students.status', $inactiveList)
+        ->select('students.id', 'students.name', 'students.nis', 'students.status', 'school_classes.name as class_name')
+        ->get();
+
+    $inactiveStudentIds = $inactiveStudentsData->pluck('id')->toArray();
+    $cleanedFromActiveSemester = 0;
+
+    if ($activeSemester && !empty($inactiveStudentIds)) {
+        // Hapus siswa tidak aktif dari pivot semester aktif 2026/2027
+        $cleanedFromActiveSemester = DB::table('class_student')
+            ->where('semester_id', $activeSemester->id)
+            ->whereIn('student_id', $inactiveStudentIds)
+            ->delete();
+    }
+
+    // Hitung total siswa aktif TA 2026/2027
+    $totalActiveStudents2026 = DB::table('students')
+        ->where(function($q) {
+            $q->where('status', 'aktif')
+              ->orWhereNull('status')
+              ->orWhere('status', '');
+        })
+        ->whereNotIn('status', $inactiveList)
+        ->count();
+
+    $stats['total_inactive_students'] = count($inactiveStudentsData);
+    $stats['total_active_2026'] = $totalActiveStudents2026;
+    $stats['cleaned_from_active_pivot'] = $cleanedFromActiveSemester;
+
     // Bersihkan semua cache Laravel
     Artisan::call('optimize:clear');
 
@@ -574,7 +612,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sinkronisasi Lengkap Database Presensi & SIPADA (Locked 2026/2027)</title>
+    <title>Sinkronisasi Lengkap Database Presensi & SIPADA (Locked 2026/2027 & Filter Status)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -587,17 +625,20 @@ try {
         <!-- Header -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-5 gap-4">
             <div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                     <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 font-bold text-xs rounded-full uppercase tracking-wider">
-                        Auto-Sync Engine v4 (Strict Cohort & 2026 Lock)
+                        Auto-Sync Engine v5 (Active Status Filter)
                     </span>
                     <span class="px-3 py-1 bg-sky-500/20 text-sky-400 font-bold text-xs rounded-full">
                         TA. 2025/2026 (Ganjil & Genap)
                     </span>
+                    <span class="px-3 py-1 bg-amber-500/20 text-amber-400 font-bold text-xs rounded-full">
+                        TA. 2026/2027 (Active Period)
+                    </span>
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-black mt-2 text-white">Sinkronisasi Database Presensi & SIPADA</h1>
                 <p class="text-xs sm:text-sm text-slate-400 mt-1">
-                    Merekonstruksi seluruh 13 Kelas (7A–7E, 8A–8D, 9A–9D), Kelas 9A (29 Siswa), dan mengunci total data TA. 2026/2027.
+                    Memastikan siswa berstatus "Tidak Aktif" otomatis disaring dari sesi presensi TA. 2026/2027, sembari mempertahankan seluruh arsip 13 Kelas TA. 2025/2026 (termasuk 29 Siswa 9A).
                 </p>
             </div>
             <div class="text-left sm:text-right">
@@ -618,22 +659,53 @@ try {
             <!-- Metrics Cards -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50">
-                    <span class="text-xs text-slate-400 font-medium">Total Kelas Tersinkron</span>
+                    <span class="text-xs text-slate-400 font-medium">Total Kelas 2025/2026</span>
                     <p class="text-2xl font-black text-white mt-1"><?= count($syncLog) ?> Kelas</p>
                 </div>
                 <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50">
-                    <span class="text-xs text-slate-400 font-medium">Siswa 2025/2026</span>
+                    <span class="text-xs text-slate-400 font-medium">Siswa 2025/2026 (Arsip)</span>
                     <p class="text-2xl font-black text-sky-400 mt-1"><?= $stats['total_unique_students'] ?> Siswa</p>
                 </div>
                 <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50">
-                    <span class="text-xs text-slate-400 font-medium">Siswa 2026/2027 Dikunci</span>
-                    <p class="text-2xl font-black text-emerald-400 mt-1"><?= $stats['locked_2026_students'] ?> Siswa 🔒</p>
+                    <span class="text-xs text-slate-400 font-medium">Siswa Aktif TA. 2026/2027</span>
+                    <p class="text-2xl font-black text-emerald-400 mt-1"><?= $stats['total_active_2026'] ?? 0 ?> Siswa ✨</p>
                 </div>
                 <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/50">
-                    <span class="text-xs text-slate-400 font-medium">Status TA. 2026/2027</span>
-                    <p class="text-2xl font-black text-amber-400 mt-1">Terkunci & Aman 🛡️</p>
+                    <span class="text-xs text-slate-400 font-medium">Siswa Tidak Aktif (Disaring)</span>
+                    <p class="text-2xl font-black text-rose-400 mt-1"><?= $stats['total_inactive_students'] ?? 0 ?> Siswa 🚫</p>
                 </div>
             </div>
+
+            <!-- Inactive Students Audit Card (If Any) -->
+            <?php if (!empty($inactiveStudentsData) && count($inactiveStudentsData) > 0): ?>
+                <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse"></span>
+                            <h2 class="text-sm font-bold text-rose-300">Audit Status: Siswa Tidak Aktif di SIPADA (Otomatis Disembunyikan dari Presensi 2026/2027)</h2>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300">
+                            <?= count($inactiveStudentsData) ?> Siswa Tidak Aktif
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                        <?php foreach ($inactiveStudentsData as $is): ?>
+                            <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between">
+                                <div>
+                                    <p class="font-bold text-white"><?= htmlspecialchars($is->name) ?></p>
+                                    <p class="text-[10px] text-slate-400">NIS: <?= htmlspecialchars($is->nis ?? '-') ?> | <?= htmlspecialchars($is->class_name ?? 'Tanpa Kelas') ?></p>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 uppercase">
+                                    <?= htmlspecialchars($is->status) ?>
+                                </span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="text-[11px] text-slate-400 italic">
+                        * Siswa di atas telah otomatis disaring dan tidak akan muncul di Dasbor Wali Kelas, Rekap Absensi, Presensi Guru Mapel, maupun Pemindai QR/Wajah untuk TA. 2026/2027.
+                    </p>
+                </div>
+            <?php endif; ?>
 
             <!-- Table -->
             <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/50">

@@ -30,6 +30,47 @@ class Student extends Model
         'religion' => 'islam',
     ];
 
+    public static $inactiveStatuses = [
+        'tidak_aktif',
+        'tidak aktif',
+        'nonaktif',
+        'non_aktif',
+        'non aktif',
+        'inactive',
+        'mutasi',
+        'keluar',
+        'lulus',
+        'pindah',
+        'berhenti',
+        'drop_out',
+        'dropout',
+        'alumni'
+    ];
+
+    /**
+     * Scope untuk mengambil hanya siswa yang berstatus aktif.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where(function($q) {
+            $q->where('students.status', 'aktif')
+              ->orWhereNull('students.status')
+              ->orWhere('students.status', '');
+        })->whereNotIn('students.status', self::$inactiveStatuses);
+    }
+
+    /**
+     * Cek apakah siswa berstatus aktif
+     */
+    public function isStudentActive(): bool
+    {
+        $st = strtolower(trim((string)$this->status));
+        if (empty($st) || $st === 'aktif') {
+            return !in_array($st, self::$inactiveStatuses);
+        }
+        return false;
+    }
+
     protected $appends = ['photo_url'];
 
     /**

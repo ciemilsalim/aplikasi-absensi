@@ -28,7 +28,17 @@ class Extracurricular extends Model
 
     public function students()
     {
-        return $this->belongsToMany(Student::class, 'extracurricular_student');
+        $relation = $this->belongsToMany(Student::class, 'extracurricular_student');
+        $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+        $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+        if ($isCurrentActiveSemester) {
+            $relation->where(function($q) {
+                $q->where('students.status', 'aktif')
+                  ->orWhereNull('students.status')
+                  ->orWhere('students.status', '');
+            })->whereNotIn('students.status', Student::$inactiveStatuses);
+        }
+        return $relation;
     }
 
     public function attendances()

@@ -111,7 +111,13 @@ class LeaveRequestController extends Controller
             $students = $schoolClass->students()->orderBy('name', 'asc')->get();
         }
         if ($students->isEmpty()) {
-            $students = Student::where('school_class_id', $classId)->orderBy('name', 'asc')->get();
+            $q = Student::where('school_class_id', $classId);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->orderBy('name', 'asc')->get();
         }
 
         $formatted = $students->map(function($student) {

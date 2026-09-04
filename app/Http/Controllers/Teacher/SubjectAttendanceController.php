@@ -178,6 +178,14 @@ class SubjectAttendanceController extends Controller
             return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan atau QR Code tidak valid.'], 404);
         }
 
+        // Cek status keaktifan siswa
+        if (in_array(strtolower(trim((string)($student->status ?? ''))), Student::$inactiveStatuses)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Presensi ditolak. Siswa ' . $student->name . ' berstatus tidak aktif (' . ($student->status ?? 'nonaktif') . ').'
+            ], 422);
+        }
+
         if ($student->school_class_id !== $classId) {
             return response()->json(['success' => false, 'message' => 'Siswa tidak terdaftar di kelas ini.'], 422);
         }
@@ -306,6 +314,14 @@ class SubjectAttendanceController extends Controller
         $student = Student::find($request->student_id);
         if (!$student) {
             return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan.'], 404);
+        }
+
+        // Cek status keaktifan siswa
+        if (in_array(strtolower(trim((string)($student->status ?? ''))), Student::$inactiveStatuses)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Presensi ditolak. Siswa ' . $student->name . ' berstatus tidak aktif (' . ($student->status ?? 'nonaktif') . ').'
+            ], 422);
         }
 
         $schedule = Schedule::with(['teachingAssignment', 'cocurricular.teachers', 'schoolClass'])->find($request->schedule_id);
@@ -470,8 +486,17 @@ class SubjectAttendanceController extends Controller
         $endDate = Carbon::parse($request->end_date);
         $schoolClassId = $request->school_class_id;
 
-        $students = Student::where('school_class_id', $schoolClassId)->orderBy('name')->get();
         $classInfo = SchoolClass::find($schoolClassId);
+        $students = $classInfo ? $classInfo->students()->orderBy('name')->get() : collect();
+        if ($students->isEmpty()) {
+            $q = Student::where('school_class_id', $schoolClassId);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->orderBy('name')->get();
+        }
 
         if ($activityType === 'cocurricular' || $request->filled('cocurricular_id')) {
             $cocurricularId = $request->cocurricular_id;
@@ -736,8 +761,17 @@ class SubjectAttendanceController extends Controller
         $endDate = Carbon::parse($request->end_date);
         $schoolClassId = $request->school_class_id;
 
-        $students = Student::where('school_class_id', $schoolClassId)->orderBy('name')->get();
         $classInfo = SchoolClass::find($schoolClassId);
+        $students = $classInfo ? $classInfo->students()->orderBy('name')->get() : collect();
+        if ($students->isEmpty()) {
+            $q = Student::where('school_class_id', $schoolClassId);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->orderBy('name')->get();
+        }
 
         if ($activityType === 'cocurricular' || $request->filled('cocurricular_id')) {
             $cocurricularId = $request->cocurricular_id;
@@ -967,7 +1001,17 @@ class SubjectAttendanceController extends Controller
             return in_array($date->dayOfWeekIso, $scheduleDays) && !\App\Models\Calendar::isDateInHolidays($date, $holidays) && $date->startOfDay() <= now()->startOfDay();
         });
 
-        $allStudents = Student::where('school_class_id', $schoolClassId)->orderBy('name')->get();
+        $classInfo = SchoolClass::find($schoolClassId);
+        $allStudents = $classInfo ? $classInfo->students()->orderBy('name')->get() : collect();
+        if ($allStudents->isEmpty()) {
+            $q = Student::where('school_class_id', $schoolClassId);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $allStudents = $q->orderBy('name')->get();
+        }
         if ($studentId && $studentId !== 'all') {
             $query->where('student_id', $studentId);
             $studentsCount = 1;

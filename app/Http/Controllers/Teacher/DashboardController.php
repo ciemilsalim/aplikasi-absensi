@@ -158,11 +158,23 @@ class DashboardController extends Controller
                     ->pluck('student_id')
                     ->unique();
                 if ($studentIdsFromPivot->isNotEmpty()) {
-                    $studentsInClass = Student::whereIn('id', $studentIdsFromPivot)->orderBy('name')->get();
+                    $q = Student::whereIn('id', $studentIdsFromPivot);
+                    $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+                    $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+                    if ($isCurrentActiveSemester) {
+                        $q->active();
+                    }
+                    $studentsInClass = $q->orderBy('name')->get();
                 }
             }
             if ($studentsInClass->isEmpty()) {
-                $studentsInClass = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+                $q = Student::where('school_class_id', $class->id);
+                $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+                $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+                if ($isCurrentActiveSemester) {
+                    $q->active();
+                }
+                $studentsInClass = $q->orderBy('name')->get();
             }
         }
         $studentIds = $studentsInClass->pluck('id');
@@ -413,7 +425,7 @@ class DashboardController extends Controller
                 continue;
             $totalSessions = SubjectAttendance::whereIn('schedule_id', $scheduleIds)->where('created_at', '>=', $thirtyDaysAgo)->distinct(DB::raw('DATE(created_at)'))->count();
             $totalHadir = SubjectAttendance::whereIn('schedule_id', $scheduleIds)->where('status', 'hadir')->where('created_at', '>=', $thirtyDaysAgo)->count();
-            $totalStudentsInClass = Student::where('school_class_id', $assignment->school_class_id)->count();
+            $totalStudentsInClass = $assignment->getEnrolledStudents()->count();
             $potentialAttendance = $totalStudentsInClass * $totalSessions;
             $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
             $classPerformanceData[] = [
@@ -609,7 +621,7 @@ class DashboardController extends Controller
                 ->where('created_at', '>=', $thirtyDaysAgo)
                 ->count();
 
-            $totalStudentsInClass = Student::where('school_class_id', $item->school_class_id)->count();
+            $totalStudentsInClass = $item->schoolClass ? $item->schoolClass->students()->count() : Student::active()->where('school_class_id', $item->school_class_id)->count();
             $potentialAttendance = $totalStudentsInClass * $totalSessions;
             $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
 
@@ -845,7 +857,13 @@ class DashboardController extends Controller
         $class = $teacher->homeroomClass;
         $students = $class->students()->orderBy('name')->get();
         if ($students->isEmpty()) {
-            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+            $q = Student::where('school_class_id', $class->id);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->orderBy('name')->get();
         }
         $studentIds = $students->pluck('id');
 
@@ -941,7 +959,13 @@ class DashboardController extends Controller
         $class = $teacher->homeroomClass;
         $students = $class->students()->orderBy('name')->get();
         if ($students->isEmpty()) {
-            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+            $q = Student::where('school_class_id', $class->id);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->orderBy('name')->get();
         }
         $studentIds = $students->pluck('id');
 
@@ -1148,14 +1172,20 @@ class DashboardController extends Controller
             ->get();
 
         if ($students->isEmpty()) {
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+
             if (\Illuminate\Support\Facades\Schema::hasTable('class_student')) {
                 $studentIdsFromPivot = \Illuminate\Support\Facades\DB::table('class_student')
                     ->where('school_class_id', $class->id)
                     ->pluck('student_id')
                     ->unique();
                 if ($studentIdsFromPivot->isNotEmpty()) {
-                    $students = Student::whereIn('id', $studentIdsFromPivot)
-                        ->with(['attendances' => function ($query) use ($year, $months) {
+                    $q = Student::whereIn('id', $studentIdsFromPivot);
+                    if ($isCurrentActiveSemester) {
+                        $q->active();
+                    }
+                    $students = $q->with(['attendances' => function ($query) use ($year, $months) {
                             $query->withoutGlobalScope('academic_period')
                                   ->whereYear('attendance_time', $year)
                                   ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
@@ -1167,8 +1197,13 @@ class DashboardController extends Controller
         }
 
         if ($students->isEmpty()) {
-            $students = Student::where('school_class_id', $class->id)
-                ->with(['attendances' => function ($query) use ($year, $months) {
+            $q = Student::where('school_class_id', $class->id);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->with(['attendances' => function ($query) use ($year, $months) {
                     $query->withoutGlobalScope('academic_period')
                           ->whereYear('attendance_time', $year)
                           ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
@@ -1325,7 +1360,13 @@ class DashboardController extends Controller
         $class = $teacher->homeroomClass;
         $students = $class->students()->orderBy('name')->get();
         if ($students->isEmpty()) {
-            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+            $q = Student::where('school_class_id', $class->id);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->orderBy('name')->get();
         }
 
         return view('teacher.reports.charts', compact('class', 'students'));
@@ -1385,6 +1426,9 @@ class DashboardController extends Controller
                       ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
             }])->get();
 
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+
             if ($students->isEmpty()) {
                 if (\Illuminate\Support\Facades\Schema::hasTable('class_student')) {
                     $studentIdsFromPivot = \Illuminate\Support\Facades\DB::table('class_student')
@@ -1392,8 +1436,11 @@ class DashboardController extends Controller
                         ->pluck('student_id')
                         ->unique();
                     if ($studentIdsFromPivot->isNotEmpty()) {
-                        $students = Student::whereIn('id', $studentIdsFromPivot)
-                            ->with(['attendances' => function ($query) use ($year, $months) {
+                        $q = Student::whereIn('id', $studentIdsFromPivot);
+                        if ($isCurrentActiveSemester) {
+                            $q->active();
+                        }
+                        $students = $q->with(['attendances' => function ($query) use ($year, $months) {
                                 $query->withoutGlobalScope('academic_period')
                                       ->whereYear('attendance_time', $year)
                                       ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
@@ -1404,7 +1451,11 @@ class DashboardController extends Controller
             }
 
             if ($students->isEmpty()) {
-                $students = Student::where('school_class_id', $class->id)->with(['attendances' => function ($query) use ($year, $months) {
+                $q = Student::where('school_class_id', $class->id);
+                if ($isCurrentActiveSemester) {
+                    $q->active();
+                }
+                $students = $q->with(['attendances' => function ($query) use ($year, $months) {
                     $query->withoutGlobalScope('academic_period')
                           ->whereYear('attendance_time', $year)
                           ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
@@ -1513,7 +1564,13 @@ class DashboardController extends Controller
         $class = $teacher->homeroomClass;
         $students = $class->students()->orderBy('name')->get();
         if ($students->isEmpty()) {
-            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+            $q = Student::where('school_class_id', $class->id);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->orderBy('name')->get();
         }
         $studentIds = $students->pluck('id');
 

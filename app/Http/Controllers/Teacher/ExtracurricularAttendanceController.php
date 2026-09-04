@@ -303,6 +303,14 @@ class ExtracurricularAttendanceController extends Controller
             return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan atau QR Code tidak valid.'], 404);
         }
 
+        // Cek status keaktifan siswa
+        if (in_array(strtolower(trim((string)($student->status ?? ''))), Student::$inactiveStatuses)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Presensi ditolak. Siswa ' . $student->name . ' berstatus tidak aktif (' . ($student->status ?? 'nonaktif') . ').'
+            ], 422);
+        }
+
         // Pastikan siswa terdaftar di ekskul ini
         if (!$extracurricular->students()->where('students.id', $student->id)->exists()) {
             return response()->json(['success' => false, 'message' => 'Siswa ' . $student->name . ' tidak terdaftar sebagai anggota ekstrakurikuler ' . $extracurricular->name . '.'], 422);

@@ -142,8 +142,9 @@ class SchoolClassController extends Controller
             ->pluck('student_id')
             ->toArray();
 
-        // Tampilkan siswa yang belum memiliki kelas di semester ini (atau fallback whereNull school_class_id)
-        $studentsWithoutClass = Student::where(function($q) use ($assignedStudentIds) {
+        // Tampilkan siswa aktif yang belum memiliki kelas di semester ini
+        $studentsWithoutClass = Student::active()
+            ->where(function($q) use ($assignedStudentIds) {
                 $q->whereNotIn('id', $assignedStudentIds);
             })
             ->orderBy('name')

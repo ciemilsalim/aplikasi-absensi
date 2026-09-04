@@ -154,7 +154,21 @@ class Schedule extends Model
             }
         }
         if ($this->school_class_id) {
-            return Student::where('school_class_id', $this->school_class_id)->orderBy('name')->get();
+            $activeSemesterId = session('active_semester_id') 
+                ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId 
+                ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') 
+                : true;
+
+            $query = Student::where('school_class_id', $this->school_class_id);
+            if ($isCurrentActiveSemester) {
+                $query->where(function($q) {
+                    $q->where('status', 'aktif')
+                      ->orWhereNull('status')
+                      ->orWhere('status', '');
+                })->whereNotIn('status', Student::$inactiveStatuses);
+            }
+            return $query->orderBy('name')->get();
         }
         return collect();
     }

@@ -13,7 +13,8 @@ class AttendanceController extends Controller
 {
     public function showScanner()
     {
-        $students = Student::select('id', 'unique_id', 'name', 'photo', 'face_descriptor')
+        $students = Student::active()
+            ->select('id', 'unique_id', 'name', 'photo', 'face_descriptor')
             ->whereNotNull('photo')
             ->get()
             ->map(function ($student) {
@@ -38,7 +39,6 @@ class AttendanceController extends Controller
 
         try {
             $qrData = $request->student_unique_id;
-            $qrData = $request->student_unique_id;
             
             // Format gabungan: NIS-UNIQUE_ID
             // UUID length is 36. We check if the string has NIS- prefix before UUID
@@ -50,6 +50,16 @@ class AttendanceController extends Controller
                 // Format lama atau manual (hanya UUID atau hanya NIS)
                 $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->firstOrFail();
             }
+
+            // Cek status keaktifan siswa
+            if (in_array(strtolower(trim((string)($student->status ?? ''))), Student::$inactiveStatuses)) {
+                return response()->json([
+                    'status' => 'inactive_error',
+                    'message' => 'Presensi ditolak. Siswa ' . $student->name . ' berstatus tidak aktif (' . ($student->status ?? 'nonaktif') . ').',
+                    'student_name' => $student->name
+                ], 403);
+            }
+
             $now = now();
             $today = $now->copy()->startOfDay();
 

@@ -42,11 +42,39 @@ class SchoolClass extends Model
         $activeSemesterId = session('active_semester_id') 
             ?? \App\Models\Semester::where('is_active', true)->value('id');
 
-        if ($activeSemesterId && \Illuminate\Support\Facades\Schema::hasTable('class_student')) {
-            return $this->belongsToMany(Student::class, 'class_student')
-                        ->wherePivot('semester_id', $activeSemesterId);
+        // Cek apakah semester saat ini adalah semester aktif berjalan (TA 2026/2027 Ganjil)
+        $isCurrentActiveSemester = false;
+        if ($activeSemesterId) {
+            $isCurrentActiveSemester = (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active');
+        } else {
+            $isCurrentActiveSemester = true;
         }
-        return $this->hasMany(Student::class, 'school_class_id'); 
+
+        if ($activeSemesterId && \Illuminate\Support\Facades\Schema::hasTable('class_student')) {
+            $relation = $this->belongsToMany(Student::class, 'class_student')
+                        ->wherePivot('semester_id', $activeSemesterId);
+
+            if ($isCurrentActiveSemester) {
+                $relation->where(function($q) {
+                    $q->where('students.status', 'aktif')
+                      ->orWhereNull('students.status')
+                      ->orWhere('students.status', '');
+                })->whereNotIn('students.status', Student::$inactiveStatuses);
+            }
+
+            return $relation;
+        }
+
+        $relation = $this->hasMany(Student::class, 'school_class_id');
+        if ($isCurrentActiveSemester) {
+            $relation->where(function($q) {
+                $q->where('students.status', 'aktif')
+                  ->orWhereNull('students.status')
+                  ->orWhere('students.status', '');
+            })->whereNotIn('students.status', Student::$inactiveStatuses);
+        }
+
+        return $relation; 
     }
 
     // Relasi ke guru sebagai wali kelas

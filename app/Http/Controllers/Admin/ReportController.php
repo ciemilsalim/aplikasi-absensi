@@ -22,7 +22,7 @@ class ReportController extends Controller
     public function create()
     {
         $classes = SchoolClass::orderBy('name')->get();
-        $students = Student::with('schoolClass')->orderBy('name')->get();
+        $students = Student::active()->with('schoolClass')->orderBy('name')->get();
         $cocurriculars = \App\Models\Cocurricular::orderBy('title')->get();
 
         return view('admin.reports.create', compact('classes', 'students', 'cocurriculars'));
@@ -34,7 +34,7 @@ class ReportController extends Controller
     public function charts()
     {
         $classes = SchoolClass::orderBy('name')->get();
-        $students = Student::with('schoolClass')->orderBy('name')->get();
+        $students = Student::active()->with('schoolClass')->orderBy('name')->get();
         
         return view('admin.reports.charts', compact('classes', 'students'));
     }
@@ -86,7 +86,13 @@ class ReportController extends Controller
             }])->get() : collect();
 
             if ($students->isEmpty() && $targetClass) {
-                $students = Student::where('school_class_id', $targetClass->id)->with(['attendances' => function ($query) use ($year, $months) {
+                $q = Student::where('school_class_id', $targetClass->id);
+                $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+                $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+                if ($isCurrentActiveSemester) {
+                    $q->active();
+                }
+                $students = $q->with(['attendances' => function ($query) use ($year, $months) {
                     $query->whereYear('attendance_time', $year)
                           ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
                     if (session('active_semester_id')) {
@@ -257,7 +263,13 @@ class ReportController extends Controller
 
         $students = $class->students()->orderBy('name')->get();
         if ($students->isEmpty()) {
-            $students = Student::where('school_class_id', $class->id)->orderBy('name')->get();
+            $q = Student::where('school_class_id', $class->id);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->orderBy('name')->get();
         }
 
         $attendances = SubjectAttendance::whereIn('schedule_id', $scheduleIds)
@@ -307,8 +319,13 @@ class ReportController extends Controller
             ->get();
 
         if ($students->isEmpty()) {
-            $students = Student::where('school_class_id', $class->id)
-                ->with(['attendances' => function ($query) use ($date) {
+            $q = Student::where('school_class_id', $class->id);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->with(['attendances' => function ($query) use ($date) {
                     $query->whereYear('attendance_time', $date->year)
                         ->whereMonth('attendance_time', $date->month);
                     if (session('active_semester_id')) {
@@ -425,8 +442,13 @@ class ReportController extends Controller
             ->get();
 
         if ($students->isEmpty()) {
-            $students = Student::where('school_class_id', $class->id)
-                ->with(['attendances' => function ($query) use ($year, $months) {
+            $q = Student::where('school_class_id', $class->id);
+            $activeSemesterId = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+            $isCurrentActiveSemester = $activeSemesterId ? (bool)\App\Models\Semester::where('id', $activeSemesterId)->value('is_active') : true;
+            if ($isCurrentActiveSemester) {
+                $q->active();
+            }
+            $students = $q->with(['attendances' => function ($query) use ($year, $months) {
                     $query->whereYear('attendance_time', $year)
                           ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
                     if (session('active_semester_id')) {
