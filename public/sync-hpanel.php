@@ -28,12 +28,38 @@ $stats = [
 ];
 
 try {
-    // 1. Dapatkan Tahun Ajaran 2025/2026 dan 2026/2027 secara dinamis
-    $year2025 = AcademicYear::where('name', 'like', '%2025%')->first() ?? AcademicYear::orderBy('id')->first();
-    $year2026 = AcademicYear::where('name', 'like', '%2026%')->first() ?? AcademicYear::orderBy('id', 'desc')->first();
+    // 1. Dapatkan Seluruh Tahun Ajaran 2025/2026 (termasuk yang baru dibuat di hPanel)
+    $years2025 = AcademicYear::where('name', 'like', '%2025%')
+        ->orWhere('id', 1)
+        ->get();
+
+    if ($years2025->isEmpty()) {
+        $years2025 = AcademicYear::orderBy('id')->take(1)->get();
+    }
+
+    $year2025 = $years2025->first();
+    $year2026 = AcademicYear::where('name', 'like', '%2026%')->orderBy('id', 'desc')->first();
+
+    // Dapatkan semua semester untuk tahun 2025/2026 atau yang baru ditambahkan
+    $semesters2025 = Semester::whereIn('academic_year_id', $years2025->pluck('id'))
+        ->orWhere(function($q) {
+            $q->where('name', 'like', '%2025%')
+              ->orWhere('name', 'like', '%Ganjil%')
+              ->orWhere('name', 'like', '%Genap%');
+        })
+        ->get();
+
+    // Jika ada semester yang academic_year_id masih kosong, hubungkan ke year2025
+    foreach ($semesters2025 as $sem) {
+        if (!$sem->academic_year_id && $year2025) {
+            try {
+                DB::table('semesters')->where('id', $sem->id)->update(['academic_year_id' => $year2025->id]);
+                $sem->academic_year_id = $year2025->id;
+            } catch (\Throwable $e) {}
+        }
+    }
 
     if ($year2025) {
-        $semesters2025 = Semester::where('academic_year_id', $year2025->id)->get();
         $stats['semesters_synced'] = $semesters2025->count();
         $sem1 = $semesters2025->first()?->id ?? 1;
 

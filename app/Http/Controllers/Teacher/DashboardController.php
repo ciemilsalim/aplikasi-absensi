@@ -152,6 +152,15 @@ class DashboardController extends Controller
         $studentsInClass = collect();
         if ($class) {
             $studentsInClass = $class->students()->orderBy('name')->get();
+            if ($studentsInClass->isEmpty() && \Illuminate\Support\Facades\Schema::hasTable('class_student')) {
+                $studentIdsFromPivot = DB::table('class_student')
+                    ->where('school_class_id', $class->id)
+                    ->pluck('student_id')
+                    ->unique();
+                if ($studentIdsFromPivot->isNotEmpty()) {
+                    $studentsInClass = Student::whereIn('id', $studentIdsFromPivot)->orderBy('name')->get();
+                }
+            }
             if ($studentsInClass->isEmpty()) {
                 $studentsInClass = Student::where('school_class_id', $class->id)->orderBy('name')->get();
             }

@@ -33,8 +33,16 @@ class Teacher extends Model
     // Relasi untuk mengecek apakah guru ini adalah wali kelas pada tahun ajaran aktif
     public function homeroomClass()
     {
-        $activeYearId = session('active_academic_year_id') 
-            ?? \App\Models\Semester::where('is_active', true)->value('academic_year_id');
+        $activeYearId = session('active_academic_year_id');
+        $activeSemesterId = session('active_semester_id');
+
+        if (!$activeYearId && $activeSemesterId) {
+            $activeYearId = \App\Models\Semester::where('id', $activeSemesterId)->value('academic_year_id');
+        }
+
+        if (!$activeYearId) {
+            $activeYearId = \App\Models\Semester::where('is_active', true)->value('academic_year_id');
+        }
 
         $relation = $this->hasOne(SchoolClass::class, 'teacher_id');
 
