@@ -16,8 +16,14 @@ class SetAcademicPeriod
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check if there's no active semester in session
-        if (!session()->has('active_semester_id')) {
+        if (session()->has('active_semester_id')) {
+            if (!session()->has('active_academic_year_id')) {
+                $semester = Semester::find(session('active_semester_id'));
+                if ($semester) {
+                    session(['active_academic_year_id' => $semester->academic_year_id]);
+                }
+            }
+        } else {
             $activeSemester = Semester::where('is_active', true)->first();
             
             if ($activeSemester) {

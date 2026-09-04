@@ -68,32 +68,56 @@ class SchoolClassController extends Controller
 
     public function store(Request $request)
     {
+        $activeYearId = session('active_academic_year_id') 
+            ?? \App\Models\Semester::where('is_active', true)->value('academic_year_id');
+
         $request->validate([
-            'name' => 'required|string|max:255|unique:school_classes,name',
-            'teacher_id' => 'nullable|exists:teachers,id|unique:school_classes,teacher_id',
-            'level_id' => 'required|exists:levels,id', // <-- TAMBAHKAN VALIDASI
+            'name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('school_classes')->where(fn($q) => $q->where('academic_year_id', $activeYearId)->whereNull('deleted_at'))
+            ],
+            'teacher_id' => [
+                'nullable', 'exists:teachers,id',
+                Rule::unique('school_classes', 'teacher_id')->where(fn($q) => $q->where('academic_year_id', $activeYearId)->whereNull('deleted_at'))
+            ],
+            'level_id' => 'required|exists:levels,id',
         ], [
-            'teacher_id.unique' => 'Guru ini sudah menjadi wali di kelas lain.'
+            'name.unique' => 'Nama kelas ini sudah ada pada tahun ajaran ini.',
+            'teacher_id.unique' => 'Guru ini sudah menjadi wali di kelas lain pada tahun ajaran ini.'
         ]);
-        SchoolClass::create($request->all());
+
+        $data = $request->all();
+        $data['academic_year_id'] = $activeYearId;
+        $data['semester_id'] = session('active_semester_id') ?? \App\Models\Semester::where('is_active', true)->value('id');
+
+        SchoolClass::create($data);
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil ditambahkan.');
     }
     
     public function edit(SchoolClass $class)
     {
         $teachers = Teacher::with('homeroomClass')->orderBy('name')->get();
-        $levels = Level::orderBy('name')->get(); // <-- TAMBAHKAN INI
-        return view('admin.classes.edit', compact('class', 'teachers', 'levels')); // <-- UBAH INI
+        $levels = Level::orderBy('name')->get();
+        return view('admin.classes.edit', compact('class', 'teachers', 'levels'));
     }
 
     public function update(Request $request, SchoolClass $class)
     {
+        $classYearId = $class->academic_year_id;
+
         $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('school_classes')->ignore($class->id)],
-            'teacher_id' => ['nullable', 'exists:teachers,id', Rule::unique('school_classes', 'teacher_id')->ignore($class->id)],
-            'level_id' => ['required', 'exists:levels,id'], // <-- TAMBAHKAN VALIDASI
+            'name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('school_classes')->where(fn($q) => $q->where('academic_year_id', $classYearId)->whereNull('deleted_at'))->ignore($class->id)
+            ],
+            'teacher_id' => [
+                'nullable', 'exists:teachers,id',
+                Rule::unique('school_classes', 'teacher_id')->where(fn($q) => $q->where('academic_year_id', $classYearId)->whereNull('deleted_at'))->ignore($class->id)
+            ],
+            'level_id' => ['required', 'exists:levels,id'],
         ], [
-            'teacher_id.unique' => 'Guru ini sudah menjadi wali di kelas lain.'
+            'name.unique' => 'Nama kelas ini sudah ada pada tahun ajaran ini.',
+            'teacher_id.unique' => 'Guru ini sudah menjadi wali di kelas lain pada tahun ajaran ini.'
         ]);
         
         $class->update($request->all());

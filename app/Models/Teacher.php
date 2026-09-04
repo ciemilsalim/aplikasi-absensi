@@ -30,10 +30,25 @@ class Teacher extends Model
         return $this->hasMany(TeacherAttendance::class);
     }
 
-    // Relasi untuk mengecek apakah guru ini adalah wali kelas
+    // Relasi untuk mengecek apakah guru ini adalah wali kelas pada tahun ajaran aktif
     public function homeroomClass()
     {
-        return $this->hasOne(SchoolClass::class, 'teacher_id');
+        $activeYearId = session('active_academic_year_id') 
+            ?? \App\Models\Semester::where('is_active', true)->value('academic_year_id');
+
+        $relation = $this->hasOne(SchoolClass::class, 'teacher_id');
+
+        if ($activeYearId) {
+            $relation->where('school_classes.academic_year_id', $activeYearId);
+        }
+
+        return $relation;
+    }
+
+    // Seluruh riwayat kelas binaan wali kelas (lintas tahun ajaran)
+    public function allHomeroomClasses()
+    {
+        return $this->hasMany(SchoolClass::class, 'teacher_id')->withoutGlobalScope('academic_period');
     }
 
     public function subjects()

@@ -14,7 +14,67 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Sinkronisasi schedules.school_class_id dari teaching_assignments
+        $now = now();
+
+        // 1. Backfill tabel school_classes, teaching_assignments, dan schedules jika academic_year_id masih NULL
+        DB::table('school_classes')
+            ->whereNull('academic_year_id')
+            ->where('created_at', '<', '2026-07-01')
+            ->update([
+                'academic_year_id' => 1,
+                'semester_id' => 1,
+            ]);
+
+        DB::table('teaching_assignments')
+            ->whereNull('academic_year_id')
+            ->where('created_at', '<', '2026-07-01')
+            ->update([
+                'academic_year_id' => 1,
+                'semester_id' => 1,
+            ]);
+
+        DB::table('schedules')
+            ->whereNull('academic_year_id')
+            ->where('created_at', '<', '2026-07-01')
+            ->update([
+                'academic_year_id' => 1,
+                'semester_id' => 1,
+            ]);
+
+        // 2. Pastikan kelas-kelas historis Tahun Ajaran 2025/2026 tersedia di database
+        $historicalClasses = [
+            1 => ['name' => 'Kelas 7A', 'level_id' => 1, 'teacher_id' => 2],
+            2 => ['name' => 'Kelas 9A', 'level_id' => 3, 'teacher_id' => 1],
+            3 => ['name' => 'Kelas 8A', 'level_id' => 2, 'teacher_id' => 4],
+            4 => ['name' => 'Kelas 7B', 'level_id' => 1, 'teacher_id' => 3],
+            5 => ['name' => 'Kelas 7C', 'level_id' => 1, 'teacher_id' => 5],
+            7 => ['name' => 'X-1', 'level_id' => 1, 'teacher_id' => 15],
+            8 => ['name' => 'X-2', 'level_id' => 1, 'teacher_id' => 16],
+            9 => ['name' => 'XI-1', 'level_id' => 2, 'teacher_id' => 17],
+        ];
+
+        foreach ($historicalClasses as $id => $classData) {
+            $existingClass = DB::table('school_classes')->where('id', $id)->first();
+            if (!$existingClass) {
+                DB::table('school_classes')->insert([
+                    'id' => $id,
+                    'name' => $classData['name'],
+                    'level_id' => $classData['level_id'],
+                    'teacher_id' => $classData['teacher_id'],
+                    'academic_year_id' => 1,
+                    'semester_id' => 1,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            } else {
+                DB::table('school_classes')->where('id', $id)->update([
+                    'academic_year_id' => 1,
+                    'semester_id' => 1,
+                ]);
+            }
+        }
+
+        // 3. Sinkronisasi schedules.school_class_id dari teaching_assignments
         $schedules = DB::table('schedules as s')
             ->join('teaching_assignments as ta', 's.teaching_assignment_id', '=', 'ta.id')
             ->whereNull('s.school_class_id')
@@ -27,36 +87,23 @@ return new class extends Migration
                 ->update(['school_class_id' => $item->school_class_id]);
         }
 
-        // 2. Daftar siswa per kelas di Tahun Ajaran 2025/2026 (Academic Year ID = 1)
-        // Berdasarkan jejak riwayat mutasi (student_class_histories), presensi mapel, dan presensi harian
+        // 4. Rekonstruksi relasi siswa ke kelas (class_student) untuk Tahun 2025/2026
         $classStudentsYear1 = [
-            // Kelas 7A (ID: 1)
             1 => [1, 2, 3, 5, 6, 43, 44, 45, 72, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95],
-            // Kelas 9A (ID: 2) - Termasuk siswa yang sudah lulus (ID 7 & 8)
             2 => [7, 8, 9, 10, 11, 12, 13, 14],
-            // Kelas 8A (ID: 3)
             3 => [15, 16, 17, 18, 19, 20, 21, 22],
-            // Kelas 7B (ID: 4) - Siswa yang naik kelas ke 8A di 2026/2027
             4 => [23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35],
-            // Kelas 7C (ID: 5)
             5 => [46, 47, 48, 49, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 96, 97, 98, 99, 100, 101, 102],
-            // X-1 (ID: 7)
             7 => [125, 126, 127, 128, 129, 130, 131, 132, 133, 134],
-            // X-2 (ID: 8)
             8 => [135, 136, 137, 138, 139, 140, 141, 142, 143, 144],
-            // XI-1 (ID: 9)
             9 => [145, 146, 147, 148, 149, 150, 151, 152, 153, 154],
         ];
 
-        $now = now();
-
-        // Rekonstruksi class_student untuk Semester 1 (2025/2026 Genap) dan Semester 2 (2025/2026 Ganjil)
         $semestersYear1 = [1, 2];
 
         foreach ($semestersYear1 as $semesterId) {
             foreach ($classStudentsYear1 as $classId => $studentIds) {
                 foreach ($studentIds as $studentId) {
-                    // Validasi siswa ada di tabel students
                     $studentExists = DB::table('students')->where('id', $studentId)->exists();
                     if (!$studentExists) {
                         continue;
@@ -84,7 +131,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Rollback data rekonstruksi semester 1 dan 2
         DB::table('class_student')->whereIn('semester_id', [1, 2])->delete();
     }
 };
