@@ -857,7 +857,8 @@ class DashboardController extends Controller
         $startDate = $selectedDate->copy()->startOfMonth();
         $endDate = $selectedDate->copy()->endOfMonth();
 
-        $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
+        $allAttendancesInMonth = Attendance::withoutGlobalScope('academic_period')
+            ->whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->get();
 
@@ -954,7 +955,8 @@ class DashboardController extends Controller
         $endDate = $selectedDate->copy()->endOfMonth();
         $paperSize = strtolower($request->input('paper_size', 'a4'));
 
-        $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
+        $allAttendancesInMonth = Attendance::withoutGlobalScope('academic_period')
+            ->whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->get();
 
@@ -1138,23 +1140,38 @@ class DashboardController extends Controller
 
         $students = $class->students()
             ->with(['attendances' => function ($query) use ($year, $months) {
-                $query->whereYear('attendance_time', $year)
+                $query->withoutGlobalScope('academic_period')
+                      ->whereYear('attendance_time', $year)
                       ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
-                if (session('active_semester_id')) {
-                    $query->where('semester_id', session('active_semester_id'));
-                }
             }])
             ->orderBy('name')
             ->get();
 
         if ($students->isEmpty()) {
+            if (\Illuminate\Support\Facades\Schema::hasTable('class_student')) {
+                $studentIdsFromPivot = \Illuminate\Support\Facades\DB::table('class_student')
+                    ->where('school_class_id', $class->id)
+                    ->pluck('student_id')
+                    ->unique();
+                if ($studentIdsFromPivot->isNotEmpty()) {
+                    $students = Student::whereIn('id', $studentIdsFromPivot)
+                        ->with(['attendances' => function ($query) use ($year, $months) {
+                            $query->withoutGlobalScope('academic_period')
+                                  ->whereYear('attendance_time', $year)
+                                  ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                        }])
+                        ->orderBy('name')
+                        ->get();
+                }
+            }
+        }
+
+        if ($students->isEmpty()) {
             $students = Student::where('school_class_id', $class->id)
                 ->with(['attendances' => function ($query) use ($year, $months) {
-                    $query->whereYear('attendance_time', $year)
+                    $query->withoutGlobalScope('academic_period')
+                          ->whereYear('attendance_time', $year)
                           ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
-                    if (session('active_semester_id')) {
-                        $query->where('semester_id', session('active_semester_id'));
-                    }
                 }])
                 ->orderBy('name')
                 ->get();
@@ -1357,28 +1374,40 @@ class DashboardController extends Controller
 
         if ($params['target_type'] === 'student' && !empty($params['student_id'])) {
             $students = Student::where('id', $params['student_id'])->with(['attendances' => function ($query) use ($year, $months) {
-                $query->whereYear('attendance_time', $year)
+                $query->withoutGlobalScope('academic_period')
+                      ->whereYear('attendance_time', $year)
                       ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
-                if (session('active_semester_id')) {
-                    $query->where('semester_id', session('active_semester_id'));
-                }
             }])->get();
         } else {
             $students = $class->students()->with(['attendances' => function ($query) use ($year, $months) {
-                $query->whereYear('attendance_time', $year)
+                $query->withoutGlobalScope('academic_period')
+                      ->whereYear('attendance_time', $year)
                       ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
-                if (session('active_semester_id')) {
-                    $query->where('semester_id', session('active_semester_id'));
-                }
             }])->get();
 
             if ($students->isEmpty()) {
-                $students = Student::where('school_class_id', $class->id)->with(['attendances' => function ($query) use ($year, $months) {
-                    $query->whereYear('attendance_time', $year)
-                          ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
-                    if (session('active_semester_id')) {
-                        $query->where('semester_id', session('active_semester_id'));
+                if (\Illuminate\Support\Facades\Schema::hasTable('class_student')) {
+                    $studentIdsFromPivot = \Illuminate\Support\Facades\DB::table('class_student')
+                        ->where('school_class_id', $class->id)
+                        ->pluck('student_id')
+                        ->unique();
+                    if ($studentIdsFromPivot->isNotEmpty()) {
+                        $students = Student::whereIn('id', $studentIdsFromPivot)
+                            ->with(['attendances' => function ($query) use ($year, $months) {
+                                $query->withoutGlobalScope('academic_period')
+                                      ->whereYear('attendance_time', $year)
+                                      ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
+                            }])
+                            ->get();
                     }
+                }
+            }
+
+            if ($students->isEmpty()) {
+                $students = Student::where('school_class_id', $class->id)->with(['attendances' => function ($query) use ($year, $months) {
+                    $query->withoutGlobalScope('academic_period')
+                          ->whereYear('attendance_time', $year)
+                          ->whereIn(\DB::raw('MONTH(attendance_time)'), $months);
                 }])->get();
             }
         }
@@ -1496,7 +1525,8 @@ class DashboardController extends Controller
         $startDate = $selectedDate->copy()->startOfMonth();
         $endDate = $selectedDate->copy()->endOfMonth();
 
-        $allAttendancesInMonth = Attendance::whereIn('student_id', $studentIds)
+        $allAttendancesInMonth = Attendance::withoutGlobalScope('academic_period')
+            ->whereIn('student_id', $studentIds)
             ->whereBetween('attendance_time', [$startDate, $endDate])
             ->get();
 

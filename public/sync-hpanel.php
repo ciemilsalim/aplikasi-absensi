@@ -463,6 +463,46 @@ try {
                 ->where('id', $item->schedule_id)
                 ->update(['school_class_id' => $item->school_class_id]);
         }
+
+        // 9. Backfill data riwayat presensi harian & mapel 2025/2026 berdasarkan tanggal (Timestamp)
+        $semGanjil = $semesters2025->first(fn($s) => str_contains(strtolower($s->name ?? ''), 'ganjil') || ($s->semester_number ?? 0) == 1) ?? $semesters2025->first();
+        $semGenap  = $semesters2025->first(fn($s) => str_contains(strtolower($s->name ?? ''), 'genap')  || ($s->semester_number ?? 0) == 2) ?? $semesters2025->last();
+
+        if ($semGanjil) {
+            try {
+                DB::table('attendances')
+                    ->whereBetween('attendance_time', ['2025-07-01 00:00:00', '2025-12-31 23:59:59'])
+                    ->update([
+                        'academic_year_id' => $year2025->id,
+                        'semester_id' => $semGanjil->id,
+                    ]);
+
+                DB::table('subject_attendances')
+                    ->whereBetween('created_at', ['2025-07-01 00:00:00', '2025-12-31 23:59:59'])
+                    ->update([
+                        'academic_year_id' => $year2025->id,
+                        'semester_id' => $semGanjil->id,
+                    ]);
+            } catch (\Throwable $e) {}
+        }
+
+        if ($semGenap) {
+            try {
+                DB::table('attendances')
+                    ->whereBetween('attendance_time', ['2026-01-01 00:00:00', '2026-06-30 23:59:59'])
+                    ->update([
+                        'academic_year_id' => $year2025->id,
+                        'semester_id' => $semGenap->id,
+                    ]);
+
+                DB::table('subject_attendances')
+                    ->whereBetween('created_at', ['2026-01-01 00:00:00', '2026-06-30 23:59:59'])
+                    ->update([
+                        'academic_year_id' => $year2025->id,
+                        'semester_id' => $semGenap->id,
+                    ]);
+            } catch (\Throwable $e) {}
+        }
     }
 
     // Bersihkan semua cache Laravel
