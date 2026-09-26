@@ -64,6 +64,6 @@ Seluruh jejak rekam historis pengembangan teknis repositori didokumentasikan pad
 |---|---|---|---|
 | **RPG-01** | Verification Script & Path Log | `verify_path_classification.py` | Membuktikan 457 commit pengembangan aplikasi teridentifikasi yang mengubah kode sumber `app/`, `routes/`, `resources/`, `database/`, dsb. |
 | **RPG-02** | Riwayat Cabang / Branch | `git branch -a`, `git for-each-ref` | Membuktikan 1 cabang lokal (`main`), 1 remote tracking branch (`origin/main`), alur komit linier |
-| **RPG-03** | Berkas Log Histori Lengkap | `git-history-full.txt` | Membuktikan 458 Total Commit Repository `origin/main` (100% ter-push ke Remote GitHub) dan 459 Total Commit `HEAD` Lokal |
+| **RPG-03** | Berkas Log Histori Lengkap | `git-history-full.txt` | Membuktikan 458 total commit pada repository origin/main dan 459 total commit pada HEAD lokal |
 | **RPG-04** | Riwayat Merge Commit | `git log --all --merges` | Membuktikan 0 komit penggabungan (*merge commit*), alur pengembangan linier pada cabang `main` |
 | **RPG-05** | Pemisahan Commit Aplikasi vs LPJ | `git diff origin/main..HEAD` | Last Application Development Commit: `f519ebd` (04 Sept 2026); First LPJ Tooling Commit: `b131b87` (26 Sept 2026) |

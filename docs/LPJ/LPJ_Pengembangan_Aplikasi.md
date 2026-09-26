@@ -325,17 +325,16 @@ Rincian tata kelola layanan:
 Riwayat pengembangan aplikasi disusun berdasarkan rekam perubahan repositori Git (`siasek/aplikasi-absensi`) dan repositori remote GitHub (`ciemilsalim/aplikasi-absensi`) yang terverifikasi. Dokumen ini secara rasional memisahkan **histori kode sumber aplikasi** dari **histori dokumentasi/tooling LPJ** berdasarkan klasifikasi path berkas yang diubah (*changed files path verification*).
 
 #### 1. Statistik Riwayat Repositori (Verifikasi Path Commit)
-- **Total Commit Repository `origin/main`**: **458 Komit** (100% ter-push di remote GitHub `ciemilsalim/aplikasi-absensi.git`).
-- **Total Commit Repository `HEAD` Lokal**: **459 Komit** (458 komit remote + 1 komit agent skill LPJ di lokal).
-- **Commit Pengembangan Aplikasi Yang Teridentifikasi**: **457 Komit** (18 Juni 2025 s.d. 04 September 2026, 444 hari kalender, terdiri dari 456 komit murni kode aplikasi + 1 komit hybrid inisialisasi awal `c2b78ff`).
-- **Commit Dokumentasi / Tooling**: **2 Komit** (1 komit dokumentasi `README.md` `bcc3f7e` + 1 komit agent skill LPJ `b131b87`).
+- **Status Commit & Remote**: Sebanyak 458 commit telah berada pada `origin/main`. Berdasarkan inspeksi path perubahan, 457 commit teridentifikasi sebagai commit pengembangan aplikasi, terdiri atas 456 commit murni pengembangan aplikasi dan 1 commit hybrid inisialisasi. Satu commit tambahan pada `HEAD` lokal (`b131b87`) merupakan tooling/dokumentasi LPJ dan belum berada pada `origin/main`.
+- **Commit Pengembangan Aplikasi Yang Teridentifikasi**: **457 Komit** (18 Juni 2025 s.d. 04 September 2026, 444 hari kalender).
+- **Commit Dokumentasi / Tooling LPJ**: **2 Komit** (1 komit `README.md` `bcc3f7e` + 1 komit agent skill LPJ `b131b87`).
 - **Last Application Development Commit**: `f519ebde1f7ba4e56e1de29216c60f51d46d9407` (`f519ebd` / 04 September 2026).
 - **First LPJ Tooling Commit**: `b131b87fb77ca41e1d2ef0ff21fa6265dcbce20d` (`b131b87` / 26 September 2026).
 - **Jumlah Cabang (*Branch*)**: 1 Cabang utama lokal (`main`) dan 1 Remote tracking branch (`origin/main`).
 - **Jumlah Penanda Versi (*Tag*)**: 0 Tag (Repository tidak memiliki tag versi formal pada saat audit).
 - **Jumlah Komit Penggabungan (*Merge*)**: 0 Komit Merge (Seluruh komit bersifat linier pada cabang `main`).
 
-#### 2. Timeline Tahapan Pengembangan Kode Sumber Aplikasi (457 Commit)
+#### 2. Timeline 13 Tahap Pengembangan Kode Sumber Aplikasi (457 Commit)
 | No | Tanggal / Periode | Tahap Pengembangan Aplikasi | Ringkasan Perubahan Kode Sumber | Bukti Repositori |
 |---|---|---|---|---|
 | 1 | 18 – 19 Juni 2025 | Inisialisasi & Fondasi Absensi Harian | Inisialisasi repositori, jam masuk/pulang, modal presensi, pencarian siswa dasbor, dan impor Excel data siswa. | `c2b78ff` s.d. `00f63d3` |

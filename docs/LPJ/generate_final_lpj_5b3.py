@@ -222,9 +222,6 @@ def generate_lpj_documents_5b3():
                         row.cells[idx].width = Cm(w)
 
         set_table_header_and_split(t)
-        p_space = doc.add_paragraph()
-        p_space.paragraph_format.space_after = Pt(4)
-        p_space.paragraph_format.space_before = Pt(0)
         return t
 
     # -------------------------------------------------------------
@@ -511,14 +508,14 @@ def generate_lpj_documents_5b3():
         ("Tabel 1", "Parameter Administrasi & Informasi Layanan", "ii"),
         ("Tabel 2", "Identitas Aplikasi SIASEK", "3"),
         ("Tabel 3", "Rincian Layanan & Kepemilikan Zahradev", "5"),
-        ("Tabel 4", "Timeline 6 Tahap Pengembangan Repositori", "6"),
+        ("Tabel 4", "Timeline 13 Tahap Pengembangan Repositori", "6"),
         ("Tabel A.1", "Rekapitulasi Statistik Status Kelengkapan 47 Fitur", "14"),
         ("Tabel A.2", "Matriks Kelengkapan Fitur Berdasarkan Domain Sistem", "14"),
         ("Tabel B.1", "Ringkasan Eksekusi Automated Tests (25 Test Cases)", "18"),
         ("Tabel B.2", "Tabel Rinci Hasil Uji Otomatis per Test Case", "18"),
         ("Tabel B.3", "Matriks Pengujian Manual & Verifikasi Antarmuka", "19"),
         ("Tabel C.1", "Korelasi Bukti Faktual Repositori dan Runtime (E-01 s.d. E-30)", "21"),
-        ("Tabel C.2", "Indeks Bukti Riwayat Repositori Git (RPG-01 s.d. RPG-04)", "22"),
+        ("Tabel C.2", "Indeks Bukti Riwayat Repositori Git (RPG-01 s.d. RPG-05)", "22"),
         ("Tabel D.1", "Rekapitulasi Target dan Realisasi Bukti Screenshot (SS-01 s.d. SS-27)", "23")
     ]
 
@@ -594,8 +591,8 @@ def generate_lpj_documents_5b3():
         "**1. Fondasi Arsitektur**: Beroperasi di atas Laravel 12.56.0, PHP 8.2.1, MySQL db_absen (89 tabel fisik), Blade SSR, dan Face-API.js lokal.",
         "**2. Struktur Kode**: Terdiri atas 68 controller, 32 model Eloquent, 10 middleware kustom, 268 rute terdaftar, dan 65 migrasi lokal berstatus Ran.",
         "**3. Rekam Bukti Visual**: Berhasil mengumpulkan 25 berkas screenshot fisik PNG (SS-01 s.d. SS-05, SS-07, SS-09 s.d. SS-27), dengan 2 screenshot (SS-06 & SS-08) dicatat jujur sebagai belum terverifikasi.",
-        "**4. Rekam Bukti Kode**: Terindeks 30 bukti struktural (E-01 s.d. E-30) dan 4 bukti riwayat repositori (RPG-01 s.d. RPG-04).",
-        "**5. Riwayat Repositori**: Rentang periode pengembangan: 18 Juni 2025 s.d. 02 Agustus 2025 (46 hari kalender) mencatat 111 commit pada branch `main` (0 tag, 0 merge commit). Remote repository terdeteksi: `https://github.com/ciemilsalim/aplikasi-absensi.git`.",
+        "**4. Rekam Bukti Kode**: Terindeks 30 bukti struktural (E-01 s.d. E-30) dan 5 bukti riwayat repositori (RPG-01 s.d. RPG-05).",
+        "**5. Riwayat Repositori**: Total 457 commit pengembangan aplikasi (456 commit murni aplikasi + 1 hybrid initialization `c2b78ff`), 458 commit pada remote `origin/main`, dan 459 commit pada local `HEAD`. Last application commit: `f519ebd` (04 September 2026) melintasi 13 tahap pengembangan. First LPJ tooling commit: `b131b87` (26 September 2026). Remote repository: `https://github.com/ciemilsalim/aplikasi-absensi.git`.",
         "**6. Evaluasi Keamanan**: Autentikasi Bcrypt, CSRF protection, dan pembatasan role berjalan stabil dengan 1 temuan teknis pada endpoint `/fix-storage-link`."
     ]
     for b in rekap_bullets:
@@ -742,7 +739,7 @@ def generate_lpj_documents_5b3():
     # LAMPIRAN C
     doc.add_page_break()
     doc.add_heading("LAMPIRAN C - DAFTAR BUKTI", level=1)
-    add_styled_paragraph("Korelasi 30 bukti struktural (E-01 s.d. E-30) dan 4 bukti riwayat repositori (RPG-01 s.d. RPG-04):")
+    add_styled_paragraph("Korelasi 30 bukti struktural (E-01 s.d. E-30) dan 5 bukti riwayat repositori (RPG-01 s.d. RPG-05):")
 
     daftar_bukti_path = 'docs/LPJ/Daftar_Bukti.md'
     if os.path.exists(daftar_bukti_path):

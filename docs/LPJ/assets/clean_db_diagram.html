@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <title>Diagram Overview Database SIASEK</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            padding: 30px;
+            width: 1700px;
+        }
+        .container {
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .title {
+            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 15px;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+        .schema-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .module-box {
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 16px;
+            background: #ffffff;
+        }
+        .mod-title {
+            font-size: 16px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+        .mod-presensi { background: #2563eb; }
+        .mod-akademik { background: #059669; }
+        .mod-users { background: #7c3aed; }
+        .mod-ijin { background: #d97706; }
+        .mod-chat { background: #0891b2; }
+        .mod-spatie { background: #dc2626; }
+
+        .table-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+        }
+        .tbl-name {
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+        }
+        .tbl-field {
+            font-size: 12px;
+            color: #475569;
+            font-family: 'Consolas', monospace;
+            line-height: 1.5;
+        }
+        .pk { color: #b91c1c; font-weight: bold; }
+        .fk { color: #1d4ed8; font-weight: bold; }
+        .footer-note {
+            text-align: right;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">DIAGRAM OVERVIEW SCHEMAS DATABASE (89 TABEL db_absen)</div>
+        <div class="subtitle">Struktur Hubungan Tabel Utama - Aplikasi Presensi SIASEK SMP Negeri 1 Biau</div>
+
+        <div class="schema-grid">
+            <!-- MODUL 1: PRESENSI INTI -->
+            <div class="module-box">
+                <div class="mod-title mod-presensi">📌 MODUL PRESENSI INTI</div>
+                <div class="table-card">
+                    <div class="tbl-name">attendances (Presensi Gerbang)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> student_id, semester_id</div>
+                    <div class="tbl-field">attendance_time, checkout_time, status</div>
+                </div>
+                <div class="table-card">
+                    <div class="tbl-name">subject_attendances (Presensi Mapel)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> student_id, schedule_id</div>
+                    <div class="tbl-field">status, notes, created_at</div>
+                </div>
+                <div class="table-card">
+                    <div class="tbl-name">teacher_attendances (Presensi Guru)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> teacher_id</div>
+                    <div class="tbl-field">status, latitude, longitude, photo_path</div>
+                </div>
+            </div>
+
+            <!-- MODUL 2: AKADEMIK & KBM -->
+            <div class="module-box">
+                <div class="mod-title mod-akademik">🎓 MODUL AKADEMIK & KBM</div>
+                <div class="table-card">
+                    <div class="tbl-name">students (Siswa)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> school_class_id</div>
+                    <div class="tbl-field">nis, name, unique_id, face_descriptor</div>
+                </div>
+                <div class="table-card">
+                    <div class="tbl-name">teachers (Guru)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> user_id</div>
+                    <div class="tbl-field">nip, nuptk, name, face_descriptor</div>
+                </div>
+                <div class="table-card">
+                    <div class="tbl-name">school_classes, schedules, journals</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> teacher_id, level_id, subject_id</div>
+                    <div class="tbl-field">materi_pokok, kegiatan_pembelajaran</div>
+                </div>
+            </div>
+
+            <!-- MODUL 3: USERS & AUTH -->
+            <div class="module-box">
+                <div class="mod-title mod-users">🔐 USERS & SINGLE SIGN-ON</div>
+                <div class="table-card">
+                    <div class="tbl-name">users (Pengguna Sistem)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | name, email, password, role</div>
+                    <div class="tbl-field">last_seen_at, deleted_at</div>
+                </div>
+                <div class="table-card">
+                    <div class="tbl-name">parents (Orang Tua Siswa)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> user_id</div>
+                    <div class="tbl-field">phone_number, is_onboarding_completed</div>
+                </div>
+                <div class="table-card">
+                    <div class="tbl-name">sso_tokens (Token SSO Mokopani)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> user_id</div>
+                    <div class="tbl-field">token, expires_at, is_used</div>
+                </div>
+            </div>
+
+            <!-- MODUL 4: PERIZINAN & PERMIT -->
+            <div class="module-box">
+                <div class="mod-title mod-ijin">📑 PERIZINAN & PERMIT</div>
+                <div class="table-card">
+                    <div class="tbl-name">leave_requests (Pengajuan Izin/Sakit)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> student_id, parent_id, approved_by</div>
+                    <div class="tbl-field">start_date, end_date, type, status, attachment</div>
+                </div>
+                <div class="table-card">
+                    <div class="tbl-name">student_permits (Surat Permit Gerbang)</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> student_id, attendance_id</div>
+                    <div class="tbl-field">time_out, time_in, reason</div>
+                </div>
+            </div>
+
+            <!-- MODUL 5: PESAN & NOTIFIKASI -->
+            <div class="module-box">
+                <div class="mod-title mod-chat">💬 PESAN & NOTIFIKASI</div>
+                <div class="table-card">
+                    <div class="tbl-name">conversations & messages</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> parent_id, teacher_id</div>
+                    <div class="tbl-field">body, is_read, attachment_path</div>
+                </div>
+                <div class="table-card">
+                    <div class="tbl-name">notifications</div>
+                    <div class="tbl-field"><span class="pk">PK</span> id | <span class="fk">FK</span> user_id</div>
+                    <div class="tbl-field">type, data, read_at</div>
+                </div>
+            </div>
+
+            <!-- MODUL 6: SPATIE RBAC & LAINNYA -->
+            <div class="module-box">
+                <div class="mod-title mod-spatie">🛡️ SPATIE RBAC & LOGS</div>
+                <div class="table-card">
+                    <div class="tbl-name">roles & permissions (Spatie RBAC)</div>
+                    <div class="tbl-field">17 Roles, 23 Permissions</div>
+                    <div class="tbl-field">model_has_roles, role_has_permissions</div>
+                </div>
+                <div class="table-card">
+                    <div class="tbl-name">89 Tabel Database Total</div>
+                    <div class="tbl-field">db_absen shared database dengan SIPADA</div>
+                    <div class="tbl-field">Full relational integrity & foreign keys</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">Dokumentasi Skema Database Resmi - Aplikasi Presensi SIASEK SMP Negeri 1 Biau (Total 89 Tabel)</div>
+    </div>
+</body>
+</html>
