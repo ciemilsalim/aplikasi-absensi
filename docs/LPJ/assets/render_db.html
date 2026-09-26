@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Times New Roman', sans-serif;
+            background: #ffffff;
+            margin: 0;
+            padding: 24px;
+        }
+        .diagram-box {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 24px;
+            display: inline-block;
+        }
+        h2 {
+            color: #0f172a;
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .mermaid {
+            background: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="diagram-box">
+        <h2>DIAGRAM OVERVIEW DATABASE APLIKASI PRESENSI SIASEK (89 TABEL)</h2>
+        <div class="mermaid">
+erDiagram
+    USERS ||--o| TEACHERS : "has one teacher profile"
+    USERS ||--o| PARENTS : "has one parent profile"
+    USERS ||--o| STUDENTS : "has one student profile"
+    USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--o{ SSO_TOKENS : "owns tokens"
+    USERS }|--|{ ROLES : "model_has_roles (Spatie)"
+
+    ACADEMIC_YEARS ||--o{ SEMESTERS : "contains"
+    SEMESTERS ||--o{ ATTENDANCES : "scopes"
+    
+    LEVELS ||--o{ SCHOOL_CLASSES : "categorizes"
+    TEACHERS ||--o| SCHOOL_CLASSES : "homeroom teacher (wali kelas)"
+    
+    SCHOOL_CLASSES ||--o{ CLASS_STUDENT : "enrolled students"
+    STUDENTS ||--o{ CLASS_STUDENT : "class placements"
+    
+    PARENTS ||--o{ PARENT_STUDENT : "children relationship"
+    STUDENTS ||--o{ PARENT_STUDENT : "linked parents"
+    
+    STUDENTS ||--o{ ATTENDANCES : "daily gate attendance"
+    ATTENDANCES ||--o{ STUDENT_PERMITS : "gate exit/return passes"
+    
+    SUBJECTS ||--o{ TEACHING_ASSIGNMENTS : "assigned subject"
+    TEACHERS ||--o{ TEACHING_ASSIGNMENTS : "assigned teacher"
+    SCHOOL_CLASSES ||--o{ TEACHING_ASSIGNMENTS : "target class"
+    
+    TEACHING_ASSIGNMENTS ||--o{ SCHEDULES : "scheduled periods"
+    SCHEDULES ||--o{ SUBJECT_ATTENDANCES : "subject attendance session"
+    STUDENTS ||--o{ SUBJECT_ATTENDANCES : "student subject records"
+    
+    SCHEDULES ||--o{ TEACHING_JOURNALS : "class teaching journal"
+    TEACHERS ||--o{ TEACHING_JOURNALS : "journal author"
+    
+    STUDENTS ||--o{ STUDENT_ANECDOTES : "student behavioral logs"
+    TEACHERS ||--o{ STUDENT_ANECDOTES : "recording teacher"
+    
+    STUDENTS ||--o{ LEAVE_REQUESTS : "student absent request"
+    PARENTS ||--o{ LEAVE_REQUESTS : "submitted by parent"
+    USERS ||--o{ LEAVE_REQUESTS : "approved by admin/tu"
+    
+    PARENTS ||--o{ CONVERSATIONS : "parent participant"
+    TEACHERS ||--o{ CONVERSATIONS : "teacher participant"
+    CONVERSATIONS ||--o{ MESSAGES : "message history"
+    
+    PARENTS ||--o{ ADMIN_CONVERSATIONS : "parent participant"
+    USERS ||--o{ ADMIN_CONVERSATIONS : "admin participant"
+    ADMIN_CONVERSATIONS ||--o{ ADMIN_MESSAGES : "admin message history"
+    
+    TEACHERS ||--o{ TEACHER_ATTENDANCES : "self-attendance records"
+    
+    EXTRACURRICULARS ||--o{ EXTRACURRICULAR_STUDENT : "student members"
+    STUDENTS ||--o{ EXTRACURRICULAR_STUDENT : "enrolled in"
+    EXTRACURRICULARS ||--o{ EXTRACURRICULAR_ATTENDANCES : "attendance sessions"
+    STUDENTS ||--o{ EXTRACURRICULAR_ATTENDANCES : "ekskul attendance logs"
+
+    USERS {
+        bigint id PK
+        string name
+        string email
+        string password
+        string role
+        timestamp last_seen_at
+        timestamp deleted_at
+    }
+
+    STUDENTS {
+        bigint id PK
+        string nis
+        string unique_id
+        string name
+        bigint school_class_id FK
+        string photo
+        longtext face_descriptor
+        string status
+    }
+
+    TEACHERS {
+        bigint id PK
+        bigint user_id FK
+        string nip
+        string nuptk
+        string name
+        string photo
+        longtext face_descriptor
+    }
+
+    PARENTS {
+        bigint id PK
+        bigint user_id FK
+        string name
+        string phone_number
+        boolean is_onboarding_completed
+    }
+
+    SCHOOL_CLASSES {
+        bigint id PK
+        string name
+        bigint level_id FK
+        bigint teacher_id FK
+        bigint academic_year_id FK
+    }
+
+    ATTENDANCES {
+        bigint id PK
+        bigint student_id FK
+        bigint semester_id FK
+        timestamp attendance_time
+        time checkout_time
+        string status
+    }
+
+    SUBJECT_ATTENDANCES {
+        bigint id PK
+        bigint student_id FK
+        bigint schedule_id FK
+        string status
+        text notes
+        timestamp created_at
+    }
+
+    STUDENT_PERMITS {
+        bigint id PK
+        bigint student_id FK
+        bigint attendance_id FK
+        time time_out
+        time time_in
+        string reason
+    }
+
+    LEAVE_REQUESTS {
+        bigint id PK
+        bigint student_id FK
+        bigint parent_id FK
+        date start_date
+        date end_date
+        string type
+        text reason
+        string attachment
+        string status
+        bigint approved_by FK
+    }
+
+    TEACHING_JOURNALS {
+        bigint id PK
+        bigint teacher_id FK
+        bigint schedule_id FK
+        date date
+        int jp
+        string materi_pokok
+        text kegiatan_pembelajaran
+        boolean is_verified
+        bigint verified_by FK
+    }
+
+    TEACHER_ATTENDANCES {
+        bigint id PK
+        bigint teacher_id FK
+        string status
+        decimal latitude
+        decimal longitude
+        string photo_path
+        time checkout_time
+    }
+
+        </div>
+    </div>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            er: { useMaxWidth: false, htmlLabels: true }
+        });
+    </script>
+</body>
+</html>

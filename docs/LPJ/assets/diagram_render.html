@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Times New Roman', sans-serif;
+            background: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            display: inline-block;
+        }
+        h2 { color: #1e293b; margin-top: 0; }
+        .mermaid { background: #ffffff; }
+    </style>
+</head>
+<body>
+    <div id="arch-box" class="container">
+        <h2>Diagram Arsitektur Sistem SIASEK</h2>
+        <div class="mermaid">
+graph TB
+    subgraph Klien["Lapis Pengguna & Perangkat Klien"]
+        AdminDevice["Perangkat Petugas Piket / Admin / TU<br/>(PC / Laptop / Web Browser)"]
+        TeacherDevice["Smartphone / Laptop Guru<br/>(Kamera Web, GPS, PWA)"]
+        ParentDevice["Smartphone Orang Tua Siswa<br/>(PWA / Mobile Browser)"]
+        PrincipalDevice["Laptop / Tablet Kepala Sekolah<br/>(Executive Dashboard)"]
+        GateKiosk["Kios Pemindai Gerbang Sekolah<br/>(Webcam / Barcode & RFID Scanner)"]
+    end
+
+    subgraph CDN_Asset["Aset Eksternal & Client-side AI"]
+        TailwindCDN["Tailwind CSS & Forms Plugin"]
+        AlpineJS["Alpine.js (UI Reactivity)"]
+        Html5QrCode["HTML5-QRCode Library"]
+        FaceApiModels["Face-API.js Neural Network<br/>(SSD MobileNet, Landmarks 68, Recognition)"]
+        ChartJS["Chart.js (Visual Analytics)"]
+    end
+
+    subgraph WebServer["Web Server & Routing Layer"]
+        NginxApache["Web Server (Laragon Port 80 / Hostinger)"]
+        RoutingCore["Laravel Router (268 Rute Terdaftar)<br/>routes/web.php & routes/api.php"]
+        CSPMiddleware["ContentSecurityPolicyMiddleware"]
+        RoleMiddleware["CheckRoleMiddleware & ScannerAccessMiddleware"]
+        OnboardingMiddleware["EnsureParentOnboardingCompleted"]
+        PeriodMiddleware["SetAcademicPeriod"]
+        SipadaRedirect["RedirectToSipada (Interseptor Master Data)"]
+    end
+
+    subgraph AppControllers["Lapis Pengendali Aplikasi (68 Controllers)"]
+        GateController["AttendanceController & PermitController<br/>(Haversine GPS, QR/Face, Clock-In/Out)"]
+        TeacherModule["Teacher Controllers<br/>(Subject Attendance, Jurnal KBM, Anekdot, Ekskul)"]
+        ParentModule["Parent Controllers<br/>(Leave Requests, Onboarding, Student Monitor)"]
+        PrincipalModule["PrincipalDashboardController<br/>(Executive Overview & Diag)"]
+        ReportEngine["ReportController & Export Engine<br/>(DomPDF v3.1 & Maatwebsite Excel v3.1)"]
+        ChatEngine["ChatController & AdminChatController<br/>(Two-way messaging)"]
+        SSOEngine["SSOController & SsoLoginController<br/>(One-time token SSO)"]
+        APIModule["15 API Controllers<br/>(Sanctum Protected Endpoints)"]
+    end
+
+    subgraph SchedulerQueue["Otomasi & Penjadwalan Sistem"]
+        CronScheduler["Task Scheduler (Laravel Schedule)"]
+        CheckAbsentCommand["attendance:check-absent<br/>(Setiap Hari Kerja Pukul 10:00)"]
+    end
+
+    subgraph StorageLayer["Sistem Berkas & Penyimpanan"]
+        PublicStorage["storage/app/public/<br/>- attachments/ (Surat Dokter)<br/>- profile-photos/<br/>- students/ & teachers/<br/>- teacher_attendances/ (Selfie GPS)<br/>- logos/"]
+        StorageFallbackRoute["Fallback Route: /storage/{path}<br/>(Path Traversal Sanitized)"]
+    end
+
+    subgraph SharedDatabase["Basis Data Bersama (MySQL 'db_absen')"]
+        AbsensiTables["Tabel Inti Presensi (215 Log Gerbang,<br/>4.367 Log Mapel, 10 Permit, 14 Leave Requests)"]
+        AcademicTables["Tabel Akademik (19 Kelas, 163 Siswa,<br/>14 Guru, 14 Jadwal, 2 Tahun Ajaran, 3 Semester)"]
+        RoleTables["Tabel Hak Akses Spatie (17 Roles,<br/>23 Permissions, 186 Model Roles)"]
+        SSOTables["Tabel Token SSO (sso_tokens)"]
+        CommunicationTables["Tabel Chat & Notifikasi (notifications,<br/>conversations, messages, admin_messages)"]
+    end
+
+    subgraph EkosistemEksternal["Sistem Mitra Ekosistem SIASEK"]
+        SIPADA["SIPADA (Sistem Pangkalan Data)<br/>Single Source of Truth Master Data"]
+        LMSMokopani["LMS Mokopani<br/>Platform Pembelajaran Daring SMPN 1 Biau"]
+    end
+
+    %% Relasi Alur
+    GateKiosk -->|Pemindaian Kartu & Wajah| RoutingCore
+    TeacherDevice -->|Presensi Mapel, Jurnal, GPS Selfie| RoutingCore
+    ParentDevice -->|Pengajuan Izin & Pantau Anak| RoutingCore
+    PrincipalDevice -->|Supervisi & Monitoring Eksekutif| RoutingCore
+    AdminDevice -->|Piket & Laporan| RoutingCore
+
+    Klien -.->|Memuat Bobot Model & Library| CDN_Asset
+
+    RoutingCore --> CSPMiddleware --> RoleMiddleware --> PeriodMiddleware --> OnboardingMiddleware
+    RoleMiddleware -->|Master Data CRUD| SipadaRedirect -->|Pengalihan Pengelolaan| SIPADA
+
+    OnboardingMiddleware --> GateController
+    OnboardingMiddleware --> TeacherModule
+    OnboardingMiddleware --> ParentModule
+    OnboardingMiddleware --> PrincipalModule
+    OnboardingMiddleware --> ReportEngine
+    OnboardingMiddleware --> ChatEngine
+    OnboardingMiddleware --> SSOEngine
+    RoutingCore --> APIModule
+
+    CronScheduler --> CheckAbsentCommand
+    CheckAbsentCommand -->|Tandai Alpa & Kirim Notif| AbsensiTables
+    CheckAbsentCommand -->|Kirim Notifikasi| CommunicationTables
+
+    GateController --> StorageLayer
+    TeacherModule --> StorageLayer
+    ParentModule --> StorageLayer
+
+    GateController --> AbsensiTables
+    TeacherModule --> AbsensiTables
+    TeacherModule --> AcademicTables
+    ParentModule --> AbsensiTables
+    PrincipalModule --> AbsensiTables
+    PrincipalModule --> AcademicTables
+    RoleMiddleware --> RoleTables
+    SSOEngine --> SSOTables
+
+    SSOEngine <-->|Token Exchange (2 Jam Active)| LMSMokopani
+    AcademicTables <-->|Shared Tables| SIPADA
+    RoleTables <-->|Shared RBAC| SIPADA
+
+        </div>
+    </div>
+
+    <div id="db-box" class="container">
+        <h2>Diagram Database Overview SIASEK</h2>
+        <div class="mermaid">
+erDiagram
+    USERS ||--o| TEACHERS : "has one teacher profile"
+    USERS ||--o| PARENTS : "has one parent profile"
+    USERS ||--o| STUDENTS : "has one student profile"
+    USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--o{ SSO_TOKENS : "owns tokens"
+    USERS }|--|{ ROLES : "model_has_roles (Spatie)"
+
+    ACADEMIC_YEARS ||--o{ SEMESTERS : "contains"
+    SEMESTERS ||--o{ ATTENDANCES : "scopes"
+    
+    LEVELS ||--o{ SCHOOL_CLASSES : "categorizes"
+    TEACHERS ||--o| SCHOOL_CLASSES : "homeroom teacher (wali kelas)"
+    
+    SCHOOL_CLASSES ||--o{ CLASS_STUDENT : "enrolled students"
+    STUDENTS ||--o{ CLASS_STUDENT : "class placements"
+    
+    PARENTS ||--o{ PARENT_STUDENT : "children relationship"
+    STUDENTS ||--o{ PARENT_STUDENT : "linked parents"
+    
+    STUDENTS ||--o{ ATTENDANCES : "daily gate attendance"
+    ATTENDANCES ||--o{ STUDENT_PERMITS : "gate exit/return passes"
+    
+    SUBJECTS ||--o{ TEACHING_ASSIGNMENTS : "assigned subject"
+    TEACHERS ||--o{ TEACHING_ASSIGNMENTS : "assigned teacher"
+    SCHOOL_CLASSES ||--o{ TEACHING_ASSIGNMENTS : "target class"
+    
+    TEACHING_ASSIGNMENTS ||--o{ SCHEDULES : "scheduled periods"
+    SCHEDULES ||--o{ SUBJECT_ATTENDANCES : "subject attendance session"
+    STUDENTS ||--o{ SUBJECT_ATTENDANCES : "student subject records"
+    
+    SCHEDULES ||--o{ TEACHING_JOURNALS : "class teaching journal"
+    TEACHERS ||--o{ TEACHING_JOURNALS : "journal author"
+    
+    STUDENTS ||--o{ STUDENT_ANECDOTES : "student behavioral logs"
+    TEACHERS ||--o{ STUDENT_ANECDOTES : "recording teacher"
+    
+    STUDENTS ||--o{ LEAVE_REQUESTS : "student absent request"
+    PARENTS ||--o{ LEAVE_REQUESTS : "submitted by parent"
+    USERS ||--o{ LEAVE_REQUESTS : "approved by admin/tu"
+    
+    PARENTS ||--o{ CONVERSATIONS : "parent participant"
+    TEACHERS ||--o{ CONVERSATIONS : "teacher participant"
+    CONVERSATIONS ||--o{ MESSAGES : "message history"
+    
+    PARENTS ||--o{ ADMIN_CONVERSATIONS : "parent participant"
+    USERS ||--o{ ADMIN_CONVERSATIONS : "admin participant"
+    ADMIN_CONVERSATIONS ||--o{ ADMIN_MESSAGES : "admin message history"
+    
+    TEACHERS ||--o{ TEACHER_ATTENDANCES : "self-attendance records"
+    
+    EXTRACURRICULARS ||--o{ EXTRACURRICULAR_STUDENT : "student members"
+    STUDENTS ||--o{ EXTRACURRICULAR_STUDENT : "enrolled in"
+    EXTRACURRICULARS ||--o{ EXTRACURRICULAR_ATTENDANCES : "attendance sessions"
+    STUDENTS ||--o{ EXTRACURRICULAR_ATTENDANCES : "ekskul attendance logs"
+
+    USERS {
+        bigint id PK
+        string name
+        string email
+        string password
+        string role
+        timestamp last_seen_at
+        timestamp deleted_at
+    }
+
+    STUDENTS {
+        bigint id PK
+        string nis
+        string unique_id
+        string name
+        bigint school_class_id FK
+        string photo
+        longtext face_descriptor
+        string status
+    }
+
+    TEACHERS {
+        bigint id PK
+        bigint user_id FK
+        string nip
+        string nuptk
+        string name
+        string photo
+        longtext face_descriptor
+    }
+
+    PARENTS {
+        bigint id PK
+        bigint user_id FK
+        string name
+        string phone_number
+        boolean is_onboarding_completed
+    }
+
+    SCHOOL_CLASSES {
+        bigint id PK
+        string name
+        bigint level_id FK
+        bigint teacher_id FK
+        bigint academic_year_id FK
+    }
+
+    ATTENDANCES {
+        bigint id PK
+        bigint student_id FK
+        bigint semester_id FK
+        timestamp attendance_time
+        time checkout_time
+        string status
+    }
+
+    SUBJECT_ATTENDANCES {
+        bigint id PK
+        bigint student_id FK
+        bigint schedule_id FK
+        string status
+        text notes
+        timestamp created_at
+    }
+
+    STUDENT_PERMITS {
+        bigint id PK
+        bigint student_id FK
+        bigint attendance_id FK
+        time time_out
+        time time_in
+        string reason
+    }
+
+    LEAVE_REQUESTS {
+        bigint id PK
+        bigint student_id FK
+        bigint parent_id FK
+        date start_date
+        date end_date
+        string type
+        text reason
+        string attachment
+        string status
+        bigint approved_by FK
+    }
+
+    TEACHING_JOURNALS {
+        bigint id PK
+        bigint teacher_id FK
+        bigint schedule_id FK
+        date date
+        int jp
+        string materi_pokok
+        text kegiatan_pembelajaran
+        boolean is_verified
+        bigint verified_by FK
+    }
+
+    TEACHER_ATTENDANCES {
+        bigint id PK
+        bigint teacher_id FK
+        string status
+        decimal latitude
+        decimal longitude
+        string photo_path
+        time checkout_time
+    }
+
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: { useMaxWidth: false, htmlLabels: true }
+        });
+    </script>
+</body>
+</html>

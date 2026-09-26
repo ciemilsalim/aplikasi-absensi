@@ -1,0 +1,459 @@
+b131b87fb77ca41e1d2ef0ff21fa6265dcbce20d|b131b87|2026-09-26|ciemilsalim|feat: add lpj-generator agent skill for generating application development reports and documentation
+f519ebde1f7ba4e56e1de29216c60f51d46d9407|f519ebd|2026-09-04|ciemilsalim|feat: implement student status filtering and robust photo URL resolution in Student model
+99f586ef428272acc34438ba4bb9a8f73893f1f0|99f586e|2026-09-04|ciemilsalim|feat: add multi-semester sync tools and database repair utilities for 2025/2026 academic year integrity
+6cc3f61066198b1f3b77e330c074ac1f680dd90f|6cc3f61|2026-09-04|ciemilsalim|feat: add database synchronization tool and script for cleaning 2025/2026 academic data
+583082aaece67e609eaed8d9238976ef8fa83396|583082a|2026-09-04|ciemilsalim|feat: add diagnostic maintenance scripts for database audit and sync verification
+d2022848ef19dd8ede29c299755996bc39bc2270|d202284|2026-09-04|ciemilsalim|feat: implement global semester data sharing with custom sorting logic in AppServiceProvider
+f466060446fbfd7d2ce9cf875dc98e174c26b3c4|f466060|2026-09-04|ciemilsalim|feat: add Teacher Dashboard controller with role-based widgets, reusable scope trait, and environment synchronization script
+7fca8bd57b52ebe2e892eea2fd3fd00cd3578ddf|7fca8bd|2026-09-04|ciemilsalim|feat: implement teacher dashboard controller and model with multi-role view support
+b9dff9118eaa93da9653f18d83ec44730daa6b67|b9dff91|2026-09-04|ciemilsalim|feat: implement database synchronization and multi-semester data repair tools
+82b41cf1f54a88ee820be767bf76f3373459013f|82b41cf|2026-09-04|ciemilsalim|feat: add synchronization tool and database migration for historical class student reconstruction
+e9d33c1d34ff69f9c0e63fbcdf52b5049e1f95ad|e9d33c1|2026-09-04|ciemilsalim|feat: add migration for academic history reconstruction and implement synchronization tool for classes and student enrollment
+50f7423dd00c42f07de59706ba014e8c812a90aa|50f7423|2026-09-04|ciemilsalim|feat: implement academic year scope for school classes and homeroom assignments with middleware and validation
+c064044d98c991ee25cbb5edf9051f29388f8a52|c064044|2026-09-04|ciemilsalim|feat: add class management infrastructure and supporting audit scripts for data migration
+6a1a8c0f7f8131539cbe095630e15172fd368580|6a1a8c0|2026-09-04|ciemilsalim|feat: create DashboardController to manage teacher-specific dashboard views and data aggregation
+04723af8d44132a688f1d827ef5816e5d50cbfa1|04723af|2026-09-04|ciemilsalim|feat: implement historical data backfill migration and add comprehensive reporting and scheduling management modules.
+28aa6b59996ef94fcc87ea1e23f501cab1411346|28aa6b5|2026-09-03|ciemilsalim|feat: add admin leave request management with manual intervention support and automatic attendance synchronization
+1fbbd0c251e2654b197e2cc4690000b68a27a178|1fbbd0c|2026-09-03|ciemilsalim|feat: implement admin leave management system with manual intervention, auto-sync attendance, and custom logo provider
+fcb90b65a7e459ccd4a60c1346a1b263d1bb801e|fcb90b6|2026-09-03|ciemilsalim|feat: implement admin manual leave intervention and synchronization system for student attendance records
+96660f49b6f5e243ddb32929dba02ad105015598|96660f4|2026-09-02|ciemilsalim|feat: implement subject-based student attendance API and reporting functionality
+dc88df4e1091cea73fde3a4034f9f4b645705e0f|dc88df4|2026-09-01|ciemilsalim|feat: create Student model with photo accessor and automated user creation
+575e1289072e9e495599789bfc5a6c5efda927de|575e128|2026-09-01|ciemilsalim|feat: implement subject-based student management and attendance tracking models and controller
+558492e8092b87bcd9f642f6861d98a166e5166f|558492e|2026-08-24|ciemilsalim|feat: add teacher attendance history tracking, extracurricular reporting, and scanner interface views
+6b9632271e05dab5eeb3f885064381f6c31fdaaa|6b96322|2026-08-23|ciemilsalim|feat: hide leave request buttons when parent has no connected students
+c1ffef9498b78de38c10b0d1e5a0a752c63640e6|c1ffef9|2026-08-23|ciemilsalim|style: standardize footers across onboarding and guest layouts to match main dashboard footer
+724e39f637edc50077a37a2c867834036a857285|724e39f|2026-08-23|ciemilsalim|fix: change minimum typed characters threshold for student match card from 2 to 4
+5a92da951df368dbb2df5a991111c1495b78a986|5a92da9|2026-08-23|ciemilsalim|fix: improve live word matching and remove premature warning while typing
+bd10bc6f0ff07156b29e31e72d7f0b0cced50e80|bd10bc6|2026-08-23|ciemilsalim|feat: replace student select dropdown with text input and 90% similarity matching without NIS
+bd8d0c7d8bff2e62652c62e1b127a808ee95ec89|bd8d0c7|2026-08-23|ciemilsalim|feat: implement parent dashboard controller and register related routes
+a87abc1fec8c3249bc520ef16288376769a3dfa0|a87abc1|2026-08-23|ciemilsalim|feat: implement DashboardController for parents to display student attendance, announcements, notifications, and holiday status
+dc82445c51b4dac85970773ffb7f98185e53d407|dc82445|2026-08-23|ciemilsalim|feat: implement parent onboarding middleware and add dashboard view with sidebar integration
+0adb2d0a69584a4906819491475e3f580161d839|0adb2d0|2026-08-23|ciemilsalim|feat: implement Indonesian validation language file and custom registration error messages
+e00fa63e5510d3fb42f8a3d7fe580d975935e1df|e00fa63|2026-08-23|ciemilsalim|feat: implement parent registration logic and onboarding completion middleware
+ea0715c0a3364a421547e5c6852ee52e77ebc40d|ea0715c|2026-08-23|ciemilsalim|feat: create responsive registration page with split-screen layout and password visibility toggle
+85d2b996accef6587fb8be46defa8aa8bfdef63d|85d2b99|2026-08-23|ciemilsalim|feat: implement parent onboarding flow, student verification system, and dashboard for guardians
+73a18b8586a7e625fcb2a6652db4d659ca75160d|73a18b8|2026-08-23|ciemilsalim|feat: add print view for teacher anecdote records with PDF-friendly layout
+3b7fc4b6539f91b293534dc44f9b5f26102f6e6a|3b7fc4b|2026-08-23|ciemilsalim|feat: implement responsive admin and parent chat interfaces with real-time filtering and layout support
+93d5121bc9b6c138864610efb3dcc6743322f9c7|93d5121|2026-08-23|ciemilsalim|feat: implement base application layout and no-schedule modal component
+8191e41be4b6ac686a8b88262bf0a6481ace9b17|8191e41|2026-08-23|ciemilsalim|feat: add new main application layout with custom theme configuration and page loader
+87042aa611c764129e71a3b14dcc286fa6d8f574|87042aa|2026-08-22|ciemilsalim|feat: implement base application and public layout templates with Tailwind CSS and Alpine.js integration
+5b5cc48744582aa43714ba0f90b76cec11f25e2d|5b5cc48|2026-08-22|ciemilsalim|feat: implement chat module for admin and parents with real-time filtering and interface templates
+a13b00a36ee862ffd9b75cf0013196d4a8abd400|a13b00a|2026-08-22|ciemilsalim|feat: scaffold base layout and chat interface views for messaging module
+2bbe66be120a170c17a7956c51db93e8f39ae084|2bbe66b|2026-08-22|ciemilsalim|feat: implement admin and user chat interface with contact sidebar and messaging functionality
+4c46a15bfef01f74426a63d3a93d8708dd8b2bf1|4c46a15|2026-08-22|ciemilsalim|feat: implement admin chat system with real-time contact list and message management
+420daef934514ddca6bd1fef62e34a524d900e86|420daef|2026-08-22|ciemilsalim|feat: implement base application layout and admin dashboard controller with view support
+f57f305bab3ef3a6c7c77ca960632ec40b822425|f57f305|2026-08-22|ciemilsalim|feat: implement admin dashboard with live attendance monitoring and statistical reporting
+6bef743a51ff6af24e7f0b0301623ce63aea55ed|6bef743|2026-08-22|ciemilsalim|feat: add frontend views for extracurricular attendance, dashboards, and student photo preview component
+8bac3c320d607f73b7422fc694026fe751a104f1|8bac3c3|2026-08-22|ciemilsalim|feat: implement parent dashboard controller and view to display student attendance and announcements
+84d8a26723c5ab54ddf57aa5831755f740d66892|84d8a26|2026-08-22|ciemilsalim|feat: implement parent dashboard and management views with layout integration
+4c904764a2bb3fd16ad55ce12b186098ca9614d7|4c90476|2026-08-22|ciemilsalim|feat: create DashboardController and chart view to provide teacher-specific class attendance and performance insights
+960601439ab80e3f4e7b02000789dff26950be5b|9606014|2026-08-22|ciemilsalim|feat: add teacher dashboard views and mobile-responsive layout for class management
+a52c6bfddf39fea9abca682eada0e42673b16b7f|a52c6bf|2026-08-22|ciemilsalim|feat: implement multi-role teacher dashboard with role-based navigation and notification features
+c01e96e5bc7ba6c622190554596e63a23e2a47e6|c01e96e|2026-08-22|ciemilsalim|feat: implement teacher dashboard modules for cocurricular facilitators, homeroom teachers, and subject teachers with Content Security Policy protection
+621ea8ba34f61df95cfdd6b864e87453a405f1a4|621ea8b|2026-08-22|ciemilsalim|feat: add mobile-optimized dashboard partial for homeroom teachers
+7f678896d6ddbee5bc6e0e2a69eb90b895f0a382|7f67889|2026-08-22|ciemilsalim|feat: implement teacher dashboard with role-based navigation and notification components
+80f65a3ba3c7427898e1614a372758ddb5c007a5|80f65a3|2026-08-21|ciemilsalim|feat: add reusable blade components and base app layout for UI consistency
+d99ba86cae90235f864a52882c3c1d05a07dd9af|d99ba86|2026-08-21|ciemilsalim|feat: add attendance report view and dashboard partial for extracurricular instructors
+d13fbcc805e6ce882acbec834df1a1f4f97cea6e|d13fbcc|2026-08-21|ciemilsalim|feat: implement teacher extracurricular attendance management and dashboard tracking
+d25900997ad56369118385e0605adafe57bae3b7|d259009|2026-08-21|ciemilsalim|feat: implement subject and cocurricular attendance analytics module for teachers
+942ff2be23eea4398e462edb65bdd6e04be065bc|942ff2b|2026-08-21|ciemilsalim|feat: add attendance report preview blade view with KPI summary and matrix toggling
+95dd0292e08697a519f2c2f9329c7d3a86d656ae|95dd029|2026-08-21|ciemilsalim|feat: implement teacher subject attendance scanner module with QR and AI face recognition interface
+d423ac41b78bf6e11d6587ba6a41f140e6f3bde9|d423ac4|2026-08-21|ciemilsalim|feat: implement subject and cocurricular attendance controller with QR and face recognition support
+8efd67600daf74b3dbb1e0c600fe21896113436b|8efd676|2026-08-21|ciemilsalim|feat: implement subject and cocurricular attendance scanner with QR and face recognition support
+dd4acae2d9dbeb0c6dd28e57b89bb22c6102a213|dd4acae|2026-08-21|ciemilsalim|feat: implement attendance scanner view with QR and AI facial recognition modes
+43ed01167c8850eb33c3ceef944d427e4ab6b0ba|43ed011|2026-08-21|ciemilsalim|feat: add facial recognition scanner view for teacher attendance registration and check-in
+466fc504946c512e959d21370b259a42ae1c4c9c|466fc50|2026-08-21|ciemilsalim|feat: implement teacher facial recognition attendance system with live scanner interface
+2251547a5290c9cb774ddc2bb29e0c9a69ba6715|2251547|2026-08-21|ciemilsalim|feat: implement DashboardController for teachers and add cocurricular facilitator partial view
+8ad78eb794290bd9ab836601af05e86e66713fe1|8ad78eb|2026-08-21|ciemilsalim|feat: add multi-role teacher dashboard with view support for homeroom, subject, extracurricular, and cocurricular activities
+8b408da2128835c8a6cdd57d76f1a809c5f9408c|8b408da|2026-08-21|ciemilsalim|feat: implement teacher dashboard controller and views with role-based widgets
+e4e3437cf9e000867200b256eb83fbfcd43c4456|e4e3437|2026-08-21|ciemilsalim|feat: add dashboard controller and views for teacher role management
+0d6a0a57cc4a055c2476bba211bcca1f5599d139|0d6a0a5|2026-08-21|ciemilsalim|feat: initialize project layout and UI component library with Tailwind CSS integration
+f27965a4a7a00ef2fe9bc73cd6680511f7d10a6b|f27965a|2026-08-21|ciemilsalim|feat: add principal dashboard with key performance metrics and data visualization
+2e9e8f3643e9673092cf043fa9e34c3fc358ca4a|2e9e8f3|2026-08-21|ciemilsalim|feat: implement principal dashboard view and controller to monitor school metrics and teaching journals
+67ed9dbfb372451fcd8a91b8e387d431fd0ed391|67ed9db|2026-08-21|ciemilsalim|feat: implement new application layout with unified navigation and responsive design components
+dcffd14f2039ece9c4979253f0e0321fda0485e5|dcffd14|2026-08-20|ciemilsalim|feat: create executive dashboard view for school principal
+b6ca7ff9a26ee1407983c4859988b4f250a8d925|b6ca7ff|2026-08-20|ciemilsalim|feat: add PrincipalDashboardController for executive school monitoring and attendance analytics
+20a6427849f49fcb642eb772f9f822831776e4a2|20a6427|2026-08-20|ciemilsalim|feat: implement sidebar UI with role-based navigation, monitoring features, and dynamic routes for school management dashboard
+916816954b9e49878364c697f10230fe27356b39|9168169|2026-08-20|ciemilsalim|feat: implement principal dashboard controller and view for administrative monitoring
+6b137b84a57c67fce0c65b9b7838b0582c93ef9e|6b137b8|2026-08-20|ciemilsalim|feat: implement principal dashboard and initialize SchoolClass model with routing support
+f5158c332d88b365aeb196f31c756f1da0828e55|f5158c3|2026-08-20|ciemilsalim|feat: implement executive dashboard controller and view for school principal overview
+1409dc45cb5472853a8d2b41236e620c690fc824|1409dc4|2026-08-20|ciemilsalim|feat: implement principal dashboard and teacher subject attendance features with role-based access control
+9545cb4c3f12918067f6f74d994c1ac0758e712a|9545cb4|2026-08-20|ciemilsalim|feat: implement cocurricular facilitator dashboard functionality in DashboardController and add associated view partial
+eaf81ed93fe53ef80521013c7ecc680e6a53b0ee|eaf81ed|2026-08-20|ciemilsalim|feat: add subject attendance scanner interface for teachers with QR and AI modes
+40ca6ccf355f0968e9ed115d03c08f339cd4c16e|40ca6cc|2026-08-20|ciemilsalim|feat: add dashboard partial view for teacher subject schedule and attendance access
+afaca30931657105b64c0ec7113c0ff6c85a17dd|afaca30|2026-08-20|ciemilsalim|feat: add teacher dashboard partial for managing subject schedules and attendance
+dbb9d6ca79d2e2609b7d4911fc4e845209f78d72|dbb9d6c|2026-08-20|ciemilsalim|feat: add sidebar layout component and teacher subject attendance scanner page
+675312d41bd6121e93e0eb207838f0005ca5b01f|675312d|2026-08-20|ciemilsalim|feat: add student attendance scanner view for teachers with QR and Face AI support
+ac64db79e9b641d2a8773433d882d8ca15d3ffc8|ac64db7|2026-08-20|ciemilsalim|feat: create dashboard partials for extracurricular coach and co-curricular facilitator views
+b3fa242d8610a29841fdc4ad22e17ceab8a16d49|b3fa242|2026-08-20|ciemilsalim|feat: implement subject and cocurricular attendance system with QR and facial recognition support
+427073ee299f3414691bb74c721ccb9fb24f629e|427073e|2026-08-20|ciemilsalim|feat: implement teacher subject attendance scanner and student anecdote tracking system
+a64e694958df1cd23ee1e8cad0b0cd6cc29c5eae|a64e694|2026-08-20|ciemilsalim|fix(sso): extend SSO token lifetime buffer to prevent premature expiration across server timezones
+967fe20dd49703418c2a49b176454c80633afb9b|967fe20|2026-08-20|ciemilsalim|fix(ui): reposition 'Lupa sandi?' link below the password input field aligned with 'Ingat saya' checkbox
+c05c245bf2f569e6b5aaa7cda31aa79e7e32fc52|c05c245|2026-08-20|ciemilsalim|feat(guide): dynamically tailor user guide to logged-in user role with clear step-by-step instructions for teachers, supervisors, admins, parents, and security staff
+e8f1df569fd9224310b78d010718a46f5fcf6f8a|e8f1df5|2026-08-20|ciemilsalim|docs: update user guide with comprehensive instructions for Teaching Journal and Supervision features
+b991ec8102aff8733cd8f34e91a9ada25fda6844|b991ec8|2026-08-20|ciemilsalim|feat(auth): grant access to teaching journal supervision for wakasek kurikulum, kepala sekolah, operator, and admin roles
+62cee45a17f1380d825f0268a922f681f0aa742f|62cee45|2026-08-20|ciemilsalim|style: remove letter prefixes (B, C, D, E, F) from all web journal page titles and section headers, keeping them exclusively for official print documents
+e090136f7bb2c8f3ede99d7690492d241c4994ae|e090136|2026-08-20|ciemilsalim|feat: sort class and subject dropdowns naturally by name across all teaching journal views
+1621e78cd50a8752bc989ddd1ccd72aae53a4046|1621e78|2026-08-20|ciemilsalim|fix(ui): prevent multi-line text wrapping on mobile for journal tab navigation with whitespace-nowrap and horizontal scrolling
+8b6e87bb895f0b505a5c85937877697cad07eccd|8b6e87b|2026-08-20|ciemilsalim|feat: show day names (Senin-Minggu) instead of day numbers in journal schedule dropdowns and order schedules by day and time
+a916f21a77d30a2ade2cf5d3d390c96383dcfb72|a916f21|2026-08-20|ciemilsalim|feat: load dynamic school identity, principal name, nip, logo, and academic period from SIPADA settings in journal print document
+2ef55898f53aa49d46d143b7638a2f3d19901731|2ef5589|2026-08-20|ciemilsalim|style: remove section labels (Bagian B-F) from journal tab navigation buttons
+0a064e2a1588aa881445b7a24a4b97cf6e4f444c|0a064e2|2026-08-20|ciemilsalim|fix: add auto-migrate execution to fix-storage-link server utility
+6bef0764119601feb99800199e22a11bb3b5e5cb|6bef076|2026-08-20|ciemilsalim|feat: create teacher dashboard partial with teaching schedule and quick scan actions
+1eb9af6ee9420092a6086dd17f63806e724d4ec4|1eb9af6|2026-08-20|ciemilsalim|feat: implement teacher semester reflection module and enhance journal reporting features
+91ce9470b87c682f72d9c9b593f0591edcf5291a|91ce947|2026-08-18|ciemilsalim|feat: implement DashboardController to manage teacher-specific dashboard views and data aggregation
+de71352a9fd93bb5c902ec3f880bfbfd7f46da6e|de71352|2026-08-18|ciemilsalim|feat: create DashboardController to handle teacher role-based dashboard metrics and view logic
+cc4c07631b3ba07fe362669ed01cfca0f8226bf6|cc4c076|2026-08-18|ciemilsalim|feat: implement teacher dashboard for extracurricular coaching with attendance quick actions
+03f0e9fb6db9de2c588e92dcc336931e5e248900|03f0e9f|2026-08-17|ciemilsalim|feat: implement comprehensive and interactive user guide page for all roles
+5c2a02f8d69e02c972aa7f4bafd3558b0e7f1c18|5c2a02f|2026-08-17|ciemilsalim|feat: implement web route definitions and role-based access control for student attendance system
+ab156feb492e3d3c8599177ab099e62fb143a35e|ab156fe|2026-08-17|ciemilsalim|feat: implement SSO authentication controller and add new application layout and sidebar views
+94defe126ee4572a6a1df4453836c6894d8b3131|94defe1|2026-08-17|ciemilsalim|feat: implement secure SSO token authentication for LMS integration
+06a287f3107ab29ae43865aaf1d4a86d9ca69877|06a287f|2026-08-16|ciemilsalim|feat: implement secure database-based SSO authentication for LMS integration
+ba3f47a7ba7257ea4409975ca4eebdc35b5e923b|ba3f47a|2026-08-16|ciemilsalim|feat: implement SSO authentication controller and configure environment-based LMS service URLs
+de885092b82d83087a2417255de54b37524809cd|de88509|2026-08-16|ciemilsalim|feat: implement SSO authentication controller and configure environment variables for LMS integration
+d450062cddc39dd5bf1c169634b5d5255ff35e94|d450062|2026-08-16|ciemilsalim|feat: implement extracurricular management module including CRUD functionality and teacher attendance tracking
+1e7a1eda8f818be6649e57cdff9aba19b8462141|1e7a1ed|2026-08-16|ciemilsalim|feat: create responsive sidebar layout with role-based navigation and collapsible state
+12efd11c107071f056663479a8b2ad2d0a37484a|12efd11|2026-08-16|ciemilsalim|feat: add responsive sidebar component with dynamic role-based navigation links
+0fab9006aba3bb42a1882c0694918636664c7688|0fab900|2026-08-16|ciemilsalim|feat: implement modular sidebar and responsive app layout components for the application dashboard
+0354d756ea137238e0a628642aef5504eabd0968|0354d75|2026-08-16|ciemilsalim|feat: implement extracurricular attendance tracking controller and dashboard view for teachers
+28232e586370c071c5d45fe8e3e8b9ab7cc289dd|28232e5|2026-08-16|ciemilsalim|feat: add manual attendance form and student scanner views for extracurricular activities
+17522d9414441ec056e80f7a79ba4e3a5a3c72be|17522d9|2026-08-16|ciemilsalim|feat: implement QR code and Face AI scanner interface for extracurricular and subject attendance
+69054e2671acac4d281a400184e1846cc38e54c6|69054e2|2026-08-16|ciemilsalim|feat: implement extracurricular attendance scanner page and controller for QR and Face AI verification
+b230b23b50859be9eb939e9ffe09e7dea71655ec|b230b23|2026-08-16|ciemilsalim|feat: implement extracurricular attendance scanner and dashboard management system for teachers
+fa9e4b451e934cbcdcdb740f4a15dfb4d6b05c94|fa9e4b4|2026-08-16|ciemilsalim|feat: implement subject and cocurricular attendance system with QR/face scanner and history reporting
+cc9f934b1ccbb6931179d20dad0dde9533863676|cc9f934|2026-08-15|ciemilsalim|feat: initialize application layout components, guest/public views, and About controller
+7694e512505a6a0e12e50ec4aea46cb86119c367|7694e51|2026-08-15|ciemilsalim|feat: add about page and reusable content partial to provide application overview
+1a8db409194a11e623f19281aa530cb604a6818d|1a8db40|2026-08-15|ciemilsalim|feat: implement new responsive application layout with sidebar and theme support
+57fce813b58b96322eb9cfd4c3b4332678943045|57fce81|2026-08-15|ciemilsalim|feat: implement teacher dashboard with quick scanner access and teaching schedule view
+29b9717da0fcc115f098c266025ad4a9e530ee92|29b9717|2026-08-15|ciemilsalim|feat: implement teacher subject attendance scanner view with QR and Face AI modes
+24af162cb1888702d76d016cf4845e01dc5fb3d5|24af162|2026-08-15|ciemilsalim|feat: implement teacher subject attendance report preview with KPI dashboard and multi-view layout
+28582f504ca2b4334af5120f849fd7c0a07f7c7b|28582f5|2026-08-15|ciemilsalim|feat: implement responsive attendance scanner view with QR and face recognition modes
+cc3981ae58dec5d9ded59c57ffe9dc0d3033883c|cc3981a|2026-08-15|ciemilsalim|feat: implement dashboard controller logic for teacher roles and add attendance history view
+6ec08b484198120d35fc4a022f9aee53dcd2940a|6ec08b4|2026-08-15|ciemilsalim|feat: implement base application layout with sidebar, styling, and dashboard views for admin, teacher, and parent roles
+e9c606d6349da0bf3c114628bf8425a8d4e4b5e9|e9c606d|2026-08-15|ciemilsalim|feat: add triwulan attendance report PDF template for administrative exports
+260e58c0c213471a8f7fde04c0edaab57383d099|260e58c|2026-08-15|ciemilsalim|feat: implement administrative reporting and analytics controllers with PDF export and dashboard functionality
+717191a62d21bd667cbc79c79a572e82d71888e9|717191a|2026-08-15|ciemilsalim|feat: implement teacher dashboard with attendance summary, reporting features, and history view
+28a84d79c924a9af5588bf80adb31935387ba8e9|28a84d7|2026-08-15|ciemilsalim|feat: implement student attendance reporting and teacher dashboard functionality
+dd5c5810dddae7239203f97cbf3d01bd14ad118c|dd5c581|2026-08-15|ciemilsalim|feat: create responsive sidebar and application layout components for role-based navigation
+80b71944d2a227621ca745400904799dbe8ef804|80b7194|2026-08-15|ciemilsalim|feat: add about page detailing system features and capabilities
+0f71d66c8e65115acd2ea6f7c6e054a77cb7f338|0f71d66|2026-08-15|ciemilsalim|feat: implement complete set of frontend dashboard and authentication views
+6b383d6ceacc15101960187f6ef3e3d2a6992396|6b383d6|2026-08-15|ciemilsalim|feat: implement teacher dashboard with conditional view switcher and responsive UI components
+0fde19ac8b0cfd50f065cda63f2d5265be6e8f87|0fde19a|2026-08-15|ciemilsalim|feat: create print-ready extracurricular attendance report view with PDF export support
+8ed52419743aba9ed2bb5b1a6e78e44911d7f765|8ed5241|2026-08-15|ciemilsalim|feat: add extracurricular attendance creation form for teachers
+c65daa3833d7d4e28c30c722a4e27beecb56fedf|c65daa3|2026-08-15|ciemilsalim|feat: add subject attendance scanner view with QR and face recognition support
+e1de3ab99afb6017d3039b072cea0303148e9687|e1de3ab|2026-08-15|ciemilsalim|feat: implement subject attendance scanning interface and controller for QR and face recognition
+b410beb584b8d9e61c2e6e52622d4ea70e7a9e8d|b410beb|2026-08-15|ciemilsalim|feat: add teacher attendance scanner page with QR and AI face recognition support
+e6a97d060b0044a979089a4d0e97e2fea34ba2ad|e6a97d0|2026-08-15|ciemilsalim|feat: add dashboard interface for teachers to view schedules and manage class attendance
+e0132169429cd84aded69b8eb0c1fe1947c65e98|e013216|2026-08-15|ciemilsalim|feat: create attendance report print view with PDF-ready layout and summary calculation
+d4ae3de836e8a1752d2e01dc2d4529c3a25605e3|d4ae3de|2026-08-15|ciemilsalim|feat: add printable attendance report view for teachers with export capability
+7ec2b37c7491eb5501c40e15cb72b158a7ed5377|7ec2b37|2026-08-15|ciemilsalim|feat: add blade view for printable student attendance report with status-coded matrix
+33c9559ba01c6f155eb380a0779e44b323a2f51a|33c9559|2026-08-15|ciemilsalim|feat: add print-ready attendance report view for teachers
+8d1cb0d4247a3ca3d45a901d86cdd631976ce672|8d1cb0d|2026-08-15|ciemilsalim|feat: implement subject attendance controller with QR scanning, manual status updates, and validation logic
+b287fc9dd756221ecbfb7ee6f9236bd6c1f2ab31|b287fc9|2026-08-15|ciemilsalim|feat: implement responsive forgot password page with new illustration asset
+5f7776fd15090e21f2841d92706ee7e70013b940|5f7776f|2026-08-15|ciemilsalim|feat: implement responsive app layout with collapsible sidebar and mobile navigation bar
+808fca5a5ea460201e4ceaf10bd7c85a9f2f4af7|808fca5|2026-08-15|ciemilsalim|feat: add new topbar profile component with dark mode, role-based notifications, and academic period switcher
+467c35a0c629aae1cd8d82c496f16157b20e040e|467c35a|2026-08-15|ciemilsalim|feat: implement chat system between parents, teachers, and admins with read status and message history
+b39426da7557b4fc759d93a26d4a57ad63e5cda3|b39426d|2026-08-15|ciemilsalim|feat: implement parent dashboard and routing with support for layout views
+67a48e041bdaa603091cadf4e7f4073e49633208|67a48e0|2026-08-15|ciemilsalim|feat: create parent dashboard view and base layout files for student monitoring and notifications
+dfb32cdb9c6cc144cdd3d18603d34a26f07c1328|dfb32cd|2026-08-15|ciemilsalim|feat: add parent dashboard view with student attendance tracking and notification display
+8e46cefdbb88569d3a31fba1c6a355bed949c5e1|8e46cef|2026-08-15|ciemilsalim|feat: implement parent dashboard view and initialize parent and teacher dashboard controllers
+5bd23a654ba0d697cfbc7a3f224524226d4a5dac|5bd23a6|2026-08-15|ciemilsalim|feat: add parent dashboard view with attendance history and notifications
+51328f31bbffa9684faa9bafb26c417077a1b8c6|51328f3|2026-08-15|ciemilsalim|feat: add class teacher dashboard partial with attendance summaries and student management controls
+27af71e15a5967ffb716192accbb6525a93ebb2e|27af71e|2026-08-15|ciemilsalim|feat: add dashboard view for classroom teachers to manage student attendance records
+35c6e18731b91a32d4186b620a75bea69cca1e21|35c6e18|2026-08-15|ciemilsalim|feat: implement Student model with photo URL accessors and add dashboard view for classroom teachers
+47f0a1808cea768b171bc501ffbd4338a6775310|47f0a18|2026-08-15|ciemilsalim|feat: implement wali kelas dashboard with attendance analytics and student management UI
+37398814f15538c12822f63d957db3c94e3a674d|3739881|2026-08-15|ciemilsalim|feat: add teacher dashboard partial for classroom attendance monitoring and management
+60717d6ed8d274bbfa1107da3c117394a85b5dcd|60717d6|2026-08-07|ciemilsalim|feat: add report form and subject attendance charts for teachers
+50042279e1fd69f8b20d2287d6b73bc37d912699|5004227|2026-08-07|ciemilsalim|feat: implement teacher dashboard controller and admin report controller to manage classroom attendance and reporting functionality
+84eb7eb06c5755fbb6e0635ec400d388f43d719e|84eb7eb|2026-08-07|ciemilsalim|feat: implement teacher dashboard view with role-based switcher and attendance monitoring notifications
+f27d6d3afce644b0c07c1a35aa7c288a516a6b18|f27d6d3|2026-08-07|ciemilsalim|feat: implement new admin and teacher dashboard controllers and corresponding views
+4e579219a837bd341d4ef85b156f216e833cec20|4e57921|2026-08-07|ciemilsalim|feat: add attendance settings view and implement backend controllers for reporting and configuration management
+43bf22581f9db37aec238c93f1e412579c202244|43bf225|2026-07-28|ciemilsalim|feat: implement QR-based subject attendance scanner controller and view for teachers
+d751e114bfda1efe28671a3e644dd5a674878fad|d751e11|2026-07-22|ciemilsalim|feat: implement teacher QR attendance scanning, student list retrieval, and manual status overrides
+90f4ee97c9fa98d94c72d52a2da32f134931d8a9|90f4ee9|2026-07-22|ciemilsalim|feat: implement teacher leave request management and subject attendance scanning controllers
+5a7754e47afc0f696aeb079e341a23940f5ea04b|5a7754e|2026-07-20|ciemilsalim|feat: implement teacher dashboard with dynamic role switcher and chart integration
+de582d563711ce381e3bc3290f20696a6c37b64b|de582d5|2026-07-20|ciemilsalim|feat: implement responsive app layout with bottom navigation bar for mobile devices
+34a3ce55590ead2a137a80fc0152c0fb031d46ca|34a3ce5|2026-07-20|ciemilsalim|feat: implement navigation bar with role-based links and logout confirmation modal
+dc1e99b08d8b0329d22b64630310628d8b788b71|dc1e99b|2026-07-20|ciemilsalim|feat: implement SSO redirect functionality to LMS for authorized users
+2107f76e73474cdfdc821b20dc406211d0c65917|2107f76|2026-07-20|ciemilsalim|feat: implement SSO authentication controller and update sidebar navigation structure
+4d1dad8ccd80f603649fec66e632d4bd03568ee8|4d1dad8|2026-07-20|ciemilsalim|feat: implement new split-pane login page with illustration and enhanced form styling
+cb01d4509214b5962029962558e052c80af5c0a3|cb01d45|2026-07-20|ciemilsalim|feat: implement modern split-screen UI for login and register pages
+697377cf7c0e81b6601350960d279f0d090c0633|697377c|2026-07-20|ciemilsalim|feat: implement custom login and registration layouts with split-screen design
+72c744aa344b5bad48cfcab7b841e5f809e0d824|72c744a|2026-07-20|ciemilsalim|feat: implement modern split-screen UI for login and register pages with decorative illustrations
+c488755004167aa4251a3cee5edd1d5f064c37be|c488755|2026-07-20|ciemilsalim|feat: implement user registration with role assignment and add reusable breadcrumb component
+5333d796c3a49c4e3ca4f55fa0352fb15d51f361|5333d79|2026-07-20|ciemilsalim|feat: add teacher dashboard controller and subject teacher statistics view
+31e3c72f60d5d92328ef610a0e596820c3b81210|31e3c72|2026-07-20|ciemilsalim|feat: implement teacher schedule and subject attendance management APIs
+59387d1aee50cc4aac786efce5bf98f67147d95c|59387d1|2026-07-20|ciemilsalim|feat: implement subject attendance controller and QR scanner view for teachers
+1da86b310f073cb3321e8015a2188eb36b2ec8e1|1da86b3|2026-07-20|ciemilsalim|feat: implement role-based access control with custom middleware and dynamic sidebar navigation
+dee51b4adf164617905c792f6bd886c81b1807ac|dee51b4|2026-07-20|ciemilsalim|feat: initialize application web routes with role-based access and resource controllers
+5b7bd5c632c2cf5c1c532ba3bc4388c20d130b0b|5b7bd5c|2026-07-20|ciemilsalim|feat: add service worker for offline support and caching capabilities
+3d1d18dec2f308abceb4591b88dc3600f06cf966|3d1d18d|2026-07-20|ciemilsalim|feat: implement role-based sidebar navigation and scanner access control middleware
+d227063b4636acc6add3bfe2898c64c5c0c5e803|d227063|2026-07-10|ciemilsalim|fix scan
+470967fbfecff7772a4ef3969452fd8f4501b953|470967f|2026-07-10|ciemilsalim|fix siswa
+fe8819d0d893301d391ff28c66f160c7aa76fd2a|fe8819d|2026-07-10|ciemilsalim|update pressensi
+6fbdcd2921315b0471545f479053f6ba551b3ea5|6fbdcd2|2026-07-10|ciemilsalim|Remove academic period migrations, moved to sipada
+568344826f06e425cce621139615cae5b8457266|5683448|2026-07-10|ciemilsalim|Remove soft deletes migration, moved to sipada
+bcc3f7e116589920ca32b13ac1e78e3911d4d426|bcc3f7e|2026-07-10|ciemilsalim|readme
+92ffc7736dd878520e8cf96e9e029b53b15b76de|92ffc77|2026-07-10|ciemilsalim|switch global
+d39cf5bf31baec6603d12cf11a908d8acde6e95f|d39cf5b|2026-06-30|ciemilsalim|okay
+820755fc8a32e4e42529451c94a9e707d2fc43cd|820755f|2026-06-30|ciemilsalim|ya
+72cc06f0c41680a237bfac41b489d322d2ba941c|72cc06f|2026-06-30|ciemilsalim|ok
+aed1fd57d59f8cf4898a0e9b309fe69b60fc6d18|aed1fd5|2026-06-30|ciemilsalim|aa
+66727516e2c0aa063f5bdb88b73f38e715a9a358|6672751|2026-06-30|ciemilsalim|update
+7779a409feff97ad9d28c7d40bca59087ea76cf4|7779a40|2026-06-30|ciemilsalim|tesss
+d19213d430a4f97bbda340982a8a799b98accd6b|d19213d|2026-06-30|ciemilsalim|tess
+f4113a55c4b448e07ab43e8ff2b12a3c6127eb42|f4113a5|2026-06-30|ciemilsalim|tes
+069a6eaa7ac4b5bb35aa056adb24e925524974d5|069a6ea|2026-06-30|ciemilsalim|masih perbaikan
+e42c3327a039ff452d265485e6286778677954a5|e42c332|2026-06-29|ciemilsalim|fix logos
+c4c75133aacf2f9f7e3194303191564b0d198f60|c4c7513|2026-06-29|ciemilsalim|perbaikan logo
+5e866d127b6b202ef60cff74cfaaad457c427c77|5e866d1|2026-06-29|ciemilsalim|fixxx
+f1e3a30da74de6709664b157e4048a60631bca2c|f1e3a30|2026-06-29|ciemilsalim|fixx
+9835975b7a66c925140484836ad6157750d770de|9835975|2026-06-29|ciemilsalim|fix
+b71a67a59a3ce7a3b7b73a4cb60324d9bad4eff0|b71a67a|2026-06-29|ciemilsalim|pembaruan fix
+c41b30e3572313140937106bb1c42db9b92bb4c2|c41b30e|2026-06-29|ciemilsalim|perbaian tampilan
+bab06702431dfeaf9c3d3d8da92f15dfdba554dd|bab0670|2026-06-29|ciemilsalim|pembaruan cek point
+53873df1dffe45efac808819d1c8d75a5e931650|53873df|2026-06-25|ciemilsalim|SSO
+bbc9dd77bc328baee17afe8d298da6c176b8c89b|bbc9dd7|2026-05-05|ciemilsalim|user siswa
+1355fface99ec5165661340b571d1e9efd53a76c|1355ffa|2026-05-04|ciemilsalim|bug
+075be021830281600e1334f79f170fec0d2412ee|075be02|2026-05-03|ciemilsalim|naik kelas
+67e5bbc51fdad8ae66c4dfcf096cab06fef9100a|67e5bbc|2026-05-03|ciemilsalim|bug gps guru
+5f3ea120e33471cfdece25a06a70ae0966c82826|5f3ea12|2026-05-03|ciemilsalim|okok
+8f98a63477545db9dcf5f535914106c92f2e8e8a|8f98a63|2026-05-03|ciemilsalim|okkk
+e1fbcbea818b80b2e93d5d0416b63a335dd5f877|e1fbcbe|2026-05-03|ciemilsalim|ok
+f3011c56c19338abc5fe503e0ea9337c7fd76d07|f3011c5|2026-05-03|ciemilsalim|fixxok
+c375cd0107727bafb28527976010ab35ecf3a1bc|c375cd0|2026-05-03|ciemilsalim|fixxxxx
+3baedc99aefa47199b138aee01da22578bd7d747|3baedc9|2026-05-03|ciemilsalim|fixxxx
+690fabfdf7ea667cfdc95e815190a77596c2e325|690fabf|2026-05-03|ciemilsalim|fixxx
+de6ca2eca7901bc202b4565f0d44738fc8186a85|de6ca2e|2026-05-03|ciemilsalim|fixx
+c0906c09a5697aa0d413e34f433de92c70aae54c|c0906c0|2026-05-03|ciemilsalim|api fix
+8f68f1d0b474275168fea9cbcf7b422096a8055e|8f68f1d|2026-05-03|ciemilsalim|api ekskul
+3384adab109df419b02e478445357c94848a4c78|3384ada|2026-05-03|ciemilsalim|ekstrakurikuler
+3330474a0341cd140a18a99db6da155de5ff30eb|3330474|2026-04-29|ciemilsalim|banner
+79aad21d002aa7dc5be0107b211e5780d3a47751|79aad21|2026-04-29|ciemilsalim|absen datang pulang
+94bb96cfa33833ff7a42396af5a2ea1e20925efc|94bb96c|2026-04-26|ciemilsalim|riwayat absen fix
+d8feeedd45fc983b6d0104ee50fb90c89256d817|d8feeed|2026-04-26|ciemilsalim|api chat
+d15424b07775fb6c414ddf2ddddb003fcd572d2e|d15424b|2026-04-26|ciemilsalim|api riwayat izin
+3f6af8ef72895301e5bf91a21ecc05fc8d71b706|3f6af8e|2026-04-26|ciemilsalim|api heb hes
+f88d3eecac5889163bd6892602bf8b4f08bbe182|f88d3ee|2026-04-26|ciemilsalim|okfix
+239400da0fd0a0fc628027cd30eecdf2fc5a0bac|239400d|2026-04-26|ciemilsalim|fix
+068bd5f9911e85a36dd1b36304a390012ba439d8|068bd5f|2026-04-26|ciemilsalim|api parents
+b1b16b6b1c05eaf62d8531765551e7c78623c429|b1b16b6|2026-04-20|ciemilsalim|api riwayat absen mapel
+d5ecddd7d9b30582ac2084e0394e711d9d3bf74f|d5ecddd|2026-04-19|ciemilsalim|bug absensi
+8ea5185a0fc54abc85988d8de9968c2505799a00|8ea5185|2026-04-19|ciemilsalim|final
+63532cf55bce68e8e4da5c732191f77b412c9d87|63532cf|2026-04-19|ciemilsalim|apiss
+9804fe890fde2078662e9657c3c327db949bf84c|9804fe8|2026-04-19|ciemilsalim|update API
+172db707bdb0f726b5835a158b6f4a45b28d8f64|172db70|2026-04-18|ciemilsalim|APIs
+14820392506fb4d10901200bd5af5fb38c492269|1482039|2026-04-18|ciemilsalim|API
+88f08509f4f51b7e8be994ee4bc810940f25d317|88f0850|2026-04-10|ciemilsalim|fix bug
+50a8f3f854bcbfb98c8b4c8b4168101be7b6af10|50a8f3f|2026-04-08|ciemilsalim|fiix
+304e0bb3ba1a5823876f214735d7af3d2ba04fbe|304e0bb|2026-04-08|ciemilsalim|fix bug
+222bad7afeb2c972bd288efabdace8fa59dbc9d9|222bad7|2026-04-08|ciemilsalim|upload foto absen
+2a1d5c98bd3e9ad8b09206f00aea41506c7d1fa8|2a1d5c9|2026-04-08|ciemilsalim|upgrade face recognition
+9fb6911d6eac3998d3aca1d89da7581ef16a46b2|9fb6911|2026-04-07|ciemilsalim|fixx chart
+bbc029d238998d9edcb0422dcf7d8accdf9bc077|bbc029d|2026-04-07|ciemilsalim|fixed
+3d6c4c99c2afd4d980e282ee2c29dbeb41eb5e12|3d6c4c9|2026-04-07|ciemilsalim|fiix
+cd34d379920f6277c7f9f2f9350623b3e3209fa1|cd34d37|2026-04-07|ciemilsalim|fix bug chart
+fe706681afb5e514f11f9c121207ba1ae07afd42|fe70668|2026-04-07|ciemilsalim|chart absensi
+3f3184e0796ee58bf4a47bc9563a58fabacd7842|3f3184e|2026-04-07|ciemilsalim|tabel agenda
+a24da7564c76b78a7d1e16a8ed3c1754631676d6|a24da75|2026-04-07|ciemilsalim|fix bug BM
+6f6de8da34dda71f6a023582ce1a8bb51765bf31|6f6de8d|2026-04-07|ciemilsalim|fitur belajar mandiri
+8b841fac02b3246e2d09d94a9bcfda4aefb26eb3|8b841fa|2026-04-07|ciemilsalim|fix bug
+44a78d2da76b251fb84eb8bd002ee5004504adba|44a78d2|2026-04-07|ciemilsalim|laporan siswa tw
+341b753c80a4a22d8d42e05e4db893774c863f67|341b753|2026-03-02|ciemilsalim|input foto siswa
+9bb7a15a19c413708f721231d0854b87a4c7477c|9bb7a15|2026-03-02|ciemilsalim|search student
+6a42cd8fd8d07f60eb54d6591b8a39365435262d|6a42cd8|2026-03-02|ciemilsalim|update landing page
+10f22eae9d07a82c411e6c94132e524a2c8048e5|10f22ea|2026-03-02|ciemilsalim|fix calendar
+73c3f95bad6b1a22baaf8ca3345ac0a5261eae20|73c3f95|2026-03-02|ciemilsalim|fix camera
+304ff7408056428c46d08593cc51c63140a431b2|304ff74|2026-03-02|ciemilsalim|fix
+b30a4bca8cd0ec6f8c4ebe1fe9bfe176337e5806|b30a4bc|2026-03-01|ciemilsalim|cek point
+ed2eb54bb75a347ef1acc6fe3373b8908323bf26|ed2eb54|2026-02-16|ciemilsalim|fixed pdf
+13e69959ae30cc57445ef3864ad4cf5d6f0f499d|13e6995|2026-02-16|ciemilsalim|feat: Implement admin teacher report functionality with PDF export.
+c579dcff2c9160511529bcb97bf04f1b9f4b3c55|c579dcf|2026-02-16|ciemilsalim|feat: Implement teacher subject attendance management with QR scanning, manual status updates, and reporting, alongside new educational calendar features.
+6049b44ec15d72108d2421de6575b99d93261a87|6049b44|2026-02-16|ciemilsalim|feat: implement attendance time settings for students and teachers with an absent notification toggle.
+63f6efe2f3a28c63c3fc93da97a0328ee1feba4d|63f6efe|2026-02-16|ciemilsalim|feat: Introduce teacher attendance management, including teacher profile photo uploads and admin controls for teachers.
+7bc1d02f1d36194d974b24b717da82e524f5ac7d|7bc1d02|2026-02-16|ciemilsalim|feat: Implement teacher subject attendance management with QR scanner, manual marking, and reporting functionalities.
+314b231bf5e00b0cbc2e4b7e92b6416aea353c5c|314b231|2026-02-16|ciemilsalim|feat: implement permit scanner page with camera, manual, and face recognition options, along with its dedicated controller.
+e86aead3ec42e02886d4e11777e0a4e8986872da|e86aead|2026-02-16|ciemilsalim|feat: Implement student, attendance, and settings management with QR scanner and GPS validation.
+2d7166a81909fc52b3c0fa0726c2829f3ed3c32c|2d7166a|2025-11-13|ciemilsalim|menambahkan TTD di laporan detail siswa
+b12bdbdd6cec0f93d2083b6fdde9ab24f5f6cae2|b12bdbd|2025-10-14|ciemilsalim|menambahkan rekapitulasi di laporan dan export excel riwayat absen wali kelas
+40cc0c0813df8bdb999184fa053ac8a74fd0c91e|40cc0c0|2025-10-13|ciemilsalim|menambahkan fitur ekspor excel di absensi wali kelas dan memfilter hari libur
+0efa0f6650e0e351b2c798f8e24e3520d6fa90e8|0efa0f6|2025-10-05|ciemilsalim|fix bug logo di dokumen absen mapel
+39579c950ef53834d35bb0ac604e6b85e1205c52|39579c9|2025-10-05|ciemilsalim|menambahkan update absen mapel
+ea3309e07fd117f87118754e0ed90b8d238eaa47|ea3309e|2025-10-03|ciemilsalim|perbaikan bug izin sakit dasbor wali kelas
+b8682e4710f9f4c9d9d021426eb0b9dae78a556a|b8682e4|2025-09-23|ciemilsalim|fix bug riwayat absensi kosong
+9ad268e853dc9fc1e06acc9dd1dea28e97ad4792|9ad268e|2025-09-23|ciemilsalim|fix bug riwayat absen wali kelas
+d9f97d40bc24b2727225ff7ff56baed154da8bbe|d9f97d4|2025-09-23|ciemilsalim|fix bug siswa izin sakit di absen guru mapel
+9eb3d0b664c063b4a3a88f01af3e373ceb864d8c|9eb3d0b|2025-09-20|ciemilsalim|menampilkan foto profil
+01ed95a26c9f44990d58df394a1ae79d99c59461|01ed95a|2025-09-17|ciemilsalim|perbaikan eksekusi tombol kehadiran di dasbor wali kelas
+aa72ddd7b57b935a862d641e693c8823b13d6d04|aa72ddd|2025-09-17|ciemilsalim|perbaikan bug teacher dasbor controller
+0ad1d12ed3f5bb3d10af2439df2d37d1fb851a7c|0ad1d12|2025-09-16|ciemilsalim|perbaikan bug teacher controller
+f67c832612d3e8ed089aeceb9f52d4c808ed5ccd|f67c832|2025-08-18|ciemilsalim|merubah ke tampilan mobile di role guru
+ef86df20bbd8d8daad1b32f546c3de2f7cd406fb|ef86df2|2025-08-18|ciemilsalim|menambahkan fitur catatan pribadi Guru mapel
+0264408fc477225d542aa25a3332a4a6c16c4f35|0264408|2025-08-18|ciemilsalim|menambahkan penghitung jumlah siswa dan logika JavaScript saat absensi mapel
+fb87d80b78acdf8917c720bf56555187686eeb35|fb87d80|2025-08-18|ciemilsalim|perbaikan tampilan widget guru mapel
+48dd2fd18318e6305f2e0e123a6765f6d84aaa10|48dd2fd|2025-08-18|ciemilsalim|perbaikan darkmode di form laporan absen guru
+ffad976a31eb0da5b06d625e0b2f8b994cfd241f|ffad976|2025-08-18|ciemilsalim|memperbarui menu guru mapel hanya akan tampil ketika ada penugasan mengajar guru login di sidebar
+b9345cd7a01da8ae1164639c520934cddc33db00|b9345cd|2025-08-18|ciemilsalim|menambahkan panel siswa butuh perhatian pada dasbor guru mapel
+18b031b7891e4f5e5a7d077bf9f9a6cfa1b6b033|18b031b|2025-08-18|ciemilsalim|menambahkan rekap absen mapel
+ea8cfa1f2eed384d63ea3bdedf2bd257831d5563|ea8cfa1|2025-08-18|ciemilsalim|perbaikan perubahan status siswa di absensi mapel oleh guru
+ff93758f36ddc88faf56001c03cc62a4ea87723a|ff93758|2025-08-16|ciemilsalim|mengaktifkan audio scan, menambahkan panel siswa izin sakit di scan mata pelajaran
+fa7da350f283db5c94584d1698a917145581dbdb|fa7da35|2025-08-16|ciemilsalim|manambahkan fitur absensi mata pelajaran di role guru
+6a4161ae0c34b8363b522076457d8edf2755bffd|6a4161a|2025-08-16|ciemilsalim|memperbarui atur guru mapel di data kelas admin
+11b604cbc15dbd6004ad8a00a4b32bf7a03c4330|11b604c|2025-08-16|ciemilsalim|merubah font dari poppins ke helvetica
+be8244f9847974311d8c74b3fcb8995168d1b3bf|be8244f|2025-08-16|ciemilsalim|perbaikan seeder level
+fcc9d5a1e64c7755845dd4d053aa1cde525f075f|fcc9d5a|2025-08-15|ciemilsalim|Menambahkan fitur jadwal mata pelajaran di admin
+b091cfca3ca4167cd4b27fa6bbb3ca8becf47e9d|b091cfc|2025-08-15|ciemilsalim|Membuat fitur Guru Mapel Kelas
+6749772d0a8f42ace6d2a7b15df7f8c97a1e363c|6749772|2025-08-15|ciemilsalim|Menambahkan fitur data Mapel, relasi mapel dan guru pada admin
+1e4eecf462cf8d4c25affb3742595ee33038bf04|1e4eecf|2025-08-11|ciemilsalim|cek point2
+2d37c7e8247a17c590908d99017dbe7e123043e6|2d37c7e|2025-08-11|ciemilsalim|cek point
+f96ca9f97e4856098e20f6d724864087ca7be3de|f96ca9f|2025-08-11|ciemilsalim|perbaikan logika absen
+bb554a08e7d10ee38d3988a36e00805c6cb2a67c|bb554a0|2025-08-11|ciemilsalim|menambahkan laporan siswa tidak absen pulang di admin
+31ad4a0f197ee2b17e1760c97df8930cd826af7f|31ad4a0|2025-08-11|ciemilsalim|menambahkan notifikasi pengajuan izin di wali kelas
+be5406042d74988f50127ba76cddaa7488025725|be54060|2025-08-08|ciemilsalim|menambahkan panel siswa belum absen pulang di dasbor wali kelas
+fa684bce3ff7d63a3196ead497d94795fd93c620|fa684bc|2025-08-08|ciemilsalim|menambahkan panel siswa belum absen pulang di dasbor admin
+93e1d181d4ec7c14fab35aef33fe768cf7a9a01d|93e1d18|2025-08-08|ciemilsalim|akses cepat scanner di dasbor wali kelas
+2f66b6c7b41d798ff738a6b51a48fd58a87ab0b1|2f66b6c|2025-08-08|ciemilsalim|perbaikan jeda scanner absen dan izin siswa
+85693663979ce5a756a6046c183354ae0b3e31ef|8569366|2025-08-07|ciemilsalim|bug fix
+3a7b04e815eaa367bce9b1d575d2776894327d8e|3a7b04e|2025-08-07|ciemilsalim|perbaikan tampilan popup scanner izin
+600b74352bca3dcaaa831b52821b332b9a2856b3|600b743|2025-08-07|ciemilsalim|menambahkan fitur scanner eksternal di pemindai absensi dan izin
+7b0e4b4182e2f621c3747729c8fc87af8356dfb0|7b0e4b4|2025-08-06|ciemilsalim|menambahkan statistik di data ortu
+36f70e5e4682db39d389b1f238c5218b0aa1c12e|36f70e5|2025-08-06|ciemilsalim|perbaikan bug menu data ortu
+d9e901051a073adc20717b94d0940160fad45dbe|d9e9010|2025-08-06|ciemilsalim|perbaikan footer
+382b5d0a678905b83e1aefaf9c311c8b5168ed29|382b5d0|2025-08-05|ciemilsalim|perbaikan sidebar untuk riwayat kehadiran
+85c66243d6959cc54ec1d78ee52ec93fcdd9262e|85c6624|2025-08-05|ciemilsalim|memperbarui footer
+5e38cfe00f5ff248ea7d4cca8db1511f6493ed0d|5e38cfe|2025-08-05|ciemilsalim|menambahkan jam masuk jam pulang di wali kelas
+b35447cce2c7a5effc67c58b7772febe78e3ea44|b35447c|2025-08-05|ciemilsalim|memindahkan scanner izin ke public dan memperbaiki sidebar agar rapih
+c0c263bffd8374e5da4a69133f68379e942db441|c0c263b|2025-08-04|ciemilsalim|Fitur Izin keluar siswa
+2017b7d2ed39342b3d96f65e08cb68d0c6d17bfc|2017b7d|2025-08-03|ciemilsalim|menambahkan konfirmasi logout
+d3dc1845cab097dff4d4969992713c18ad207167|d3dc184|2025-08-03|ciemilsalim|perbaikan navigasi akses scanner semua guru
+4bb3b0d650bfccef2d5904e8eee7cba12e408dee|4bb3b0d|2025-08-03|ciemilsalim|semua guru mendapat akses scanner absen siswa
+8d3843820d4fbc52e4702100ca9b4d3f73f9a91e|8d38438|2025-08-03|ciemilsalim|perbaikan tampilan dan rekap riwayat kehadiran bulanan siswa pada wali kelas
+7a315525843d32b30425d51ff52614b01d4c1846|7a31552|2025-08-03|ciemilsalim|perbaikan cetak riwayat kehadiran di roll wali kelas
+5de4864c1729a774934bdb8638ef4a5ed6c941db|5de4864|2025-08-03|ciemilsalim|cek backup lagi
+c703771467c3133cb2bb5bb162289b56e5f75727|c703771|2025-08-03|ciemilsalim|cek point backup
+4416e635602bdbffbbe592d9444141bffd823bbd|4416e63|2025-08-03|ciemilsalim|cek backup
+21ca9d9d639a3d516d329bb0ea903afcff039ba9|21ca9d9|2025-08-03|ciemilsalim|perbaikan backup data
+f56bdf9f58ddc33cc93dfc7c0c429aa39aeb01aa|f56bdf9|2025-08-02|ciemilsalim|perbaikan backup sql
+1ced739da255c41eceedc66839eeb5f30edf7640|1ced739|2025-08-02|ciemilsalim|menambahkan bulk action pada tabel siswa di admin
+8dce8970fbb7d202025b1eca2bfc55ea336f8508|8dce897|2025-08-02|ciemilsalim|membuat fitur sortir dan paginasi di guru, siswa dan kelas pada admin
+a28005347cc95d04b67146c6f9b4bb3826695e28|a280053|2025-08-02|ciemilsalim|menambahkan paginasi dan jumlah data tabel ortu di admin
+c1d8811c39a85f15288e33bd73a241234dcd50d7|c1d8811|2025-08-02|ciemilsalim|menambahkan jumlah data pada tabel pengguna di admin
+453862066f8f0e166f1ab5508e8189a7bdf6fac4|4538620|2025-08-02|ciemilsalim|menambahkan sortir tabel pada tabel pengguna di admin
+a8547fccd90e6543b5cae1458f222a6d0c556746|a8547fc|2025-08-01|ciemilsalim|Menambahkan sortir riwayat obrolan dan tanggal obrolan
+f608b9c8338cadd29afd1f583154ec344b3877b4|f608b9c|2025-08-01|ciemilsalim|Fitur riwayat kehadiran untuk wali kelas sekaligus update data
+c1306ab075837d3de8cb65e9f10142a015c66990|c1306ab|2025-07-24|ciemilsalim|perbaikan view manajemen users
+4eb2e1f48709d4f3330cddb458fb172c38bd36d0|4eb2e1f|2025-07-23|ciemilsalim|menambahkan user operator
+0db3ee878f4b4508ca999c44ec9039c4df426cac|0db3ee8|2025-07-23|ciemilsalim|perbaikan responsif obrolan ortu dan wali kelas
+2ce1b1ecb785e6afae7d6dee3102c373e929e7fe|2ce1b1e|2025-07-23|ciemilsalim|perbaikan responsif obrolan ortu
+579b74932e0e046cdf62fbc1b3455b1bb3c60ed4|579b749|2025-07-23|ciemilsalim|perbaikan responsif mobile di obrolan
+dc1ff12496bacd4ac593c8bf60c5950106f8bce6|dc1ff12|2025-07-23|ciemilsalim|menambahkan badge obrolan pada topbar
+9587ca39edbb5dd0c141233bcc825a009c158ce9|9587ca3|2025-07-23|ciemilsalim|menambahkan badge di sidebar total obrolan belum di baca
+5155bc20f0faa30901976970556b5779b764e085|5155bc2|2025-07-23|ciemilsalim|perbaikan menu backup
+d34e67813dc2f74f0418b1990c5fb71a6197604b|d34e678|2025-07-23|ciemilsalim|fix bug badge obrolan
+3950ad5ccfc296be95ce9d16bdddbca7d931ed0d|3950ad5|2025-07-22|ciemilsalim|perbaikan rute
+6680c1bee07e5b4b69923cb3b09c32170a5e2217|6680c1b|2025-07-22|ciemilsalim|perbaikan tombol kirim obrolan
+872ef74fb4627ff840f0a3a8423972a47306a271|872ef74|2025-07-22|ciemilsalim|perbaikan siswa atur kelas
+1d547a574b4495ee2f8c1c547ceb6750826b8514|1d547a5|2025-07-22|ciemilsalim|perbaikan import siswa
+53c2bc595a9e487bfaf39b0a928dda0bedd54ec5|53c2bc5|2025-07-22|ciemilsalim|perbaikan pengumuan di dasbor ortu
+cbf614bff21596f586362f012b9633c43fa198e8|cbf614b|2025-07-22|ciemilsalim|perbaikan badge dari admin ke ortu
+9305273bfa64fcebb1bfca5ee6bcac84c247f4e8|9305273|2025-07-22|ciemilsalim|menmbahkan fitur badges obrolan
+a37c3931b3e2ec295f74a8516473dc2aa322a97d|a37c393|2025-07-22|ciemilsalim|menambahkan fitur obrolan antara orang tua wali dan admin
+e47787d23575aebefea5f29b4b2cd74df608ca39|e47787d|2025-07-21|ciemilsalim|Pencarian pada menghubungkan ortu dan siswa
+8385e7797a9af64fc4f2c4dcbf845ca30ea89012|8385e77|2025-07-21|ciemilsalim|validasi absensi jeda waktu datang dan pulang
+c9171c6fe58aea6a0cc89294d48eea3118657aff|c9171c6|2025-07-21|ciemilsalim|perbaikan sidebar untuk menu pengumuman
+19bc4474b61b8b967d93670cea1ca0a7bd7836ea|19bc447|2025-07-21|ciemilsalim|perbaikan obrolan ke JS
+cbca76f322520fce5d6d998261cb68c0220d91f9|cbca76f|2025-07-20|ciemilsalim|Menambahkan fitur chat orang tua wali siswa dengan guru wali kelas
+6d158bfb622ce1dfd854d8f0d3aa2cd491b89658|6d158bf|2025-07-20|ciemilsalim|menambahkan fitur centang semua tambah data siswa ke kelas
+397688448a99f04762fd4c5142bcc8dcb8607b87|3976884|2025-07-20|ciemilsalim|Menambahkan Filter pada cetak qrcode siswa
+23bc15cf04410c31505acbf3af6ba7e5c1ff9fc4|23bc15c|2025-07-20|ciemilsalim|Menambahkan filter kelas ke data siswa
+1e6c2d3dad0a1ce3075dbd552069ee1ce3a9507b|1e6c2d3|2025-07-20|ciemilsalim|menambahkan form pencarian siswa di tabel data siswa
+6fe66ef6c8f569696c2316a878d0029575d9e555|6fe66ef|2025-07-20|ciemilsalim|Menambahkan form konfirmasi hapus di data kelas dan data siswa
+09f2673343a08e0cde57fc8064023831d348060e|09f2673|2025-07-20|ciemilsalim|perbaikan hapus data guru dengan konfirmasi
+0278b62f619c8a4236a24287426e2d40c392537b|0278b62|2025-07-20|ciemilsalim|Perbaikan desain form input text
+dbec551981ed27b53bc2976506800929920ea593|dbec551|2025-07-17|ciemilsalim|jam alpa otomatis
+84df5a5c7dc647555c84863690f9d00567f3d08d|84df5a5|2025-07-17|ciemilsalim|perbaikan jam cronjob dan size upload izin siswa
+16e9cf1df4bec8796a361efe86642734bc1d7c33|16e9cf1|2025-07-16|ciemilsalim|perbaikan database parent telpon
+da7d411ecbeb61d55f09e1e65a14dacd04b360e6|da7d411|2025-07-16|ciemilsalim|pwa set to welcome
+cfa6b4ba08f5bc30a74fada0a769798723e8e39c|cfa6b4b|2025-07-16|ciemilsalim|icon pwa
+d292673dcdbd1589551fcb303bc6dccb4497df1e|d292673|2025-07-10|ciemilsalim|WPA
+a8a30bf195a46f2e91d519e398a22d9a92210f14|a8a30bf|2025-07-10|ciemilsalim|perbaikan validasi import parent
+4ea7bbc29b78e117ac13a8873ff72ecd37bd3bcf|4ea7bbc|2025-07-10|ciemilsalim|perbaikan validasi import guru
+a7f03b3610f8b4fd548fbd5ca0f95ed1b6d8f227|a7f03b3|2025-07-10|ciemilsalim|perbaikan import siswa
+c35696c037dd579062942e8c0e0094dda5ae2cdf|c35696c|2025-07-10|ciemilsalim|perbaikan memilih kamera scanner
+15ea3f86d3f751d09417e939db47b1bfb8453fb7|15ea3f8|2025-07-10|ciemilsalim|perbaikan scanner
+4328b7b2e564bc470007a2dcf877b69ef741bec0|4328b7b|2025-07-10|ciemilsalim|register user menjadi parent
+eff28ab2aa484385dab71d283f01398bb21a504f|eff28ab|2025-07-10|ciemilsalim|perbaikan permission scanner
+36a431b9df708a8857adcbcddcff54ce81949003|36a431b|2025-07-07|ciemilsalim|set time to snap
+2e4e9cc48fa5c50ee3a0b140356fe8ad8cb1e6df|2e4e9cc|2025-07-07|ciemilsalim|Menambahkan notifikasi otomatis alpa ke orang tua
+987d179ed8fafe83144d2c76f04699d078e06f30|987d179|2025-07-07|ciemilsalim|Menambahkan laporan yang lebih mendalam
+8275ae67dbc8e0a7c3f2f736c20f4949cd2c1cac|8275ae6|2025-07-07|ciemilsalim|menambahkan Daftar Siswa "Perlu Perhatian" pada dasbor guru wali kelas
+41b68b5395eaf629d26d0871c5de9c26573b65ef|41b68b5|2025-07-07|ciemilsalim|Grafik Tren Kehadiran Kelas (7 Hari Terakhir)
+27a3a1bf5c915a69cc3ee96e04cce2481f033a2e|27a3a1b|2025-07-07|ciemilsalim|CHECKPOINT VERSI 1
+db3a66f8e9e461087fa5c66f6e5d03ab59f397f6|db3a66f|2025-06-29|ciemilsalim|Menambahkan Backup file
+42a02ee49d5cfe37823712fc2573d73643c00964|42a02ee|2025-06-28|ciemilsalim|mengubah sound scanner
+9d9d88910cbf18df61a355eee188dcf73ba0f924|9d9d889|2025-06-27|ciemilsalim|Menambahkan fitur pengumuman
+2e6aabfb9528026865e8a56f6b56c8234853ebe8|2e6aabf|2025-06-27|ciemilsalim|fitur guru online
+ea473c55f7a1bb1a7f97a20c74cd2d34cd4716ff|ea473c5|2025-06-27|ciemilsalim|menambahkan halaman tentang aplikasi
+6415f030c7b7dde280b6f76b526e060eb4c01d39|6415f03|2025-06-27|ciemilsalim|menambahkan notifikasi pengajuan di roll wali kelas
+9a30b0c89f527abc67361d9ea9f13acbdba7f59c|9a30b0c|2025-06-27|ciemilsalim|perbaikan loader lebih smut
+a7dde18ff4f99d7d632756c84aa06ed6c69306fc|a7dde18|2025-06-27|ciemilsalim|perbaikan teks input
+2e6a764640a3dfcd27b1d09c7649b3a131409564|2e6a764|2025-06-27|ciemilsalim|perbaikan tampilan app
+94fad1780008e65116f0cd0cca5696e3cecd4214|94fad17|2025-06-27|ciemilsalim|perbaikan kartu QR
+ce96955b8c4ce8bc9e2f294d35318c7995640cd1|ce96955|2025-06-27|ciemilsalim|perbaikan darkmode
+b3559afa9c2f301daf4295fc947dd24585c6dbb5|b3559af|2025-06-27|ciemilsalim|menambahkan tombol darkmode di navigasi atas
+1ca001b3fbe729e9b324ec9fbc4681da67505e24|1ca001b|2025-06-27|ciemilsalim|tambahahan notifikasi badge di top navigasi dan sidebar
+9e5a093d31a3a80cc9d4c38238585bf054a9c189|9e5a093|2025-06-26|ciemilsalim|menambahkan fitur online dan pencarian orang tua di admin
+73ebabb442bc5910402b3e85f49d0d2f45485666|73ebabb|2025-06-26|ciemilsalim|menambahkan validasi titik kordinat di scanner dan settings
+586ca26c6159bf88176d98fcdc04d80015da6ace|586ca26|2025-06-24|ciemilsalim|perbaikan dark mode agar konsisten
+bbf0a852f2db6177a60bf7221b1791485695e738|bbf0a85|2025-06-24|ciemilsalim|perbaikan tampilan welcome page
+19f22376e7a6f79e194574808745cea3b8059d9b|19f2237|2025-06-24|ciemilsalim|memperbarui tampilan laporan
+03b182d22430a6ac03d73032d161200367e6fb67|03b182d|2025-06-24|ciemilsalim|menambahkan identitas sekolah di menu
+9a41e7253e29b97e2d53e350e145e9f5cd9de482|9a41e72|2025-06-24|ciemilsalim|mengubah posisi menu atas ke sidebar
+cc122883da5132da440b2ad291dbc270383ee764|cc12288|2025-06-24|ciemilsalim|perbaikan tampilan pengajuan izin
+4e142e56b82938be5716bf46ca6cff20b261c95d|4e142e5|2025-06-23|ciemilsalim|handel login guru bukan wali kelas
+3c392aef079cc18856b3a02e87959ab74ad66a4c|3c392ae|2025-06-23|ciemilsalim|memperbaiki tabel rekap kehadiran di admin dan guru wali kelas
+71eb97b140e67a9aea918525f60bf70ca99b6292|71eb97b|2025-06-23|ciemilsalim|perbaikan style font
+94ef7a50d7aebaa81dddedd8ae5f75cf3a0bdda9|94ef7a5|2025-06-23|ciemilsalim|menambahkan sticky navigation top
+2585120196f127496351e7ddd6a32cf9aea22b97|2585120|2025-06-23|ciemilsalim|menambahkan nama aplikasi di samping logo
+4e93ea499248695c51feb758b4d8e34f925c39a2|4e93ea4|2025-06-23|ciemilsalim|mengamankan pemindai scanner dari public
+8b470714528e4584dd2f322ab8e1c733e4c263f5|8b47071|2025-06-23|ciemilsalim|perbaikan validasi izin sakit di pemindai
+e5f2a9557100d6d9229542be528df95bc5712eba|e5f2a95|2025-06-23|ciemilsalim|menambahkan aprove izin sakit ortu di wali kelas
+40d5e4f7be5238720c6d9f7281ded4d9189885cd|40d5e4f|2025-06-23|ciemilsalim|menambahkan card jumlah hadir dan alpa di dashboard admin
+e623d2542c9fcf3427180a4be9d04b676b9d8f1a|e623d25|2025-06-23|ciemilsalim|menambahkan pengajuan izin sakit ortu ke admin
+e6c85b14ac247d30b80f21565634b652b45f7e84|e6c85b1|2025-06-22|ciemilsalim|menambahkan wali kelas di kelas
+277b9ba959f69047bff3a99cfad95afafea7dd5b|277b9ba|2025-06-22|ciemilsalim|perbaikan import data guru
+71d5769ccf4e9a2408c8c1841432e1f0aa420dd1|71d5769|2025-06-22|ciemilsalim|import excel data guru
+d582c338cc69e3840f7dc6bfe65cfce198f0aa14|d582c33|2025-06-22|ciemilsalim|menambahkan manajemen data Guru
+381b98d8b68bfe4e1823c8a3122ea4ceaaaeaacb|381b98d|2025-06-22|ciemilsalim|import data orang tua wali
+e37fdad3bab2d57f31d3925d6dbd2a2402b087f3|e37fdad|2025-06-22|ciemilsalim|perbaikan letak breadcrumbs
+cc4455f89c5894ba88c5b81f55320b6e378dbcff|cc4455f|2025-06-22|ciemilsalim|animasi loader page
+0e2e7426a8814383fb69ea5a1720cc6b776960be|0e2e742|2025-06-22|ciemilsalim|ubah format tanggal en ke ID
+8d327120fb8187ddeb4333aacfc04c63ccf1979b|8d32712|2025-06-22|ciemilsalim|memperbaiki layout login register
+d1f1aadc24e6f6944cd3fff51b6bf8cc6725c4bc|d1f1aad|2025-06-22|ciemilsalim|membuat welcome page
+97e9e279b6251f46c7e5891b038f79692b1e447e|97e9e27|2025-06-21|ciemilsalim|menambahkan CRUD data ortu, role parent, relasi ortu siswa
+f89b2d7e5f05d920225c36a3ff6715d06b530d01|f89b2d7|2025-06-21|ciemilsalim|perbaikan navigasi
+2b0c8e899d5de66eb9fc81832e014f5c4fefc97f|2b0c8e8|2025-06-21|ciemilsalim|menambahkan icon di menu user name profil
+f851d43e62ffdf09dac6bfcd92325354a00f2a4b|f851d43|2025-06-21|ciemilsalim|menambahkan breadcrumbs
+21667c1bd8534ecba9c232eb979b5f16cf8f6e54|21667c1|2025-06-21|ciemilsalim|merapikan menu navigasi
+848ee46a9d785f526e913a7f299be8f8c2e2c9b4|848ee46|2025-06-21|ciemilsalim|menambahkan cetak laporan perkelas perbulan
+d94de23f90092e64ade08b11de57f306919c54a1|d94de23|2025-06-21|ciemilsalim|perbaikan hover data siswa
+4764e3428885b40ecbdcc9ee10f3e211067a362c|4764e34|2025-06-21|ciemilsalim|menambahkan grafik di dasbor
+a8da3441eab7bc72030dbe223ffd0def15ff88b0|a8da344|2025-06-21|ciemilsalim|membuat navigasi responsif mobile tablet
+8e9c25c54024acad085c089f1ce00597a895ebd9|8e9c25c|2025-06-21|ciemilsalim|perbaikan dark mode di laman public pemindai
+efd88cb1181af9e432d19d0136fd8fce813a9b23|efd88cb|2025-06-21|ciemilsalim|desain card diperbarui
+a364c9a85422e5b4568bddcacfc17224a8622fe5|a364c9a|2025-06-21|ciemilsalim|merapikan dark mode
+64c498b97894e66d720b1586e4790d946eabf474|64c498b|2025-06-21|ciemilsalim|menambahkan favicon
+bd04b2a046e1059c0cbb17e09577f73b0d07a942|bd04b2a|2025-06-20|ciemilsalim|menambahkan pengaturan logo
+b8ba1c2811654efaa5b609ebcb3a2881014e9326|b8ba1c2|2025-06-20|ciemilsalim|menambahkan card persentase kehadiran di dasbor
+0e6ddcb5c6cc8b19ae2d5efb105e50c5a255b2a6|0e6ddcb|2025-06-20|ciemilsalim|menambahkan kelas siswa
+7b9e520ed8f617b0e435ead26c81113f1861d5a4|7b9e520|2025-06-19|ciemilsalim|pencarian nama siswa di dasbor
+db46776ee2a666c3b0c4cbe7f56e3271c93db52e|db46776|2025-06-19|ciemilsalim|filter tanggal dasbor kehadiran
+0ac3663813dba7ca3fdbe21d5c37cfd163026e63|0ac3663|2025-06-19|ciemilsalim|menambahkan dark mode settings
+26e3d7ac1c15acaf125cfac7731bd3ef89d939d0|26e3d7a|2025-06-19|ciemilsalim|setting jam masuk pulang
+062427c207c4643fb43134e8b17608fb102c0726|062427c|2025-06-19|ciemilsalim|menambahkan jam masuk
+f04fee1a3baff4ff992f648c6046ea43694bd6cb|f04fee1|2025-06-19|ciemilsalim|pop up datang pulang dan atur timezone
+8e5da65e19fbc76ad243f6e77edf550bb0ef2de5|8e5da65|2025-06-19|ciemilsalim|perbaikan CRUD data siswa
+00f63d36f745eadfec47ccdd117e3809b6926ae3|00f63d3|2025-06-19|ciemilsalim|import excel data siswa
+8148a942c8648f3eaf869d6518f9f09a414c6290|8148a94|2025-06-19|ciemilsalim|pop up modal absen
+950f5f750b1f8feaa6736f30e9bed1879d245ea2|950f5f7|2025-06-19|ciemilsalim|merapikan admin menambahkan rekap absen
+c2b78ff7f8eff55d8595d26de7c0b621580afa9d|c2b78ff|2025-06-18|ciemilsalim|init repo

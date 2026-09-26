@@ -1,0 +1,102 @@
+graph TB
+    subgraph Klien["Lapis Pengguna & Perangkat Klien"]
+        AdminDevice["Perangkat Petugas Piket / Admin / TU<br/>(PC / Laptop / Web Browser)"]
+        TeacherDevice["Smartphone / Laptop Guru<br/>(Kamera Web, GPS, PWA)"]
+        ParentDevice["Smartphone Orang Tua Siswa<br/>(PWA / Mobile Browser)"]
+        PrincipalDevice["Laptop / Tablet Kepala Sekolah<br/>(Executive Dashboard)"]
+        GateKiosk["Kios Pemindai Gerbang Sekolah<br/>(Webcam / Barcode & RFID Scanner)"]
+    end
+
+    subgraph CDN_Asset["Aset Eksternal & Client-side AI"]
+        TailwindCDN["Tailwind CSS & Forms Plugin"]
+        AlpineJS["Alpine.js (UI Reactivity)"]
+        Html5QrCode["HTML5-QRCode Library"]
+        FaceApiModels["Face-API.js Neural Network<br/>(SSD MobileNet, Landmarks 68, Recognition)"]
+        ChartJS["Chart.js (Visual Analytics)"]
+    end
+
+    subgraph WebServer["Web Server & Routing Layer"]
+        NginxApache["Web Server (Laragon Port 80 / Hostinger)"]
+        RoutingCore["Laravel Router (268 Rute Terdaftar)<br/>routes/web.php & routes/api.php"]
+        CSPMiddleware["ContentSecurityPolicyMiddleware"]
+        RoleMiddleware["CheckRoleMiddleware & ScannerAccessMiddleware"]
+        OnboardingMiddleware["EnsureParentOnboardingCompleted"]
+        PeriodMiddleware["SetAcademicPeriod"]
+        SipadaRedirect["RedirectToSipada (Interseptor Master Data)"]
+    end
+
+    subgraph AppControllers["Lapis Pengendali Aplikasi (68 Controllers)"]
+        GateController["AttendanceController & PermitController<br/>(Haversine GPS, QR/Face, Clock-In/Out)"]
+        TeacherModule["Teacher Controllers<br/>(Subject Attendance, Jurnal KBM, Anekdot, Ekskul)"]
+        ParentModule["Parent Controllers<br/>(Leave Requests, Onboarding, Student Monitor)"]
+        PrincipalModule["PrincipalDashboardController<br/>(Executive Overview & Diag)"]
+        ReportEngine["ReportController & Export Engine<br/>(DomPDF v3.1 & Maatwebsite Excel v3.1)"]
+        ChatEngine["ChatController & AdminChatController<br/>(Two-way messaging)"]
+        SSOEngine["SSOController & SsoLoginController<br/>(One-time token SSO)"]
+        APIModule["15 API Controllers<br/>(Sanctum Protected Endpoints)"]
+    end
+
+    subgraph SchedulerQueue["Otomasi & Penjadwalan Sistem"]
+        CronScheduler["Task Scheduler (Laravel Schedule)"]
+        CheckAbsentCommand["attendance:check-absent<br/>(Setiap Hari Kerja Pukul 10:00)"]
+    end
+
+    subgraph StorageLayer["Sistem Berkas & Penyimpanan"]
+        PublicStorage["storage/app/public/<br/>- attachments/ (Surat Dokter)<br/>- profile-photos/<br/>- students/ & teachers/<br/>- teacher_attendances/ (Selfie GPS)<br/>- logos/"]
+        StorageFallbackRoute["Fallback Route: /storage/{path}<br/>(Path Traversal Sanitized)"]
+    end
+
+    subgraph SharedDatabase["Basis Data Bersama (MySQL 'db_absen')"]
+        AbsensiTables["Tabel Inti Presensi (215 Log Gerbang,<br/>4.367 Log Mapel, 10 Permit, 14 Leave Requests)"]
+        AcademicTables["Tabel Akademik (19 Kelas, 163 Siswa,<br/>14 Guru, 14 Jadwal, 2 Tahun Ajaran, 3 Semester)"]
+        RoleTables["Tabel Hak Akses Spatie (17 Roles,<br/>23 Permissions, 186 Model Roles)"]
+        SSOTables["Tabel Token SSO (sso_tokens)"]
+        CommunicationTables["Tabel Chat & Notifikasi (notifications,<br/>conversations, messages, admin_messages)"]
+    end
+
+    subgraph EkosistemEksternal["Sistem Mitra Ekosistem SIASEK"]
+        SIPADA["SIPADA (Sistem Pangkalan Data)<br/>Single Source of Truth Master Data"]
+        LMSMokopani["LMS Mokopani<br/>Platform Pembelajaran Daring SMPN 1 Biau"]
+    end
+
+    %% Relasi Alur
+    GateKiosk -->|Pemindaian Kartu & Wajah| RoutingCore
+    TeacherDevice -->|Presensi Mapel, Jurnal, GPS Selfie| RoutingCore
+    ParentDevice -->|Pengajuan Izin & Pantau Anak| RoutingCore
+    PrincipalDevice -->|Supervisi & Monitoring Eksekutif| RoutingCore
+    AdminDevice -->|Piket & Laporan| RoutingCore
+
+    Klien -.->|Memuat Bobot Model & Library| CDN_Asset
+
+    RoutingCore --> CSPMiddleware --> RoleMiddleware --> PeriodMiddleware --> OnboardingMiddleware
+    RoleMiddleware -->|Master Data CRUD| SipadaRedirect -->|Pengalihan Pengelolaan| SIPADA
+
+    OnboardingMiddleware --> GateController
+    OnboardingMiddleware --> TeacherModule
+    OnboardingMiddleware --> ParentModule
+    OnboardingMiddleware --> PrincipalModule
+    OnboardingMiddleware --> ReportEngine
+    OnboardingMiddleware --> ChatEngine
+    OnboardingMiddleware --> SSOEngine
+    RoutingCore --> APIModule
+
+    CronScheduler --> CheckAbsentCommand
+    CheckAbsentCommand -->|Tandai Alpa & Kirim Notif| AbsensiTables
+    CheckAbsentCommand -->|Kirim Notifikasi| CommunicationTables
+
+    GateController --> StorageLayer
+    TeacherModule --> StorageLayer
+    ParentModule --> StorageLayer
+
+    GateController --> AbsensiTables
+    TeacherModule --> AbsensiTables
+    TeacherModule --> AcademicTables
+    ParentModule --> AbsensiTables
+    PrincipalModule --> AbsensiTables
+    PrincipalModule --> AcademicTables
+    RoleMiddleware --> RoleTables
+    SSOEngine --> SSOTables
+
+    SSOEngine <-->|Token Exchange (2 Jam Active)| LMSMokopani
+    AcademicTables <-->|Shared Tables| SIPADA
+    RoleTables <-->|Shared RBAC| SIPADA
