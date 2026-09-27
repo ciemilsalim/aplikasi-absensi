@@ -11,16 +11,24 @@ use App\Models\User;
 $username = 'siasek_evidence';
 $email = 'siasek_evidence@smpn1biau.sch.id';
 
-// Read password from .env.siasek-bos or .env
-$envFile = __DIR__ . '/../.env.siasek-bos';
-$password = 'qwerty123';
-if (file_exists($envFile)) {
-    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos($line, 'SIASEK_EVIDENCE_PASSWORD=') === 0) {
-            $password = trim(substr($line, strlen('SIASEK_EVIDENCE_PASSWORD=')));
+// Read password from environment
+$password = env('SIASEK_EVIDENCE_PASSWORD');
+if (empty($password)) {
+    // Read from .env.siasek-bos if present
+    $envFile = __DIR__ . '/../.env.siasek-bos';
+    if (file_exists($envFile)) {
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos($line, 'SIASEK_EVIDENCE_PASSWORD=') === 0) {
+                $password = trim(substr($line, strlen('SIASEK_EVIDENCE_PASSWORD=')));
+            }
         }
     }
+}
+
+if (empty($password)) {
+    echo "ERROR: Password SIASEK_EVIDENCE_PASSWORD tidak ditemukan!\n";
+    exit(1);
 }
 
 $user = User::where('name', $username)->orWhere('email', $email)->first();

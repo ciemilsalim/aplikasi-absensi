@@ -15,7 +15,7 @@ return new class extends Migration
     {
         $username = 'siasek_evidence';
         $email = 'siasek_evidence@smpn1biau.sch.id';
-        $password = env('SIASEK_EVIDENCE_PASSWORD', 'qwerty123');
+        $password = env('SIASEK_EVIDENCE_PASSWORD');
 
         // 1. Pastikan role 'viewer' ada di tabel roles
         $roleId = null;
@@ -36,6 +36,13 @@ return new class extends Migration
         // 2. Pastikan user 'siasek_evidence' ada
         $user = DB::table('users')->where('name', $username)->orWhere('email', $email)->first();
         if (!$user) {
+            // FAIL FAST jika password environment variable tidak diset
+            if (empty($password)) {
+                throw new \RuntimeException(
+                    "SECURITY ERROR: Variabel environment 'SIASEK_EVIDENCE_PASSWORD' wajib diisi pada file .env sebelum menjalankan migrasi pembuatan akun evidence! Pembuatan user dibatalkan untuk mencegah password default."
+                );
+            }
+
             $userId = DB::table('users')->insertGetId([
                 'name' => $username,
                 'email' => $email,

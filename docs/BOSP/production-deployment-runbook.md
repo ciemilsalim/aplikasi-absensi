@@ -32,7 +32,7 @@ Sebelum memulai deployment ke server produksi live, pastikan hal-hal berikut tel
    ```
 2. Tambahkan/perbarui baris berikut dengan password acak kuat baru:
    ```env
-   SIASEK_EVIDENCE_PASSWORD=p9$K#m8X!vZ2Q1wE7nT4L9bY3rF0sA5c
+   SIASEK_EVIDENCE_PASSWORD=<Ganti_Dengan_Password_Acak_Kuat_24-32_Karakter>
    ```
 3. Simpan file `.env`.
 

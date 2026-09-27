@@ -45,26 +45,31 @@
 
 ---
 
-## 4. TEMUAN KEAMANAN & CREDENTIAL AUDIT (SECURITY FINDINGS)
+## 4. TEMUAN KEAMANAN & HARDENING CREDENTIAL (SECURITY HARDENING)
 
-> [!WARNING]
-> **TEMUAN 1: CREDENTIAL DEFAULT PADA ENV LOKAL (`ROTATE BEFORE PRODUCTION`)**  
-> Password pada `.env.siasek-bos` saat ini menggunakan nilai pengujian sederhana (`qwerty123`).  
-> **REKOMENDASI WAJIB:** Sebelum deployment ke server produksi live, variabel `SIASEK_EVIDENCE_PASSWORD` pada `.env` server live **HARUS** diisi dengan password acak kuat minimum 24–32 karakter.
+> [!TIP]
+> **HARDENING 1: METODE PROVISIONING AMAN DENGAN FAIL-FAST & INTERAKTIF**  
+> 1. **Migration Fail-Fast:** Migrasi `2026_09_27_000001_create_viewer_role_and_evidence_account.php` telah diperketat. Jika variabel `SIASEK_EVIDENCE_PASSWORD` tidak diset di `.env`, migrasi akan **FAIL FAST** (melempar `RuntimeException`) dan menolak membuat user dengan password default.  
+> 2. **Artisan Command Interaktif:** Disediakan perintah `php artisan siasek:create-evidence-user` yang meminta password secara tersembunyi (`$this->secret()`) tanpa argumen CLI (mencegah password masuk ke shell history atau process list).
 
 > [!IMPORTANT]
-> **TEMUAN 2: METODE DEPLOYMENT HTTP `/fix-storage-link` (`SECURITY RESTRICTION`)**  
-> Endpoint HTTP public `/fix-storage-link` tidak boleh digunakan sebagai saluran deployment utama karena tidak memiliki pengamanan berbasis sesi admin. Deployment wajib dilakukan melalui SSH/CLI resmi server.
+> **HARDENING 2: PEMBATASAN METODE DEPLOYMENT HTTP `/fix-storage-link`**  
+> Endpoint HTTP public `/fix-storage-link` tidak boleh digunakan sebagai saluran deployment utama. Deployment wajib dilakukan melalui terminal SSH/CLI resmi server.
 
 ---
 
-## 5. PROSEDUR DEPLOYMENT LIVEDEPLOYMENT PROCEDURE (HANDS-OFF / MANUAL)
+## 5. PROSEDUR DEPLOYMENT LIVE (SAFE MANUAL PROVISIONING)
 
-### Step 1: Persiapan Credential Server Live
-Tambahkan variabel password kuat pada file `.env` server live:
-```env
-SIASEK_EVIDENCE_PASSWORD=<Ganti_Dengan_Password_Acak_Kuat_24-32_Karakter>
-```
+### Skenario A: Provisioning via Migration (`SIASEK_EVIDENCE_PASSWORD` di `.env`)
+1. Tambahkan password acak kuat pada file `.env` server live:
+   ```env
+   SIASEK_EVIDENCE_PASSWORD=<Ganti_Dengan_Password_Acak_Kuat_24-32_Karakter>
+   ```
+2. Jalankan `php artisan migrate --force` di server live.
+
+### Skenario B: Provisioning Interaktif via Artisan Command (Tanpa Password di `.env`)
+1. Jalankan `php artisan siasek:create-evidence-user` di terminal SSH server live.
+2. Masukkan password tersembunyi secara interaktif saat diminta.
 
 ### Step 2: Backup Database Live
 Lakukan backup dump MySQL database production (`u478110651_sipada_smpn1b`) sebelum mengeksekusi migrasi.
