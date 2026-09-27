@@ -1,7 +1,7 @@
 # PEMBARUAN FITUR SIASEK — September 2026
 
 **Periode Repository Audit**: 2026-09-01 s.d. 2026-09-27  
-**Git Commit Cutoff**: `1f53690`  
+**Git Commit Cutoff**: `7056ee6`  
 
 ---
 
@@ -16,11 +16,11 @@
 
 | FEATURE | ROLE | CHANGE TYPE | GIT EVIDENCE (COMMIT/FILES) | LIVE STATUS | SCREENSHOT | NOTES |
 | :--- | :--- | :---: | :--- | :--- | :--- | :--- |
-| Admin Manual Leave Intervention & Attendance Sync | Admin / TU (admin@admin.com) | **UPDATED** | Commit fcb90b6 / Admin/LeaveRequestController.php | LIVE_EVIDENCE | `bukti_admin_leave_intervention_september_2026.png` | Modul intervensi pengajuan izin siswa & auto-sync presensi |
-| Subject-Based Attendance Tracking & Reporting | Guru Mapel (elianaputri1988@gmail.com) | **UPDATED** | Commit 96660f4 / SubjectAttendanceController.php | LIVE_EVIDENCE | `bukti_08_teacher_dashboard.png` | Pencatatan presensi per jam pelajaran & rekapitulasi guru |
-| Executive Principal Dashboard Overview | Kepala Sekolah (kepsek@admin.com) | **ACTIVE** | Commit 7940af5 / PrincipalDashboardController.php | LIVE_EVIDENCE | `bukti_14_kepsek_dashboard.png` | Tampilan executive overview persentase kehadiran 14 hari & supervisi |
-| Parent Onboarding & Verification Enforcer | Orang Tua (awaludin914@guru.smp.belajar.id) | **ACTIVE** | EnsureParentOnboardingCompleted.php | LIVE_EVIDENCE | `bukti_11_parent_dashboard.png` | Sistem penegakan verifikasi 3-langkah klaim anak binaan |
-| Gate Scanner Kiosk Interface | Satpam / Piket (satpam@siasek.com) | **ACTIVE** | AttendanceController.php | LIVE_EVIDENCE | `bukti_13_satpam_dashboard.png` | Antarmuka scanner kiosk presensi gerbang kedatangan/kepulangan |
+| Admin Manual Leave Intervention & Attendance Sync | Admin / TU (ADMIN_EVIDENCE) | **UPDATED** | Commit fcb90b6 / Admin/LeaveRequestController.php | LIVE_EVIDENCE | `bukti_admin_leave_intervention_september_2026.png` | Modul intervensi pengajuan izin siswa & auto-sync presensi |
+| Subject-Based Attendance Tracking & Reporting | Guru Mapel / Wali Kelas (TEACHER_EVIDENCE) | **UPDATED** | Commit 96660f4 / SubjectAttendanceController.php | LIVE_EVIDENCE | `bukti_08_teacher_dashboard.png` | Pencatatan presensi per jam pelajaran & rekapitulasi guru |
+| Executive Principal Dashboard Overview | Kepala Sekolah (PRINCIPAL_EVIDENCE) | **ACTIVE** | Commit 7940af5 / PrincipalDashboardController.php | LIVE_EVIDENCE | `bukti_14_kepsek_dashboard.png` | Tampilan executive overview persentase kehadiran 14 hari & supervisi |
+| Parent Onboarding & Verification Enforcer | Orang Tua (PARENT_EVIDENCE) | **ACTIVE** | EnsureParentOnboardingCompleted.php | LIVE_EVIDENCE | `bukti_11_parent_dashboard.png` | Sistem penegakan verifikasi 3-langkah klaim anak binaan |
+| Gate Scanner Kiosk Interface | Satpam / Piket (SATPAM_EVIDENCE) | **ACTIVE** | AttendanceController.php | LIVE_EVIDENCE | `bukti_13_satpam_dashboard.png` | Antarmuka scanner kiosk presensi gerbang kedatangan/kepulangan |
 
 
 ---

@@ -194,7 +194,7 @@ $gitHead = trim(shell_exec("git rev-parse --short HEAD") ?? 'HEAD');
 $businessFeatures = [
     [
         'feature' => 'Admin Manual Leave Intervention & Attendance Sync',
-        'role' => 'Admin / TU (admin@admin.com)',
+        'role' => 'Admin / TU (ADMIN_EVIDENCE)',
         'workflow' => 'Intervensi Izin Manual Siswa & Auto-Sync Presensi',
         'route' => '/admin/leave-requests',
         'change_type' => 'UPDATED',
@@ -205,7 +205,7 @@ $businessFeatures = [
     ],
     [
         'feature' => 'Subject-Based Attendance Tracking & Reporting',
-        'role' => 'Guru Mapel (elianaputri1988@gmail.com)',
+        'role' => 'Guru Mapel / Wali Kelas (TEACHER_EVIDENCE)',
         'workflow' => 'Input & Reporting Presensi Mata Pelajaran',
         'route' => '/teacher/dashboard',
         'change_type' => 'UPDATED',
@@ -216,7 +216,7 @@ $businessFeatures = [
     ],
     [
         'feature' => 'Executive Principal Dashboard Overview',
-        'role' => 'Kepala Sekolah (kepsek@admin.com)',
+        'role' => 'Kepala Sekolah (PRINCIPAL_EVIDENCE)',
         'workflow' => 'Executive Monitoring & Persentase Kehadiran 14 Hari',
         'route' => '/principal/dashboard',
         'change_type' => 'ACTIVE',
@@ -227,7 +227,7 @@ $businessFeatures = [
     ],
     [
         'feature' => 'Parent Onboarding & Verification Enforcer',
-        'role' => 'Orang Tua (awaludin914@guru.smp.belajar.id)',
+        'role' => 'Orang Tua (PARENT_EVIDENCE)',
         'workflow' => 'Verification 3-Step Claim Anak Binaan',
         'route' => '/parent/onboarding',
         'change_type' => 'ACTIVE',
@@ -238,7 +238,7 @@ $businessFeatures = [
     ],
     [
         'feature' => 'Gate Scanner Kiosk Interface',
-        'role' => 'Satpam / Piket (satpam@siasek.com)',
+        'role' => 'Satpam / Piket (SATPAM_EVIDENCE)',
         'workflow' => 'Kiosk Presensi Barcode/QR Gerbang Kedatangan/Kepulangan',
         'route' => '/scanner',
         'change_type' => 'ACTIVE',
@@ -276,7 +276,7 @@ $evidenceIndexItems = [
     [
         'id' => 'EV-01',
         'feature' => 'Live Application Billing Evidence (368 Siswa Aktif)',
-        'role' => 'Admin (admin@admin.com)',
+        'role' => 'Admin (ADMIN_EVIDENCE)',
         'route' => '/admin/dashboard',
         'evidence_type' => 'Live Application Snapshot',
         'git_ref' => $gitHead,
@@ -288,7 +288,7 @@ $evidenceIndexItems = [
     [
         'id' => 'EV-02',
         'feature' => 'Admin Manual Leave Intervention & Attendance Sync',
-        'role' => 'Admin / TU (admin@admin.com)',
+        'role' => 'Admin / TU (ADMIN_EVIDENCE)',
         'route' => '/admin/leave-requests',
         'evidence_type' => 'Live Operational Evidence',
         'git_ref' => 'fcb90b6',
@@ -300,7 +300,7 @@ $evidenceIndexItems = [
     [
         'id' => 'EV-03',
         'feature' => 'Subject-Based Attendance Tracking & Reporting',
-        'role' => 'Guru & Wali 7D (elianaputri1988@gmail.com)',
+        'role' => 'Guru & Wali 7D (TEACHER_EVIDENCE)',
         'route' => '/teacher/dashboard',
         'evidence_type' => 'Live Operational Evidence',
         'git_ref' => '96660f4',
@@ -312,7 +312,7 @@ $evidenceIndexItems = [
     [
         'id' => 'EV-04',
         'feature' => 'Executive Principal Dashboard Overview',
-        'role' => 'Kepala Sekolah (kepsek@admin.com)',
+        'role' => 'Kepala Sekolah (PRINCIPAL_EVIDENCE)',
         'route' => '/principal/dashboard',
         'evidence_type' => 'Live Operational Evidence',
         'git_ref' => '7940af5',
@@ -324,7 +324,7 @@ $evidenceIndexItems = [
     [
         'id' => 'EV-05',
         'feature' => 'Parent Onboarding Enforcer Flow',
-        'role' => 'Orang Tua (awaludin914@guru.smp.belajar.id)',
+        'role' => 'Orang Tua (PARENT_EVIDENCE)',
         'route' => '/parent/onboarding',
         'evidence_type' => 'Live Operational Evidence',
         'git_ref' => '7940af5',
@@ -336,7 +336,7 @@ $evidenceIndexItems = [
     [
         'id' => 'EV-06',
         'feature' => 'Gate Scanner Kiosk Interface',
-        'role' => 'Satpam / Piket (satpam@siasek.com)',
+        'role' => 'Satpam / Piket (SATPAM_EVIDENCE)',
         'route' => '/scanner',
         'evidence_type' => 'Live Operational Evidence',
         'git_ref' => '7940af5',
@@ -348,7 +348,7 @@ $evidenceIndexItems = [
     [
         'id' => 'EV-07',
         'feature' => 'Viewer Role Read-Only Authorization (Infrastructure)',
-        'role' => 'Viewer / Auditor (siasek_evidence@example.com)',
+        'role' => 'Viewer / Auditor (VIEWER_EVIDENCE)',
         'route' => '/admin/dashboard',
         'evidence_type' => 'Evidence Infrastructure',
         'git_ref' => '7940af5',
