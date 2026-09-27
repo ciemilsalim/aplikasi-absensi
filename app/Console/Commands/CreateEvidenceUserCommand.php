@@ -22,7 +22,7 @@ class CreateEvidenceUserCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Provisioning aman untuk akun evidence (siasek_evidence@example.com) dengan password tersembunyi';
+    protected $description = 'Provisioning terisolasi dan interaktif untuk akun evidence (siasek_evidence@example.com)';
 
     /**
      * Execute the console command.
@@ -36,20 +36,35 @@ class CreateEvidenceUserCommand extends Command
         $email = 'siasek_evidence@example.com';
         $name = 'SIASEK Evidence';
 
-        // 1. Password input tersembunyi (interaktif tanpa CLI argument)
+        // 1. Cek konflik akun legacy lain secara informatif (TANPA merge/delete otomatis)
+        $conflicts = User::where(function ($q) use ($email) {
+            $q->where('name', 'siasek_evidence')
+              ->orWhere('email', 'siasek_evidence@smpn1biau.sch.id');
+        })->where('email', '!=', $email)->get();
+
+        if ($conflicts->count() > 0) {
+            $this->warn('⚠ DETEKSI KONFLIK AKUN LEGACY:');
+            foreach ($conflicts as $c) {
+                $this->warn("   - ID: {$c->id} | Name: {$c->name} | Email: {$c->email} | Role: {$c->role}");
+            }
+            $this->warn('   Sistem TIDAK melakukan merge atau penghapusan otomatis. Akun legacy di atas tetap aman.');
+            $this->newLine();
+        }
+
+        // 2. Interactive secret input untuk password
         $password = $this->secret('Masukkan password aman untuk akun evidence (siasek_evidence@example.com)');
         if (empty($password) || strlen($password) < 8) {
-            $this->error('❌ PERINGATAN: Password wajib diisi dan minimal 8 karakter!');
+            $this->error('❌ ERROR: Password wajib diisi dan minimal 8 karakter!');
             return 1;
         }
 
         $passwordConfirm = $this->secret('Konfirmasi password');
         if ($password !== $passwordConfirm) {
-            $this->error('❌ PERINGATAN: Konfirmasi password tidak cocok!');
+            $this->error('❌ ERROR: Konfirmasi password tidak cocok!');
             return 1;
         }
 
-        // 2. Buat atau perbarui role 'viewer' di tabel roles
+        // 3. Pastikan role 'viewer' ada di tabel roles
         $roleId = null;
         if (Schema::hasTable('roles')) {
             $role = DB::table('roles')->where('name', 'viewer')->first();
@@ -65,11 +80,8 @@ class CreateEvidenceUserCommand extends Command
             }
         }
 
-        // 3. Cari user berdasarkan email utama atau identifier legacy untuk mencegah duplikasi
-        $user = User::where('email', $email)
-            ->orWhere('email', 'siasek_evidence@smpn1biau.sch.id')
-            ->orWhere('name', 'siasek_evidence')
-            ->first();
+        // 4. Cari atau buat user berdasarkan email utama siasek_evidence@example.com
+        $user = User::where('email', $email)->first();
 
         if (!$user) {
             $user = User::create([
@@ -79,17 +91,16 @@ class CreateEvidenceUserCommand extends Command
                 'role' => 'viewer',
                 'email_verified_at' => now(),
             ]);
-            $this->info("✔ User evidence dengan email '{$email}' berhasil dibuat.");
+            $this->info("✔ Akun evidence baru dengan email '{$email}' berhasil dibuat.");
         } else {
             $user->name = $name;
-            $user->email = $email;
             $user->password = Hash::make($password);
             $user->role = 'viewer';
             $user->save();
-            $this->info("✔ User evidence dengan email '{$email}' berhasil diperbarui.");
+            $this->info("✔ Akun evidence '{$email}' (ID: {$user->id}) berhasil diperbarui.");
         }
 
-        // 4. Hubungkan pivot model_has_roles
+        // 5. Hubungkan pivot model_has_roles
         if ($roleId && $user && Schema::hasTable('model_has_roles')) {
             $hasRolePivot = DB::table('model_has_roles')
                 ->where('role_id', $roleId)
@@ -106,7 +117,7 @@ class CreateEvidenceUserCommand extends Command
             }
         }
 
-        $this->info("✔ Akun evidence '{$email}' siap digunakan (ID: {$user->id}, Role: viewer).");
+        $this->info("✔ Provisioning selesai! User ID: {$user->id}, Email: {$email}, Role: viewer.");
         return 0;
     }
 }
