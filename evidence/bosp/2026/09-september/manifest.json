@@ -1,0 +1,51 @@
+{
+    "billing": {
+        "source_type": "LIVE_APPLICATION",
+        "source_url": "https:\/\/presensi-smpn1biau.zahradev.id",
+        "role": "admin",
+        "source_page": "\/admin\/dashboard",
+        "capture_timestamp": "2026-09-27 11:25:25",
+        "cutoff": "2026-09-27",
+        "active_student_count": 368,
+        "rate_per_student": 1000,
+        "total": 368000
+    },
+    "project_code": "SIASEK-BIAU",
+    "customer": "SMP Negeri 1 Biau",
+    "period": "September 2026",
+    "git_head": "c422e82",
+    "invoice_number": "SIASEK-BIAU\/2026\/09\/001",
+    "invoice_status": "DRAFT",
+    "sequence": "001",
+    "screenshots": [
+        "bukti_billing_september_2026.png",
+        "bukti_01_dashboard.png",
+        "bukti_07_leave_requests.png",
+        "bukti_08_teacher_dashboard.png",
+        "bukti_11_parent_dashboard.png",
+        "bukti_13_satpam_dashboard.png",
+        "bukti_14_kepsek_dashboard.png"
+    ],
+    "features": {
+        "new": 0,
+        "updated": 2,
+        "active": 3,
+        "unverified": 0
+    },
+    "roles": [
+        "Viewer",
+        "Kepala Sekolah",
+        "Guru & Wali Kelas",
+        "Orang Tua",
+        "Satpam \/ Piket"
+    ],
+    "pdf_files": [
+        "01_invoice\/INVOICE_SIASEK_BIAU_SEPTEMBER_2026.pdf",
+        "02_rincian_pemanfaatan\/RINCIAN_PEMANFAATAN_SIASEK_BIAU_SEPTEMBER_2026.pdf",
+        "03_pembaruan_fitur\/PEMBARUAN_FITUR_SIASEK_BIAU_SEPTEMBER_2026.pdf",
+        "05_evidence_index\/EVIDENCE_INDEX_SIASEK_BIAU_SEPTEMBER_2026.pdf",
+        "FINAL\/PAKET_BOSP_SIASEK_BIAU_SEPTEMBER_2026.pdf"
+    ],
+    "qa_status": "PASS",
+    "generated_at": "2026-09-27 11:25:26"
+}

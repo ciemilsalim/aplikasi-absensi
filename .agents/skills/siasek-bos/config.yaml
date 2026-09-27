@@ -1,0 +1,42 @@
+# SIASEK BOSP Evidence Generator Configuration
+
+project:
+  code: "SIASEK-BIAU"
+  name: "Aplikasi Presensi SIASEK"
+  customer: "SMP Negeri 1 Biau"
+
+invoice:
+  numbering:
+    series: "SIASEK-BIAU"
+    scope: "project"
+    sequence_scope: "project"
+    reset_yearly: false
+  format: "SIASEK-BIAU/YYYY/MM/NNN"
+
+application:
+  name: "SIASEK"
+  full_name: "Sistem Informasi & Absensi Sekolah"
+  live_url: "https://presensi-smpn1biau.zahradev.id"
+
+provider:
+  name: "ZahraDev"
+  developer: "Emil Salim, S.Kom"
+  email: "emil@zahradev.id"
+  phone: "+6281234567890"
+
+customer:
+  name: "SMP Negeri 1 Biau"
+  npsn: "40201234"
+  address: "Jl. Pendidikan No. 1 Biau, Kabupaten Buol"
+
+billing:
+  service_name: "Jasa Layanan Penggunaan Aplikasi Presensi SIASEK"
+  rate_per_student: 1000
+  currency: "IDR"
+
+credentials:
+  source: "secure environment (.env.siasek-bos)"
+
+evidence:
+  masking_required: true
+  storage_dir: "docs/BOSP/live-evidence"

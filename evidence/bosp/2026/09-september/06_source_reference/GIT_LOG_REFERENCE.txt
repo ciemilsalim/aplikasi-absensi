@@ -1,0 +1,29 @@
+c422e82 refactor(bosp): isolate evidence user provisioning from migration
+de5a676 fix(bosp): use email as evidence account login identifier
+7740f37 security(bosp): remove default credential fallback for evidence account
+3e2506d docs(bosp): add production deployment runbook for viewer evidence account
+3182e95 docs(bosp): add production readiness check report for viewer evidence account
+9b4d908 feat: implement viewer role and evidence account for BOSP compliance verification
+892bb7d docs: add final project LPJ documentation, release manifest, and QA audit reports
+7d9670f docs: add comprehensive LPJ documentation, assets, and build scripts
+b131b87 feat: add lpj-generator agent skill for generating application development reports and documentation
+f519ebd feat: implement student status filtering and robust photo URL resolution in Student model
+99f586e feat: add multi-semester sync tools and database repair utilities for 2025/2026 academic year integrity
+6cc3f61 feat: add database synchronization tool and script for cleaning 2025/2026 academic data
+583082a feat: add diagnostic maintenance scripts for database audit and sync verification
+d202284 feat: implement global semester data sharing with custom sorting logic in AppServiceProvider
+f466060 feat: add Teacher Dashboard controller with role-based widgets, reusable scope trait, and environment synchronization script
+7fca8bd feat: implement teacher dashboard controller and model with multi-role view support
+b9dff91 feat: implement database synchronization and multi-semester data repair tools
+82b41cf feat: add synchronization tool and database migration for historical class student reconstruction
+e9d33c1 feat: add migration for academic history reconstruction and implement synchronization tool for classes and student enrollment
+50f7423 feat: implement academic year scope for school classes and homeroom assignments with middleware and validation
+c064044 feat: add class management infrastructure and supporting audit scripts for data migration
+6a1a8c0 feat: create DashboardController to manage teacher-specific dashboard views and data aggregation
+04723af feat: implement historical data backfill migration and add comprehensive reporting and scheduling management modules.
+28aa6b5 feat: add admin leave request management with manual intervention support and automatic attendance synchronization
+1fbbd0c feat: implement admin leave management system with manual intervention, auto-sync attendance, and custom logo provider
+fcb90b6 feat: implement admin manual leave intervention and synchronization system for student attendance records
+96660f4 feat: implement subject-based student attendance API and reporting functionality
+dc88df4 feat: create Student model with photo accessor and automated user creation
+575e128 feat: implement subject-based student management and attendance tracking models and controller
