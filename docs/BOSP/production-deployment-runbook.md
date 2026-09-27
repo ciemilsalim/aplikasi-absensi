@@ -84,16 +84,16 @@ php artisan route:cache
 ## 5. VERIFICATION STEPS (POST-DEPLOYMENT)
 
 ### 5.1 Verifikasi Database & User
-Jalankan perintah berikut di server live untuk memastikan user `siasek_evidence` dan role `viewer` telah aktif:
+Jalankan perintah berikut di server live untuk memastikan user `siasek_evidence@example.com` dan role `viewer` telah aktif:
 
 ```bash
-php artisan tinker --execute="echo json_encode(App\Models\User::where('name', 'siasek_evidence')->first()->only(['id', 'name', 'email', 'role']));"
+php artisan tinker --execute="echo json_encode(App\Models\User::where('email', 'siasek_evidence@example.com')->first()->only(['id', 'name', 'email', 'role']));"
 ```
-**Ekspektasi Output:** `{"id": ..., "name":"siasek_evidence", "email":"siasek_evidence@smpn1biau.sch.id", "role":"viewer"}`
+**Ekspektasi Output:** `{"id": 227, "name":"SIASEK Evidence", "email":"siasek_evidence@example.com", "role":"viewer"}`
 
 ### 5.2 Verifikasi Login Browser Live
 1. Buka browser dan navigasi ke: `https://presensi-smpn1biau.zahradev.id/login`
-2. Masukkan Email: `siasek_evidence@smpn1biau.sch.id`
+2. Masukkan Email: `siasek_evidence@example.com`
 3. Masukkan Password produksi yang diset pada `.env` live.
 4. Klik **Log in**.
 5. **Ekspektasi:** Pengguna berhasil masuk dan dialihkan ke `https://presensi-smpn1biau.zahradev.id/admin/dashboard`.

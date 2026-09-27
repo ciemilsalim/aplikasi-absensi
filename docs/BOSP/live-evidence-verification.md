@@ -2,7 +2,8 @@
 
 **Nama Proyek:** SIASEK (Sistem Informasi & Absensi Sekolah)  
 **Target URL Live:** `https://presensi-smpn1biau.zahradev.id`  
-**Nama Akun Evidence:** `siasek_evidence`  
+**Nama Display Akun:** `SIASEK Evidence`  
+**Email/Login Identifier:** `siasek_evidence@example.com`  
 **Role:** `viewer`  
 **Tanggal Verifikasi:** 27 September 2026  
 **Status Verifikasi:** COMPLETED & VERIFIED CLEAN  
@@ -13,8 +14,8 @@
 
 | PROPERTI | NILAI HAFALAN / DATABASE | STATUS VERIFIKASI |
 | :--- | :--- | :--- |
-| **Username** | `siasek_evidence` | VERIFIED |
-| **Email** | `siasek_evidence@smpn1biau.sch.id` | VERIFIED |
+| **Display Name (`users.name`)** | `SIASEK Evidence` | VERIFIED |
+| **Login Email (`users.email`)** | `siasek_evidence@example.com` | VERIFIED |
 | **Role String (`users.role`)** | `viewer` | VERIFIED |
 | **Spatie Role (`roles.name`)** | `viewer` (ID: 18) | VERIFIED |
 | **Model Pivot (`model_has_roles`)**| `model_id: 227`, `role_id: 18` | VERIFIED |
@@ -52,24 +53,22 @@ Seluruh rute tindakan mutasi berhasil memblokir role `viewer` dengan respons HTT
 Pengujian langsung pada server aplikasi live `https://presensi-smpn1biau.zahradev.id/login` dilakukan menggunakan otomatisasi browser:
 
 ### 3.1 Hasil Percobaan Login Live
-1. **Login Email (`siasek_evidence@smpn1biau.sch.id`):**  
+1. **Login Email (`siasek_evidence@example.com`):**  
    Aplikasi mengembalikan pesan error `auth.failed` (*"These credentials do not match our records."*).
-2. **Login Username (`siasek_evidence`):**  
-   Validasi form client-side HTML5 mengabaikan submit karena field mensyaratkan format email (`type="email"`).
-3. **Navigasi Rute Terproteksi:**  
+2. **Navigasi Rute Terproteksi:**  
    Navigasi langsung ke `https://presensi-smpn1biau.zahradev.id/admin/dashboard` mengembalikan `302 Redirect` kembali ke `/login`.
 
 ### 3.2 Analisis Penyebab & Langkah Deployment
-- **Akar Masalah:** Perubahan arsitektur role `viewer` (pada `routes/web.php` & `sidebar.blade.php`) serta migrasi pembuatan user `2026_09_27_000001_create_viewer_role_and_evidence_account.php` baru dikembangkan dan diverifikasi di repositori lokal.
-- **Solusi Deployment:** Untuk mengaktifkan akun `siasek_evidence` pada server live:
+- **Akar Masalah:** Perubahan arsitektur role `viewer` (pada `routes/web.php` & `sidebar.blade.php`), command `siasek:create-evidence-user`, serta migrasi pembuatan user `2026_09_27_000001_create_viewer_role_and_evidence_account.php` baru dikembangkan dan diverifikasi di repositori lokal.
+- **Solusi Deployment:** Untuk mengaktifkan akun `siasek_evidence@example.com` pada server live:
   1. Commit & push branch/perubahan ke repository server produksi.
-  2. Jalankan `php artisan migrate` pada server live (dapat dilakukan melalui akses SSH atau utilitas `https://presensi-smpn1biau.zahradev.id/fix-storage-link?key=presensi123` setelah file dipasang).
+  2. Jalankan `php artisan migrate --force` atau `php artisan siasek:create-evidence-user` pada server live.
 
 ---
 
 ## 4. VALIDASI ATURAN READ-ONLY & KEAMANAN DATA (FASE 4)
 
-1. **Prinsip Tanpa Mutasi:** Akun `siasek_evidence` tidak memiliki hak akses POST/PUT/DELETE pada rute mana pun di area administrasi.
+1. **Prinsip Tanpa Mutasi:** Akun `siasek_evidence@example.com` tidak memiliki hak akses POST/PUT/DELETE pada rute mana pun di area administrasi.
 2. **Integritas Data Operasional:** Pengujian tidak melakukan penambahan, pengeditan, atau penghapusan pada data siswa, data presensi, maupun data operasional sekolah lainnya.
 3. **Perlindungan Rahasia (No Secret Leak):** Credential password disimpan eksklusif pada file `.env.siasek-bos` yang terdaftar dalam `.gitignore` sehingga aman dari komit repository Git.
 
@@ -92,7 +91,7 @@ Daftar 5 halaman evidence yang direkomendasikan untuk digunakan oleh otomatisasi
 ## 6. TEMUAN & BATASAN (FINDINGS & LIMITATIONS)
 
 1. **Temuan (Findings):**
-   - Implementasi role `viewer` di SIASEK bersifat non-intrusif dan menggunakan infrastruktur Spatie Permission & `CheckRoleMiddleware` yang sudah ada.
+   - Identifier autentikasi menggunakan `email` (`siasek_evidence@example.com`).
    - Semua rute pembacaan laporan dapat dibuka dengan lancar oleh `viewer`, sedangkan semua rute mutasi dikunci dengan HTTP `403`.
 2. **Batasan (Limitations):**
-   - Akun `siasek_evidence` pada server LIVE memerlukan langkah deployment migrasi ke server produksi sebelum browser automation `/siasek-bos` dapat melakukan login secara penuh di server live.
+   - Akun `siasek_evidence@example.com` pada server LIVE memerlukan langkah deployment migrasi / command di server produksi sebelum browser automation `/siasek-bos` dapat melakukan login secara penuh di server live.

@@ -22,7 +22,7 @@ class CreateEvidenceUserCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Provisioning aman untuk akun evidence (siasek_evidence) dengan password tersembunyi';
+    protected $description = 'Provisioning aman untuk akun evidence (siasek_evidence@example.com) dengan password tersembunyi';
 
     /**
      * Execute the console command.
@@ -33,11 +33,11 @@ class CreateEvidenceUserCommand extends Command
         $this->info(' PROVISIONING AKUN EVIDENCE (SIASEK VIEWER ROLE)  ');
         $this->info('===================================================');
 
-        $username = 'siasek_evidence';
-        $email = 'siasek_evidence@smpn1biau.sch.id';
+        $email = 'siasek_evidence@example.com';
+        $name = 'SIASEK Evidence';
 
         // 1. Password input tersembunyi (interaktif tanpa CLI argument)
-        $password = $this->secret('Masukkan password aman untuk akun siasek_evidence');
+        $password = $this->secret('Masukkan password aman untuk akun evidence (siasek_evidence@example.com)');
         if (empty($password) || strlen($password) < 8) {
             $this->error('❌ PERINGATAN: Password wajib diisi dan minimal 8 karakter!');
             return 1;
@@ -65,22 +65,28 @@ class CreateEvidenceUserCommand extends Command
             }
         }
 
-        // 3. Buat atau perbarui user siasek_evidence
-        $user = User::where('name', $username)->orWhere('email', $email)->first();
+        // 3. Cari user berdasarkan email utama atau identifier legacy untuk mencegah duplikasi
+        $user = User::where('email', $email)
+            ->orWhere('email', 'siasek_evidence@smpn1biau.sch.id')
+            ->orWhere('name', 'siasek_evidence')
+            ->first();
+
         if (!$user) {
             $user = User::create([
-                'name' => $username,
+                'name' => $name,
                 'email' => $email,
                 'password' => Hash::make($password),
                 'role' => 'viewer',
                 'email_verified_at' => now(),
             ]);
-            $this->info("✔ User '{$username}' berhasil dibuat.");
+            $this->info("✔ User evidence dengan email '{$email}' berhasil dibuat.");
         } else {
+            $user->name = $name;
+            $user->email = $email;
             $user->password = Hash::make($password);
             $user->role = 'viewer';
             $user->save();
-            $this->info("✔ User '{$username}' berhasil diperbarui dengan password baru.");
+            $this->info("✔ User evidence dengan email '{$email}' berhasil diperbarui.");
         }
 
         // 4. Hubungkan pivot model_has_roles
@@ -100,7 +106,7 @@ class CreateEvidenceUserCommand extends Command
             }
         }
 
-        $this->info("✔ Akun evidence '{$username}' siap digunakan (ID: {$user->id}, Role: viewer).");
+        $this->info("✔ Akun evidence '{$email}' siap digunakan (ID: {$user->id}, Role: viewer).");
         return 0;
     }
 }

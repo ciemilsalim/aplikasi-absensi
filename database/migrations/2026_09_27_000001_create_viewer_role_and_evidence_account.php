@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $username = 'siasek_evidence';
-        $email = 'siasek_evidence@smpn1biau.sch.id';
+        $email = 'siasek_evidence@example.com';
+        $name = 'SIASEK Evidence';
         $password = env('SIASEK_EVIDENCE_PASSWORD');
 
         // 1. Pastikan role 'viewer' ada di tabel roles
@@ -33,10 +33,15 @@ return new class extends Migration
             }
         }
 
-        // 2. Pastikan user 'siasek_evidence' ada
-        $user = DB::table('users')->where('name', $username)->orWhere('email', $email)->first();
+        // 2. Cari user berdasarkan email baru atau identifier lama untuk migrasi aman tanpa duplikat
+        $user = DB::table('users')
+            ->where('email', $email)
+            ->orWhere('email', 'siasek_evidence@smpn1biau.sch.id')
+            ->orWhere('name', 'siasek_evidence')
+            ->first();
+
         if (!$user) {
-            // FAIL FAST jika password environment variable tidak diset
+            // FAIL FAST jika password environment variable tidak diset saat registrasi awal
             if (empty($password)) {
                 throw new \RuntimeException(
                     "SECURITY ERROR: Variabel environment 'SIASEK_EVIDENCE_PASSWORD' wajib diisi pada file .env sebelum menjalankan migrasi pembuatan akun evidence! Pembuatan user dibatalkan untuk mencegah password default."
@@ -44,7 +49,7 @@ return new class extends Migration
             }
 
             $userId = DB::table('users')->insertGetId([
-                'name' => $username,
+                'name' => $name,
                 'email' => $email,
                 'password' => Hash::make($password),
                 'role' => 'viewer',
@@ -54,10 +59,17 @@ return new class extends Migration
             ]);
         } else {
             $userId = $user->id;
-            DB::table('users')->where('id', $userId)->update([
+            $updateData = [
+                'name' => $name,
+                'email' => $email,
                 'role' => 'viewer',
                 'updated_at' => now(),
-            ]);
+            ];
+            // Update password hanya jika SIASEK_EVIDENCE_PASSWORD disediakan di env
+            if (!empty($password)) {
+                $updateData['password'] = Hash::make($password);
+            }
+            DB::table('users')->where('id', $userId)->update($updateData);
         }
 
         // 3. Hubungkan pivot model_has_roles
@@ -83,7 +95,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $user = DB::table('users')->where('name', 'siasek_evidence')->first();
+        $user = DB::table('users')->where('email', 'siasek_evidence@example.com')->first();
         if ($user) {
             if (Schema::hasTable('model_has_roles')) {
                 DB::table('model_has_roles')->where('model_id', $user->id)->delete();

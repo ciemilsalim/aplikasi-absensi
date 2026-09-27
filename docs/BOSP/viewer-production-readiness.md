@@ -2,10 +2,11 @@
 
 **Nama Proyek:** SIASEK (Sistem Informasi & Absensi Sekolah)  
 **Target App URL:** `https://presensi-smpn1biau.zahradev.id`  
-**Nama Akun Evidence:** `siasek_evidence`  
+**Nama Display Akun:** `SIASEK Evidence`  
+**Login Email:** `siasek_evidence@example.com`  
 **Role:** `viewer`  
 **Tanggal Evaluasi:** 27 September 2026  
-**Status Readiness:** **CONDITIONALLY READY (BUTENDED ACTION REQUIRED BEFORE DEPLOYMENT)**  
+**Status Readiness:** **CONDITIONALLY READY (ACTION REQUIRED BEFORE DEPLOYMENT)**  
 
 ---
 
@@ -13,7 +14,7 @@
 
 1. **Ketersediaan Akun & Role Lokal:**  
    - Peran `viewer` telah terdaftar di database lokal (Spatie Role ID: `18`).
-   - Akun `siasek_evidence` (ID: `227`) terverifikasi dengan role `viewer`.
+   - Akun `siasek_evidence@example.com` (ID: `227`, Display Name: `SIASEK Evidence`) terverifikasi dengan role `viewer` (Tepat 1 Akun, No Duplicates).
 2. **Pengujian Otorisasi Lokal:**  
    - Rute GET pembacaan dasbor, laporan, analytics, supervisi jurnal, dan daftar izin siswa dapat diakses dengan respons HTTP `200 OK` / `302 Found`.
    - Rute POST/PUT/DELETE mutasi data (simpan izin, approve/reject izin, verifikasi jurnal, manajemen user) terverifikasi **DITOLAK (HTTP `403 Forbidden`)**.
@@ -26,7 +27,7 @@
 | :--- | :--- | :--- | :--- |
 | **Kode Route & Sidebar** | Updated & Tested | belum ter-deploy | Wajib `git push` & `git pull` di server live. |
 | **Migration Role & Account**| Migrated & Verified | belum dijalankan | Wajib jalankan `php artisan migrate --force` di server live. |
-| **Akun `siasek_evidence`** | Active (ID: 227) | belum ada (`auth.failed`) | Dibuat otomatis saat migrasi server live dijalankan. |
+| **Akun `siasek_evidence@example.com`** | Active (ID: 227) | belum ada (`auth.failed`) | Dibuat otomatis saat migrasi / command server live dijalankan. |
 | **Credential Password** | Sesuai `.env.siasek-bos` | Belum dikonfigurasi | **WAJIB ROTATE PASSWORD** di `.env` server live sebelum deploy. |
 
 ---
@@ -93,7 +94,7 @@ php artisan cache:clear
 ```
 
 ### Step 5: Post-Deployment Verification
-Log in ke `https://presensi-smpn1biau.zahradev.id/login` menggunakan email `siasek_evidence@smpn1biau.sch.id` dan password baru, lalu pastikan dasbor dibuka dengan lancar dan rute mutasi tetap menghasilkan `403 Forbidden`.
+Log in ke `https://presensi-smpn1biau.zahradev.id/login` menggunakan email `siasek_evidence@example.com` dan password baru, lalu pastikan dasbor dibuka dengan lancar dan rute mutasi tetap menghasilkan `403 Forbidden`.
 
 ---
 

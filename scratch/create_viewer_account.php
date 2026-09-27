@@ -8,13 +8,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
-$username = 'siasek_evidence';
-$email = 'siasek_evidence@smpn1biau.sch.id';
+$email = 'siasek_evidence@example.com';
+$name = 'SIASEK Evidence';
 
-// Read password from environment
+// Read password from environment or .env.siasek-bos
 $password = env('SIASEK_EVIDENCE_PASSWORD');
 if (empty($password)) {
-    // Read from .env.siasek-bos if present
     $envFile = __DIR__ . '/../.env.siasek-bos';
     if (file_exists($envFile)) {
         $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -31,21 +30,43 @@ if (empty($password)) {
     exit(1);
 }
 
-$user = User::where('name', $username)->orWhere('email', $email)->first();
+// Clean up duplicate old accounts if any
+$users = User::where('email', $email)
+    ->orWhere('email', 'siasek_evidence@smpn1biau.sch.id')
+    ->orWhere('name', 'siasek_evidence')
+    ->get();
+
+if ($users->count() > 1) {
+    echo "Found " . $users->count() . " matching users. Merging to single user...\n";
+    $firstUser = $users->first();
+    foreach ($users as $index => $u) {
+        if ($index > 0) {
+            DB::table('model_has_roles')->where('model_id', $u->id)->delete();
+            $u->delete();
+            echo "Deleted duplicate user ID: {$u->id}\n";
+        }
+    }
+    $user = $firstUser;
+} else {
+    $user = $users->first();
+}
+
 if (!$user) {
     $user = User::create([
-        'name' => $username,
+        'name' => $name,
         'email' => $email,
         'password' => Hash::make($password),
         'role' => 'viewer',
         'email_verified_at' => now(),
     ]);
-    echo "Created user {$username}.\n";
+    echo "Created user {$email}.\n";
 } else {
+    $user->name = $name;
+    $user->email = $email;
     $user->password = Hash::make($password);
     $user->role = 'viewer';
     $user->save();
-    echo "Updated password for local user {$username}.\n";
+    echo "Updated user ID {$user->id} to email {$email}.\n";
 }
 
 $roleId = DB::table('roles')->where('name', 'viewer')->value('id');
@@ -72,4 +93,5 @@ if (!$hasRolePivot) {
     ]);
 }
 
-echo "Local user verification complete. ID: {$user->id}, Role: {$user->role}\n";
+$totalEvidenceUsers = User::where('role', 'viewer')->count();
+echo "Local user verification complete. ID: {$user->id}, Email: {$user->email}, Role: {$user->role}. Total viewer accounts: {$totalEvidenceUsers}\n";

@@ -4,7 +4,7 @@
 **Project Path:** `D:\laragon\www\siasek\aplikasi-absensi`  
 **Live Application URL:** `https://presensi-smpn1biau.zahradev.id`  
 **Tanggal Audit:** 27 September 2026  
-**Status Audit:** COMPLETED & VERIFIED (LOCAL & LIVE INFRASTRUCTURE AUDIT)  
+**Status Audit:** COMPLETED & VERIFIED (EMAIL LOGIN IDENTIFIER)  
 
 ---
 
@@ -12,6 +12,7 @@
 
 ### 1.1 Model & Tabel Database
 - **Model User:** `App\Models\User` (`app/Models/User.php`)
+- **Login Identifier:** `email` (`siasek_evidence@example.com`)
 - **Kolom Peran Lokal:** `users.role` (varchar, default: `'user'`)
 - **Integration Role:** Model `User` menggunakan metode `hasAnyRole($roles)` dan `hasRole($role)` yang secara cerdas memeriksa:
   1. Tabel Spatie Permission (`model_has_roles` dan `roles`) jika ada.
@@ -22,8 +23,8 @@
 - **Spatie Role ID:** 18 (`roles` table, `guard_name: web`)
 - **User Account:**
   - **User ID:** 227
-  - **Username:** `siasek_evidence`
-  - **Email:** `siasek_evidence@smpn1biau.sch.id`
+  - **Display Name:** `SIASEK Evidence`
+  - **Login Email:** `siasek_evidence@example.com`
   - **Role Lokal:** `viewer`
   - **Spatie Pivot:** Registered di `model_has_roles` (`model_id: 227`, `role_id: 18`, `model_type: App\Models\User`)
 
@@ -69,12 +70,14 @@ Tabel berikut menyajikan pemetaan lengkap halaman/menu yang dapat diakses oleh r
 
 ## 3. HASIL VERIFIKASI LOKAL & OTORISASI (FASE 4)
 
-Pengujian empiris dilakukan pada runtime Laravel untuk memastikan integritas dan keamanan akun `siasek_evidence`:
+Pengujian empiris dilakukan pada runtime Laravel untuk memastikan integritas dan keamanan akun `siasek_evidence@example.com`:
 
-1. **Verifikasi Peran:**  
+1. **Verifikasi Peran & Akun Tunggal:**  
+   - `$user->email === 'siasek_evidence@example.com'` -> **VERIFIED**
    - `$user->role === 'viewer'` -> **VERIFIED**
    - `$user->hasRole('viewer')` -> **VERIFIED (`true`)**
    - `$user->hasRole('admin')` -> **VERIFIED (`false`)** (Tidak memiliki akses admin/CRUD)
+   - Total Akun Evidence di Database $\rightarrow$ **Tepat 1 Akun (No Duplicates)**
 
 2. **Verifikasi Akses Read-Only:**  
    - `GET /dashboard` -> Status `302` (Redirect aman ke `/admin/dashboard`)
@@ -99,21 +102,21 @@ Pengujian empiris dilakukan pada runtime Laravel untuk memastikan integritas dan
 
 ### 4.1 Status Login Live Environment
 - **Target URL:** `https://presensi-smpn1biau.zahradev.id/login`
-- **Uji Login Browser Subagent:** Dilakukan menggunakan credential aman dari `.env.siasek-bos`.
+- **Uji Login Browser Subagent:** Dilakukan menggunakan credential email `siasek_evidence@example.com` dari `.env.siasek-bos`.
 - **Hasil Uji Login:** Server live mengembalikan pesan `auth.failed` (*"These credentials do not match our records."*).
 - **Akses Rute Terproteksi Langsung:** Navigasi ke `https://presensi-smpn1biau.zahradev.id/admin/dashboard` mengembalikan `302 Redirect` ke `/login`.
 
 ### 4.2 Analisis & Temuan (Findings)
-- **Penyebab:** Perubahan kode (`routes/web.php` & `sidebar.blade.php`) dan migrasi database (`2026_09_27_000001_create_viewer_role_and_evidence_account.php`) yang telah selesai dan diverifikasi di lokal belum di-deploy/di-sync ke server produksi live (`presensi-smpn1biau.zahradev.id`).
+- **Penyebab:** Perubahan kode (`routes/web.php` & `sidebar.blade.php`), Artisan command `siasek:create-evidence-user`, dan migrasi database (`2026_09_27_000001_create_viewer_role_and_evidence_account.php`) baru diuji di lokal dan belum di-deploy ke server produksi live (`presensi-smpn1biau.zahradev.id`).
 - **Solusi Deployment:** Untuk mengaktifkan akun evidence di server live:
   1. Commit & push perubahan kode dan migrasi ke repository utama.
-  2. Jalankan `git pull` & `php artisan migrate` di server produksi live (dapat dipicu melalui endpoint `/fix-storage-link?key=presensi123` setelah kode baru berada di server).
+  2. Jalankan `git pull` & `php artisan migrate --force` (atau `php artisan siasek:create-evidence-user`) di server produksi live.
 
 ---
 
 ## 5. REKOMENDASI CANDIDATE SCREENSHOT EVIDENCE (BOSP)
 
-Berikut adalah daftar 5 halaman prioritas utama untuk screenshot bukti pemanfaatan aplikasi SIASEK (setelah deployment ke live server):
+Berikut adalah daftar 5 halaman prioritas utama untuk screenshot bukti pemanfaatan aplikasi SIASEK:
 
 | NAMA BUKTI | URL HALAMAN | RELEVANSI BOSP | ELEMEN DATA UTAMA | REKOMENDASI MASKING |
 | :--- | :--- | :--- | :--- | :--- |
@@ -131,7 +134,7 @@ Berikut adalah daftar 5 halaman prioritas utama untuk screenshot bukti pemanfaat
 - **Environment Variable (`.env.siasek-bos`):**
   ```env
   SIASEK_URL=https://presensi-smpn1biau.zahradev.id
-  SIASEK_EVIDENCE_USERNAME=siasek_evidence
+  SIASEK_EVIDENCE_EMAIL=siasek_evidence@example.com
   SIASEK_EVIDENCE_PASSWORD=<Secure_Password_Here>
   ```
 - **Aturan Keamanan:**  

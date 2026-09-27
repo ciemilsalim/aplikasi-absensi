@@ -4,8 +4,8 @@ $app = require_once __DIR__ . '/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-$user = \App\Models\User::where('email', 'siasek_evidence@smpn1biau.sch.id')
-    ->orWhere('name', 'siasek_evidence')
+$user = \App\Models\User::where('email', 'siasek_evidence@example.com')
+    ->orWhere('name', 'SIASEK Evidence')
     ->first();
 
 echo json_encode([

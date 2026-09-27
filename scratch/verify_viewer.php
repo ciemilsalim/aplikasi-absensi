@@ -13,18 +13,22 @@ echo "=========================================\n";
 echo "    VERIFIKASI AKUN VIEWER (SIASEK)      \n";
 echo "=========================================\n\n";
 
-// 1. Cek User
-$user = User::where('name', 'siasek_evidence')->first();
+// 1. Cek User berdasarkan Email utama
+$email = 'siasek_evidence@example.com';
+$user = User::where('email', $email)->first();
 if (!$user) {
-    echo "❌ USER FAILED: Akun siasek_evidence tidak ditemukan!\n";
+    echo "❌ USER FAILED: Akun {$email} tidak ditemukan!\n";
     exit(1);
 }
+
+$totalViewerAccounts = User::where('role', 'viewer')->count();
 
 echo "1. VERIFIKASI USER & ROLE:\n";
 echo "   - ID: {$user->id}\n";
 echo "   - Name: {$user->name}\n";
 echo "   - Email: {$user->email}\n";
 echo "   - Role (lokal): {$user->role}\n";
+echo "   - Total Akun Viewer DB: {$totalViewerAccounts} " . ($totalViewerAccounts === 1 ? '(NO DUPLICATES)' : '❌ WARNING DUPLICATES') . "\n";
 echo "   - hasRole('viewer'): " . ($user->hasRole('viewer') ? 'true (VERIFIED)' : 'false (FAILED)') . "\n";
 echo "   - hasRole('admin'): " . ($user->hasRole('admin') ? 'true (ERR: Admin Access!)' : 'false (SAFE)') . "\n\n";
 
