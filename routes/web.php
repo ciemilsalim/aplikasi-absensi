@@ -105,7 +105,7 @@ Route::get('/dashboard', function () {
     if ($user->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster'])) {
         return redirect()->route('principal.dashboard');
     }
-    if ($user->hasAnyRole(['admin', 'operator', 'satpam'])) {
+    if ($user->hasAnyRole(['admin', 'operator', 'satpam', 'viewer'])) {
         return redirect()->route('admin.dashboard');
     }
     if ($user->hasRole('parent')) {
@@ -121,7 +121,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // == GRUP RUTE KEPALA SEKOLAH (EXECUTIVE OVERVIEW) ==
-Route::middleware(['auth', 'role:admin,operator,wakasek_kurikulum,wakasek kurikulum,waka_kurikulum,waka kurikulum,kepala_sekolah,kepala sekolah,headmaster'])->prefix('principal')->name('principal.')->group(function () {
+Route::middleware(['auth', 'role:admin,operator,wakasek_kurikulum,wakasek kurikulum,waka_kurikulum,waka kurikulum,kepala_sekolah,kepala sekolah,headmaster,viewer'])->prefix('principal')->name('principal.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Principal\PrincipalDashboardController::class, 'index'])->name('dashboard');
     Route::get('/diag', function() {
         try {
@@ -181,8 +181,8 @@ Route::middleware(['auth', 'scanner.access'])->group(function () {
 
 // == GRUP RUTE ADMIN ==
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    // Rute yang bisa diakses oleh Admin, Operator, Satpam, dan Kepala Sekolah
-    Route::middleware(['role:admin,operator,satpam,kepala_sekolah,kepala sekolah,headmaster'])->group(
+    // Rute yang bisa diakses oleh Admin, Operator, Satpam, Kepala Sekolah, dan Viewer
+    Route::middleware(['role:admin,operator,satpam,kepala_sekolah,kepala sekolah,headmaster,viewer'])->group(
         function () {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::get('/reports', [ReportController::class, 'create'])->name('reports.create');
@@ -192,11 +192,17 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         }
     );
 
-    // Pengajuan & Intervensi Izin Siswa (Dapat diakses oleh Admin & Tata Usaha / Operator)
-    Route::middleware(['role:admin,operator,tu,tata_usaha'])->group(
+    // Pengajuan & Intervensi Izin Siswa - Pembacaan List (Dapat diakses oleh Admin, TU/Operator, dan Viewer)
+    Route::middleware(['role:admin,operator,tu,tata_usaha,viewer'])->group(
         function () {
             Route::get('/leave-requests', [AdminLeaveRequestController::class, 'index'])->name('leave_requests.index');
             Route::get('/leave-requests/students-by-class', [AdminLeaveRequestController::class, 'studentsByClass'])->name('leave_requests.students_by_class');
+        }
+    );
+
+    // Pengajuan & Intervensi Izin Siswa - Tindakan Mutasi Data (HANYA Admin & Tata Usaha / Operator)
+    Route::middleware(['role:admin,operator,tu,tata_usaha'])->group(
+        function () {
             Route::post('/leave-requests/manual', [AdminLeaveRequestController::class, 'storeManual'])->name('leave_requests.store_manual');
             Route::get('/leave-requests/{leaveRequest}/edit', [AdminLeaveRequestController::class, 'edit'])->name('leave_requests.edit');
             Route::put('/leave-requests/{leaveRequest}', [AdminLeaveRequestController::class, 'update'])->name('leave_requests.update');
@@ -299,16 +305,20 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         }
     );
 
-    // Supervisi Jurnal Mengajar Guru (Dapat diakses oleh Admin, Operator, Wakasek Kurikulum, dan Kepala Sekolah)
-    Route::middleware(['role:admin,operator,wakasek_kurikulum,wakasek kurikulum,waka_kurikulum,waka kurikulum,kepala_sekolah,kepala sekolah,headmaster'])->group(
+    // Supervisi Jurnal Mengajar Guru & Verifikasi Klaim Ortu - Pembacaan List (Termasuk Viewer)
+    Route::middleware(['role:admin,operator,wakasek_kurikulum,wakasek kurikulum,waka_kurikulum,waka kurikulum,kepala_sekolah,kepala sekolah,headmaster,viewer'])->group(
         function () {
             Route::get('/teaching-journals', [AdminTeachingJournalController::class, 'index'])->name('teaching_journals.index');
             Route::get('/teaching-journals/teacher/{teacher}', [AdminTeachingJournalController::class, 'show'])->name('teaching_journals.show');
+            Route::get('/parent-verifications', [ParentVerificationController::class, 'index'])->name('parent_verification.index');
+        }
+    );
+
+    // Supervisi Jurnal Mengajar & Verifikasi Klaim Ortu - Eksekusi Mutasi/Verifikasi (EKSKLUSIF Tanpa Viewer)
+    Route::middleware(['role:admin,operator,wakasek_kurikulum,wakasek kurikulum,waka_kurikulum,waka kurikulum,kepala_sekolah,kepala sekolah,headmaster'])->group(
+        function () {
             Route::post('/teaching-journals/{journal}/verify', [AdminTeachingJournalController::class, 'verify'])->name('teaching_journals.verify');
             Route::post('/teaching-journals/batch-verify', [AdminTeachingJournalController::class, 'batchVerify'])->name('teaching_journals.batch_verify');
-            
-            // Verifikasi Klaim Orang Tua (Dapat diakses Admin/Operator/Wali Kelas)
-            Route::get('/parent-verifications', [ParentVerificationController::class, 'index'])->name('parent_verification.index');
             Route::post('/parent-verifications/{parentRequest}/approve', [ParentVerificationController::class, 'approve'])->name('parent_verification.approve');
             Route::post('/parent-verifications/{parentRequest}/reject', [ParentVerificationController::class, 'reject'])->name('parent_verification.reject');
         }

@@ -137,8 +137,8 @@
                                 </ul>
                             </li>
 
-                        {{-- Dashboard: Admin & Operator --}}
-                        @elseif(auth()->user()->hasAnyRole(['admin', 'operator', 'satpam']))
+                        {{-- Dashboard: Admin, Operator, Satpam & Viewer --}}
+                        @elseif(auth()->user()->hasAnyRole(['admin', 'operator', 'satpam', 'viewer']))
                             @php $isActive = request()->routeIs('admin.dashboard'); @endphp
                             <li>
                                 <a href="{{ route('admin.dashboard') }}" :title="sidebarCollapsed ? 'Dasbor Utama' : ''" 
@@ -599,7 +599,7 @@
                     </li>
                     @endif
 
-                    @if(auth()->user()->hasAnyRole(['admin', 'operator']) || (auth()->user()->teacher && auth()->user()->teacher->homeroomClass))
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'viewer']) || (auth()->user()->teacher && auth()->user()->teacher->homeroomClass))
                     @php $isParentVerifActive = request()->routeIs('admin.parent_verification.*'); @endphp
                     <li>
                         <a href="{{ route('admin.parent_verification.index') }}" :title="sidebarCollapsed ? 'Verifikasi Klaim Ortu' : ''" 
@@ -617,7 +617,7 @@
                     @endif
 
                     {{-- DROPDOWN: LAPORAN PRESENSI ADMIN --}}
-                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster']))
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
                     @php 
                         $isStudentReportActive = request()->routeIs(['admin.reports.create', 'admin.reports.charts', 'admin.reports.generate']);
                         $isTeacherReportActive = request()->routeIs('admin.reports.teacher.*');
@@ -652,6 +652,7 @@
                     </li>
                     @endif
 
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
                     @php $isAdminJournalActive = request()->routeIs('admin.teaching_journals.*'); @endphp
                     <li>
                         <a href="{{ route('admin.teaching_journals.index') }}" :title="sidebarCollapsed ? 'Supervisi Jurnal' : ''" 
@@ -664,6 +665,7 @@
                             <span x-show="!sidebarCollapsed" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500 text-white shadow-2xs">Baru</span>
                         </a>
                     </li>
+                    @endif
 
                     @if(auth()->user()->hasRole('admin'))
                         @php $isSettingsActive = request()->routeIs(['admin.settings.*']); @endphp
