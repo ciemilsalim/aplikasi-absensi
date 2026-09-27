@@ -34,15 +34,16 @@ Kontak: emil@zahradev.id
 
 **Pelanggan (Customer)**:  
 **SMP Negeri 1 Biau**  
-Alamat: Jl. Pendidikan No. 1 Biau, Kabupaten Buol  
+Alamat: Jl. Ahmad Yani No. 54, Kelurahan Leok I, Kecamatan Biau, Kabupaten Buol, Provinsi Sulawesi Tengah  
 
 ---
 
 ### INSTRUKSI PEMBAYARAN
 
-- **Bank**: Bank Central Asia (BCA) / Bank SulutGo  
-- **Nomor Rekening**: 123-456-7890  
-- **Atas Nama**: Emil Salim / ZahraDev  
+- **Metode Pembayaran**: Transfer Bank  
+- **Bank**: Bank Jago  
+- **Atas Nama**: EMIL SALIM S  
+- **Nomor Rekening**: 1087 1358 0283  
 
 > [!NOTE]  
 > *Dokumen ini merupakan invoice resmi penagihan jasa layanan penggunaan aplikasi dari pihak penyedia.*  
@@ -89,7 +90,7 @@ Tangkapan layar pada paket ini telah dievaluasi dengan kebijakan `MASKING_REQUIR
 # PEMBARUAN FITUR SIASEK — September 2026
 
 **Periode Repository Audit**: 2026-09-01 s.d. 2026-09-27  
-**Git Commit Cutoff**: `6c108e6`  
+**Git Commit Cutoff**: `04640bd`  
 
 ---
 
@@ -136,7 +137,7 @@ Tangkapan layar pada paket ini telah dievaluasi dengan kebijakan `MASKING_REQUIR
 
 | ID | FEATURE | ROLE | ROUTE | EVIDENCE TYPE | GIT REFERENCE | SCREENSHOT REF | STATUS |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
-| EV-01 | Live Application Billing Evidence (368 Siswa Aktif) | Admin (ADMIN_EVIDENCE) | `/admin/dashboard` | Live Application Snapshot | `6c108e6` | `bukti_billing_september_2026.png` | **PASSED** |
+| EV-01 | Live Application Billing Evidence (368 Siswa Aktif) | Admin (ADMIN_EVIDENCE) | `/admin/dashboard` | Live Application Snapshot | `04640bd` | `bukti_billing_september_2026.png` | **PASSED** |
 | EV-02 | Admin Manual Leave Intervention & Attendance Sync | Admin / TU (ADMIN_EVIDENCE) | `/admin/leave-requests` | Live Operational Evidence | `fcb90b6` | `bukti_admin_leave_intervention_september_2026.png` | **PASSED** |
 | EV-03 | Subject-Based Attendance Tracking & Reporting | Guru & Wali 7D (TEACHER_EVIDENCE) | `/teacher/dashboard` | Live Operational Evidence | `96660f4` | `bukti_08_teacher_dashboard.png` | **PASSED** |
 | EV-04 | Executive Principal Dashboard Overview | Kepala Sekolah (PRINCIPAL_EVIDENCE) | `/principal/dashboard` | Live Operational Evidence | `7940af5` | `bukti_14_kepsek_dashboard.png` | **PASSED** |

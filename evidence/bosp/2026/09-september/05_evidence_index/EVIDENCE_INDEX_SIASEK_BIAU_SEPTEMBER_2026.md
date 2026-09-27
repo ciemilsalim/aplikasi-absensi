@@ -9,7 +9,7 @@
 
 | ID | FEATURE | ROLE | ROUTE | EVIDENCE TYPE | GIT REFERENCE | SCREENSHOT REF | STATUS |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
-| EV-01 | Live Application Billing Evidence (368 Siswa Aktif) | Admin (ADMIN_EVIDENCE) | `/admin/dashboard` | Live Application Snapshot | `6c108e6` | `bukti_billing_september_2026.png` | **PASSED** |
+| EV-01 | Live Application Billing Evidence (368 Siswa Aktif) | Admin (ADMIN_EVIDENCE) | `/admin/dashboard` | Live Application Snapshot | `04640bd` | `bukti_billing_september_2026.png` | **PASSED** |
 | EV-02 | Admin Manual Leave Intervention & Attendance Sync | Admin / TU (ADMIN_EVIDENCE) | `/admin/leave-requests` | Live Operational Evidence | `fcb90b6` | `bukti_admin_leave_intervention_september_2026.png` | **PASSED** |
 | EV-03 | Subject-Based Attendance Tracking & Reporting | Guru & Wali 7D (TEACHER_EVIDENCE) | `/teacher/dashboard` | Live Operational Evidence | `96660f4` | `bukti_08_teacher_dashboard.png` | **PASSED** |
 | EV-04 | Executive Principal Dashboard Overview | Kepala Sekolah (PRINCIPAL_EVIDENCE) | `/principal/dashboard` | Live Operational Evidence | `7940af5` | `bukti_14_kepsek_dashboard.png` | **PASSED** |

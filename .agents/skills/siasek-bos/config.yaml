@@ -22,13 +22,17 @@ application:
 provider:
   name: "ZahraDev"
   developer: "Emil Salim, S.Kom"
-  email: "emil@zahradev.id"
-  phone: "+6281234567890"
+
+payment:
+  method: "Transfer Bank"
+  bank: "Bank Jago"
+  account_name: "EMIL SALIM S"
+  account_number: "1087 1358 0283"
 
 customer:
   name: "SMP Negeri 1 Biau"
   npsn: "40201234"
-  address: "Jl. Pendidikan No. 1 Biau, Kabupaten Buol"
+  address: "Jl. Ahmad Yani No. 54, Kelurahan Leok I, Kecamatan Biau, Kabupaten Buol, Provinsi Sulawesi Tengah"
 
 billing:
   service_name: "Jasa Layanan Penggunaan Aplikasi Presensi SIASEK"

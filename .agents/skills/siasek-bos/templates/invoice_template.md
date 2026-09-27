@@ -32,9 +32,10 @@ Alamat: {{CUSTOMER_ADDRESS}}
 
 ### INSTRUKSI PEMBAYARAN
 
-- **Bank**: Bank Central Asia (BCA) / Bank SulutGo  
-- **Nomor Rekening**: 123-456-7890  
-- **Atas Nama**: Emil Salim / ZahraDev  
+- **Metode Pembayaran**: {{PAYMENT_METHOD}}  
+- **Bank**: {{PAYMENT_BANK}}  
+- **Atas Nama**: {{PAYMENT_ACCOUNT_NAME}}  
+- **Nomor Rekening**: {{PAYMENT_ACCOUNT_NUMBER}}  
 
 > [!NOTE]  
 > *Dokumen ini merupakan invoice resmi penagihan jasa layanan penggunaan aplikasi dari pihak penyedia.*  

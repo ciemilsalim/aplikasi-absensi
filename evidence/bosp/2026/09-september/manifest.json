@@ -32,7 +32,7 @@
     "future_evidence_detected": "NO",
     "project_code": "SIASEK-BIAU",
     "customer": "SMP Negeri 1 Biau",
-    "git_head": "b8c0c0e",
+    "git_head": "04640bd",
     "invoice_number": "SIASEK-BIAU\/2026\/09\/001",
     "invoice_status": "DRAFT",
     "sequence": "001",
@@ -68,5 +68,5 @@
         "FINAL\/PAKET_BOSP_SIASEK_BIAU_SEPTEMBER_2026.pdf"
     ],
     "qa_status": "PASS",
-    "generated_at": "2026-09-27 12:13:07"
+    "generated_at": "2026-09-27 12:43:13"
 }
