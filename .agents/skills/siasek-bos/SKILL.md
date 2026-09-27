@@ -1,11 +1,10 @@
 ---
 name: siasek-bos
-version: "1.1"
 description: Automation skill untuk menghasilkan Paket Dokumen Pendukung BOSP layanan Aplikasi Presensi SIASEK berbasis Git, LIVE Application, Akun Role Nyata, Billing Reconciliation, Frozen Billing Snapshots, dan Tangkapan Layar LIVE.
 command_pattern: "/siasek-bos bulan <bulan> <tahun>"
 inputs:
-  bulan: Nama bulan dalam bahasa Indonesia (misal: september, agustus, oktober)
-  tahun: Angka tahun 4-digit (misal: 2026)
+  bulan: "Nama bulan dalam bahasa Indonesia (misal: september, agustus, oktober)"
+  tahun: "Angka tahun 4-digit (misal: 2026)"
 ---
 
 # SIASEK BOSP Evidence Package Generator (`/siasek-bos`)
