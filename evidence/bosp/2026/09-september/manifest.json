@@ -4,7 +4,7 @@
         "source_url": "https:\/\/presensi-smpn1biau.zahradev.id",
         "role": "admin",
         "source_page": "\/admin\/dashboard",
-        "capture_timestamp": "2026-09-27 11:25:25",
+        "capture_timestamp": "2026-09-27 11:34:45",
         "cutoff": "2026-09-27",
         "active_student_count": 368,
         "rate_per_student": 1000,
@@ -13,19 +13,20 @@
     "project_code": "SIASEK-BIAU",
     "customer": "SMP Negeri 1 Biau",
     "period": "September 2026",
-    "git_head": "c422e82",
+    "git_head": "1f53690",
     "invoice_number": "SIASEK-BIAU\/2026\/09\/001",
     "invoice_status": "DRAFT",
     "sequence": "001",
     "screenshots": [
         "bukti_billing_september_2026.png",
+        "bukti_admin_leave_intervention_september_2026.png",
         "bukti_01_dashboard.png",
-        "bukti_07_leave_requests.png",
         "bukti_08_teacher_dashboard.png",
         "bukti_11_parent_dashboard.png",
         "bukti_13_satpam_dashboard.png",
         "bukti_14_kepsek_dashboard.png"
     ],
+    "artifact_directory": "docs\/BOSP\/live-evidence\/masked\/",
     "features": {
         "new": 0,
         "updated": 2,
@@ -37,7 +38,8 @@
         "Kepala Sekolah",
         "Guru & Wali Kelas",
         "Orang Tua",
-        "Satpam \/ Piket"
+        "Satpam \/ Piket",
+        "Admin \/ TU"
     ],
     "pdf_files": [
         "01_invoice\/INVOICE_SIASEK_BIAU_SEPTEMBER_2026.pdf",
@@ -47,5 +49,5 @@
         "FINAL\/PAKET_BOSP_SIASEK_BIAU_SEPTEMBER_2026.pdf"
     ],
     "qa_status": "PASS",
-    "generated_at": "2026-09-27 11:25:26"
+    "generated_at": "2026-09-27 11:34:46"
 }
