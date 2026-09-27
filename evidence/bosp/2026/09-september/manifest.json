@@ -1,27 +1,38 @@
 {
     "release": {
         "name": "siasek-bos",
-        "version": "1.0",
+        "version": "1.1",
+        "engine_version": "1.1",
         "release_type": "evidence_generator"
     },
     "workspace_state": {
         "status": "clean_at_release"
     },
+    "period_type": "CURRENT_PERIOD",
+    "period": {
+        "start": "2026-09-01",
+        "end": "2026-09-30",
+        "evidence_cutoff": "2026-09-27"
+    },
     "billing": {
-        "source_type": "LIVE_APPLICATION",
-        "source_url": "https:\/\/presensi-smpn1biau.zahradev.id",
-        "role": "admin",
+        "snapshot_status": "VERIFIED_SNAPSHOT",
+        "snapshot_date": "2026-09-27",
+        "final_frozen": false,
+        "frozen_at": null,
+        "source_type": "FROZEN_LIVE_SNAPSHOT",
+        "source_role": "admin",
         "source_page": "\/admin\/dashboard",
-        "capture_timestamp": "2026-09-27 11:42:30",
-        "cutoff": "2026-09-27",
         "active_student_count": 368,
         "rate_per_student": 1000,
-        "total": 368000
+        "total": 368000,
+        "snapshot_file": "evidence\/bosp\/2026\/09-september\/billing\/billing-snapshot.json"
     },
+    "git_period_start": "2026-09-01 00:00:00",
+    "git_period_end": "2026-09-27 23:59:59",
+    "future_evidence_detected": "NO",
     "project_code": "SIASEK-BIAU",
     "customer": "SMP Negeri 1 Biau",
-    "period": "September 2026",
-    "git_head": "015b73c",
+    "git_head": "6c108e6",
     "invoice_number": "SIASEK-BIAU\/2026\/09\/001",
     "invoice_status": "DRAFT",
     "sequence": "001",
@@ -57,5 +68,5 @@
         "FINAL\/PAKET_BOSP_SIASEK_BIAU_SEPTEMBER_2026.pdf"
     ],
     "qa_status": "PASS",
-    "generated_at": "2026-09-27 11:42:31"
+    "generated_at": "2026-09-27 12:13:07"
 }

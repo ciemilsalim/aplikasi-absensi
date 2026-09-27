@@ -1,6 +1,7 @@
 ---
 name: siasek-bos
-description: Automation skill untuk menghasilkan Paket Dokumen Pendukung BOSP layanan Aplikasi Presensi SIASEK berbasis Git, LIVE Application, Akun Role Nyata, Billing Reconciliation, dan Tangkapan Layar LIVE.
+version: "1.1"
+description: Automation skill untuk menghasilkan Paket Dokumen Pendukung BOSP layanan Aplikasi Presensi SIASEK berbasis Git, LIVE Application, Akun Role Nyata, Billing Reconciliation, Frozen Billing Snapshots, dan Tangkapan Layar LIVE.
 command_pattern: "/siasek-bos bulan <bulan> <tahun>"
 inputs:
   bulan: Nama bulan dalam bahasa Indonesia (misal: september, agustus, oktober)
@@ -18,23 +19,36 @@ Skill ini digunakan untuk membuat **Paket Dokumen Pendukung BOSP** untuk layanan
 
 ---
 
-## 1. Alur Eksekusi Automated Workflow
+## 1. Konsep Utama Keamanan & Pembekuan Tagihan (Billing Provenance & Safety)
+
+1. **Live Billing Snapshot (Bulan Berjalan)**:
+   Pada bulan berjalan (`CURRENT_PERIOD`), jumlah siswa aktif diambil dari UI Aplikasi LIVE SIASEK via Admin Browser Extractor (`/admin/dashboard`).
+2. **Frozen Verified Snapshot**:
+   Ketika billing dinyatakan `VERIFIED` dan lulus `QA PASS`, hasilnya dibekukan ke `evidence/bosp/<YYYY>/<MM>-<bulan>/billing/billing-snapshot.json`.
+3. **Historical Period Reuse**:
+   Untuk bulan yang telah berlalu (`HISTORICAL_PERIOD`), generator wajib mengulang penggunaan **Frozen Verified Snapshot** yang ada pada direktori target. Generator dilarang mengambil data LIVE masa kini untuk menggantikan data historis.
+4. **Blocked & Stale Artifact Safety**:
+   Jika QA bernilai `BLOCKED`, generator secara otomatis mengarantina berkas usang di `blocked/previous-invalid-artifacts/` dan membuat `BLOCKED_REPORT_<BULAN>_<TAHUN>.md`.
+
+---
+
+## 2. Alur Eksekusi Automated Workflow
 
 Saat perintah `/siasek-bos bulan <bulan> <tahun>` dipanggil (misal: `/siasek-bos bulan september 2026`):
 
 ```mermaid
 graph TD
-    A["1. Input Parser & Period Cutoff"] --> B["2. Load Config & Secure Credentials"]
-    B --> C["3. Git Change & Commit Analysis"]
-    C --> D["4. Billing Reconciliation (368 Siswa x Rp1.000)"]
-    D --> E["5. Feature & Role Evidence Classification"]
+    A["1. Input Parser & Period Mode Check"] --> B["2. Check Frozen Snapshot / Live Billing"]
+    B --> C["3. Git Hard Boundary & Commit Analysis"]
+    C --> D["4. Privacy & Masked Image Verification"]
+    D --> E["5. QA Gate & Stale Artifact Protection"]
     E --> F["6. Generate Documents & Final Package"]
-    F --> G["7. QA Check & Summary Report Output"]
+    F --> G["7. Provenance Manifest & CLI Output"]
 ```
 
 ---
 
-## 2. Langkah-Langkah Eksekusi Skill
+## 3. Langkah-Langkah Eksekusi Skill
 
 ### Langkah 1: Run Automation Script
 Jalankan helper script penyusun paket bukti BOSP dari root repositori:
@@ -44,59 +58,70 @@ php .agents/skills/siasek-bos/scripts/generate_bosp_package.php --month=<bulan> 
 ```
 
 ### Langkah 2: Evaluasi Output & QA Status
-- **Billing Reconciliation Check**: Memastikan data siswa di database (368 siswa) sesuai dengan tarif Rp1.000/siswa/bulan = Rp368.000. Jika terjadi ketidakcocokan data billing, QA status = `BLOCKED`.
-- **Git Feature Classification**: Memisahkan secara tegas antara **Fitur Aplikasi SIASEK (Bisnis)** dengan **Infrastruktur Audit / Tooling Evidence**.
-- **Live Screenshots Reference**: Menyertakan 4–8 screenshot utama dari folder `docs/BOSP/live-evidence/`.
+- **Current Period**: Mengambil data LIVE, menyimpan `billing-snapshot.json` jika verified.
+- **Historical Period**: Menggunakan `billing-snapshot.json` yang dibekukan. Jika tidak ada snapshot terverifikasi, QA status = `BLOCKED`.
 
 ---
 
-## 3. Struktur Paket Output
+## 4. Struktur Paket Output
 
-Hasil eksekusi akan disimpan pada direktori:
-`evidence/bosp/<YYYY>/<MM>-<bulan>/`
+Hasil eksekusi disimpan pada direktori: `evidence/bosp/<YYYY>/<MM>-<bulan>/`
 
 ```text
 evidence/bosp/2026/09-september/
 ├── 01_invoice/
-│   └── INVOICE_SIASEK_september_2026.md
+│   └── INVOICE_SIASEK_BIAU_SEPTEMBER_2026.pdf
 ├── 02_rincian_pemanfaatan/
-│   └── RINCIAN_PEMANFAATAN_september_2026.md
+│   └── RINCIAN_PEMANFAATAN_SIASEK_BIAU_SEPTEMBER_2026.pdf
 ├── 03_pembaruan_fitur/
-│   └── PEMBARUAN_FITUR_september_2026.md
+│   └── PEMBARUAN_FITUR_SIASEK_BIAU_SEPTEMBER_2026.pdf
 ├── 04_screenshots/
-│   ├── bukti_01_dashboard.png
-│   ├── bukti_08_teacher_dashboard.png
-│   ├── bukti_11_parent_dashboard.png
-│   ├── bukti_13_satpam_dashboard.png
-│   └── bukti_14_kepsek_dashboard.png
+│   ├── bukti_billing_september_2026.png
+│   └── bukti_admin_leave_intervention_september_2026.png
 ├── 05_evidence_index/
-│   └── EVIDENCE_INDEX_september_2026.md
-├── 06_source_reference/
-│   └── GIT_LOG_REFERENCE.txt
+│   └── EVIDENCE_INDEX_SIASEK_BIAU_SEPTEMBER_2026.pdf
+├── billing/
+│   ├── billing-snapshot.json
+│   └── snapshots/
+│       └── 2026-09-27.json
 ├── FINAL/
-│   └── PAKET_BOSP_SIASEK_september_2026.md
+│   └── PAKET_BOSP_SIASEK_BIAU_SEPTEMBER_2026.pdf
 └── manifest.json
 ```
 
 ---
 
-## 4. Format Laporan Akhir
-
-Setelah eksekusi selesai, tampilkan ringkasan laporan akhir:
+## 5. Format Laporan Akhir CLI Output
 
 ```text
-==================================================
-SIASEK BOSP EVIDENCE GENERATOR
-==================================================
-PERIODE          : September 2026
-EVIDENCE CUTOFF  : YYYY-MM-DD
-BILLING RECON    : 368 Siswa x Rp1.000 = Rp368.000 (VERIFIED)
-INVOICE NUMBER   : INV-SIASEK/2026/09/001
-TOTAL FEATURES   : 4 (1 NEW, 2 UPDATED, 1 ACTIVE)
-ROLES VERIFIED   : 5 Roles (Viewer, Principal, Teacher, Parent, Satpam)
-SCREENSHOTS      : 5 File LIVE Screenshots Attached
-QA STATUS        : PASS
-FINAL PACKAGE    : evidence/bosp/2026/09-september/FINAL/PAKET_BOSP_SIASEK_september_2026.md
-MANIFEST         : evidence/bosp/2026/09-september/manifest.json
-==================================================
+SNAPSHOT CREATED:
+YES/NO
+
+SNAPSHOT FILE:
+...
+
+STUDENT COUNT:
+...
+
+SNAPSHOT DATE:
+...
+
+FROZEN:
+YES/NO
+
+HISTORICAL REUSE:
+PASS/FAIL
+
+STALE ARTIFACT PROTECTION:
+PASS/FAIL
+
+AUGUST:
+...
+
+SEPTEMBER:
+...
+
+QA:
+PASS/BLOCKED
 ```
+

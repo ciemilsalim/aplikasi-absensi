@@ -1,6 +1,6 @@
-# PEMBARUAN FITUR SIASEK — September 2026
+# PEMBARUAN FITUR SIASEK — Agustus 2026
 
-**Periode Repository Audit**: 2026-09-01 s.d. 2026-09-27  
+**Periode Repository Audit**: 2026-08-01 s.d. 2026-08-31  
 **Git Commit Cutoff**: `6c108e6`  
 
 ---

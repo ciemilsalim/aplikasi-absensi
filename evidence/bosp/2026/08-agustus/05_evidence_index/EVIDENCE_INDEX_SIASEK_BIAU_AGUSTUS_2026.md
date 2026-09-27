@@ -1,6 +1,6 @@
-# EVIDENCE INDEX — September 2026
+# EVIDENCE INDEX — Agustus 2026
 
-**Periode Evidence**: 2026-09-01 s.d. 2026-09-27  
+**Periode Evidence**: 2026-08-01 s.d. 2026-08-31  
 **Aplikasi**: SIASEK Live ([https://presensi-smpn1biau.zahradev.id](https://presensi-smpn1biau.zahradev.id))  
 
 ---

@@ -1,4 +1,4 @@
-# PAKET DOKUMEN PENDUKUNG BOSP LAYANAN SIASEK BIAU — September 2026
+# PAKET DOKUMEN PENDUKUNG BOSP LAYANAN SIASEK BIAU — Agustus 2026
 
 > [!IMPORTANT]
 > Dokumen ini merupakan Paket Bukti Penyedia Layanan Jasa SIASEK untuk mendampingi LPJ BOSP Sekolah.
@@ -8,10 +8,10 @@
 
 # INVOICE / TAGIHAN LAYANAN SIASEK
 
-**Nomor Invoice**: SIASEK-BIAU/2026/09/001  
+**Nomor Invoice**: SIASEK-BIAU/2026/08/001  
 **Status Invoice**: **[DRAFT]**  
-**Tanggal**: TBD  
-**Periode Layanan**: September 2026 (2026-09-01 s.d. 2026-09-27)  
+**Tanggal**: 2026-08-31  
+**Periode Layanan**: Agustus 2026 (2026-08-01 s.d. 2026-08-31)  
 
 ---
 
@@ -51,12 +51,12 @@ Alamat: Jl. Pendidikan No. 1 Biau, Kabupaten Buol
 
 ---
 
-# RINCIAN PEMANFAATAN LAYANAN SIASEK — September 2026
+# RINCIAN PEMANFAATAN LAYANAN SIASEK — Agustus 2026
 
 **Nama Layanan**: Jasa Layanan Penggunaan Aplikasi Presensi SIASEK  
 **Aplikasi**: SIASEK (Sistem Informasi & Absensi Sekolah)  
 **URL Live**: https://presensi-smpn1biau.zahradev.id  
-**Periode Audit**: 2026-09-01 s.d. 2026-09-27 (Evidence Cutoff: 2026-09-27)  
+**Periode Audit**: 2026-08-01 s.d. 2026-08-31 (Evidence Cutoff: 2026-08-31)  
 **Pelanggan**: SMP Negeri 1 Biau  
 
 ---
@@ -86,9 +86,9 @@ Tangkapan layar pada paket ini telah dievaluasi dengan kebijakan `MASKING_REQUIR
 
 ---
 
-# PEMBARUAN FITUR SIASEK — September 2026
+# PEMBARUAN FITUR SIASEK — Agustus 2026
 
-**Periode Repository Audit**: 2026-09-01 s.d. 2026-09-27  
+**Periode Repository Audit**: 2026-08-01 s.d. 2026-08-31  
 **Git Commit Cutoff**: `6c108e6`  
 
 ---
@@ -125,9 +125,9 @@ Tangkapan layar pada paket ini telah dievaluasi dengan kebijakan `MASKING_REQUIR
 
 ---
 
-# EVIDENCE INDEX — September 2026
+# EVIDENCE INDEX — Agustus 2026
 
-**Periode Evidence**: 2026-09-01 s.d. 2026-09-27  
+**Periode Evidence**: 2026-08-01 s.d. 2026-08-31  
 **Aplikasi**: SIASEK Live ([https://presensi-smpn1biau.zahradev.id](https://presensi-smpn1biau.zahradev.id))  
 
 ---

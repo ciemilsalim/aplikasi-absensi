@@ -1,100 +1,59 @@
-# Laporan Provenance & Rekonsiliasi Billing SIASEK — September 2026
+# Dokumen Asal-Usul & Pembekuan Tagihan (Billing Provenance) — September 2026
 
-**Tanggal Rekonsiliasi**: 27 September 2026  
-**Evidence Cutoff**: 27 September 2026  
-**Target Application**: SIASEK Live Production ([https://presensi-smpn1biau.zahradev.id](https://presensi-smpn1biau.zahradev.id))  
-**Status Invoice**: **DRAFT**  
-**Nomor Invoice**: `SIASEK-BIAU/2026/09/001`  
-
----
-
-## 1. Live Application Billing Snapshot
-
-> [!IMPORTANT]
-> **Definisi Sumber Data Billing**:  
-> Jumlah siswa aktif yang menjadi dasar perhitungan tagihan diambil secara langsung dari **LIVE APPLICATION BILLING SNAPSHOT** pada tanggal cutoff.  
-> *Wording Resmi*: **"Jumlah siswa aktif berdasarkan snapshot aplikasi SIASEK LIVE pada 27 September 2026."**
-
-- **Source Type**: `LIVE_APPLICATION`
-- **Source URL**: `https://presensi-smpn1biau.zahradev.id`
-- **Source Page**: `/admin/dashboard`
-- **Authenticated Role**: `admin` (`admin@admin.com`)
-- **Evidence Cutoff**: `2026-09-27`
+**Tanggal Snapshot**: 27 September 2026  
+**Target Aplikasi**: SIASEK Live Production ([https://presensi-smpn1biau.zahradev.id](https://presensi-smpn1biau.zahradev.id))  
+**Sumber Tagihan**: `LIVE_APPLICATION` (`/admin/dashboard`)  
+**Status Pembekuan**: `VERIFIED` & `FROZEN` (`billing/billing-snapshot.json`)  
 
 ---
 
-## 2. Matriks Cross-Check 4 Poin (Verification Comparison)
+## 1. Konsep Arsitektur Tagihan BOSP SIASEK
 
-Tabel berikut menunjukkan hasil rekonsiliasi silang antara 4 metode verifikasi independen:
+Arsitektur penagihan BOSP pada skill `siasek-bos` v1.0 menerapkan 5 prinsip utama keamanan penagihan:
 
-| METODE VERIFIKASI | SUMBER / METODE | AKTIF SISWA DITEMUKAN | STATUS MATCH |
-| :--- | :--- | :---: | :---: |
-| **1. HTML cURL Extraction** | Scraper `live_billing_extractor.php` via HTTP Session | **368** | **MATCH** |
-| **2. Browser LIVE Verification** | Headless Browser Automation Admin Session | **368** | **MATCH** |
-| **3. Screenshot Visual Evidence** | Live Screenshot `bukti_billing_september_2026.png` | **368** | **MATCH** |
-| **4. Manifest Record** | Document Package `manifest.json` metadata | **368** | **MATCH** |
+1. **Live Billing Extraction (Bulan Berjalan)**:
+   Pada bulan berjalan (`CURRENT_PERIOD`), jumlah siswa aktif diambil secara langsung dari UI Aplikasi LIVE SIASEK melalui sesi Admin resmi (`/admin/dashboard`).
 
-```text
-CURL_RESULT (368) == BROWSER_RESULT (368) == SCREENSHOT_RESULT (368) == MANIFEST_RESULT (368)
-STATUS REKONSILIASI: 100% KONSISTEN (PASS)
-```
+2. **Frozen Verified Billing Snapshot**:
+   Setelah ekstrak billing bulan berjalan dinyatakan **VERIFIED** dan lulus **QA PASS**, sistem secara otomatis membekukan hasilnya ke dalam berkas artifak snapshot:
+   `evidence/bosp/<YYYY>/<MM>-<bulan>/billing/billing-snapshot.json`
 
----
+3. **Historical Period Reuse**:
+   Untuk bulan yang telah selesai (`HISTORICAL_PERIOD`), generator tidak diperbolehkan mengambil data LIVE masa kini untuk menggantikan angka historis. Generator wajib menggunakan **Frozen Verified Billing Snapshot** yang telah dibekukan pada periode target.
 
-## 3. Detail Verifikasi Visual Browser & Screenshot Evidence
+4. **Snapshot History**:
+   Setiap pembaruan snapshot pada bulan berjalan disimpan secara historis di `billing/snapshots/<YYYY-MM-DD>.json` untuk menjamin audit trail penagihan yang transparan.
 
-- **File Tangkapan Layar**: [`docs/BOSP/live-evidence/bukti_billing_september_2026.png`](file:///d:/laragon/www/siasek/aplikasi-absensi/docs/BOSP/live-evidence/bukti_billing_september_2026.png)
-- **Teks Eksplisit yang Terlihat pada UI**:
-  > *"Total 368 Siswa Aktif terdaftar dalam sistem"*
-- **Sub-Metrik Pendukung pada Layar**:
-  - Hadir Total: `0 dari 368 Siswa`
-  - Belum Absen: `368 Siswa`
-  - Waktu Tangkapan: `Minggu, 27 September 2026`
+5. **Blocked & Stale Artifact Safety**:
+   Jika hasil billing historis `UNVERIFIED` atau QA dinyatakan `BLOCKED`, generator secara otomatis memindahkan berkas PDF/MD lama ke `blocked/previous-invalid-artifacts/` dan membuat berkas `BLOCKED_REPORT_<BULAN>_<TAHUN>.md` untuk mencegah penggunaan artifak usang.
 
 ---
 
-## 4. Perhitungan Tagihan (Billing Calculation)
-
-Perhitungan tagihan bulanan SIASEK Biau menggunakan formula resmi:
-
-$$\text{Total Tagihan} = \text{Jumlah Siswa Aktif} \times \text{Tarif Per Siswa}$$
-
-- **Jumlah Siswa Aktif (`billing_student_count`)**: 368 Siswa
-- **Tarif Per Siswa (`billing_rate`)**: Rp1.000 / siswa / bulan
-- **Total Tagihan (`billing_total`)**: **Rp368.000** (*Tiga Ratus Enam Puluh Delapan Ribu Rupiah*)
-
----
-
-## 5. Metadata Provenance Lengkap (`manifest.json`)
+## 2. Struktur Rincian Frozen Snapshot September 2026
 
 ```json
 {
-  "billing": {
+    "period": "September 2026",
+    "snapshot_date": "2026-09-27",
     "source_type": "LIVE_APPLICATION",
-    "source_url": "https://presensi-smpn1biau.zahradev.id",
-    "source_page": "/admin/dashboard",
     "source_role": "admin",
-    "capture_method": [
-      "HTTP_HTML_EXTRACTION",
-      "BROWSER_VISUAL_VERIFICATION"
-    ],
-    "cutoff": "2026-09-27",
+    "source_page": "/admin/dashboard",
+    "source_url": "https://presensi-smpn1biau.zahradev.id",
     "active_student_count": 368,
     "rate_per_student": 1000,
-    "total": 368000
-  },
-  "project_code": "SIASEK-BIAU",
-  "customer": "SMP Negeri 1 Biau",
-  "invoice_number": "SIASEK-BIAU/2026/09/001",
-  "invoice_status": "DRAFT",
-  "qa_status": "PASS"
+    "total": 368000,
+    "status": "VERIFIED",
+    "frozen": true,
+    "screenshot_ref": "bukti_billing_september_2026.png"
 }
 ```
 
 ---
 
-## 6. Safety & Read-Only Invariants Assertion
+## 3. Matriks Rekonsiliasi Tagihan September 2026
 
-- **Zero Data Mutations**: 0 HTTP POST/PUT/PATCH/DELETE pada entitas bisnis production.
-- **Zero Credentials Leaked**: Password admin dibaca dari `.env.siasek-bos` dan tidak dicetak pada log.
-- **Kepatuhan Pembayaran**: Status invoice tetap berstatus **`DRAFT`** (Tanpa menerbitkan bukti bayar).
+- **Jumlah Siswa Aktif**: 368 Siswa
+- **Tarif Per Siswa**: Rp1.000 / siswa / bulan
+- **Total Tagihan**: Rp368.000 (Tiga Ratus Enam Puluh Delapan Ribu Rupiah)
+- **Status Invoice**: `DRAFT` (`SIASEK-BIAU/2026/09/001`)
+- **Status Provenance**: **PASS & FROZEN**
