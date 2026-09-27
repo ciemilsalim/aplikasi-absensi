@@ -1,7 +1,7 @@
 # SIASEK Role & Evidence Matrix — Matriks Peran & Bukti Pemanfaatan Aplikasi
 
 **Tanggal Audit**: 27 September 2026  
-**Project Context**: SIASEK (Sistem Informasi & Absensi Sekolah - SMP Negeri 1 Biau)  
+**Project Context**: SIASEK (Sistem Informasi Administrasi Sekolah - SMP Negeri 1 Biau)  
 **Live Production**: [https://presensi-smpn1biau.zahradev.id](https://presensi-smpn1biau.zahradev.id)  
 
 ---

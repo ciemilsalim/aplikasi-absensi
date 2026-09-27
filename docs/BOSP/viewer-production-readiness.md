@@ -1,6 +1,6 @@
 # LAPORAN PRODUCTION READINESS CHECK AKUN EVIDENCE SIASEK
 
-**Nama Proyek:** SIASEK (Sistem Informasi & Absensi Sekolah)  
+**Nama Proyek:** SIASEK (Sistem Informasi Administrasi Sekolah)  
 **Target App URL:** `https://presensi-smpn1biau.zahradev.id`  
 **Nama Display Akun:** `SIASEK Evidence`  
 **Login Email:** `siasek_evidence@example.com`  

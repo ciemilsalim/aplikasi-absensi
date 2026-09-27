@@ -3,12 +3,12 @@
     "snapshot_date": "2026-09-27",
     "source_type": "LIVE_APPLICATION",
     "source_role": "admin",
-    "source_page": "\/admin\/dashboard",
-    "source_url": "https:\/\/presensi-smpn1biau.zahradev.id",
+    "source_page": "/admin/dashboard",
+    "source_url": "https://presensi-smpn1biau.zahradev.id",
     "active_student_count": 368,
     "rate_per_student": 1000,
     "total": 368000,
     "status": "VERIFIED",
-    "frozen": true,
-    "screenshot_ref": "bukti_billing_september_2026.png"
+    "frozen": false,
+    "screenshot_ref": "bukti_01_billing_september_2026.png"
 }

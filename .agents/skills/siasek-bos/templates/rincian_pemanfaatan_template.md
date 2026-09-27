@@ -1,7 +1,7 @@
 # RINCIAN PEMANFAATAN LAYANAN SIASEK — {{PERIOD_NAME}}
 
 **Nama Layanan**: {{SERVICE_NAME}}  
-**Aplikasi**: SIASEK (Sistem Informasi & Absensi Sekolah)  
+**Aplikasi**: SIASEK (Sistem Informasi Administrasi Sekolah)  
 **URL Live**: {{LIVE_URL}}  
 **Periode Audit**: {{PERIOD_START}} s.d. {{PERIOD_END}} (Evidence Cutoff: {{EVIDENCE_CUTOFF}})  
 **Pelanggan**: {{CUSTOMER_NAME}}  

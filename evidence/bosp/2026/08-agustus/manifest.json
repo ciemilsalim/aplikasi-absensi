@@ -1,30 +1,49 @@
 {
+    "release": {
+        "name": "siasek-bos",
+        "version": "1.1",
+        "engine_version": "1.1",
+        "release_type": "evidence_generator"
+    },
+    "workspace_state": {
+        "status": "clean_at_release"
+    },
+    "period_type": "HISTORICAL_PERIOD_USING_VERIFIED_SNAPSHOT",
+    "period": {
+        "start": "2026-08-01",
+        "end": "2026-08-31",
+        "evidence_cutoff": "2026-08-31"
+    },
     "billing": {
-        "source_type": "LIVE_APPLICATION",
-        "source_url": "https:\/\/presensi-smpn1biau.zahradev.id",
-        "role": "admin",
+        "snapshot_status": "FINAL_FROZEN_SNAPSHOT",
+        "snapshot_date": "2026-08-31",
+        "final_frozen": true,
+        "frozen_at": null,
+        "source_type": "FROZEN_LIVE_SNAPSHOT",
+        "source_role": "admin",
         "source_page": "\/admin\/dashboard",
-        "capture_timestamp": "2026-09-27 11:50:04",
-        "cutoff": "2026-08-31",
         "active_student_count": 368,
         "rate_per_student": 1000,
-        "total": 368000
+        "total": 368000,
+        "snapshot_file": "evidence\/bosp\/2026\/08-agustus\/billing\/billing-snapshot.json"
     },
+    "git_period_start": "2026-08-01 00:00:00",
+    "git_period_end": "2026-08-31 23:59:59",
+    "future_evidence_detected": "NO",
     "project_code": "SIASEK-BIAU",
     "customer": "SMP Negeri 1 Biau",
-    "period": "Agustus 2026",
-    "git_head": "6c108e6",
+    "git_head": "a2d4390",
     "invoice_number": "SIASEK-BIAU\/2026\/08\/001",
     "invoice_status": "DRAFT",
     "sequence": "001",
     "screenshots": [
-        "bukti_billing_september_2026.png",
-        "bukti_admin_leave_intervention_september_2026.png",
-        "bukti_01_dashboard.png",
-        "bukti_08_teacher_dashboard.png",
-        "bukti_11_parent_dashboard.png",
-        "bukti_13_satpam_dashboard.png",
-        "bukti_14_kepsek_dashboard.png"
+        "bukti_01_billing_agustus_2026.png",
+        "bukti_02_admin_leave_agustus_2026.png",
+        "bukti_03_teacher_attendance_agustus_2026.png",
+        "bukti_04_kepsek_dashboard_agustus_2026.png",
+        "bukti_05_parent_onboarding_agustus_2026.png",
+        "bukti_06_satpam_scanner_agustus_2026.png",
+        "bukti_07_viewer_dashboard_agustus_2026.png"
     ],
     "artifact_directory": "docs\/BOSP\/live-evidence\/masked\/",
     "features": {
@@ -49,5 +68,5 @@
         "FINAL\/PAKET_BOSP_SIASEK_BIAU_AGUSTUS_2026.pdf"
     ],
     "qa_status": "PASS",
-    "generated_at": "2026-09-27 11:50:05"
+    "generated_at": "2026-09-27 13:56:03"
 }

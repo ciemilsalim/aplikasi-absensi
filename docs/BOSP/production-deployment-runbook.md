@@ -1,6 +1,6 @@
 # PRODUCTION DEPLOYMENT RUNBOOK AKUN EVIDENCE SIASEK
 
-**Aplikasi:** SIASEK (Sistem Informasi & Absensi Sekolah)  
+**Aplikasi:** SIASEK (Sistem Informasi Administrasi Sekolah)  
 **Target URL Live:** `https://presensi-smpn1biau.zahradev.id`  
 **Nama Display Akun:** `SIASEK Evidence`  
 **Login Email:** `siasek_evidence@example.com`  

@@ -1,9 +1,9 @@
 {
-  "SIASEK-BIAU": {
-    "project_name": "Aplikasi Presensi SIASEK",
-    "customer": "SMP Negeri 1 Biau",
-    "last_sequence": 0,
-    "last_invoice": null,
-    "issued_invoices": []
-  }
+    "SIASEK-BIAU": {
+        "project_name": "Aplikasi Presensi SIASEK",
+        "customer": "SMP Negeri 1 Biau",
+        "last_sequence": 0,
+        "last_invoice": null,
+        "issued_invoices": []
+    }
 }

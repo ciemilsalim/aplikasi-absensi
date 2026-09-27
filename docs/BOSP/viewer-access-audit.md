@@ -1,6 +1,6 @@
 # AUDIT AKSES ROLE VIEWER & DOKUMENTASI EVIDENCE SIASEK
 
-**Aplikasi:** SIASEK (Sistem Informasi & Absensi Sekolah)  
+**Aplikasi:** SIASEK (Sistem Informasi Administrasi Sekolah)  
 **Project Path:** `D:\laragon\www\siasek\aplikasi-absensi`  
 **Live Application URL:** `https://presensi-smpn1biau.zahradev.id`  
 **Tanggal Audit:** 27 September 2026  

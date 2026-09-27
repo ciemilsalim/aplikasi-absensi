@@ -19,12 +19,12 @@
         "snapshot_date": "2026-09-27",
         "final_frozen": false,
         "frozen_at": null,
-        "source_type": "FROZEN_LIVE_SNAPSHOT",
+        "source_type": "LIVE_APPLICATION",
         "source_role": "admin",
         "source_page": "\/admin\/dashboard",
-        "active_student_count": 368,
+        "active_student_count": 366,
         "rate_per_student": 1000,
-        "total": 368000,
+        "total": 366000,
         "snapshot_file": "evidence\/bosp\/2026\/09-september\/billing\/billing-snapshot.json"
     },
     "git_period_start": "2026-09-01 00:00:00",
@@ -32,18 +32,24 @@
     "future_evidence_detected": "NO",
     "project_code": "SIASEK-BIAU",
     "customer": "SMP Negeri 1 Biau",
-    "git_head": "04640bd",
+    "git_head": "a2d4390",
     "invoice_number": "SIASEK-BIAU\/2026\/09\/001",
     "invoice_status": "DRAFT",
+    "invoice_issued_at": null,
     "sequence": "001",
+    "provider_contacts": [
+        "ptzahradev@gmail.com",
+        "emilsalimramadhan@gmail.com"
+    ],
+    "application_full_name": "Sistem Informasi Administrasi Sekolah",
     "screenshots": [
-        "bukti_billing_september_2026.png",
-        "bukti_admin_leave_intervention_september_2026.png",
-        "bukti_01_dashboard.png",
-        "bukti_08_teacher_dashboard.png",
-        "bukti_11_parent_dashboard.png",
-        "bukti_13_satpam_dashboard.png",
-        "bukti_14_kepsek_dashboard.png"
+        "bukti_01_billing_september_2026.png",
+        "bukti_02_admin_leave_september_2026.png",
+        "bukti_03_teacher_attendance_september_2026.png",
+        "bukti_04_kepsek_dashboard_september_2026.png",
+        "bukti_05_parent_onboarding_september_2026.png",
+        "bukti_06_satpam_scanner_september_2026.png",
+        "bukti_07_viewer_dashboard_september_2026.png"
     ],
     "artifact_directory": "docs\/BOSP\/live-evidence\/masked\/",
     "features": {
@@ -68,5 +74,16 @@
         "FINAL\/PAKET_BOSP_SIASEK_BIAU_SEPTEMBER_2026.pdf"
     ],
     "qa_status": "PASS",
-    "generated_at": "2026-09-27 12:43:13"
+    "qa_checks": {
+        "empty_page_qa": "PASS",
+        "content_density_qa": "PASS",
+        "screenshot_scale_qa": "PASS",
+        "orientation_qa": "PASS",
+        "table_overflow": "PASS",
+        "invoice_status_consistency": "PASS",
+        "contact_data": "PASS",
+        "siasek_name_consistency": "PASS",
+        "visual_qa": "PASS"
+    },
+    "generated_at": "2026-09-27 19:55:53"
 }

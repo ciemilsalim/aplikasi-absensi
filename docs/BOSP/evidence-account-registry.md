@@ -1,7 +1,7 @@
 # SIASEK Evidence Account Registry — Registry Akun Live Evidence BOSP
 
 **Tanggal Updated**: 27 September 2026  
-**Project**: SIASEK (Sistem Informasi & Absensi Sekolah - SMP Negeri 1 Biau)  
+**Project**: SIASEK (Sistem Informasi Administrasi Sekolah - SMP Negeri 1 Biau)  
 **Live Application**: [https://presensi-smpn1biau.zahradev.id](https://presensi-smpn1biau.zahradev.id)  
 
 ---

@@ -18,8 +18,8 @@ function extractLiveBillingData() {
     }
 
     $liveUrl = $credentials['SIASEK_URL'] ?? 'https://presensi-smpn1biau.zahradev.id';
-    $email = $credentials['SIASEK_EVIDENCE_USERNAME'] ?? $credentials['SIASEK_ADMIN_EMAIL'] ?? 'siasek_evidence@example.com';
-    $password = $credentials['SIASEK_EVIDENCE_PASSWORD'] ?? $credentials['SIASEK_ADMIN_PASSWORD'] ?? '';
+    $email = $credentials['SIASEK_ADMIN_EMAIL'] ?? $credentials['SIASEK_EVIDENCE_USERNAME'] ?? '';
+    $password = $credentials['SIASEK_ADMIN_PASSWORD'] ?? $credentials['SIASEK_EVIDENCE_PASSWORD'] ?? '';
 
     $cookieJar = tempnam(sys_get_temp_dir(), 'siasek_cookie_');
 

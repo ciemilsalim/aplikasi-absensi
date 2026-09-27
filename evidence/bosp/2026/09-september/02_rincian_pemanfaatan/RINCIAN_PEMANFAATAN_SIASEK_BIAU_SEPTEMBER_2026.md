@@ -1,7 +1,7 @@
 # RINCIAN PEMANFAATAN LAYANAN SIASEK — September 2026
 
 **Nama Layanan**: Jasa Layanan Penggunaan Aplikasi Presensi SIASEK  
-**Aplikasi**: SIASEK (Sistem Informasi & Absensi Sekolah)  
+**Aplikasi**: SIASEK (Sistem Informasi Administrasi Sekolah)  
 **URL Live**: https://presensi-smpn1biau.zahradev.id  
 **Periode Audit**: 2026-09-01 s.d. 2026-09-27 (Evidence Cutoff: 2026-09-27)  
 **Pelanggan**: SMP Negeri 1 Biau  

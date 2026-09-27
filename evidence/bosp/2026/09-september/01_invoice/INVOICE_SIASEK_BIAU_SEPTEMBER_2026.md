@@ -2,7 +2,7 @@
 
 **Nomor Invoice**: SIASEK-BIAU/2026/09/001  
 **Status Invoice**: **[DRAFT]**  
-**Tanggal**: TBD  
+**Tanggal**: Belum diterbitkan  
 **Periode Layanan**: September 2026 (2026-09-01 s.d. 2026-09-27)  
 
 ---
@@ -10,10 +10,10 @@
 ### ITEM LAYANAN
 
 | No | Deskripsi Layanan | Jumlah Siswa (User) | Tarif / Siswa / Bulan | Total Tagihan |
-| :---: | :--- | :---: | :---: | :---: |
-| 1 | **Jasa Layanan Penggunaan Aplikasi Presensi SIASEK**<br>Layanan SaaS Presensi Digital, Portal Orang Tua, Executive Analytics & Supervisi Jurnal Guru | 368 Siswa | Rp1.000 | **Rp368.000** |
+| :---: | :--- | :---: | ---: | ---: |
+| 1 | **Jasa Layanan Penggunaan Aplikasi Presensi SIASEK**<br><span style="font-weight: normal; color: #475569;">Layanan SaaS Presensi Digital, Portal Orang Tua, Executive Analytics & Supervisi Jurnal Guru</span> | 366 Siswa | Rp1.000 | **Rp366.000** |
 
-**Terbilang**: *Tiga Ratus Enam Puluh Delapan Ribu  Rupiah*  
+**Terbilang**: *Tiga Ratus Enam Puluh Enam Ribu  Rupiah*  
 
 ---
 
@@ -22,7 +22,9 @@
 **Penyedia Layanan (Provider)**:  
 **ZahraDev**  
 Pengembang: Emil Salim, S.Kom  
-Kontak: emil@zahradev.id  
+Kontak:  
+ptzahradev@gmail.com  
+emilsalimramadhan@gmail.com  
 
 **Pelanggan (Customer)**:  
 **SMP Negeri 1 Biau**  

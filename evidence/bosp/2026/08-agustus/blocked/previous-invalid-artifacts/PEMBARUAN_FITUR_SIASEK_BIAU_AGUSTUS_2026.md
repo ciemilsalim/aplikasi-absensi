@@ -1,7 +1,7 @@
 # PEMBARUAN FITUR SIASEK — Agustus 2026
 
 **Periode Repository Audit**: 2026-08-01 s.d. 2026-08-31  
-**Git Commit Cutoff**: `6c108e6`  
+**Git Commit Cutoff**: `a2d4390`  
 
 ---
 
@@ -16,7 +16,7 @@
 
 | FEATURE | ROLE | CHANGE TYPE | GIT EVIDENCE (COMMIT/FILES) | LIVE STATUS | SCREENSHOT | NOTES |
 | :--- | :--- | :---: | :--- | :--- | :--- | :--- |
-| Admin Manual Leave Intervention & Attendance Sync | Admin / TU (ADMIN_EVIDENCE) | **UPDATED** | Commit fcb90b6 / Admin/LeaveRequestController.php | LIVE_EVIDENCE | `bukti_admin_leave_intervention_september_2026.png` | Modul intervensi pengajuan izin siswa & auto-sync presensi |
+| Admin Manual Leave Intervention & Attendance Sync | Admin / TU (ADMIN_EVIDENCE) | **UPDATED** | Commit fcb90b6 / Admin/LeaveRequestController.php | LIVE_EVIDENCE | `bukti_02_admin_leave_agustus_2026.png` | Modul intervensi pengajuan izin siswa & auto-sync presensi |
 | Subject-Based Attendance Tracking & Reporting | Guru Mapel / Wali Kelas (TEACHER_EVIDENCE) | **UPDATED** | Commit 96660f4 / SubjectAttendanceController.php | LIVE_EVIDENCE | `bukti_08_teacher_dashboard.png` | Pencatatan presensi per jam pelajaran & rekapitulasi guru |
 | Executive Principal Dashboard Overview | Kepala Sekolah (PRINCIPAL_EVIDENCE) | **ACTIVE** | Commit 7940af5 / PrincipalDashboardController.php | LIVE_EVIDENCE | `bukti_14_kepsek_dashboard.png` | Tampilan executive overview persentase kehadiran 14 hari & supervisi |
 | Parent Onboarding & Verification Enforcer | Orang Tua (PARENT_EVIDENCE) | **ACTIVE** | EnsureParentOnboardingCompleted.php | LIVE_EVIDENCE | `bukti_11_parent_dashboard.png` | Sistem penegakan verifikasi 3-langkah klaim anak binaan |

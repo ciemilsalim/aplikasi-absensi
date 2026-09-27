@@ -16,12 +16,16 @@ invoice:
 
 application:
   name: "SIASEK"
-  full_name: "Sistem Informasi & Absensi Sekolah"
+  full_name: "Sistem Informasi Administrasi Sekolah"
   live_url: "https://presensi-smpn1biau.zahradev.id"
 
 provider:
   name: "ZahraDev"
   developer: "Emil Salim, S.Kom"
+  emails:
+    - "ptzahradev@gmail.com"
+    - "emilsalimramadhan@gmail.com"
+  contact_display: "ptzahradev@gmail.com, emilsalimramadhan@gmail.com"
 
 payment:
   method: "Transfer Bank"

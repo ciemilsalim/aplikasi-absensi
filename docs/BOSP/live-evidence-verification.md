@@ -1,6 +1,6 @@
 # LAPORAN VERIFIKASI END-TO-END AKUN EVIDENCE SIASEK
 
-**Nama Proyek:** SIASEK (Sistem Informasi & Absensi Sekolah)  
+**Nama Proyek:** SIASEK (Sistem Informasi Administrasi Sekolah)  
 **Target URL Live:** `https://presensi-smpn1biau.zahradev.id`  
 **Nama Display Akun:** `SIASEK Evidence`  
 **Email/Login Identifier:** `siasek_evidence@example.com`  

@@ -10,8 +10,8 @@
 ### ITEM LAYANAN
 
 | No | Deskripsi Layanan | Jumlah Siswa (User) | Tarif / Siswa / Bulan | Total Tagihan |
-| :---: | :--- | :---: | :---: | :---: |
-| 1 | **{{SERVICE_NAME}}**<br>Layanan SaaS Presensi Digital, Portal Orang Tua, Executive Analytics & Supervisi Jurnal Guru | {{STUDENT_COUNT}} Siswa | Rp{{RATE_FORMATTED}} | **Rp{{TOTAL_FORMATTED}}** |
+| :---: | :--- | :---: | ---: | ---: |
+| 1 | **{{SERVICE_NAME}}**<br><span style="font-weight: normal; color: #475569;">Layanan SaaS Presensi Digital, Portal Orang Tua, Executive Analytics & Supervisi Jurnal Guru</span> | {{STUDENT_COUNT}} Siswa | Rp{{RATE_FORMATTED}} | **Rp{{TOTAL_FORMATTED}}** |
 
 **Terbilang**: *{{TERBILANG}}*  
 
@@ -22,7 +22,8 @@
 **Penyedia Layanan (Provider)**:  
 **{{PROVIDER_NAME}}**  
 Pengembang: {{PROVIDER_DEV}}  
-Kontak: {{PROVIDER_EMAIL}}  
+Kontak:  
+{{PROVIDER_EMAIL}}  
 
 **Pelanggan (Customer)**:  
 **{{CUSTOMER_NAME}}**  
