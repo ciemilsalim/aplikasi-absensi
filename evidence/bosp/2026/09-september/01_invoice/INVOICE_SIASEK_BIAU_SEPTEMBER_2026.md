@@ -1,9 +1,9 @@
 # INVOICE / TAGIHAN LAYANAN SIASEK
 
 **Nomor Invoice**: SIASEK-BIAU/2026/09/001  
-**Status Invoice**: **[DRAFT]**  
-**Tanggal**: Belum diterbitkan  
-**Periode Layanan**: September 2026 (2026-09-01 s.d. 2026-09-27)  
+**Status Invoice**: **[ISSUED]**  
+**Tanggal**: 2026-09-28 10:33:23  
+**Periode Layanan**: September 2026 (2026-09-01 s.d. 2026-09-28)  
 
 ---
 

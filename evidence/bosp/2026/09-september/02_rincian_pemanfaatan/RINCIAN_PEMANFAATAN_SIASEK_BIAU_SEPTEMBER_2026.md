@@ -3,7 +3,7 @@
 **Nama Layanan**: Jasa Layanan Penggunaan Aplikasi Presensi SIASEK  
 **Aplikasi**: SIASEK (Sistem Informasi Administrasi Sekolah)  
 **URL Live**: https://presensi-smpn1biau.zahradev.id  
-**Periode Audit**: 2026-09-01 s.d. 2026-09-27 (Evidence Cutoff: 2026-09-27)  
+**Periode Audit**: 2026-09-01 s.d. 2026-09-28 (Evidence Cutoff: 2026-09-28)  
 **Pelanggan**: SMP Negeri 1 Biau  
 
 ---

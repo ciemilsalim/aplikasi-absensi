@@ -1,6 +1,6 @@
 # EVIDENCE INDEX — September 2026
 
-**Periode Evidence**: 2026-09-01 s.d. 2026-09-27  
+**Periode Evidence**: 2026-09-01 s.d. 2026-09-28  
 **Aplikasi**: SIASEK Live ([https://presensi-smpn1biau.zahradev.id](https://presensi-smpn1biau.zahradev.id))  
 
 ---
@@ -9,7 +9,7 @@
 
 | ID | FEATURE | ROLE | ROUTE | EVIDENCE TYPE | GIT REFERENCE | SCREENSHOT REF | STATUS |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
-| EV-01 | Live Application Billing Evidence (366 Siswa Aktif) | Admin (ADMIN_EVIDENCE) | `/admin/dashboard` | Live Application Snapshot | `a2d4390` | `bukti_01_billing_september_2026.png` | **PASSED** |
+| EV-01 | Live Application Billing Evidence (366 Siswa Aktif) | Admin (ADMIN_EVIDENCE) | `/admin/dashboard` | Live Application Snapshot | `7b742ee` | `bukti_01_billing_september_2026.png` | **PASSED** |
 | EV-02 | Admin Manual Leave Intervention & Attendance Sync | Admin / TU (ADMIN_EVIDENCE) | `/admin/leave-requests` | Live Operational Evidence | `fcb90b6` | `bukti_02_admin_leave_september_2026.png` | **PASSED** |
 | EV-03 | Subject-Based Attendance Tracking & Reporting | Guru & Wali 7D (TEACHER_EVIDENCE) | `/teacher/dashboard` | Live Operational Evidence | `96660f4` | `bukti_03_teacher_attendance_september_2026.png` | **PASSED** |
 | EV-04 | Executive Principal Dashboard Overview | Kepala Sekolah (PRINCIPAL_EVIDENCE) | `/principal/dashboard` | Live Operational Evidence | `7940af5` | `bukti_04_kepsek_dashboard_september_2026.png` | **PASSED** |

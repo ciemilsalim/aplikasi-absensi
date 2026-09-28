@@ -12,11 +12,11 @@
     "period": {
         "start": "2026-09-01",
         "end": "2026-09-30",
-        "evidence_cutoff": "2026-09-27"
+        "evidence_cutoff": "2026-09-28"
     },
     "billing": {
         "snapshot_status": "VERIFIED_SNAPSHOT",
-        "snapshot_date": "2026-09-27",
+        "snapshot_date": "2026-09-28",
         "final_frozen": false,
         "frozen_at": null,
         "source_type": "LIVE_APPLICATION",
@@ -28,14 +28,14 @@
         "snapshot_file": "evidence\/bosp\/2026\/09-september\/billing\/billing-snapshot.json"
     },
     "git_period_start": "2026-09-01 00:00:00",
-    "git_period_end": "2026-09-27 23:59:59",
+    "git_period_end": "2026-09-28 23:59:59",
     "future_evidence_detected": "NO",
     "project_code": "SIASEK-BIAU",
     "customer": "SMP Negeri 1 Biau",
-    "git_head": "a2d4390",
+    "git_head": "7b742ee",
     "invoice_number": "SIASEK-BIAU\/2026\/09\/001",
-    "invoice_status": "DRAFT",
-    "invoice_issued_at": null,
+    "invoice_status": "ISSUED",
+    "invoice_issued_at": "2026-09-28 10:33:23",
     "sequence": "001",
     "provider_contacts": [
         "ptzahradev@gmail.com",
@@ -85,5 +85,5 @@
         "siasek_name_consistency": "PASS",
         "visual_qa": "PASS"
     },
-    "generated_at": "2026-09-27 19:55:53"
+    "generated_at": "2026-09-28 10:34:33"
 }
