@@ -1,0 +1,5 @@
+.tutorial-video/recording/
+.tutorial-video/audio/
+.tutorial-video/rendered/
+.env
+.env.*

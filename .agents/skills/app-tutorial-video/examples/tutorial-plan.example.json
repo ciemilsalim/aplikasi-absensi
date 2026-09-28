@@ -1,0 +1,34 @@
+{
+  "title": "Cara Melakukan Absensi Guru",
+  "language": "id-ID",
+  "audience": "Guru SMP",
+  "target_duration_seconds": 300,
+  "base_url": "http://127.0.0.1:8000",
+  "voice": "id-ID-ArdiNeural",
+  "scenes": [
+    {
+      "id": "scene-01",
+      "name": "Pembukaan",
+      "narration": "Pada tutorial ini kita akan mempelajari cara melakukan absensi guru menggunakan aplikasi.",
+      "actions": [
+        {"type": "goto", "url": "http://127.0.0.1:8000/login"},
+        {"type": "wait", "ms": 1500}
+      ],
+      "expected_result": "Halaman login tampil dengan jelas.",
+      "duration_seconds": 10
+    },
+    {
+      "id": "scene-02",
+      "name": "Login",
+      "narration": "Masukkan akun demo guru, kemudian tekan tombol masuk untuk membuka halaman utama aplikasi.",
+      "actions": [
+        {"type": "fill", "selector": "input[name=email]", "valueFromEnv": "TUTORIAL_EMAIL"},
+        {"type": "fill", "selector": "input[name=password]", "valueFromEnv": "TUTORIAL_PASSWORD"},
+        {"type": "click", "selector": "button[type=submit]"},
+        {"type": "wait", "ms": 1500}
+      ],
+      "expected_result": "Dashboard guru tampil.",
+      "duration_seconds": 20
+    }
+  ]
+}
