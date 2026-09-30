@@ -1,0 +1,38 @@
+{
+  "scene_01_intro": {
+    "start": 0,
+    "end": 6.166,
+    "evidence_timestamp": 6.142,
+    "url": "http://127.0.0.1:8000/login"
+  },
+  "scene_02_login_navigasi": {
+    "start": 6.167,
+    "end": 25.155,
+    "evidence_timestamp": 25.145,
+    "url": "http://127.0.0.1:8000/parent/leave-requests/create"
+  },
+  "scene_03_pilih_anak_kategori": {
+    "start": 25.155,
+    "end": 31.067,
+    "evidence_timestamp": 31.056,
+    "url": "http://127.0.0.1:8000/parent/leave-requests/create"
+  },
+  "scene_04_isi_tanggal_alasan": {
+    "start": 31.068,
+    "end": 38.683,
+    "evidence_timestamp": 38.67,
+    "url": "http://127.0.0.1:8000/parent/leave-requests/create"
+  },
+  "scene_05_kirim_permohonan": {
+    "start": 38.683,
+    "end": 45.27,
+    "evidence_timestamp": 45.248,
+    "url": "http://127.0.0.1:8000/parent/leave-requests"
+  },
+  "scene_06_konfirmasi_sukses": {
+    "start": 45.27,
+    "end": 49.618,
+    "evidence_timestamp": 49.597,
+    "url": "http://127.0.0.1:8000/parent/leave-requests"
+  }
+}

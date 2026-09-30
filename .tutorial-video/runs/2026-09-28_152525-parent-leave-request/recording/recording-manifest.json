@@ -1,0 +1,179 @@
+{
+  "run_id": "2026-09-28_152525-parent-leave-request",
+  "tutorial_id": "parent-leave-request",
+  "target_user": "orang_tua",
+  "mode": "feature",
+  "timestamp": "2026-09-28T07:25:35.583Z",
+  "recording_completed_timestamp": "2026-09-28T07:26:36.574Z",
+  "plan_path": ".tutorial-video/tutorial-plan.json",
+  "plan_hash": "6cc78cf10e79f8e8",
+  "initial_url": "http://127.0.0.1:8000",
+  "scene_count": 6,
+  "scene_titles": [
+    "Pembukaan Portal Orang Tua",
+    "Masuk Portal & Membuka Form Pengajuan Izin",
+    "Memilih Nama Anak & Kategori Izin",
+    "Mengisi Rentang Tanggal & Alasan Rinci",
+    "Mengirim Permohonan Izin Ke Sekolah",
+    "Konfirmasi Sukses & Pengawasan Status"
+  ],
+  "expected_scenes": [
+    {
+      "scene_id": "scene_01_intro",
+      "title": "Pembukaan Portal Orang Tua",
+      "expected_result": "Halaman login portal SIASEK terbuka bersih"
+    },
+    {
+      "scene_id": "scene_02_login_navigasi",
+      "title": "Masuk Portal & Membuka Form Pengajuan Izin",
+      "expected_result": "Formulir permohonan izin/sakit siswa terbuka"
+    },
+    {
+      "scene_id": "scene_03_pilih_anak_kategori",
+      "title": "Memilih Nama Anak & Kategori Izin",
+      "expected_result": "Siswa dan kategori sakit terpilih"
+    },
+    {
+      "scene_id": "scene_04_isi_tanggal_alasan",
+      "title": "Mengisi Rentang Tanggal & Alasan Rinci",
+      "expected_result": "Rentang tanggal dan alasan keterangan terisi lengkap"
+    },
+    {
+      "scene_id": "scene_05_kirim_permohonan",
+      "title": "Mengirim Permohonan Izin Ke Sekolah",
+      "expected_result": "Formulir terikirim dan halaman riwayat permohonan ditampilkan"
+    },
+    {
+      "scene_id": "scene_06_konfirmasi_sukses",
+      "title": "Konfirmasi Sukses & Pengawasan Status",
+      "expected_result": "Notifikasi sukses tersimpan dan status terdaftar di tabel"
+    }
+  ],
+  "recording_file_path": ".tutorial-video\\runs\\2026-09-28_152525-parent-leave-request\\recording\\raw-recording.webm",
+  "recording_file_size_bytes": 5573688,
+  "recording_file_hash": "0e420015168c7b94",
+  "recording_creation_timestamp": "2026-09-28T07:26:36.574Z",
+  "scene_screenshots": [
+    {
+      "scene_id": "scene_01_intro",
+      "title": "Pembukaan Portal Orang Tua",
+      "screenshot_path": ".tutorial-video\\runs\\2026-09-28_152525-parent-leave-request\\recording\\scene_01_intro.png",
+      "screenshot_exists": true,
+      "screenshot_size_bytes": 815674
+    },
+    {
+      "scene_id": "scene_02_login_navigasi",
+      "title": "Masuk Portal & Membuka Form Pengajuan Izin",
+      "screenshot_path": ".tutorial-video\\runs\\2026-09-28_152525-parent-leave-request\\recording\\scene_02_login_navigasi.png",
+      "screenshot_exists": true,
+      "screenshot_size_bytes": 114620
+    },
+    {
+      "scene_id": "scene_03_pilih_anak_kategori",
+      "title": "Memilih Nama Anak & Kategori Izin",
+      "screenshot_path": ".tutorial-video\\runs\\2026-09-28_152525-parent-leave-request\\recording\\scene_03_pilih_anak_kategori.png",
+      "screenshot_exists": true,
+      "screenshot_size_bytes": 114431
+    },
+    {
+      "scene_id": "scene_04_isi_tanggal_alasan",
+      "title": "Mengisi Rentang Tanggal & Alasan Rinci",
+      "screenshot_path": ".tutorial-video\\runs\\2026-09-28_152525-parent-leave-request\\recording\\scene_04_isi_tanggal_alasan.png",
+      "screenshot_exists": true,
+      "screenshot_size_bytes": 117476
+    },
+    {
+      "scene_id": "scene_05_kirim_permohonan",
+      "title": "Mengirim Permohonan Izin Ke Sekolah",
+      "screenshot_path": ".tutorial-video\\runs\\2026-09-28_152525-parent-leave-request\\recording\\scene_05_kirim_permohonan.png",
+      "screenshot_exists": true,
+      "screenshot_size_bytes": 115526
+    },
+    {
+      "scene_id": "scene_06_konfirmasi_sukses",
+      "title": "Konfirmasi Sukses & Pengawasan Status",
+      "screenshot_path": ".tutorial-video\\runs\\2026-09-28_152525-parent-leave-request\\recording\\scene_06_konfirmasi_sukses.png",
+      "screenshot_exists": true,
+      "screenshot_size_bytes": 115521
+    }
+  ],
+  "timing": [
+    {
+      "scene_id": "scene_01_intro",
+      "title": "Pembukaan Portal Orang Tua",
+      "start": 0.001,
+      "end": 6.288,
+      "duration": 6.287,
+      "zoom": 1,
+      "highlight": false,
+      "duration_target": 10
+    },
+    {
+      "scene_id": "scene_02_login_navigasi",
+      "title": "Masuk Portal & Membuka Form Pengajuan Izin",
+      "start": 6.289,
+      "end": 29.94,
+      "duration": 23.651000000000003,
+      "zoom": 1.15,
+      "highlight": true,
+      "duration_target": 14
+    },
+    {
+      "scene_id": "scene_03_pilih_anak_kategori",
+      "title": "Memilih Nama Anak & Kategori Izin",
+      "start": 29.942,
+      "end": 36.267,
+      "duration": 6.325000000000003,
+      "zoom": 1.2,
+      "highlight": true,
+      "duration_target": 13
+    },
+    {
+      "scene_id": "scene_04_isi_tanggal_alasan",
+      "title": "Mengisi Rentang Tanggal & Alasan Rinci",
+      "start": 36.268,
+      "end": 44.969,
+      "duration": 8.701,
+      "zoom": 1.2,
+      "highlight": true,
+      "duration_target": 16
+    },
+    {
+      "scene_id": "scene_05_kirim_permohonan",
+      "title": "Mengirim Permohonan Izin Ke Sekolah",
+      "start": 44.969,
+      "end": 51.924,
+      "duration": 6.954999999999998,
+      "zoom": 1.25,
+      "highlight": true,
+      "duration_target": 12
+    },
+    {
+      "scene_id": "scene_06_konfirmasi_sukses",
+      "title": "Konfirmasi Sukses & Pengawasan Status",
+      "start": 51.925,
+      "end": 56.194,
+      "duration": 4.2690000000000055,
+      "zoom": 1,
+      "highlight": false,
+      "duration_target": 10
+    }
+  ],
+  "expected_visual_keywords": [
+    "izin",
+    "sakit",
+    "siswa",
+    "alasan",
+    "orang tua",
+    "permohonan",
+    "kirim"
+  ],
+  "forbidden_visual_keywords": [
+    "jurnal mengajar",
+    "pokok bahasan",
+    "asesmen",
+    "refleksi",
+    "kbm",
+    "jurnal harian"
+  ]
+}

@@ -1,0 +1,7 @@
+file 'D:/laragon/www/siasek/aplikasi-absensi/.tutorial-video/audio/intro_silence.mp3'
+file 'D:/laragon/www/siasek/aplikasi-absensi/.tutorial-video/audio/scene_01_intro.mp3'
+file 'D:/laragon/www/siasek/aplikasi-absensi/.tutorial-video/audio/scene_02_login_navigasi.mp3'
+file 'D:/laragon/www/siasek/aplikasi-absensi/.tutorial-video/audio/scene_03_pilih_anak_kategori.mp3'
+file 'D:/laragon/www/siasek/aplikasi-absensi/.tutorial-video/audio/scene_04_isi_tanggal_alasan.mp3'
+file 'D:/laragon/www/siasek/aplikasi-absensi/.tutorial-video/audio/scene_05_kirim_permohonan.mp3'
+file 'D:/laragon/www/siasek/aplikasi-absensi/.tutorial-video/audio/scene_06_konfirmasi_sukses.mp3'

@@ -1,30 +1,90 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["title", "language", "audience", "scenes"],
+  "required": ["title", "language", "target_user", "mode", "scenes"],
   "properties": {
     "title": {"type": "string"},
-    "language": {"type": "string"},
-    "audience": {"type": "string"},
-    "target_duration_seconds": {"type": "integer", "minimum": 30},
+    "language": {"type": "string", "default": "Indonesian"},
+    "target_user": {
+      "type": "string",
+      "enum": ["guru", "orang_tua", "operator", "kepala_sekolah", "satpam", "siswa", "umum"],
+      "default": "guru"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["feature", "module", "onboarding", "release"],
+      "default": "feature"
+    },
+    "target_duration_seconds": {"type": "integer", "minimum": 30, "default": 75},
     "base_url": {"type": "string"},
-    "voice": {"type": "string"},
+    "voice": {"type": "string", "default": "id-ID-ArdiNeural"},
+    "music": {"type": "boolean", "default": false},
+    "delays": {
+      "type": "object",
+      "properties": {
+        "actionDelay": {"type": "integer", "default": 800},
+        "sceneDelay": {"type": "integer", "default": 1500},
+        "typingDelay": {"type": "integer", "default": 60},
+        "postActionDelay": {"type": "integer", "default": 1200}
+      }
+    },
+    "intro": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean", "default": true},
+        "title": {"type": "string"},
+        "subtitle": {"type": "string"},
+        "duration": {"type": "number", "default": 4.0}
+      }
+    },
+    "outro": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean", "default": true},
+        "title": {"type": "string"},
+        "subtitle": {"type": "string"},
+        "duration": {"type": "number", "default": 4.0}
+      }
+    },
     "scenes": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "name", "narration", "actions", "expected_result"],
+        "required": ["scene_id", "title", "purpose", "narration", "duration_target"],
         "properties": {
-          "id": {"type": "string"},
-          "name": {"type": "string"},
+          "scene_id": {"type": "string"},
+          "title": {"type": "string"},
+          "purpose": {"type": "string"},
           "narration": {"type": "string"},
+          "duration_target": {"type": "number", "minimum": 1},
+          "target_url": {"type": "string"},
+          "locator": {"type": "string"},
+          "action": {"type": "string"},
+          "cursor_action": {"type": "string", "enum": ["none", "move", "move-and-click", "type", "select"]},
+          "highlight": {"type": ["boolean", "object"], "default": false},
+          "zoom": {"type": "number", "minimum": 1.0, "maximum": 2.0, "default": 1.0},
+          "wait_after_action": {"type": "integer", "default": 1000},
+          "screenshot_moment": {"type": "boolean", "default": false},
+          "transition": {"type": "string", "default": "none"},
           "actions": {
             "type": "array",
-            "items": {"type": "object"}
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {"type": "string"},
+                "url": {"type": "string"},
+                "selector": {"type": "string"},
+                "value": {"type": "string"},
+                "valueFromEnv": {"type": "string"},
+                "key": {"type": "string"},
+                "ms": {"type": "integer"},
+                "highlight": {"type": "boolean"},
+                "zoom": {"type": "number"}
+              }
+            }
           },
-          "expected_result": {"type": "string"},
-          "duration_seconds": {"type": "integer", "minimum": 1}
+          "expected_result": {"type": "string"}
         }
       }
     }

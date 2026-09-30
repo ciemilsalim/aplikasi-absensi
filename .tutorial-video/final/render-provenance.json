@@ -1,0 +1,15 @@
+{
+  "render_version": "2.2",
+  "tutorial_id": "parent-leave-request",
+  "feature": "pengajuan_izin_orang_tua",
+  "target_user": "orang_tua",
+  "mode": "feature",
+  "run_id": "2026-09-28_154548-parent-leave-request-v23",
+  "plan_hash": "4d80073f14762195",
+  "recording_hash": "563d2ad3d18d143a",
+  "audio_hash": "73b9a2a3ba394116",
+  "subtitle_hash": "72302e3977c53265",
+  "final_video_hash": "96a710912a433d82",
+  "output_path": ".tutorial-video/final/tutorial-pengajuan-izin-orang-tua-v2.3.mp4",
+  "rendered_at": "2026-09-28T15:48:10.404400"
+}

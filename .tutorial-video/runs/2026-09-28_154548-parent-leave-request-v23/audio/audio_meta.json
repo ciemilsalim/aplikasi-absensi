@@ -1,0 +1,38 @@
+[
+  {
+    "scene_id": "scene_01_intro",
+    "narration": "Selamat datang di panduan aplikasi SIASEK. Pada video kali ini, kita akan mempelajari cara mengajukan izin atau surat sakit anak secara online melalui portal orang tua.",
+    "audio_file": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\audio\\scene_01_intro.mp3",
+    "duration": 10.25
+  },
+  {
+    "scene_id": "scene_02_login_navigasi",
+    "narration": "Silakan masuk ke portal orang tua menggunakan akun Anda. Selanjutnya, buka menu Riwayat Izin dan klik tombol Ajukan Izin atau Sakit.",
+    "audio_file": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\audio\\scene_02_login_navigasi.mp3",
+    "duration": 8.71
+  },
+  {
+    "scene_id": "scene_03_pilih_anak_kategori",
+    "narration": "Pada formulir pengajuan, pilih nama putra-putri Anda yang diajukan izin, kemudian tentukan kategori pengajuan seperti sakit atau izin acara keluarga.",
+    "audio_file": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\audio\\scene_03_pilih_anak_kategori.mp3",
+    "duration": 8.81
+  },
+  {
+    "scene_id": "scene_04_isi_tanggal_alasan",
+    "narration": "Tentukan rentang tanggal pelaksanaan izin, lalu tuliskan alasan serta keterangan kondisi anak secara jelas agar memudahkan pihak sekolah melakukan verifikasi.",
+    "audio_file": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\audio\\scene_04_isi_tanggal_alasan.mp3",
+    "duration": 8.74
+  },
+  {
+    "scene_id": "scene_05_kirim_permohonan",
+    "narration": "Setelah seluruh data terisi dengan benar, klik tombol Kirim Permohonan Izin untuk mengirimkan dokumen ke pihak sekolah.",
+    "audio_file": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\audio\\scene_05_kirim_permohonan.mp3",
+    "duration": 6.55
+  },
+  {
+    "scene_id": "scene_06_konfirmasi_sukses",
+    "narration": "Permohonan izin anak Anda telah berhasil terkirim dan tercatat pada sistem sekolah. Terima kasih dan semoga sehat selalu.",
+    "audio_file": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\audio\\scene_06_konfirmasi_sukses.mp3",
+    "duration": 7.82
+  }
+]

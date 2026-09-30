@@ -1,0 +1,224 @@
+{
+  "tutorial_id": "parent-leave-request",
+  "title": "Panduan Pengajuan Izin / Sakit Anak oleh Orang Tua",
+  "language": "Indonesian",
+  "target_user": "orang_tua",
+  "mode": "feature",
+  "feature": "pengajuan_izin_orang_tua",
+  "target_duration_seconds": 75,
+  "base_url": "http://127.0.0.1:8000",
+  "voice": "id-ID-ArdiNeural",
+  "music": false,
+  "delays": {
+    "actionDelay": 800,
+    "sceneDelay": 1500,
+    "typingDelay": 40,
+    "postActionDelay": 1200
+  },
+  "expected_visual_keywords": [
+    "izin",
+    "sakit",
+    "anak",
+    "alasan",
+    "permohonan",
+    "kirim"
+  ],
+  "forbidden_visual_keywords": [
+    "jurnal mengajar",
+    "pokok bahasan",
+    "asesmen",
+    "refleksi",
+    "kbm",
+    "jurnal harian"
+  ],
+  "intro": {
+    "enabled": true,
+    "title": "SIASEK",
+    "subtitle": "Panduan Pengajuan Izin / Sakit Anak oleh Orang Tua",
+    "duration": 4.0
+  },
+  "outro": {
+    "enabled": true,
+    "title": "Pengajuan Izin Selesai",
+    "subtitle": "Terima kasih atas kerja sama Anda.",
+    "duration": 4.0
+  },
+  "scenes": [
+    {
+      "scene_id": "scene_01_intro",
+      "title": "Pembukaan Portal Orang Tua",
+      "purpose": "Menampilkan halaman awal login portal orang tua",
+      "narration": "Selamat datang di panduan aplikasi SIASEK. Pada video kali ini, kita akan mempelajari cara mengajukan izin atau surat sakit anak secara online melalui portal orang tua.",
+      "target_url": "http://127.0.0.1:8000/login",
+      "duration_target": 10,
+      "actions": [
+        { "type": "goto", "url": "http://127.0.0.1:8000/login" },
+        { "type": "wait", "ms": 1500 }
+      ],
+      "expected_result": "Halaman login portal SIASEK terbuka bersih",
+      "expected_ui": [
+        "Form login dengan field email dan password",
+        "Tombol Masuk ke Akun"
+      ],
+      "expected_text": [
+        "Masuk ke Akun Anda",
+        "ALAMAT EMAIL"
+      ],
+      "expected_url_contains": "/login",
+      "expected_dom_state": {
+        "selectors": ["#email", "#password", "button[type='submit']"],
+        "heading": "Masuk ke Akun Anda"
+      },
+      "forbidden_text": ["Jurnal Mengajar", "Pokok Bahasan", "Dashboard Guru"],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_02_login_navigasi",
+      "title": "Masuk Portal & Membuka Form Pengajuan Izin",
+      "purpose": "Otentikasi orang tua dan navigasi ke formulir izin",
+      "narration": "Silakan masuk ke portal orang tua menggunakan akun Anda. Selanjutnya, buka menu Riwayat Izin dan klik tombol Ajukan Izin atau Sakit.",
+      "target_url": "http://127.0.0.1:8000/login",
+      "duration_target": 14,
+      "highlight": true,
+      "zoom": 1.15,
+      "actions": [
+        { "type": "fill", "selector": "#email", "value": "emilsalimramadhan@gmail.com" },
+        { "type": "fill", "selector": "#password", "value": "password" },
+        { "type": "click", "selector": "button[type='submit']" },
+        { "type": "wait", "ms": 1500 },
+        { "type": "goto", "url": "http://127.0.0.1:8000/parent/leave-requests" },
+        { "type": "wait", "ms": 1000 },
+        { "type": "click", "selector": "a[href*='leave-requests/create']" }
+      ],
+      "expected_result": "Formulir permohonan izin/sakit siswa terbuka",
+      "expected_ui": [
+        "Form Pengajuan Izin / Sakit Siswa",
+        "Field pilih anak",
+        "Field kategori izin"
+      ],
+      "expected_text": [
+        "Form Pengajuan Izin / Sakit Siswa",
+        "PILIH SISWA / ANAK"
+      ],
+      "expected_url_contains": "leave-requests/create",
+      "expected_dom_state": {
+        "selectors": ["#student_id", "#type", "button[type='submit']"],
+        "heading": "Form Pengajuan Izin / Sakit Siswa"
+      },
+      "forbidden_text": ["Jurnal Mengajar", "Pokok Bahasan", "Refleksi", "Form KBM"],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_03_pilih_anak_kategori",
+      "title": "Memilih Nama Anak & Kategori Izin",
+      "purpose": "Memilih nama siswa yang diajukan dan kategori sakit/izin",
+      "narration": "Pada formulir pengajuan, pilih nama putra-putri Anda yang diajukan izin, kemudian tentukan kategori pengajuan seperti sakit atau izin acara keluarga.",
+      "duration_target": 13,
+      "highlight": true,
+      "zoom": 1.20,
+      "actions": [
+        { "type": "select", "selector": "#student_id", "value": "1" },
+        { "type": "select", "selector": "#type", "value": "sakit" }
+      ],
+      "expected_result": "Siswa dan kategori sakit terpilih",
+      "expected_ui": [
+        "Form Pengajuan Izin aktif dengan anak terpilih",
+        "Kategori Sakit terpilih pada dropdown"
+      ],
+      "expected_text": [
+        "Form Pengajuan Izin / Sakit Siswa",
+        "PILIH SISWA / ANAK",
+        "KATEGORI IZIN"
+      ],
+      "expected_url_contains": "leave-requests/create",
+      "expected_dom_state": {
+        "selectors": ["#student_id", "#type", "#reason"],
+        "heading": "Form Pengajuan Izin / Sakit Siswa"
+      },
+      "forbidden_text": ["Jurnal Mengajar", "Pokok Bahasan", "Form KBM"],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_04_isi_tanggal_alasan",
+      "title": "Mengisi Rentang Tanggal & Alasan Rinci",
+      "purpose": "Memasukkan rentang waktu izin dan keterangan kondisi siswa",
+      "narration": "Tentukan rentang tanggal pelaksanaan izin, lalu tuliskan alasan serta keterangan kondisi anak secara jelas agar memudahkan pihak sekolah melakukan verifikasi.",
+      "duration_target": 16,
+      "highlight": true,
+      "zoom": 1.20,
+      "actions": [
+        { "type": "fill", "selector": "#reason", "value": "Anak sedang demam tinggi dan disarankan dokter untuk istirahat di rumah." }
+      ],
+      "expected_result": "Rentang tanggal dan alasan keterangan terisi lengkap",
+      "expected_ui": [
+        "Field ALASAN & KETERANGAN LENGKAP terisi",
+        "Form Pengajuan Izin masih tampil"
+      ],
+      "expected_text": [
+        "ALASAN & KETERANGAN LENGKAP",
+        "Form Pengajuan Izin / Sakit Siswa"
+      ],
+      "expected_url_contains": "leave-requests/create",
+      "expected_dom_state": {
+        "selectors": ["#reason", "button[type='submit']"]
+      },
+      "forbidden_text": ["Jurnal Mengajar", "Pokok Bahasan", "Refleksi"],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_05_kirim_permohonan",
+      "title": "Mengirim Permohonan Izin Ke Sekolah",
+      "purpose": "Mengirimkan formulir permohonan ke sistem sekolah",
+      "narration": "Setelah seluruh data terisi dengan benar, klik tombol Kirim Permohonan Izin untuk mengirimkan dokumen ke pihak sekolah.",
+      "duration_target": 12,
+      "highlight": true,
+      "zoom": 1.25,
+      "actions": [
+        { "type": "click", "selector": "button[type='submit']" },
+        { "type": "wait", "ms": 2000 }
+      ],
+      "expected_result": "Formulir terikirim dan halaman riwayat permohonan ditampilkan",
+      "expected_ui": [
+        "Halaman Riwayat Pengajuan Izin / Sakit setelah submit",
+        "Notifikasi berhasil atau tabel daftar pengajuan"
+      ],
+      "expected_text": [
+        "Riwayat",
+        "Izin"
+      ],
+      "expected_url_contains": "leave-requests",
+      "expected_dom_state": {
+        "selectors": []
+      },
+      "forbidden_text": ["Jurnal Mengajar", "Pokok Bahasan"],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_06_konfirmasi_sukses",
+      "title": "Konfirmasi Sukses & Pengawasan Status",
+      "purpose": "Memverifikasi notifikasi sukses tersimpan di sistem sekolah",
+      "narration": "Permohonan izin anak Anda telah berhasil terkirim dan tercatat pada sistem sekolah. Terima kasih dan semoga sehat selalu.",
+      "duration_target": 10,
+      "highlight": false,
+      "actions": [
+        { "type": "wait", "ms": 2500 }
+      ],
+      "expected_result": "Notifikasi sukses tersimpan dan status terdaftar di tabel",
+      "expected_ui": [
+        "Tabel Daftar Surat Izin & Sakit",
+        "Status Menunggu Konfirmasi atau Disetujui",
+        "Notifikasi hijau berhasil"
+      ],
+      "expected_text": [
+        "Riwayat Pengajuan Izin / Sakit Anak",
+        "SAKIT"
+      ],
+      "expected_url_contains": "leave-requests",
+      "expected_dom_state": {
+        "selectors": []
+      },
+      "forbidden_text": ["Jurnal Mengajar", "Pokok Bahasan", "Form KBM"],
+      "verification_required": true
+    }
+  ]
+}

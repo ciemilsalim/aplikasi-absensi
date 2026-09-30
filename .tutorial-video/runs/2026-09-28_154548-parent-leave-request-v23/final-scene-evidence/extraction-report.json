@@ -1,0 +1,64 @@
+{
+  "video": ".tutorial-video/final/tutorial-pengajuan-izin-orang-tua-v2.3.mp4",
+  "video_duration": 75.02,
+  "recording_duration": 49.618,
+  "intro_dur": 4.0,
+  "target_main_dur": 67.0,
+  "tolerance": 0.5,
+  "scenes": {
+    "scene_01_intro": {
+      "scene_id": "scene_01_intro",
+      "evidence_timestamp_recording": 6.142,
+      "final_video_timestamp": 10.142,
+      "pts_factor": 1.0,
+      "frame_path": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\final-scene-evidence\\scene_01_intro.png",
+      "frame_size_bytes": 752120,
+      "extracted": true
+    },
+    "scene_02_login_navigasi": {
+      "scene_id": "scene_02_login_navigasi",
+      "evidence_timestamp_recording": 25.145,
+      "final_video_timestamp": 29.145,
+      "pts_factor": 1.0,
+      "frame_path": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\final-scene-evidence\\scene_02_login_navigasi.png",
+      "frame_size_bytes": 509476,
+      "extracted": true
+    },
+    "scene_03_pilih_anak_kategori": {
+      "scene_id": "scene_03_pilih_anak_kategori",
+      "evidence_timestamp_recording": 31.056,
+      "final_video_timestamp": 35.056,
+      "pts_factor": 1.0,
+      "frame_path": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\final-scene-evidence\\scene_03_pilih_anak_kategori.png",
+      "frame_size_bytes": 574336,
+      "extracted": true
+    },
+    "scene_04_isi_tanggal_alasan": {
+      "scene_id": "scene_04_isi_tanggal_alasan",
+      "evidence_timestamp_recording": 38.67,
+      "final_video_timestamp": 42.67,
+      "pts_factor": 1.0,
+      "frame_path": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\final-scene-evidence\\scene_04_isi_tanggal_alasan.png",
+      "frame_size_bytes": 501958,
+      "extracted": true
+    },
+    "scene_05_kirim_permohonan": {
+      "scene_id": "scene_05_kirim_permohonan",
+      "evidence_timestamp_recording": 45.248,
+      "final_video_timestamp": 49.248,
+      "pts_factor": 1.0,
+      "frame_path": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\final-scene-evidence\\scene_05_kirim_permohonan.png",
+      "frame_size_bytes": 538003,
+      "extracted": true
+    },
+    "scene_06_konfirmasi_sukses": {
+      "scene_id": "scene_06_konfirmasi_sukses",
+      "evidence_timestamp_recording": 49.597,
+      "final_video_timestamp": 53.597,
+      "pts_factor": 1.0,
+      "frame_path": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\final-scene-evidence\\scene_06_konfirmasi_sukses.png",
+      "frame_size_bytes": 480164,
+      "extracted": true
+    }
+  }
+}

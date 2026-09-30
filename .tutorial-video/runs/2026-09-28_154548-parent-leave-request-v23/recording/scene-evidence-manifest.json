@@ -1,0 +1,476 @@
+{
+  "run_id": "2026-09-28_154548-parent-leave-request-v23",
+  "tutorial_id": "parent-leave-request",
+  "target_user": "orang_tua",
+  "mode": "feature",
+  "generated_at": "2026-09-28T07:46:47.769Z",
+  "overall_status": "PASS",
+  "scene_evidence_dir": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\scene-evidence",
+  "scenes": [
+    {
+      "scene_id": "scene_01_intro",
+      "title": "Pembukaan Portal Orang Tua",
+      "url": "http://127.0.0.1:8000/login",
+      "page_title": "Presensi",
+      "screenshot": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\scene-evidence\\scene_01_intro.png",
+      "screenshot_relative": "scene-evidence/scene_01_intro.png",
+      "timestamp_ms": 6142,
+      "evidence_hash": "d2d8c089f1d7b25e",
+      "expected_action": "Halaman login portal SIASEK terbuka bersih",
+      "expected_text": [
+        "Masuk ke Akun Anda",
+        "ALAMAT EMAIL"
+      ],
+      "text_found": [
+        "Masuk ke Akun Anda",
+        "ALAMAT EMAIL"
+      ],
+      "text_missing": [],
+      "expected_url_contains": "/login",
+      "url_ok": true,
+      "forbidden_text": [
+        "Jurnal Mengajar",
+        "Pokok Bahasan",
+        "Dashboard Guru"
+      ],
+      "forbidden_text_found": [],
+      "forbidden_text_clean": true,
+      "dom_evidence": {
+        "headings": [
+          "Presensi",
+          "Presensi Lebih Cepat, Data Lebih Akurat.",
+          "Masuk ke Akun Anda"
+        ],
+        "buttons": [
+          "visibility",
+          "Masuk ke Akun\n                                login",
+          "arrow_upward"
+        ],
+        "alerts": [],
+        "nav_items": [],
+        "form_labels": [
+          "Alamat Email",
+          "Kata Sandi",
+          "Ingat saya"
+        ],
+        "selector_states": [
+          {
+            "selector": "#email",
+            "found": true,
+            "visible": true
+          },
+          {
+            "selector": "#password",
+            "found": true,
+            "visible": true
+          },
+          {
+            "selector": "button[type='submit']",
+            "found": true,
+            "visible": true
+          }
+        ]
+      },
+      "verification_required": true,
+      "verification_status": "PASS"
+    },
+    {
+      "scene_id": "scene_02_login_navigasi",
+      "title": "Masuk Portal & Membuka Form Pengajuan Izin",
+      "url": "http://127.0.0.1:8000/parent/leave-requests/create",
+      "page_title": "Presensi - Sistem Presensi Digital",
+      "screenshot": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\scene-evidence\\scene_02_login_navigasi.png",
+      "screenshot_relative": "scene-evidence/scene_02_login_navigasi.png",
+      "timestamp_ms": 25145,
+      "evidence_hash": "156aea28cb5228a0",
+      "expected_action": "Formulir permohonan izin/sakit siswa terbuka",
+      "expected_text": [
+        "Form Pengajuan Izin / Sakit Siswa",
+        "PILIH SISWA / ANAK"
+      ],
+      "text_found": [
+        "Form Pengajuan Izin / Sakit Siswa",
+        "PILIH SISWA / ANAK"
+      ],
+      "text_missing": [],
+      "expected_url_contains": "leave-requests/create",
+      "url_ok": true,
+      "forbidden_text": [
+        "Jurnal Mengajar",
+        "Pokok Bahasan",
+        "Refleksi",
+        "Form KBM"
+      ],
+      "forbidden_text_found": [],
+      "forbidden_text_clean": true,
+      "dom_evidence": {
+        "headings": [
+          "Form Pengajuan Izin / Sakit Siswa",
+          "Informasi Surat Izin",
+          "Menu Navigasi",
+          "Tidak Ada Jadwal Mengajar",
+          "Konfirmasi Keluar",
+          "Konfirmasi Keluar"
+        ],
+        "buttons": [
+          "menu",
+          "Ganti Tema\n            dark_mode\n            light_mode",
+          "send\n                        Kirim Permohonan Izin",
+          "more_horiz\n                                Lainnya",
+          "close",
+          "logout\n                                         Keluar / Logout",
+          "arrow_upward",
+          "close"
+        ],
+        "alerts": [],
+        "nav_items": [
+          "dashboard\n                                    Dasbor Anak",
+          "chat\n                                        Obrolan",
+          "auto_stories\n                            Panduan Pengguna",
+          "home\n                            Dasbor",
+          "Dasbor Orang Tua/Wali",
+          "Riwayat Izin/Sakit",
+          "dashboard\n                                Dasbor",
+          "add"
+        ],
+        "form_labels": [
+          "Pilih Siswa / Anak *",
+          "Tanggal Mulai *",
+          "Tanggal Selesai *",
+          "Kategori Izin *",
+          "Alasan & Keterangan Lengkap *",
+          "Lampiran Dokumen (Opsional: Foto surat dokter / surat izin)"
+        ],
+        "selector_states": [
+          {
+            "selector": "#student_id",
+            "found": true,
+            "visible": true
+          },
+          {
+            "selector": "#type",
+            "found": true,
+            "visible": true
+          },
+          {
+            "selector": "button[type='submit']",
+            "found": true,
+            "visible": true
+          }
+        ]
+      },
+      "verification_required": true,
+      "verification_status": "PASS"
+    },
+    {
+      "scene_id": "scene_03_pilih_anak_kategori",
+      "title": "Memilih Nama Anak & Kategori Izin",
+      "url": "http://127.0.0.1:8000/parent/leave-requests/create",
+      "page_title": "Presensi - Sistem Presensi Digital",
+      "screenshot": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\scene-evidence\\scene_03_pilih_anak_kategori.png",
+      "screenshot_relative": "scene-evidence/scene_03_pilih_anak_kategori.png",
+      "timestamp_ms": 31056,
+      "evidence_hash": "aab1f25a79b23f63",
+      "expected_action": "Siswa dan kategori sakit terpilih",
+      "expected_text": [
+        "Form Pengajuan Izin / Sakit Siswa",
+        "PILIH SISWA / ANAK",
+        "KATEGORI IZIN"
+      ],
+      "text_found": [
+        "Form Pengajuan Izin / Sakit Siswa",
+        "PILIH SISWA / ANAK",
+        "KATEGORI IZIN"
+      ],
+      "text_missing": [],
+      "expected_url_contains": "leave-requests/create",
+      "url_ok": true,
+      "forbidden_text": [
+        "Jurnal Mengajar",
+        "Pokok Bahasan",
+        "Form KBM"
+      ],
+      "forbidden_text_found": [],
+      "forbidden_text_clean": true,
+      "dom_evidence": {
+        "headings": [
+          "Form Pengajuan Izin / Sakit Siswa",
+          "Informasi Surat Izin",
+          "Menu Navigasi",
+          "Tidak Ada Jadwal Mengajar",
+          "Konfirmasi Keluar",
+          "Konfirmasi Keluar"
+        ],
+        "buttons": [
+          "menu",
+          "Ganti Tema\n            dark_mode\n            light_mode",
+          "send\n                        Kirim Permohonan Izin",
+          "more_horiz\n                                Lainnya",
+          "close",
+          "logout\n                                         Keluar / Logout",
+          "arrow_upward",
+          "close"
+        ],
+        "alerts": [],
+        "nav_items": [
+          "dashboard\n                                    Dasbor Anak",
+          "chat\n                                        Obrolan",
+          "auto_stories\n                            Panduan Pengguna",
+          "home\n                            Dasbor",
+          "Dasbor Orang Tua/Wali",
+          "Riwayat Izin/Sakit",
+          "dashboard\n                                Dasbor",
+          "add"
+        ],
+        "form_labels": [
+          "Pilih Siswa / Anak *",
+          "Tanggal Mulai *",
+          "Tanggal Selesai *",
+          "Kategori Izin *",
+          "Alasan & Keterangan Lengkap *",
+          "Lampiran Dokumen (Opsional: Foto surat dokter / surat izin)"
+        ],
+        "selector_states": [
+          {
+            "selector": "#student_id",
+            "found": true,
+            "visible": true
+          },
+          {
+            "selector": "#type",
+            "found": true,
+            "visible": true
+          },
+          {
+            "selector": "#reason",
+            "found": true,
+            "visible": true
+          }
+        ]
+      },
+      "verification_required": true,
+      "verification_status": "PASS"
+    },
+    {
+      "scene_id": "scene_04_isi_tanggal_alasan",
+      "title": "Mengisi Rentang Tanggal & Alasan Rinci",
+      "url": "http://127.0.0.1:8000/parent/leave-requests/create",
+      "page_title": "Presensi - Sistem Presensi Digital",
+      "screenshot": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\scene-evidence\\scene_04_isi_tanggal_alasan.png",
+      "screenshot_relative": "scene-evidence/scene_04_isi_tanggal_alasan.png",
+      "timestamp_ms": 38670,
+      "evidence_hash": "45ec0da3174e6ea5",
+      "expected_action": "Rentang tanggal dan alasan keterangan terisi lengkap",
+      "expected_text": [
+        "ALASAN & KETERANGAN LENGKAP",
+        "Form Pengajuan Izin / Sakit Siswa"
+      ],
+      "text_found": [
+        "ALASAN & KETERANGAN LENGKAP",
+        "Form Pengajuan Izin / Sakit Siswa"
+      ],
+      "text_missing": [],
+      "expected_url_contains": "leave-requests/create",
+      "url_ok": true,
+      "forbidden_text": [
+        "Jurnal Mengajar",
+        "Pokok Bahasan",
+        "Refleksi"
+      ],
+      "forbidden_text_found": [],
+      "forbidden_text_clean": true,
+      "dom_evidence": {
+        "headings": [
+          "Form Pengajuan Izin / Sakit Siswa",
+          "Informasi Surat Izin",
+          "Menu Navigasi",
+          "Tidak Ada Jadwal Mengajar",
+          "Konfirmasi Keluar",
+          "Konfirmasi Keluar"
+        ],
+        "buttons": [
+          "menu",
+          "Ganti Tema\n            dark_mode\n            light_mode",
+          "send\n                        Kirim Permohonan Izin",
+          "more_horiz\n                                Lainnya",
+          "close",
+          "logout\n                                         Keluar / Logout",
+          "arrow_upward",
+          "close"
+        ],
+        "alerts": [],
+        "nav_items": [
+          "dashboard\n                                    Dasbor Anak",
+          "chat\n                                        Obrolan",
+          "auto_stories\n                            Panduan Pengguna",
+          "home\n                            Dasbor",
+          "Dasbor Orang Tua/Wali",
+          "Riwayat Izin/Sakit",
+          "dashboard\n                                Dasbor",
+          "add"
+        ],
+        "form_labels": [
+          "Pilih Siswa / Anak *",
+          "Tanggal Mulai *",
+          "Tanggal Selesai *",
+          "Kategori Izin *",
+          "Alasan & Keterangan Lengkap *",
+          "Lampiran Dokumen (Opsional: Foto surat dokter / surat izin)"
+        ],
+        "selector_states": [
+          {
+            "selector": "#reason",
+            "found": true,
+            "visible": true
+          },
+          {
+            "selector": "button[type='submit']",
+            "found": true,
+            "visible": true
+          }
+        ]
+      },
+      "verification_required": true,
+      "verification_status": "PASS"
+    },
+    {
+      "scene_id": "scene_05_kirim_permohonan",
+      "title": "Mengirim Permohonan Izin Ke Sekolah",
+      "url": "http://127.0.0.1:8000/parent/leave-requests",
+      "page_title": "Presensi - Sistem Presensi Digital",
+      "screenshot": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\scene-evidence\\scene_05_kirim_permohonan.png",
+      "screenshot_relative": "scene-evidence/scene_05_kirim_permohonan.png",
+      "timestamp_ms": 45248,
+      "evidence_hash": "df27dfd8b162d00a",
+      "expected_action": "Formulir terikirim dan halaman riwayat permohonan ditampilkan",
+      "expected_text": [
+        "Riwayat",
+        "Izin"
+      ],
+      "text_found": [
+        "Riwayat",
+        "Izin"
+      ],
+      "text_missing": [],
+      "expected_url_contains": "leave-requests",
+      "url_ok": true,
+      "forbidden_text": [
+        "Jurnal Mengajar",
+        "Pokok Bahasan"
+      ],
+      "forbidden_text_found": [],
+      "forbidden_text_clean": true,
+      "dom_evidence": {
+        "headings": [
+          "Riwayat Pengajuan Izin / Sakit Anak",
+          "fact_check\n                        Daftar Surat Izin & Sakit",
+          "Menu Navigasi",
+          "Tidak Ada Jadwal Mengajar",
+          "Konfirmasi Keluar",
+          "Konfirmasi Keluar"
+        ],
+        "buttons": [
+          "menu",
+          "Ganti Tema\n            dark_mode\n            light_mode",
+          "more_horiz\n                                Lainnya",
+          "close",
+          "logout\n                                         Keluar / Logout",
+          "arrow_upward",
+          "close",
+          "Tutup"
+        ],
+        "alerts": [
+          "check_circle\n                Pengajuan berhasil dikirim dan sedang menunggu persetujuan."
+        ],
+        "nav_items": [
+          "dashboard\n                                    Dasbor Anak",
+          "chat\n                                        Obrolan",
+          "auto_stories\n                            Panduan Pengguna",
+          "home\n                            Dasbor",
+          "Dasbor Orang Tua/Wali",
+          "dashboard\n                                Dasbor",
+          "add"
+        ],
+        "form_labels": [
+          "Nama Siswa",
+          "Rentang Tanggal",
+          "Kategori & Alasan",
+          "Status Pengajuan"
+        ],
+        "selector_states": []
+      },
+      "verification_required": true,
+      "verification_status": "PASS"
+    },
+    {
+      "scene_id": "scene_06_konfirmasi_sukses",
+      "title": "Konfirmasi Sukses & Pengawasan Status",
+      "url": "http://127.0.0.1:8000/parent/leave-requests",
+      "page_title": "Presensi - Sistem Presensi Digital",
+      "screenshot": ".tutorial-video\\runs\\2026-09-28_154548-parent-leave-request-v23\\scene-evidence\\scene_06_konfirmasi_sukses.png",
+      "screenshot_relative": "scene-evidence/scene_06_konfirmasi_sukses.png",
+      "timestamp_ms": 49597,
+      "evidence_hash": "387b1fb4a0fedf3e",
+      "expected_action": "Notifikasi sukses tersimpan dan status terdaftar di tabel",
+      "expected_text": [
+        "Riwayat Pengajuan Izin / Sakit Anak",
+        "SAKIT"
+      ],
+      "text_found": [
+        "Riwayat Pengajuan Izin / Sakit Anak",
+        "SAKIT"
+      ],
+      "text_missing": [],
+      "expected_url_contains": "leave-requests",
+      "url_ok": true,
+      "forbidden_text": [
+        "Jurnal Mengajar",
+        "Pokok Bahasan",
+        "Form KBM"
+      ],
+      "forbidden_text_found": [],
+      "forbidden_text_clean": true,
+      "dom_evidence": {
+        "headings": [
+          "Riwayat Pengajuan Izin / Sakit Anak",
+          "fact_check\n                        Daftar Surat Izin & Sakit",
+          "Menu Navigasi",
+          "Tidak Ada Jadwal Mengajar",
+          "Konfirmasi Keluar",
+          "Konfirmasi Keluar"
+        ],
+        "buttons": [
+          "menu",
+          "Ganti Tema\n            dark_mode\n            light_mode",
+          "more_horiz\n                                Lainnya",
+          "close",
+          "logout\n                                         Keluar / Logout",
+          "arrow_upward",
+          "close",
+          "Tutup"
+        ],
+        "alerts": [
+          "check_circle\n                Pengajuan berhasil dikirim dan sedang menunggu persetujuan."
+        ],
+        "nav_items": [
+          "dashboard\n                                    Dasbor Anak",
+          "chat\n                                        Obrolan",
+          "auto_stories\n                            Panduan Pengguna",
+          "home\n                            Dasbor",
+          "Dasbor Orang Tua/Wali",
+          "dashboard\n                                Dasbor",
+          "add"
+        ],
+        "form_labels": [
+          "Nama Siswa",
+          "Rentang Tanggal",
+          "Kategori & Alasan",
+          "Status Pengajuan"
+        ],
+        "selector_states": []
+      },
+      "verification_required": true,
+      "verification_status": "PASS"
+    }
+  ]
+}

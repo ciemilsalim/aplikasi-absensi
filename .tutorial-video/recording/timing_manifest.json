@@ -1,0 +1,62 @@
+[
+  {
+    "scene_id": "scene_01_intro",
+    "title": "Pembukaan Portal Orang Tua",
+    "start": 0,
+    "end": 6.861,
+    "duration": 6.861,
+    "zoom": 1,
+    "highlight": false,
+    "duration_target": 10
+  },
+  {
+    "scene_id": "scene_02_login_navigasi",
+    "title": "Masuk Portal & Membuka Form Pengajuan Izin",
+    "start": 6.862,
+    "end": 26.796,
+    "duration": 19.933999999999997,
+    "zoom": 1.15,
+    "highlight": true,
+    "duration_target": 14
+  },
+  {
+    "scene_id": "scene_03_pilih_anak_kategori",
+    "title": "Memilih Nama Anak & Kategori Izin",
+    "start": 26.796,
+    "end": 32.833,
+    "duration": 6.036999999999999,
+    "zoom": 1.2,
+    "highlight": true,
+    "duration_target": 13
+  },
+  {
+    "scene_id": "scene_04_isi_tanggal_alasan",
+    "title": "Mengisi Rentang Tanggal & Alasan Rinci",
+    "start": 32.833,
+    "end": 40.367,
+    "duration": 7.533999999999999,
+    "zoom": 1.2,
+    "highlight": true,
+    "duration_target": 16
+  },
+  {
+    "scene_id": "scene_05_kirim_permohonan",
+    "title": "Mengirim Permohonan Izin Ke Sekolah",
+    "start": 40.367,
+    "end": 46.986,
+    "duration": 6.619,
+    "zoom": 1.25,
+    "highlight": true,
+    "duration_target": 12
+  },
+  {
+    "scene_id": "scene_06_konfirmasi_sukses",
+    "title": "Konfirmasi Sukses & Pengawasan Status",
+    "start": 46.986,
+    "end": 51.144,
+    "duration": 4.158000000000001,
+    "zoom": 1,
+    "highlight": false,
+    "duration_target": 10
+  }
+]

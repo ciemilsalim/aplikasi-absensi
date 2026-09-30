@@ -1,0 +1,19 @@
+Halo Bapak dan Ibu Guru! Selamat datang di tutorial aplikasi presensi SIASEK.
+
+Pada video ini, kita akan mempelajari cara mudah mengisi Jurnal Mengajar Harian.
+
+Pertama, masuk ke aplikasi dengan akun Guru Anda.
+
+Setelah berada di halaman dasbor, pilih menu Jurnal Mengajar pada bilah navigasi di sebelah kiri.
+
+Selanjutnya, klik tombol Tulis Jurnal Baru di pojok kanan atas.
+
+Pilih jadwal mata pelajaran dan kelas yang Anda ampu pada hari ini.
+
+Tuliskan topik materi pokok, tujuan pembelajaran, serta alur kegiatan KBM yang telah dilaksanakan.
+
+Lengkapi pula bentuk asesmen, hasil refleksi pembelajaran, dan rencana tindak lanjut.
+
+Setelah seluruh data terisi dengan lengkap, klik tombol Simpan Jurnal Mengajar.
+
+Jurnal Anda telah berhasil disimpan dan tercatat dalam sistem. Terima kasih dan selamat mengajar!

@@ -1,0 +1,35 @@
+1
+00:00:04,000 --> 00:00:06,578
+Selamat datang di panduan aplikasi SIASEK.
+
+2
+00:00:06,578 --> 00:00:14,250
+Pada video kali ini, kita akan mempelajari cara mengajukan izin atau surat sakit anak secara online melalui portal orang tua.
+
+3
+00:00:14,250 --> 00:00:17,973
+Silakan masuk ke portal orang tua menggunakan akun Anda.
+
+4
+00:00:17,973 --> 00:00:22,960
+Selanjutnya, buka menu Riwayat Izin dan klik tombol Ajukan Izin atau Sakit.
+
+5
+00:00:22,960 --> 00:00:31,770
+Pada formulir pengajuan, pilih nama putra-putri Anda yang diajukan izin, kemudian tentukan kategori pengajuan seperti sakit atau izin acara keluarga.
+
+6
+00:00:31,770 --> 00:00:40,510
+Tentukan rentang tanggal pelaksanaan izin, lalu tuliskan alasan serta keterangan kondisi anak secara jelas agar memudahkan pihak sekolah melakukan verifikasi.
+
+7
+00:00:40,510 --> 00:00:47,060
+Setelah seluruh data terisi dengan benar, klik tombol Kirim Permohonan Izin untuk mengirimkan dokumen ke pihak sekolah.
+
+8
+00:00:47,060 --> 00:00:52,469
+Permohonan izin anak Anda telah berhasil terkirim dan tercatat pada sistem sekolah.
+
+9
+00:00:52,469 --> 00:00:54,880
+Terima kasih dan semoga sehat selalu.

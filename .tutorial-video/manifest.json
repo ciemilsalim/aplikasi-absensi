@@ -1,0 +1,36 @@
+{
+  "title": "Tutorial Video V2.2: Pengajuan Izin/Sakit Anak oleh Orang Tua",
+  "version": "2.2.0",
+  "generator": "app-tutorial-video V2.2 (Content Consistency & Recording Isolation)",
+  "tutorial_id": "parent-leave-request",
+  "target_user": "orang_tua",
+  "mode": "feature",
+  "run_id": "2026-09-28_152525-parent-leave-request",
+  "duration_seconds": 75.02,
+  "resolution": "1920x1080",
+  "frame_rate": "30.00 fps",
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "tts_voice": "id-ID-ArdiNeural",
+  "subtitles": "Indonesian UTF-8 SRT (Burned-in & Standalone)",
+  "quality_gate_status": "PASS",
+  "quality_gate_version": "V2.2 (Technical + Content + Provenance)",
+  "provenance": {
+    "plan_hash": "6cc78cf10e79f8e8",
+    "recording_hash": "0e420015168c7b94",
+    "final_video_hash": "565f1a7d91af5dfa"
+  },
+  "paths": {
+    "final_video": ".tutorial-video/final/tutorial-pengajuan-izin-orang-tua-v2.2.mp4",
+    "run_dir": ".tutorial-video/runs/2026-09-28_152525-parent-leave-request",
+    "raw_recording": ".tutorial-video/runs/2026-09-28_152525-parent-leave-request/recording/raw-recording.webm",
+    "recording_manifest": ".tutorial-video/runs/2026-09-28_152525-parent-leave-request/recording/recording-manifest.json",
+    "narration_audio": ".tutorial-video/runs/2026-09-28_152525-parent-leave-request/audio/narration.mp3",
+    "subtitle_srt": ".tutorial-video/runs/2026-09-28_152525-parent-leave-request/subtitle/tutorial.srt",
+    "render_provenance": ".tutorial-video/final/render-provenance.json",
+    "discovery": ".tutorial-video/discovery.md",
+    "storyboard": ".tutorial-video/storyboard.md",
+    "tutorial_plan": ".tutorial-video/tutorial-plan.json",
+    "qa_v2": ".tutorial-video/qa-v2.md"
+  }
+}
