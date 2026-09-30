@@ -616,7 +616,7 @@
                     </li>
                     @endif
 
-                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'viewer']))
+                    @if(auth()->user()->role === 'admin' || auth()->user()->hasRole('admin'))
                     @php $isScanLogActive = request()->routeIs('admin.scan-logs.*'); @endphp
                     <li>
                         <a href="{{ route('admin.scan-logs.index') }}" :title="sidebarCollapsed ? 'Log Scan Absensi' : ''" 
