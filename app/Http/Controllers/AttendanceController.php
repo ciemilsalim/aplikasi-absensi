@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\Attendance;
 use App\Models\Setting;
+use App\Models\ScanLog;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
@@ -37,6 +38,12 @@ class AttendanceController extends Controller
             'longitude' => 'required|numeric',
         ]);
 
+        // Snapshot data user yang melakukan scan
+        $scanner = auth()->user();
+        $scannerName = $scanner ? $scanner->name : 'Sistem';
+        $scannerRole = $scanner ? ($scanner->role ?? 'unknown') : 'unknown';
+        $scannedAt = now();
+
         try {
             $qrData = $request->student_unique_id;
             
@@ -53,6 +60,17 @@ class AttendanceController extends Controller
 
             // Cek status keaktifan siswa
             if (in_array(strtolower(trim((string)($student->status ?? ''))), Student::$inactiveStatuses)) {
+                ScanLog::create([
+                    'user_id'        => $scanner?->id,
+                    'user_name'      => $scannerName,
+                    'user_role'      => $scannerRole,
+                    'student_id'     => $student->id,
+                    'student_name'   => $student->name,
+                    'student_nis'    => $student->nis,
+                    'scan_type'      => 'gagal',
+                    'failure_reason' => 'Siswa tidak aktif',
+                    'scanned_at'     => $scannedAt,
+                ]);
                 return response()->json([
                     'status' => 'inactive_error',
                     'message' => 'Presensi ditolak. Siswa ' . $student->name . ' berstatus tidak aktif (' . ($student->status ?? 'nonaktif') . ').',
@@ -69,6 +87,17 @@ class AttendanceController extends Controller
             // == CEK HARI LIBUR & AKHIR PEKAN ==
             // 1. Cek Akhir Pekan (Sabtu & Minggu)
             if ($now->isWeekend()) {
+                ScanLog::create([
+                    'user_id'        => $scanner?->id,
+                    'user_name'      => $scannerName,
+                    'user_role'      => $scannerRole,
+                    'student_id'     => $student->id,
+                    'student_name'   => $student->name,
+                    'student_nis'    => $student->nis,
+                    'scan_type'      => 'gagal',
+                    'failure_reason' => 'Hari akhir pekan',
+                    'scanned_at'     => $scannedAt,
+                ]);
                 return response()->json([
                     'status' => 'holiday_error',
                     'message' => 'Absensi tidak dapat dilakukan pada akhir pekan (Sabtu/Minggu).',
@@ -85,6 +114,17 @@ class AttendanceController extends Controller
             })->first();
 
             if ($holiday) {
+                ScanLog::create([
+                    'user_id'        => $scanner?->id,
+                    'user_name'      => $scannerName,
+                    'user_role'      => $scannerRole,
+                    'student_id'     => $student->id,
+                    'student_name'   => $student->name,
+                    'student_nis'    => $student->nis,
+                    'scan_type'      => 'gagal',
+                    'failure_reason' => 'Hari libur: ' . $holiday->title,
+                    'scanned_at'     => $scannedAt,
+                ]);
                 return response()->json([
                     'status' => 'holiday_error',
                     'message' => 'Hari ini libur: ' . $holiday->title,
@@ -100,6 +140,17 @@ class AttendanceController extends Controller
             $distance = $this->haversineDistance($request->latitude, $request->longitude, $schoolLat, $schoolLng);
 
             if ($distance > $radius) {
+                ScanLog::create([
+                    'user_id'        => $scanner?->id,
+                    'user_name'      => $scannerName,
+                    'user_role'      => $scannerRole,
+                    'student_id'     => $student->id,
+                    'student_name'   => $student->name,
+                    'student_nis'    => $student->nis,
+                    'scan_type'      => 'gagal',
+                    'failure_reason' => 'Di luar radius (' . round($distance) . 'm)',
+                    'scanned_at'     => $scannedAt,
+                ]);
                 return response()->json([
                     'status' => 'location_error',
                     'message' => "Anda berada di luar radius absensi. Jarak Anda: " . round($distance) . " meter dari sekolah.",
@@ -113,6 +164,17 @@ class AttendanceController extends Controller
 
             // Cek jika siswa sudah tercatat izin atau sakit
             if ($attendance && in_array($attendance->status, ['izin', 'sakit', 'alpa'])) {
+                ScanLog::create([
+                    'user_id'        => $scanner?->id,
+                    'user_name'      => $scannerName,
+                    'user_role'      => $scannerRole,
+                    'student_id'     => $student->id,
+                    'student_name'   => $student->name,
+                    'student_nis'    => $student->nis,
+                    'scan_type'      => 'gagal',
+                    'failure_reason' => 'Sudah tercatat ' . $attendance->status,
+                    'scanned_at'     => $scannedAt,
+                ]);
                 return response()->json([
                     'status' => 'on_leave',
                     'message' => 'Anda sudah tercatat ' . $attendance->status . ' hari ini dan tidak dapat melakukan absensi.',
@@ -123,6 +185,17 @@ class AttendanceController extends Controller
             // KASUS 1: Siswa sudah pernah scan hari ini (sudah absen masuk)
             if ($attendance) {
                 if (!is_null($attendance->checkout_time)) {
+                    ScanLog::create([
+                        'user_id'        => $scanner?->id,
+                        'user_name'      => $scannerName,
+                        'user_role'      => $scannerRole,
+                        'student_id'     => $student->id,
+                        'student_name'   => $student->name,
+                        'student_nis'    => $student->nis,
+                        'scan_type'      => 'gagal',
+                        'failure_reason' => 'Absensi hari ini sudah selesai',
+                        'scanned_at'     => $scannedAt,
+                    ]);
                     return response()->json([
                         'status' => 'completed',
                         'message' => 'Anda sudah menyelesaikan absensi hari ini.',
@@ -135,6 +208,17 @@ class AttendanceController extends Controller
                 $waktuPulang = $today->copy()->setTimeFromTimeString($jamPulangSetting);
 
                 if ($now->lt($waktuPulang)) {
+                    ScanLog::create([
+                        'user_id'        => $scanner?->id,
+                        'user_name'      => $scannerName,
+                        'user_role'      => $scannerRole,
+                        'student_id'     => $student->id,
+                        'student_name'   => $student->name,
+                        'student_nis'    => $student->nis,
+                        'scan_type'      => 'gagal',
+                        'failure_reason' => 'Belum waktunya absen pulang (sebelum ' . $waktuPulang->format('H:i') . ')',
+                        'scanned_at'     => $scannedAt,
+                    ]);
                     return response()->json([
                         'status' => 'already_clocked_in',
                         'message' => 'Anda sudah absen masuk. Absen pulang baru bisa dilakukan setelah pukul ' . $waktuPulang->format('H:i') . '.',
@@ -143,6 +227,19 @@ class AttendanceController extends Controller
                 }
 
                 $attendance->update(['checkout_time' => $now]);
+
+                // Catat scan berhasil: pulang
+                ScanLog::create([
+                    'user_id'      => $scanner?->id,
+                    'user_name'    => $scannerName,
+                    'user_role'    => $scannerRole,
+                    'student_id'   => $student->id,
+                    'student_name' => $student->name,
+                    'student_nis'  => $student->nis,
+                    'scan_type'    => 'pulang',
+                    'scanned_at'   => $scannedAt,
+                ]);
+
                 return response()->json([
                     'status' => 'clock_out',
                     'student_name' => $student->name,
@@ -161,6 +258,18 @@ class AttendanceController extends Controller
                 'student_id' => $student->id,
                 'attendance_time' => $now,
                 'status' => $status,
+            ]);
+
+            // Catat scan berhasil: masuk
+            ScanLog::create([
+                'user_id'      => $scanner?->id,
+                'user_name'    => $scannerName,
+                'user_role'    => $scannerRole,
+                'student_id'   => $student->id,
+                'student_name' => $student->name,
+                'student_nis'  => $student->nis,
+                'scan_type'    => 'masuk',
+                'scanned_at'   => $scannedAt,
             ]);
 
             return response()->json([

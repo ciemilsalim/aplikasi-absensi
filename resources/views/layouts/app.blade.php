@@ -811,6 +811,20 @@
                                               </div>
                                           </a>
                                       </div>
+
+                                      <!-- Log Scan Absensi (Full Width) -->
+                                      @if(auth()->user()->role === 'admin' || auth()->user()->hasRole('admin'))
+                                      <a href="{{ route('admin.scan-logs.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3 rounded-2xl bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/70 dark:border-rose-900/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all min-h-[44px] group">
+                                          <div class="p-2 bg-rose-500 text-white rounded-xl shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                                              <span class="material-icons text-lg">manage_search</span>
+                                          </div>
+                                          <div class="flex-1 min-w-0">
+                                              <div class="text-xs font-bold text-rose-900 dark:text-rose-200 truncate">Log Scan Absensi</div>
+                                              <div class="text-[10px] text-rose-700/80 dark:text-rose-300/80 truncate">Pantau akun &amp; waktu scan siswa</div>
+                                          </div>
+                                          <span class="material-icons text-xs text-rose-400 shrink-0">chevron_right</span>
+                                      </a>
+                                      @endif
                                   </div>
 
                                   <!-- 2. Kategori: Data & Integrasi Sekolah -->

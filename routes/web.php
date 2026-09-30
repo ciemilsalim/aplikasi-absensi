@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\AdminChatController;
 use App\Http\Controllers\Admin\UserController; // Controller baru
+use App\Http\Controllers\Admin\ScanLogController;
 
 
 // Parent Controller
@@ -227,6 +228,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Rute pengaturan penampilan & logo (tidak di-redirect ke SIPADA)
     Route::middleware(['role:admin'])->group(function () {
+        // Monitoring Log Scan Absensi
+        Route::get('/scan-logs', [ScanLogController::class, 'index'])->name('scan-logs.index');
         Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });
