@@ -616,6 +616,23 @@
                     </li>
                     @endif
 
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'viewer']))
+                    @php $isScanLogActive = request()->routeIs('admin.scan-logs.*'); @endphp
+                    <li>
+                        <a href="{{ route('admin.scan-logs.index') }}" :title="sidebarCollapsed ? 'Log Scan Absensi' : ''" 
+                           class="{{ $isScanLogActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                           :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
+                            <span class="flex gap-x-3 items-center">
+                                <span class="material-icons text-xl shrink-0 text-sky-500">manage_search</span>
+                                <span x-show="!sidebarCollapsed" class="truncate">Log Scan Absensi</span>
+                            </span>
+                            @if($isScanLogActive)
+                                <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                            @endif
+                        </a>
+                    </li>
+                    @endif
+
                     {{-- DROPDOWN: LAPORAN PRESENSI ADMIN --}}
                     @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
                     @php 
