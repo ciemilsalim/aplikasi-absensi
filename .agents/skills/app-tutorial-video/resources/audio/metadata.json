@@ -1,0 +1,55 @@
+{
+  "version": "3.5.1",
+  "policy": {
+    "click_source_default": "recorded_mouse",
+    "supported_sources": [
+      "recorded_mouse",
+      "synthetic_ui",
+      "off"
+    ],
+    "fallback_source": "synthetic_ui",
+    "fallback_warning": "REAL MOUSE AUDIO NOT AVAILABLE - USING SYNTHETIC FALLBACK"
+  },
+  "assets": {
+    "mouse-click.wav": {
+      "source_type": "synthetic",
+      "provenance": "Synthetic transient dual-snap spring acoustic modeling",
+      "is_physical_recording": false,
+      "format": "WAV PCM 16-bit mono 44.1kHz",
+      "duration_ms": 65,
+      "peak_dbfs": -3.2,
+      "user_customized": false,
+      "replacement_instructions": "Replace this file with a genuine studio microphone WAV recording of a physical mouse click to activate source_type: recorded."
+    },
+    "tap.wav": {
+      "source_type": "synthetic",
+      "provenance": "Synthetic low-frequency haptic thud modeling for capacitive screen tap",
+      "is_physical_recording": false,
+      "format": "WAV PCM 16-bit mono 44.1kHz",
+      "duration_ms": 45,
+      "peak_dbfs": -4.0,
+      "user_customized": false,
+      "replacement_instructions": "Replace this file with a genuine microphone WAV recording of a finger tap on mobile glass to activate source_type: recorded."
+    },
+    "click.wav": {
+      "source_type": "synthetic",
+      "provenance": "Synthesized classic digital UI pop sound",
+      "is_physical_recording": false,
+      "format": "WAV PCM 16-bit mono 44.1kHz",
+      "duration_ms": 80,
+      "peak_dbfs": -3.5,
+      "user_customized": false,
+      "replacement_instructions": "Retained for classic V3.4 digital UI click sound."
+    },
+    "typing.wav": {
+      "source_type": "synthetic",
+      "provenance": "Synthesized acoustic membrane switch keystroke tick",
+      "is_physical_recording": false,
+      "format": "WAV PCM 16-bit mono 44.1kHz",
+      "duration_ms": 100,
+      "peak_dbfs": -4.5,
+      "user_customized": false,
+      "replacement_instructions": "Replace this file with a physical mechanical keyboard recording if desired."
+    }
+  }
+}

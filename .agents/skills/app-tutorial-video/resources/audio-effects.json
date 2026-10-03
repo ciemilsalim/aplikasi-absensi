@@ -1,0 +1,40 @@
+{
+  "version": "3.5.1",
+  "click_source": "recorded_mouse",
+  "click_sound_mode": "physical_mouse",
+  "click": {
+    "enabled": true,
+    "source": "recorded_mouse",
+    "source_type": "synthetic",
+    "mode": "physical_mouse",
+    "file": "resources/audio/mouse-click.wav",
+    "volume": 0.18,
+    "fallback_warning": "REAL MOUSE AUDIO NOT AVAILABLE - USING SYNTHETIC FALLBACK",
+    "modes": {
+      "recorded_mouse": "resources/audio/mouse-click.wav",
+      "synthetic_ui": "resources/audio/click.wav",
+      "physical_mouse": "resources/audio/mouse-click.wav",
+      "ui_click": "resources/audio/click.wav",
+      "mobile_tap": "resources/audio/tap.wav",
+      "off": null
+    }
+  },
+  "typing": {
+    "enabled": true,
+    "source_type": "synthetic",
+    "file": "resources/audio/typing.wav",
+    "volume": 0.08,
+    "min_volume": 0.05,
+    "max_volume": 0.10
+  },
+  "focus_transition": {
+    "enabled": false,
+    "volume": 0.04
+  },
+  "volume_standards": {
+    "narration": 1.0,
+    "typing_range": [0.05, 0.10],
+    "click_range": [0.10, 0.20],
+    "music_range": [0.00, 0.05]
+  }
+}
