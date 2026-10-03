@@ -391,12 +391,28 @@ def orchestrate_single_tutorial(
     final_video_path = os.path.join(workspace_root, ".tutorial-video", "final", final_video_name)
     os.makedirs(os.path.dirname(final_video_path), exist_ok=True)
 
-    # Step 2: Invoke record.js (Visual Master Recording)
+    # Step 1b: Measure Narration Durations for Narration-Cued Action Choreography (V3.5.4)
+    tts_py = os.path.join(SCRIPT_DIR, "tts.py")
+    durations_json = os.path.join(run_dir, "narration-durations.json")
+    measure_cmd = [
+        sys.executable, tts_py,
+        "--plan", plan_path,
+        "--measure-only",
+        "--out-durations", durations_json
+    ]
+    print(f"\n[Manager V3.5.4] Pre-measuring Narration Durations for {tut_id}...")
+    res_meas = subprocess.run(measure_cmd, cwd=workspace_root, capture_output=True, text=True)
+    if res_meas.returncode != 0:
+        session.log_step(f"measure_tts_{tut_id}", "FAIL", {"stderr": res_meas.stderr[-300:]})
+        return {"status": "FAIL", "stage": "TTS_MEASURE", "reason": res_meas.stderr[-300:]}
+    session.log_step(f"measure_tts_{tut_id}", "PASS")
+
+    # Step 2: Invoke record.js (Visual Master Recording with Narration-Cued Timing)
     record_js = os.path.join(SCRIPT_DIR, "record.js")
     rec_out = os.path.join(run_dir, "recording")
-    rec_cmd = ["node", record_js, "--plan", plan_path, "--out", rec_out, "--run-id", run_id]
+    rec_cmd = ["node", record_js, "--plan", plan_path, "--out", rec_out, "--run-id", run_id, "--narration-durations", durations_json]
     
-    print(f"\n[Manager V3.5.3] Executing Recording for {tut_id} (Run ID: {run_id})...")
+    print(f"\n[Manager V3.5.4] Executing Narration-Cued Recording for {tut_id} (Run ID: {run_id})...")
     res_rec = subprocess.run(rec_cmd, cwd=workspace_root, capture_output=True, text=True)
     if res_rec.returncode != 0:
         session.log_step(f"record_{tut_id}", "FAIL", {"stderr": res_rec.stderr[-300:]})
@@ -417,7 +433,7 @@ def orchestrate_single_tutorial(
         "--visual-master-out", visual_master_path,
         "--run-id", run_id
     ]
-    print(f"[Manager V3.5.3.1] Rendering Visual Master (Picture Lock) -> {visual_master_path}...")
+    print(f"[Manager V3.5.4] Rendering Visual Master (Picture Lock) -> {visual_master_path}...")
     res_vm = subprocess.run(render_vm_cmd, cwd=workspace_root, capture_output=True, text=True)
     if res_vm.returncode != 0:
         session.log_step(f"visual_master_{tut_id}", "FAIL", {"stderr": res_vm.stderr[-300:]})
@@ -436,15 +452,14 @@ def orchestrate_single_tutorial(
         "--out-final-timeline", final_timeline_json,
         "--out-master-timeline", master_timeline_json
     ]
-    print(f"[Manager V3.5.3.1] Extracting Actual Video Timeline from Picture Lock...")
+    print(f"[Manager V3.5.4] Extracting Actual Video Timeline from Picture Lock...")
     res_etl = subprocess.run(extract_tl_cmd, cwd=workspace_root, capture_output=True, text=True)
     if res_etl.returncode != 0:
         session.log_step(f"extract_timeline_{tut_id}", "FAIL", {"stderr": res_etl.stderr[-300:]})
         return {"status": "FAIL", "stage": "EXTRACT_TIMELINE", "reason": res_etl.stderr[-300:]}
     session.log_step(f"extract_timeline_{tut_id}", "PASS")
 
-    # Step 5: Phase C — Generate Action-Word Synchronized Narration & Subtitles (Audio Slave)
-    tts_py = os.path.join(SCRIPT_DIR, "tts.py")
+    # Step 5: Phase C — Generate Narration-Cued Narration & Subtitles (Audio Slave)
     audio_out = os.path.join(run_dir, "audio", "narration.mp3")
     sub_out = os.path.join(run_dir, "subtitle", "tutorial.srt")
     meta_out = os.path.join(run_dir, "audio", "audio_meta.json")
@@ -456,7 +471,7 @@ def orchestrate_single_tutorial(
         "--subtitle-out", sub_out,
         "--meta-out", meta_out
     ]
-    print(f"[Manager V3.5.3.1] Generating Word-Level Timed Narration with Action-Word Sync...")
+    print(f"[Manager V3.5.4] Generating Narration-Cued Master Narration & Subtitles...")
     res_tts = subprocess.run(tts_cmd, cwd=workspace_root, capture_output=True, text=True)
     if res_tts.returncode != 0:
         session.log_step(f"tts_{tut_id}", "FAIL", {"stderr": res_tts.stderr[-300:]})
@@ -474,7 +489,7 @@ def orchestrate_single_tutorial(
         "--run-id", run_id,
         "--timeline", final_timeline_json
     ]
-    print(f"[Manager V3.5.3.1] Muxing Visual Master + Audio Master -> {final_video_path}...")
+    print(f"[Manager V3.5.4] Muxing Visual Master + Audio Master -> {final_video_path}...")
     res_render = subprocess.run(render_cmd, cwd=workspace_root, capture_output=True, text=True)
     if res_render.returncode != 0:
         session.log_step(f"render_{tut_id}", "FAIL", {"stderr": res_render.stderr[-300:]})

@@ -42,8 +42,27 @@ const outDir = arg('--out') || arg('--out-dir') || '.tutorial-video/recording';
 const runId = arg('--run-id') || null;
 const timelineArg = arg('--timeline') || null;
 const variantArg = arg('--variant') || null;
+const narrationDurationsArg = arg('--narration-durations') || null;
 const headed = process.argv.includes('--headed');
 if (!planPath) { help(); process.exit(2); }
+
+let narrationDurations = {};
+if (narrationDurationsArg && fs.existsSync(narrationDurationsArg)) {
+  try {
+    narrationDurations = JSON.parse(fs.readFileSync(narrationDurationsArg, 'utf8'));
+    console.log(`[V3.5.4] Loaded narration durations from ${narrationDurationsArg}`);
+  } catch (e) {
+    console.warn(`[V3.5.4] Warning reading narration durations: ${e.message}`);
+  }
+} else {
+  const defaultDurPath = path.join('.tutorial-video', 'narration-durations.json');
+  if (fs.existsSync(defaultDurPath)) {
+    try {
+      narrationDurations = JSON.parse(fs.readFileSync(defaultDurPath, 'utf8'));
+      console.log(`[V3.5.4] Loaded narration durations from default: ${defaultDurPath}`);
+    } catch (e) {}
+  }
+}
 
 // ──────────────────────────────────────────────────────────────────────
 // UTILITY: compute file SHA256 hash (hex, first 16 chars)
@@ -441,13 +460,13 @@ async function main() {
     const startY = mousePos.y;
     const dist = Math.sqrt((targetX - startX) ** 2 + (targetY - startY) ** 2);
     // Dynamic physics-based steps (~60fps, 16ms per step)
-    const steps = Math.max(14, Math.round(durationMs / 16.0));
+    const steps = Math.max(18, Math.round(durationMs / 16.0));
     const stepInterval = Math.max(12, Math.round(durationMs / steps));
 
     for (let i = 1; i <= steps; i++) {
       const rawT = i / steps;
-      // Smoothstep physics: acceleration (0-15%), cruising (15-80%), deceleration (80-100%)
-      const ease = rawT * rawT * (3 - 2 * rawT);
+      // V3.6.1 Cinematic Motion: easeInOutCubic (0-20% ease-in, 20-80% smooth cruise, 80-100% ease-out)
+      const ease = rawT < 0.5 ? 4.0 * rawT * rawT * rawT : 1.0 - Math.pow(-2.0 * rawT + 2.0, 3) / 2.0;
       const x = Math.round(startX + (targetX - startX) * ease);
       const y = Math.round(startY + (targetY - startY) * ease);
       await page.mouse.move(x, y);
@@ -455,9 +474,9 @@ async function main() {
       await page.waitForTimeout(stepInterval);
     }
     mousePos = { x: targetX, y: targetY };
-    if (hoverPauseMs > 0) {
-      await page.waitForTimeout(hoverPauseMs);
-    }
+    // V3.6.1 Micro Settle: cursor rests stably at target before click/action
+    const microSettleMs = Math.max(180, hoverPauseMs);
+    await page.waitForTimeout(microSettleMs);
   }
 
   // Active scene focus timeline entries & V3.4/V3.5 Interactive Audio Effects & Typing Events Timeline
@@ -823,47 +842,92 @@ async function main() {
   const sceneScreenshots = [];
   const sceneEvidenceList = [];   // V2.3: per-scene evidence data
   const sceneTimeline = {};       // V2.3: scene-timeline.json
+  const clipManifest = [];        // V3.6: Deterministic Clip Manifest
   const startTime = Date.now();
 
   try {
     for (const scene of plan.scenes) {
       const sceneId = scene.scene_id || scene.id;
       const sceneTitle = scene.title || scene.name;
-      console.log(`Recording Scene [${sceneId}]: ${sceneTitle}`);
+      console.log(`\nRecording Scene [${sceneId}]: ${sceneTitle}`);
       const sceneStartMs = Date.now() - startTime;
       const sceneStartSec = sceneStartMs / 1000.0;
+
+      const sceneDurInfo = narrationDurations[sceneId] || {};
+      const narrDurMs = sceneDurInfo.narration_duration_ms || (scene.narration_duration_ms || 2800);
+      const reactionDelayMs = sceneDurInfo.reaction_delay_ms || 300;
 
       if (scene.target_url && (!scene.actions || scene.actions.length === 0)) {
         await performAction({ type: 'goto', url: scene.target_url }, scene, sceneId, sceneStartSec, startTime);
       }
 
-      if (scene.actions && scene.actions.length > 0) {
-        for (const act of scene.actions) {
-          await performAction(act, scene, sceneId, sceneStartSec, startTime);
+      // ── V3.6 PRE-ACTION STATE CAPTURE ──
+      await page.waitForTimeout(300);
+      const preActionPath = path.join(outDir, `pre_action_${sceneId}.png`);
+      await page.screenshot({ path: preActionPath });
+      console.log(`  [V3.6 Pre-Action Capture] Saved: pre_action_${sceneId}.png`);
+
+      const hasActions = (scene.actions && scene.actions.length > 0) || scene.action || scene.cursor_action;
+      let actionStartSec = null;
+      let actionEndSec = null;
+      let resultHoldSec = null;
+
+      if (hasActions) {
+        // ── V3.5.4/V3.6 NARRATION-CUED ACTION CHOREOGRAPHY ──
+        // 1. Pre-action calm state: UI settles for 200ms
+        await page.waitForTimeout(200);
+        // 2. Narration speaking window: Cursor remains still while instructor speaks
+        console.log(`  [V3.5.4 Narration Playing] Waiting ${narrDurMs}ms for narration to complete...`);
+        await page.waitForTimeout(narrDurMs);
+        // 3. Reaction delay: Natural human pause (200-400ms, default 300ms)
+        console.log(`  [V3.5.4 Reaction Delay] Natural pause ${reactionDelayMs}ms before action...`);
+        await page.waitForTimeout(reactionDelayMs);
+        
+        // 4. Action starts now!
+        const actionStartMs = Date.now() - startTime;
+        actionStartSec = actionStartMs / 1000.0;
+        console.log(`  [V3.5.4 Action Start] Cursor begins action @ ${actionStartSec.toFixed(3)}s`);
+
+        if (scene.actions && scene.actions.length > 0) {
+          for (const act of scene.actions) {
+            await performAction(act, scene, sceneId, sceneStartSec, startTime);
+          }
+        } else {
+          await performAction({}, scene, sceneId, sceneStartSec, startTime);
         }
-      } else if (scene.action || scene.cursor_action) {
-        await performAction({}, scene, sceneId, sceneStartSec, startTime);
+
+        const actionEndMs = Date.now() - startTime;
+        actionEndSec = actionEndMs / 1000.0;
+
+        // 5. Result hold: Viewer sees the result of the action clearly
+        const isCriticalSubmit = sceneId.includes('kirim') || sceneId.includes('submit') || (sceneTitle && sceneTitle.toLowerCase().includes('kirim'));
+        const holdMs = isCriticalSubmit ? 1800 : (scene.importance === 'important' ? 1400 : 1000);
+        resultHoldSec = holdMs / 1000.0;
+        console.log(`  [V3.5.4 Result Hold] Holding result for ${holdMs}ms...`);
+        await page.waitForTimeout(holdMs);
       } else {
-        await page.waitForTimeout(scene.wait_after_action || 1500);
+        // Purely informative/introductory scene
+        await page.waitForTimeout(200 + narrDurMs + 1000);
       }
 
-      // ── V3.5.2 DETERMINISTIC PACING LOCK ──
-      // Ensure visual recording scene duration strictly matches canonical timeline
-      let canonicalScene = null;
-      if (canonicalTimeline && Array.isArray(canonicalTimeline.scenes)) {
-        canonicalScene = canonicalTimeline.scenes.find(s => s.scene_id === sceneId);
-      }
-      const plannedSceneDurSec = canonicalScene ? (canonicalScene.duration_ms / 1000.0) : (scene.duration_target || 10);
-      const sceneElapsedSoFarSec = (Date.now() - startTime - sceneStartMs) / 1000.0;
-      const pacingRemainingSec = plannedSceneDurSec - sceneElapsedSoFarSec;
-      if (pacingRemainingSec > 0.05) {
-        console.log(`  [V3.5.2 Pacing] Holding scene for ${pacingRemainingSec.toFixed(2)}s to lock deterministic timeline`);
-        await page.waitForTimeout(Math.round(pacingRemainingSec * 1000));
-      } else {
-        await page.waitForTimeout(delays.sceneDelay || 800);
-      }
+      // ── V3.6 RESULT STATE CAPTURE ──
+      const resultPath = path.join(outDir, `result_${sceneId}.png`);
+      await page.screenshot({ path: resultPath });
+      console.log(`  [V3.6 Result Capture] Saved: result_${sceneId}.png`);
 
-      // ── SCREENSHOT ──
+      clipManifest.push({
+        scene_id: sceneId,
+        pre_action_image: `pre_action_${sceneId}.png`,
+        result_image: `result_${sceneId}.png`,
+        has_action: !!hasActions,
+        action_start_sec: actionStartSec,
+        action_end_sec: actionEndSec,
+        action_duration_sec: (actionStartSec !== null && actionEndSec !== null) ? Math.max(0, actionEndSec - actionStartSec) : 0,
+        clicks: audioEffectsEvents.filter(e => e.scene_id === sceneId && (e.type === 'click' || e.type === 'tap')),
+        typing: typingEventsList.filter(e => e.scene_id === sceneId)
+      });
+
+      // ── SCREENSHOT (Legacy/Evidence) ──
       const screenshotPath = path.join(outDir, `${sceneId}.png`);
       await page.screenshot({ path: screenshotPath });
       const evidenceTimestampMs = Date.now() - startTime;
@@ -911,15 +975,21 @@ async function main() {
         zoom: (sceneFocusTimeline[sceneId] && sceneFocusTimeline[sceneId].zoom_level) || scene.zoom || 1.0,
         highlight: scene.highlight || false,
         duration_target: scene.duration_target || 10,
-        evidence_timestamp_ms: evidenceTimestampMs,  // V2.3
-        evidence_timestamp_sec: evidenceTimestampMs / 1000.0  // V2.3
+        evidence_timestamp_ms: evidenceTimestampMs,
+        evidence_timestamp_sec: evidenceTimestampMs / 1000.0
       };
       manifestTiming.push(timingEntry);
 
-      // ── V2.3: Scene Timeline entry ──
+      // ── V3.5.4 Scene Timeline entry ──
       sceneTimeline[sceneId] = {
         start: sceneStartSec,
         end: sceneEndSec,
+        narration_start: (sceneStartMs + 200) / 1000.0,
+        narration_end: (sceneStartMs + 200 + narrDurMs) / 1000.0,
+        narration_duration: narrDurMs / 1000.0,
+        reaction_delay: reactionDelayMs / 1000.0,
+        action_start: actionStartSec,
+        result_hold: resultHoldSec,
         evidence_timestamp: evidenceTimestampMs / 1000.0,
         url: currentUrl
       };
@@ -1053,6 +1123,13 @@ async function main() {
     path.join(outDir, 'recording-manifest.json'),
     JSON.stringify(recordingManifest, null, 2)
   );
+
+  // ── V3.6: clip-manifest.json ──
+  fs.writeFileSync(
+    path.join(outDir, 'clip-manifest.json'),
+    JSON.stringify(clipManifest, null, 2)
+  );
+  console.log(`[V3.6] Persisted clip-manifest.json into ${outDir} (${clipManifest.length} scenes)`);
 
   // ── V3.5.2: canonical-timeline.json ──
   if (canonicalTimeline) {

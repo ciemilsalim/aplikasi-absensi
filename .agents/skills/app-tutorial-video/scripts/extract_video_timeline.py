@@ -292,12 +292,48 @@ def extract_timeline(visual_master_path: str, plan_path: str, recording_dir: str
                 "end_ms": seg_end_ms
             })
 
+        # Narration and action timing for V3.5.4 Narration-Cued Action
+        rec_act_start = st.get('action_start')
+        if rec_act_start is not None:
+            final_act_start_sec = intro_dur + (float(rec_act_start) * pts_factor)
+            _, act_start_pts_ms = snap_to_pts(final_act_start_sec, fps)
+        elif scene_actions:
+            first_act = scene_actions[0]
+            act_start_pts_ms = float(first_act.get('start_frame_pts_ms') or first_act.get('frame_pts_ms') or (v_start_pts_ms + 3500.0))
+        else:
+            act_start_pts_ms = None
+
+        rec_narr_start = st.get('narration_start')
+        if rec_narr_start is not None:
+            final_narr_start_sec = intro_dur + (float(rec_narr_start) * pts_factor)
+            _, narr_start_pts_ms = snap_to_pts(final_narr_start_sec, fps)
+        else:
+            narr_start_pts_ms = round(v_start_pts_ms + 200.0, 1)
+
+        rec_narr_end = st.get('narration_end')
+        if rec_narr_end is not None:
+            final_narr_end_sec = intro_dur + (float(rec_narr_end) * pts_factor)
+            _, narr_end_pts_ms = snap_to_pts(final_narr_end_sec, fps)
+        else:
+            narr_end_pts_ms = round(narr_start_pts_ms + 2500.0, 1)
+
+        # First click PTS
+        first_click_pts = None
+        for act in scene_actions:
+            if act.get('type') in ('click', 'tap'):
+                first_click_pts = act.get('frame_pts_ms')
+                break
+
         scene_dict = {
             "scene_id": sid,
             "title": sp.get('title', sid),
             "visual_start_ms": v_start_pts_ms,
             "visual_end_ms": v_end_pts_ms,
             "visual_window_ms": visual_window_ms,
+            "narration_start_ms": narr_start_pts_ms,
+            "narration_end_ms": narr_end_pts_ms,
+            "action_start_ms": act_start_pts_ms,
+            "click_frame_pts_ms": first_click_pts,
             "max_narration_duration_ms": max_narr_budget_ms,
             "actions": scene_actions,
             "narration_segments": segments
@@ -308,14 +344,18 @@ def extract_timeline(visual_master_path: str, plan_path: str, recording_dir: str
             "scene_id": sid,
             "start_ms": int(v_start_pts_ms),
             "end_ms": int(v_end_pts_ms),
+            "narration_start_ms": int(narr_start_pts_ms),
+            "narration_end_ms": int(narr_end_pts_ms),
+            "action_start_ms": int(act_start_pts_ms) if act_start_pts_ms is not None else None,
+            "click_frame_pts_ms": int(first_click_pts) if first_click_pts is not None else None,
             "visual_events": scene_actions,
             "audio_events": scene_audio_events
         })
 
     # Top-level timeline structures
     final_video_timeline = {
-        "version": "v3.5.3.1",
-        "engine": "Video-Master Action-Word Synchronizer Engine",
+        "version": "v3.5.4",
+        "engine": "Narration-Cued Action Video-Master Audio Engine",
         "master_video_path": visual_master_path,
         "video_info": video_info,
         "intro_ms": int(round(intro_dur * 1000.0)),
@@ -336,13 +376,16 @@ def extract_timeline(visual_master_path: str, plan_path: str, recording_dir: str
         os.makedirs(os.path.dirname(os.path.abspath(out_final_timeline)), exist_ok=True)
         with open(out_final_timeline, 'w', encoding='utf-8') as f:
             json.dump(final_video_timeline, f, indent=2, ensure_ascii=False)
-        print(f"[V3.5.3] final-video-timeline.json written: {out_final_timeline}")
+        print(f"[V3.5.4] final-video-timeline.json written: {out_final_timeline}")
+        cued_path = os.path.join(os.path.dirname(os.path.abspath(out_final_timeline)), 'narration-cued-timeline.json')
+        with open(cued_path, 'w', encoding='utf-8') as f:
+            json.dump(final_video_timeline, f, indent=2, ensure_ascii=False)
 
     if out_master_timeline:
         os.makedirs(os.path.dirname(os.path.abspath(out_master_timeline)), exist_ok=True)
         with open(out_master_timeline, 'w', encoding='utf-8') as f:
             json.dump(video_master_timeline, f, indent=2, ensure_ascii=False)
-        print(f"[V3.5.3] video-master-timeline.json written: {out_master_timeline} (master='FINAL_VIDEO')")
+        print(f"[V3.5.4] video-master-timeline.json written: {out_master_timeline} (master='FINAL_VIDEO')")
 
     return final_video_timeline, video_master_timeline
 

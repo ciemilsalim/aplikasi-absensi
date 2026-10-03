@@ -451,6 +451,8 @@ def run_frame_true_av_qa(video_path, recording_dir, output_dir, variant='desktop
     extract_milestone_frames(ffmpeg, video_path, frames_dir, events, fps=fps)
 
     # 5. Render Oscillogram Waveform Images
+    click_wf_name = "n/a"
+    typing_wf_name = "n/a"
     if first_click_info:
         eid, exp_c, act_c = first_click_info
         wf_start = max(0, exp_c - 50)
