@@ -33,10 +33,14 @@ class DispensationsController extends Controller
         $permits = $query->paginate(15)->withQueryString();
         $dispensations = $permits;
 
-        $classes = SchoolClass::orderBy('name')->get();
-        $students = Student::with('schoolClass')->orderBy('name')->get();
-
         $today = Carbon::today();
+        $holidayReason = $this->service->getHolidayReason($today);
+        $isEffectiveSchoolDay = $holidayReason === null;
+
+        $classes = SchoolClass::orderBy('name')->get();
+        $presentStudents = $this->service->getPresentStudentsToday();
+        $students = $presentStudents; // Hanya siswa yang tercatat hadir hari ini
+
         $statistics = [
             'active_outside_count' => StudentPermit::whereDate('created_at', $today)
                 ->where('status', 'approved')
@@ -52,7 +56,17 @@ class DispensationsController extends Controller
                 ->count(),
         ];
 
-        return view('admin.dispensations.index', compact('permits', 'dispensations', 'classes', 'students', 'filters', 'statistics'));
+        return view('admin.dispensations.index', compact(
+            'permits',
+            'dispensations',
+            'classes',
+            'students',
+            'presentStudents',
+            'filters',
+            'statistics',
+            'holidayReason',
+            'isEffectiveSchoolDay'
+        ));
     }
 
     /**
@@ -60,6 +74,14 @@ class DispensationsController extends Controller
      */
     public function store(Request $request)
     {
+        $today = Carbon::today();
+        $holidayReason = $this->service->getHolidayReason($today);
+        if ($holidayReason) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', "Izin keluar tidak dapat diterbitkan pada hari libur sekolah ({$holidayReason}). Fitur ini hanya berlaku pada hari efektif sekolah.");
+        }
+
         if ($request->has('student_id') && !$request->has('student_ids')) {
             $request->merge(['student_ids' => [(int) $request->input('student_id')]]);
         }
@@ -97,6 +119,26 @@ class DispensationsController extends Controller
     {
         $dispensation->load(['student.schoolClass', 'approver', 'security', 'attendance']);
         $dispensation->ensurePassCode();
+
+        $permitDate = $dispensation->created_at ? $dispensation->created_at->copy()->startOfDay() : Carbon::today();
+
+        // 1. Validasi Hari Efektif Sekolah: Pass card tidak dapat dicetak untuk izin di hari libur
+        $holidayReason = $this->service->getHolidayReason($permitDate);
+        if ($holidayReason) {
+            return redirect()->route('admin.dispensations.index')
+                ->with('error', "Pass card izin keluar tidak dapat dicetak karena tanggal tersebut merupakan hari libur sekolah ({$holidayReason}).");
+        }
+
+        // 2. Validasi Kehadiran: Siswa HARUS tercatat hadir di hari yang sama
+        $attendance = $dispensation->attendance ?: \App\Models\Attendance::where('student_id', $dispensation->student_id)
+            ->whereDate('attendance_time', $permitDate)
+            ->first();
+
+        if (!$attendance || !in_array($attendance->status, ['tepat_waktu', 'terlambat', 'izin_keluar'])) {
+            $studentName = $dispensation->student?->name ?? 'Siswa';
+            return redirect()->route('admin.dispensations.index')
+                ->with('error', "Pass card izin keluar tidak dapat dicetak karena {$studentName} tidak tercatat hadir di sekolah pada tanggal tersebut.");
+        }
 
         return view('admin.dispensations.print', compact('dispensation'));
     }

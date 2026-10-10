@@ -3,6 +3,7 @@
 namespace App\Services\Permit;
 
 use App\Models\Attendance;
+use App\Models\Calendar;
 use App\Models\Student;
 use App\Models\StudentPermit;
 use App\Models\Setting;
@@ -12,16 +13,74 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class StudentDispensationsService
 {
+    /**
+     * Memeriksa apakah tanggal yang diberikan merupakan hari libur (akhir pekan atau kalender pendidikan).
+     * Mengembalikan teks keterangan libur atau null jika hari efektif sekolah.
+     */
+    public function getHolidayReason(Carbon $date): ?string
+    {
+        $checkDate = $date->copy()->startOfDay();
+
+        if ($checkDate->isWeekend()) {
+            return 'Libur Akhir Pekan (' . $checkDate->translatedFormat('l') . ')';
+        }
+
+        $holidays = Calendar::getHolidaysInRange($checkDate, $checkDate);
+        foreach ($holidays as $holiday) {
+            $start = $holiday->start_date->copy()->startOfDay();
+            $end = $holiday->end_date ? $holiday->end_date->copy()->endOfDay() : $start->copy()->endOfDay();
+            if ($checkDate->between($start, $end)) {
+                return 'Libur Kalender Sekolah: ' . $holiday->title;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Memeriksa apakah tanggal merupakan hari efektif kegiatan belajar mengajar sekolah.
+     */
+    public function isEffectiveSchoolDay(Carbon $date): bool
+    {
+        return $this->getHolidayReason($date) === null;
+    }
+
+    /**
+     * Mendapatkan daftar siswa yang tercatat hadir (tepat waktu / terlambat) di sekolah hari ini.
+     */
+    public function getPresentStudentsToday(): Collection
+    {
+        $today = Carbon::today();
+        $presentStudentIds = Attendance::whereDate('attendance_time', $today)
+            ->whereIn('status', ['tepat_waktu', 'terlambat'])
+            ->pluck('student_id');
+
+        return Student::with('schoolClass')
+            ->whereIn('id', $presentStudentIds)
+            ->orderBy('name')
+            ->get();
+    }
+
     /**
      * Menerbitkan satu atau beberapa surat izin e-dispensasi keluar oleh Guru Piket / Wali Kelas / Admin.
      */
     public function createDispensations(array $data, User $issuer): Collection
     {
-        $studentIds = is_array($data['student_ids']) ? $data['student_ids'] : [$data['student_ids']];
         $today = Carbon::today();
+
+        // 1. Validasi Hari Efektif Sekolah: Fitur izin keluar tidak dapat digunakan pada hari libur
+        $holidayReason = $this->getHolidayReason($today);
+        if ($holidayReason) {
+            throw ValidationException::withMessages([
+                'permit_type' => ["Izin keluar tidak dapat diterbitkan pada hari libur sekolah ({$holidayReason}). Fitur ini hanya berlaku pada hari efektif sekolah."],
+            ]);
+        }
+
+        $studentIds = is_array($data['student_ids']) ? $data['student_ids'] : [$data['student_ids']];
         $createdPermits = collect();
 
         foreach ($studentIds as $studentId) {
@@ -30,23 +89,19 @@ class StudentDispensationsService
                 continue;
             }
 
-            // Cari absensi masuk hari ini, atau buatkan jika belum tercatat
+            // 2. Validasi Kehadiran: Siswa HARUS tercatat hadir di sekolah hari ini
             $attendance = Attendance::where('student_id', $student->id)
                 ->whereDate('attendance_time', $today)
                 ->first();
 
-            if (!$attendance) {
-                $attendance = Attendance::create([
-                    'student_id'      => $student->id,
-                    'attendance_time' => $today->copy()->setTime(7, 15, 0),
-                    'status'          => 'tepat_waktu',
+            if (!$attendance || !in_array($attendance->status, ['tepat_waktu', 'terlambat', 'izin_keluar'])) {
+                $statusDesc = $attendance ? "Status saat ini: " . ucfirst($attendance->status) : "Belum melakukan presensi hadir";
+                throw ValidationException::withMessages([
+                    'student_ids' => ["Siswa {$student->name} belum tercatat hadir di sekolah hari ini ({$statusDesc}). Izin keluar hanya dapat diterbitkan untuk siswa yang hadir di sekolah."],
                 ]);
             }
 
-            // Generate Pass Code unik 6 digit (contoh: PASS-892147)
-            do {
-                $passCode = 'PASS-' . strtoupper(Str::random(6));
-            } while (StudentPermit::where('pass_code', $passCode)->exists());
+            $passCode = StudentPermit::generateUniquePassCode();
 
             $validUntil = !empty($data['valid_until']) ? Carbon::parse($data['valid_until']) : null;
 
@@ -80,6 +135,16 @@ class StudentDispensationsService
     public function verifyAndProcessScan(string $identifier, User $securityActor, ?string $fallbackReason = null): array
     {
         $today = Carbon::today();
+
+        // Validasi Hari Libur: Pada hari libur, izin keluar gerbang tidak aktif
+        $holidayReason = $this->getHolidayReason($today);
+        if ($holidayReason) {
+            return [
+                'status'  => 'school_holiday',
+                'code'    => 422,
+                'message' => "Pemindaian izin keluar tidak dapat dilakukan pada hari libur sekolah ({$holidayReason}).",
+            ];
+        }
 
         // 1. Cek apakah identifier adalah Pass Code e-Dispensasi (misal: PASS-XXXXXX)
         if (str_starts_with(strtoupper($identifier), 'PASS-')) {
@@ -122,17 +187,17 @@ class StudentDispensationsService
                 ->whereDate('attendance_time', $today)
                 ->first();
 
-            if (!$attendance) {
-                $attendance = Attendance::create([
-                    'student_id'      => $student->id,
-                    'attendance_time' => $today->copy()->setTime(7, 15, 0),
-                    'status'          => 'tepat_waktu',
-                ]);
+            if (!$attendance || !in_array($attendance->status, ['tepat_waktu', 'terlambat', 'izin_keluar'])) {
+                $statusDesc = $attendance ? "Status: " . ucfirst($attendance->status) : "Belum melakukan presensi hadir";
+                return [
+                    'status'       => 'student_not_present',
+                    'code'         => 422,
+                    'message'      => "Siswa {$student->name} belum tercatat hadir di sekolah hari ini ({$statusDesc}). Izin keluar hanya dapat diberikan untuk siswa yang hadir di sekolah.",
+                    'student_name' => $student->name,
+                ];
             }
 
-            do {
-                $passCode = 'PASS-' . strtoupper(Str::random(6));
-            } while (StudentPermit::where('pass_code', $passCode)->exists());
+            $passCode = StudentPermit::generateUniquePassCode();
 
             $newPermit = StudentPermit::create([
                 'student_id'          => $student->id,

@@ -21,10 +21,17 @@
                 </a>
 
                 @if(auth()->user()->hasAnyRole(['admin', 'operator', 'teacher', 'guru', 'satpam', 'tu', 'tata_usaha']))
-                <button x-data @click="$dispatch('open-dispensation-modal')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
-                    <span class="material-icons text-base">add_card</span>
-                    <span>+ Terbitkan E-Dispensasi</span>
-                </button>
+                    @if(isset($isEffectiveSchoolDay) && !$isEffectiveSchoolDay)
+                        <button type="button" disabled title="Penerbitan dinonaktifkan: {{ $holidayReason }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-750 text-slate-400 dark:text-slate-500 text-xs font-bold cursor-not-allowed">
+                            <span class="material-icons text-base">event_busy</span>
+                            <span>+ Terbitkan E-Dispensasi (Libur)</span>
+                        </button>
+                    @else
+                        <button x-data @click="$dispatch('open-dispensation-modal')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                            <span class="material-icons text-base">add_card</span>
+                            <span>+ Terbitkan E-Dispensasi</span>
+                        </button>
+                    @endif
                 @endif
             </div>
         </div>
@@ -32,6 +39,17 @@
 
     <div x-data="{ showModal: false, selectedType: 'pulang_cepat' }" @open-dispensation-modal.window="showModal = true" class="py-6 sm:py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+            {{-- Alert Hari Libur Sekolah --}}
+            @if(isset($isEffectiveSchoolDay) && !$isEffectiveSchoolDay)
+                <div class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-3 no-print">
+                    <span class="material-icons text-xl text-amber-600 dark:text-amber-400 shrink-0">event_busy</span>
+                    <div>
+                        <div class="font-bold text-sm">Hari Ini Adalah {{ $holidayReason }}</div>
+                        <p class="mt-0.5 text-amber-700 dark:text-amber-300">Fitur izin keluar siswa dinonaktifkan pada hari libur sekolah. Surat izin keluar dan pass card hanya dapat diterbitkan pada hari efektif kegiatan belajar mengajar.</p>
+                    </div>
+                </div>
+            @endif
 
             {{-- Alert Notifikasi --}}
             @if(session('success'))
@@ -359,15 +377,30 @@
 
                             {{-- Pilih Siswa --}}
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Pilih Siswa *</label>
-                                <select name="student_id" required class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">-- Pilih Siswa --</option>
-                                    @foreach(\App\Models\Student::with('schoolClass')->orderBy('name')->get() as $s)
-                                        <option value="{{ $s->id }}">
-                                            {{ $s->name }} (NIS: {{ $s->nis }}) - {{ $s->schoolClass?->name ?? 'Tanpa Kelas' }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                    Pilih Siswa yang Hadir Hari Ini *
+                                </label>
+                                @if(isset($presentStudents) && $presentStudents->isEmpty())
+                                    <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300 text-xs">
+                                        <div class="font-bold flex items-center gap-1.5">
+                                            <span class="material-icons text-base">info</span>
+                                            <span>Belum Ada Siswa Hadir Hari Ini</span>
+                                        </div>
+                                        <p class="mt-1">Tidak ada siswa yang tercatat hadir saat ini. Izin keluar hanya dapat diterbitkan untuk siswa yang sudah melakukan presensi masuk di sekolah.</p>
+                                    </div>
+                                @else
+                                    <select name="student_id" required class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="">-- Pilih Siswa Hadir ({{ isset($presentStudents) ? $presentStudents->count() : $students->count() }} Siswa) --</option>
+                                        @foreach($students as $s)
+                                            <option value="{{ $s->id }}">
+                                                {{ $s->name }} (NIS: {{ $s->nis }}) - {{ $s->schoolClass?->name ?? 'Tanpa Kelas' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                                        Hanya menampilkan siswa yang tercatat hadir (tepat waktu / terlambat) di sekolah hari ini.
+                                    </p>
+                                @endif
                             </div>
 
                             {{-- Jenis Dispensasi & Batas Waktu --}}

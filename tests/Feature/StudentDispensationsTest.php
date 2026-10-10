@@ -24,6 +24,13 @@ class StudentDispensationsTest extends TestCase
         parent::setUp();
 
         Setting::updateOrCreate(['key' => 'school_name'], ['value' => 'SMP Negeri 1 Biau']);
+        Carbon::setTestNow(Carbon::parse('2026-10-12 08:30:00')); // Hari Senin (Hari Efektif Sekolah)
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     public function test_admin_and_staff_can_view_dispensations_index(): void
@@ -37,8 +44,15 @@ class StudentDispensationsTest extends TestCase
             'school_class_id' => $class->id,
         ]);
 
+        $attendance = Attendance::create([
+            'student_id' => $student->id,
+            'attendance_time' => Carbon::now()->subHour(),
+            'status' => 'tepat_waktu',
+        ]);
+
         $permit = StudentPermit::create([
             'student_id' => $student->id,
+            'attendance_id' => $attendance->id,
             'reason' => 'Demam tinggi di UKS',
             'permit_type' => 'pulang_cepat',
             'pass_code' => 'PASS-TEST01',
@@ -77,6 +91,13 @@ class StudentDispensationsTest extends TestCase
         ]);
         $student->parents()->attach($parent->id);
 
+        // Siswa tercatat hadir pagi hari
+        Attendance::create([
+            'student_id' => $student->id,
+            'attendance_time' => Carbon::now()->subHour(),
+            'status' => 'tepat_waktu',
+        ]);
+
         $response = $this->actingAs($admin)->post(route('admin.dispensations.store'), [
             'student_id' => $student->id,
             'permit_type' => 'pulang_cepat',
@@ -101,6 +122,58 @@ class StudentDispensationsTest extends TestCase
         Queue::assertPushed(SendWhatsAppNotificationJob::class);
     }
 
+    public function test_cannot_issue_dispensation_on_weekend_or_holiday(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-11 10:00:00')); // Hari Minggu (Libur Akhir Pekan)
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $student = Student::create([
+            'name' => 'Santoso Libur',
+            'nis' => '9010',
+            'unique_id' => (string) Str::uuid(),
+        ]);
+
+        Attendance::create([
+            'student_id' => $student->id,
+            'attendance_time' => Carbon::now()->subHour(),
+            'status' => 'tepat_waktu',
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('admin.dispensations.store'), [
+            'student_id' => $student->id,
+            'permit_type' => 'pulang_cepat',
+            'reason' => 'Mencoba izin di hari libur',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('student_permits', [
+            'student_id' => $student->id,
+        ]);
+    }
+
+    public function test_cannot_issue_dispensation_for_student_not_present_today(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $student = Student::create([
+            'name' => 'Doni Belum Hadir',
+            'nis' => '9011',
+            'unique_id' => (string) Str::uuid(),
+        ]);
+
+        // Siswa tidak memiliki absensi hadir hari ini
+        $response = $this->actingAs($admin)->post(route('admin.dispensations.store'), [
+            'student_id' => $student->id,
+            'permit_type' => 'pulang_cepat',
+            'reason' => 'Sakit di rumah',
+        ]);
+
+        $response->assertSessionHasErrors('student_ids');
+        $this->assertDatabaseMissing('student_permits', [
+            'student_id' => $student->id,
+        ]);
+    }
+
     public function test_security_guard_can_scan_e_dispensation_at_gate(): void
     {
         Queue::fake();
@@ -121,9 +194,16 @@ class StudentDispensationsTest extends TestCase
         ]);
         $student->parents()->attach($parent->id);
 
+        $attendance = Attendance::create([
+            'student_id' => $student->id,
+            'attendance_time' => Carbon::now()->subHour(),
+            'status' => 'tepat_waktu',
+        ]);
+
         // Pre-approved dispensation
         $permit = StudentPermit::create([
             'student_id' => $student->id,
+            'attendance_id' => $attendance->id,
             'reason' => 'Dispensasi perwakilan OSIS',
             'permit_type' => 'tugas_luar',
             'pass_code' => 'PASS-OSIS01',
@@ -163,7 +243,7 @@ class StudentDispensationsTest extends TestCase
         ]);
 
         // Siswa sudah hadir pagi tepat waktu
-        Attendance::create([
+        $attendance = Attendance::create([
             'student_id' => $student->id,
             'status' => 'tepat_waktu',
             'attendance_time' => Carbon::today()->setTime(6, 55, 0),
@@ -172,6 +252,7 @@ class StudentDispensationsTest extends TestCase
         // Keluar sementara
         $permit = StudentPermit::create([
             'student_id' => $student->id,
+            'attendance_id' => $attendance->id,
             'reason' => 'Fotokopi berkas dinas',
             'permit_type' => 'keluar_sementara',
             'pass_code' => 'PASS-COPY01',
@@ -211,8 +292,15 @@ class StudentDispensationsTest extends TestCase
             'unique_id' => (string) Str::uuid(),
         ]);
 
+        $attendance = Attendance::create([
+            'student_id' => $student->id,
+            'status' => 'tepat_waktu',
+            'attendance_time' => Carbon::now()->subHour(),
+        ]);
+
         $permit = StudentPermit::create([
             'student_id' => $student->id,
+            'attendance_id' => $attendance->id,
             'reason' => 'Mengikuti lomba olimpiade sains',
             'permit_type' => 'dispensasi_lomba',
             'pass_code' => 'PASS-SAINS1',
@@ -229,6 +317,30 @@ class StudentDispensationsTest extends TestCase
             ->assertSee('SURAT IZIN KELUAR / PASS CARD');
     }
 
+    public function test_cannot_print_pass_card_if_student_was_not_present_or_on_holiday(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $student = Student::create([
+            'name' => 'Riko Tanpa Hadir',
+            'nis' => '9012',
+            'unique_id' => (string) Str::uuid(),
+        ]);
+
+        // Permit tanpa absensi hadir
+        $permit = StudentPermit::create([
+            'student_id' => $student->id,
+            'reason' => 'Izin tanpa kehadiran',
+            'permit_type' => 'pulang_cepat',
+            'pass_code' => 'PASS-NOHADIR',
+            'status' => 'approved',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.dispensations.print', $permit->id));
+
+        $response->assertRedirect(route('admin.dispensations.index'));
+        $response->assertSessionHas('error');
+    }
+
     public function test_print_pass_card_handles_permit_with_null_pass_code_without_type_error(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -238,9 +350,16 @@ class StudentDispensationsTest extends TestCase
             'unique_id' => (string) Str::uuid(),
         ]);
 
+        $attendance = Attendance::create([
+            'student_id' => $student->id,
+            'status' => 'tepat_waktu',
+            'attendance_time' => Carbon::now()->subHour(),
+        ]);
+
         // Simulasikan data historis lama di mana pass_code bernilai null
         $permit = new StudentPermit([
             'student_id' => $student->id,
+            'attendance_id' => $attendance->id,
             'reason' => 'Izin keperluan keluarga mendesak',
             'permit_type' => 'pulang_cepat',
             'status' => 'checked_out',
