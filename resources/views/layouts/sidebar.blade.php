@@ -633,6 +633,24 @@
                     </li>
                     @endif
 
+                    {{-- Menu Audit Trail Presensi untuk Akuntabilitas BOS / Inspektorat --}}
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'satpam', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
+                    @php $isAuditTrailActive = request()->routeIs('admin.audit_logs.*'); @endphp
+                    <li>
+                        <a href="{{ route('admin.audit_logs.index') }}" :title="sidebarCollapsed ? 'Audit Trail Presensi' : ''" 
+                           class="{{ $isAuditTrailActive ? 'bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold border border-rose-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                           :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
+                            <span class="flex gap-x-3 items-center">
+                                <span class="material-icons text-xl shrink-0 text-rose-500">fact_check</span>
+                                <span x-show="!sidebarCollapsed" class="truncate">Audit Trail Koreksi</span>
+                            </span>
+                            @if($isAuditTrailActive)
+                                <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-rose-500 ml-auto shrink-0"></span>
+                            @endif
+                        </a>
+                    </li>
+                    @endif
+
                     {{-- DROPDOWN: LAPORAN PRESENSI ADMIN --}}
                     @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
                     @php 

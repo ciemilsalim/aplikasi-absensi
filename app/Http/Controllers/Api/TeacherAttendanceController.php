@@ -299,6 +299,9 @@ class TeacherAttendanceController extends Controller
             ->whereDate('attendance_time', $date)
             ->first();
 
+        $oldStatus = $attendance ? $attendance->status : 'belum_absen';
+        $oldNotes = $attendance ? $attendance->notes : null;
+
         if ($type === 'in') {
             $status = $request->status === 'pulang' ? 'tepat_waktu' : $request->status;
 
@@ -322,6 +325,20 @@ class TeacherAttendanceController extends Controller
                     'notes'           => $request->notes,
                 ]);
             }
+
+            // Catat ke Audit Trail untuk Akuntabilitas BOS & Inspektorat
+            app(\App\Services\Audit\AttendanceAuditService::class)->recordLog(
+                student: $student,
+                attendance: $attendance,
+                oldStatus: $oldStatus,
+                newStatus: $status,
+                reason: $request->notes ?? 'Koreksi kehadiran manual oleh Wali Kelas',
+                actor: $user,
+                actionType: 'teacher_override',
+                oldNotes: $oldNotes,
+                newNotes: $request->notes,
+                attendanceDate: $date
+            );
         } else {
             // type == 'out'
             if ($attendance) {
@@ -341,6 +358,20 @@ class TeacherAttendanceController extends Controller
                     'notes'           => $request->notes,
                 ]);
             }
+
+            // Catat ke Audit Trail
+            app(\App\Services\Audit\AttendanceAuditService::class)->recordLog(
+                student: $student,
+                attendance: $attendance,
+                oldStatus: $oldStatus,
+                newStatus: $attendance->status,
+                reason: $request->notes ?? 'Koreksi jam kepulangan oleh Wali Kelas',
+                actor: $user,
+                actionType: 'teacher_override',
+                oldNotes: $oldNotes,
+                newNotes: $request->notes,
+                attendanceDate: $date
+            );
         }
 
         return response()->json([

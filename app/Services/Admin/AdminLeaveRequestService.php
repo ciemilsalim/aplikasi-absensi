@@ -308,7 +308,12 @@ class AdminLeaveRequestService
             $currentDate = $date->copy();
 
             // 1. Daily attendance (Homeroom & General School Attendance)
-            Attendance::updateOrCreate(
+            $existingDaily = Attendance::where('student_id', $student->id)
+                ->whereDate('attendance_time', $currentDate)
+                ->first();
+            $oldDailyStatus = $existingDaily ? $existingDaily->status : 'belum_absen';
+
+            $dailyAttendance = Attendance::updateOrCreate(
                 [
                     'student_id' => $student->id,
                     'attendance_time' => $currentDate->startOfDay(),
@@ -319,6 +324,19 @@ class AdminLeaveRequestService
                     'academic_year_id' => $yearId,
                     'semester_id' => $semesterId,
                 ]
+            );
+
+            // Audit log tracking for BOS/Inspektorat compliance
+            $approver = $leaveRequest->approver ?? auth()->user();
+            app(\App\Services\Audit\AttendanceAuditService::class)->recordLog(
+                student: $student,
+                attendance: $dailyAttendance,
+                oldStatus: $oldDailyStatus,
+                newStatus: $leaveRequest->type,
+                reason: "[Dispensasi {$sourceText}] " . $leaveRequest->reason,
+                actor: $approver,
+                actionType: 'leave_sync',
+                attendanceDate: $currentDate
             );
 
             // 2. Subject attendance (Subject Teachers)

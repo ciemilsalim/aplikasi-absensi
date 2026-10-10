@@ -19,6 +19,7 @@ class Attendance extends Model
         'attendance_time',
         'checkout_time',
         'status', // Ditambahkan untuk status keterlambatan
+        'notes',
         'academic_year_id',
         'semester_id',
     ];

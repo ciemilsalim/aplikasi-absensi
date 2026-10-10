@@ -131,6 +131,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
             Route::get('/reports/charts', [ReportController::class, 'charts'])->name('reports.charts');
             Route::post('/reports/charts/data', [ReportController::class, 'chartData'])->name('reports.charts.data');
+
+            // Audit Trail Presensi (Akuntabilitas BOS, Kepala Sekolah & Inspektorat)
+            Route::get('/audit-logs', [\App\Http\Controllers\Admin\AttendanceAuditLogController::class, 'index'])->name('audit_logs.index');
         }
     );
 
@@ -151,6 +154,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::delete('/leave-requests/{leaveRequest}', [AdminLeaveRequestController::class, 'destroy'])->name('leave_requests.destroy');
             Route::post('/leave-requests/{leaveRequest}/approve', [AdminLeaveRequestController::class, 'approve'])->name('leave_requests.approve');
             Route::post('/leave-requests/{leaveRequest}/reject', [AdminLeaveRequestController::class, 'reject'])->name('leave_requests.reject');
+
+            // Koreksi Presensi Langsung dengan Justifikasi Audit
+            Route::post('/audit-logs/correct', [\App\Http\Controllers\Admin\AttendanceAuditLogController::class, 'correct'])->name('audit_logs.correct');
         }
     );
 
