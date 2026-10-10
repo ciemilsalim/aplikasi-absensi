@@ -77,6 +77,43 @@ class StudentPermit extends Model
     }
 
     /**
+     * Booted model events.
+     */
+    protected static function booted()
+    {
+        static::creating(function ($permit) {
+            if (empty($permit->pass_code)) {
+                $permit->pass_code = static::generateUniquePassCode();
+            }
+        });
+    }
+
+    /**
+     * Generate unique random pass code for gate scanner.
+     */
+    public static function generateUniquePassCode(): string
+    {
+        do {
+            $code = 'PASS-' . strtoupper(\Illuminate\Support\Str::random(6));
+        } while (static::where('pass_code', $code)->exists());
+
+        return $code;
+    }
+
+    /**
+     * Memastikan permit memiliki pass code yang valid (backfill otomatis untuk data historis).
+     */
+    public function ensurePassCode(): string
+    {
+        if (empty($this->pass_code)) {
+            $this->pass_code = static::generateUniquePassCode();
+            $this->saveQuietly();
+        }
+
+        return $this->pass_code;
+    }
+
+    /**
      * Label jenis izin berbahasa Indonesia.
      */
     public function getPermitTypeLabelAttribute(): string

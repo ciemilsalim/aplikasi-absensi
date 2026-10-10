@@ -229,6 +229,38 @@ class StudentDispensationsTest extends TestCase
             ->assertSee('SURAT IZIN KELUAR / PASS CARD');
     }
 
+    public function test_print_pass_card_handles_permit_with_null_pass_code_without_type_error(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $student = Student::create([
+            'name' => 'Budi Santoso',
+            'nis' => '9007',
+            'unique_id' => (string) Str::uuid(),
+        ]);
+
+        // Simulasikan data historis lama di mana pass_code bernilai null
+        $permit = new StudentPermit([
+            'student_id' => $student->id,
+            'reason' => 'Izin keperluan keluarga mendesak',
+            'permit_type' => 'pulang_cepat',
+            'status' => 'checked_out',
+        ]);
+        $permit->saveQuietly();
+
+        $this->assertNull($permit->fresh()->pass_code);
+
+        $response = $this->actingAs($admin)->get(route('admin.dispensations.print', $permit->id));
+
+        $response->assertOk()
+            ->assertSee('Budi Santoso')
+            ->assertSee('Izin keperluan keluarga mendesak')
+            ->assertSee('SURAT IZIN KELUAR / PASS CARD');
+
+        $permit->refresh();
+        $this->assertNotNull($permit->pass_code);
+        $this->assertStringStartsWith('PASS-', $permit->pass_code);
+    }
+
     public function test_authorized_user_can_cancel_dispensation(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

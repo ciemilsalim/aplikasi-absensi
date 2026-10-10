@@ -96,6 +96,7 @@ class DispensationsController extends Controller
     public function print(StudentPermit $dispensation)
     {
         $dispensation->load(['student.schoolClass', 'approver', 'security', 'attendance']);
+        $dispensation->ensurePassCode();
 
         return view('admin.dispensations.print', compact('dispensation'));
     }

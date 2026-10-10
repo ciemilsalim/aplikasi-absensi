@@ -1,13 +1,14 @@
 @php
     $schoolName = \App\Models\Setting::where('key', 'school_name')->value('value') ?? config('app.name', 'SMP NEGERI 1 BIAU');
     $schoolAddress = \App\Models\Setting::where('key', 'school_address')->value('value') ?? 'Jl. Syarif Mansur No. 2, Biau, Buol, Sulawesi Tengah';
+    $passCode = (string) ($dispensation->pass_code ?: ('PASS-' . str_pad((string) $dispensation->id, 6, '0', STR_PAD_LEFT)));
 @endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pass Card Dispensasi - {{ $dispensation->pass_code }} - {{ $dispensation->student?->name }}</title>
+    <title>Pass Card Dispensasi - {{ $passCode }} - {{ $dispensation->student?->name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
     <style>
@@ -65,7 +66,7 @@
         <div class="flex items-center justify-between pb-3 border-b border-dashed border-slate-300 mb-3 text-xs">
             <div>
                 <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold block">KODE OTORISASI:</span>
-                <span class="font-mono font-extrabold text-sm text-indigo-700">{{ $dispensation->pass_code }}</span>
+                <span class="font-mono font-extrabold text-sm text-indigo-700">{{ $passCode }}</span>
             </div>
             <div class="text-right">
                 <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold block">TANGGAL:</span>
@@ -108,7 +109,7 @@
         {{-- QR Code Box for Security Scanner --}}
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center mb-4">
             <div class="p-2 bg-white rounded-xl border border-slate-200 shadow-2xs mb-1.5">
-                {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->generate($dispensation->pass_code) !!}
+                {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->generate($passCode) !!}
             </div>
             <p class="text-[10px] font-bold text-slate-700">Tunjukkan QR Code ini kepada Satpam di Pintu Gerbang</p>
             <p class="text-[9px] text-slate-400">Pemindaian otomatis mencatat waktu keluar & mengirim notifikasi ke orang tua</p>
