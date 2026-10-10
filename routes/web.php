@@ -61,44 +61,6 @@ Route::view('/offline', 'offline')->name('offline'); // Endpoint PWA
 Route::get('/sso/login', [\App\Http\Controllers\Auth\SsoLoginController::class, 'login'])->name('sso.login');
 Route::get('/sso/lms', [\App\Http\Controllers\SSOController::class, 'redirectToLms'])->name('sso.lms');
 
-Route::get('/sso/debug', function () {
-    try {
-        $dbName = \Illuminate\Support\Facades\DB::connection()->getDatabaseName();
-        $ssoTableExists = \Illuminate\Support\Facades\Schema::hasTable('sso_tokens');
-        $ssoTokensCount = $ssoTableExists ? \Illuminate\Support\Facades\DB::table('sso_tokens')->count() : 0;
-        $recentTokens = $ssoTableExists ? \Illuminate\Support\Facades\DB::table('sso_tokens')->latest('id')->take(5)->get() : [];
-        $usersCount = \Illuminate\Support\Facades\Schema::hasTable('users') ? \Illuminate\Support\Facades\DB::table('users')->count() : 0;
-        $sessionsTableExists = \Illuminate\Support\Facades\Schema::hasTable('sessions');
-        $sessionsCount = $sessionsTableExists ? \Illuminate\Support\Facades\DB::table('sessions')->count() : 0;
-        
-        return response()->json([
-            'app_name' => config('app.name'),
-            'app_env' => config('app.env'),
-            'app_url' => config('app.url'),
-            'db_connection' => config('database.default'),
-            'db_database_name' => $dbName,
-            'db_host' => config('database.connections.' . config('database.default') . '.host'),
-            'target_lms_url' => (new \App\Http\Controllers\SSOController)->getTargetLmsUrl(request()),
-            'sso_table_exists' => $ssoTableExists,
-            'sso_tokens_count' => $ssoTokensCount,
-            'recent_sso_tokens' => $recentTokens,
-            'users_table_count' => $usersCount,
-            'sessions_table_exists' => $sessionsTableExists,
-            'sessions_count' => $sessionsCount,
-            'session_driver' => config('session.driver'),
-            'server_time' => now()->toDateTimeString(),
-            'app_timezone' => config('app.timezone'),
-            'auth_check' => auth()->check(),
-            'auth_user' => auth()->user() ? auth()->user()->only('id', 'name', 'email', 'role') : null,
-        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-        ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    }
-})->name('sso.debug');
 
 // == RUTE AUTENTIKASI & PENGALIHAN ==
 Route::get('/dashboard', function () {
@@ -124,27 +86,6 @@ Route::get('/dashboard', function () {
 // == GRUP RUTE KEPALA SEKOLAH (EXECUTIVE OVERVIEW) ==
 Route::middleware(['auth', 'role:admin,operator,wakasek_kurikulum,wakasek kurikulum,waka_kurikulum,waka kurikulum,kepala_sekolah,kepala sekolah,headmaster,viewer'])->prefix('principal')->name('principal.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Principal\PrincipalDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/diag', function() {
-        try {
-            $user = auth()->user();
-            return response()->json([
-                'status' => 'success',
-                'user' => $user ? $user->only(['id', 'name', 'email', 'role']) : 'Not Logged In',
-                'hasRole_kepala_sekolah' => $user ? $user->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']) : false,
-                'students_count' => \App\Models\Student::count(),
-                'attendances_today' => \App\Models\Attendance::whereDate('attendance_time', \Carbon\Carbon::today())->count(),
-                'teaching_journals_count' => \Illuminate\Support\Facades\Schema::hasTable('teaching_journals') ? \App\Models\TeachingJournal::count() : 'Table not found',
-                'classes_count' => \App\Models\SchoolClass::count(),
-            ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        }
-    })->name('diag');
 });
 
 // == GRUP RUTE YANG MEMERLUKAN LOGIN ==
@@ -226,15 +167,50 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         }
     );
 
-    // Rute pengaturan penampilan & logo (tidak di-redirect ke SIPADA)
+    // Rute utilitas & operasional lokal admin (Aktif & dapat diakses)
     Route::middleware(['role:admin'])->group(function () {
         // Monitoring Log Scan Absensi
         Route::get('/scan-logs', [ScanLogController::class, 'index'])->name('scan-logs.index');
         Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+        // Pengumuman
+        Route::resource('announcements', AnnouncementController::class);
+
+        // Kurikulum & Kalender Pendidikan
+        Route::post('calendars/import', [\App\Http\Controllers\Admin\CalendarController::class, 'import'])->name('calendars.import');
+        Route::get('calendars/list', [\App\Http\Controllers\Admin\CalendarController::class, 'list'])->name('calendars.list');
+        Route::resource('calendars', \App\Http\Controllers\Admin\CalendarController::class)->except(['show', 'edit', 'create']);
+
+        // Jadwal Pelajaran
+        Route::get('schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules.index');
+        Route::get('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class, 'show'])->name('schedules.show');
+        Route::post('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class, 'store'])->name('schedules.store');
+        Route::delete('schedules/{schedule}', [\App\Http\Controllers\Admin\ScheduleController::class, 'destroy'])->name('schedules.destroy');
+
+        // Backup Database Lokal
+        Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
+        Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
+        Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
+        Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
+
+        // Manajemen Tahun Ajaran & Semester
+        Route::get('/academic-periods', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'index'])->name('academic-periods.index');
+        Route::post('/academic-periods/year', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'storeYear'])->name('academic-periods.year.store');
+        Route::post('/academic-periods/semester', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'storeSemester'])->name('academic-periods.semester.store');
+        Route::post('/academic-periods/year/{id}/activate', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'activateYear'])->name('academic-periods.year.activate');
+        Route::post('/academic-periods/semester/{id}/activate', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'activateSemester'])->name('academic-periods.semester.activate');
+        Route::delete('/academic-periods/year/{id}', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'destroyYear'])->name('academic-periods.year.destroy');
+        Route::delete('/academic-periods/semester/{id}', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'destroySemester'])->name('academic-periods.semester.destroy');
+
+        // Manajemen Ekstrakurikuler
+        Route::resource('extracurriculars', \App\Http\Controllers\Admin\ExtracurricularController::class);
+        Route::get('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'students'])->name('extracurriculars.students');
+        Route::post('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'assignStudents'])->name('extracurriculars.assign_students');
+        Route::delete('extracurriculars/{extracurricular}/students/{student}', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'removeStudent'])->name('extracurriculars.remove_student');
     });
 
-    // Rute yang HANYA bisa diakses oleh Admin dan DIREDIRECT karena terduplikasi di SIPADA
+    // Rute master data yang DIREDIRECT karena dikelola terpusat di SIPADA
     Route::middleware(['role:admin', 'sipada.redirect'])->group(
         function () {
             // Pengaturan
@@ -248,7 +224,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::resource('students', StudentController::class)->except(['show']);
             Route::resource('parents', ParentController::class)->except(['show']);
             Route::resource('teachers', TeacherController::class)->except(['show']);
-            Route::resource('announcements', AnnouncementController::class);
             Route::resource('users', UserController::class)->except(['show']);
             Route::resource('subjects', \App\Http\Controllers\Admin\SubjectController::class)->except(['show']);
             Route::post('users/bulk-destroy', [UserController::class, 'bulkDestroy'])->name('users.bulk_destroy');
@@ -258,18 +233,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class, 'index'])->name('classes.assign_teacher');
             Route::post('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class, 'store'])->name('classes.store_teacher_assignment');
 
-            // Kurikulum
-            Route::post('calendars/import', [\App\Http\Controllers\Admin\CalendarController::class, 'import'])->name('calendars.import');
-            Route::get('calendars/list', [\App\Http\Controllers\Admin\CalendarController::class, 'list'])->name('calendars.list');
-            Route::resource('calendars', \App\Http\Controllers\Admin\CalendarController::class)->except(['show', 'edit', 'create']);
-
-            // Jadwal Pelajaran (Dipindahkan ke Kurikulum)
-            Route::get('schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])->name('schedules.index');
-            Route::get('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class, 'show'])->name('schedules.show');
-            Route::post('schedules/{school_class}', [\App\Http\Controllers\Admin\ScheduleController::class, 'store'])->name('schedules.store');
-            Route::delete('schedules/{schedule}', [\App\Http\Controllers\Admin\ScheduleController::class, 'destroy'])->name('schedules.destroy');
-
-            // Impor Data (Contoh, jika ada)
+            // Impor Data
             Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
             Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
             Route::get('/teachers/import', [TeacherController::class, 'showImportForm'])->name('teachers.import.form');
@@ -278,33 +242,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             // Status Online
             Route::get('/parents/online-status', [ParentController::class, 'getOnlineStatus'])->name('parents.online_status');
             Route::get('/teachers/online-status', [TeacherController::class, 'getOnlineStatus'])->name('teachers.online_status');
-
-
-            // Backup
-            Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
-            Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
-            Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
-            Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
-
-            // Manajemen Tahun Ajaran & Semester
-            Route::get('/academic-periods', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'index'])->name('academic-periods.index');
-            Route::post('/academic-periods/year', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'storeYear'])->name('academic-periods.year.store');
-            Route::post('/academic-periods/semester', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'storeSemester'])->name('academic-periods.semester.store');
-            Route::post('/academic-periods/year/{id}/activate', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'activateYear'])->name('academic-periods.year.activate');
-            Route::post('/academic-periods/semester/{id}/activate', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'activateSemester'])->name('academic-periods.semester.activate');
-            Route::delete('/academic-periods/year/{id}', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'destroyYear'])->name('academic-periods.year.destroy');
-            Route::delete('/academic-periods/semester/{id}', [\App\Http\Controllers\Admin\AcademicPeriodController::class, 'destroySemester'])->name('academic-periods.semester.destroy');
-
-            // Manajemen Ekstrakurikuler
-            Route::resource('extracurriculars', \App\Http\Controllers\Admin\ExtracurricularController::class);
-            Route::get('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'students'])->name('extracurriculars.students');
-            Route::post('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'assignStudents'])->name('extracurriculars.assign_students');
-            Route::delete('extracurriculars/{extracurricular}/students/{student}', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'removeStudent'])->name('extracurriculars.remove_student');
-
-            // Sinkronisasi Database Otomatis HPanel / Multi-Semester
-            Route::get('/sync-database-hpanel', function() {
-                require public_path('sync-hpanel.php');
-            })->name('admin.sync_database_hpanel');
         }
     );
 
@@ -343,26 +280,6 @@ Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(
         Route::post('/complete', [ParentOnboardingController::class, 'complete'])->name('complete');
     });
 
-    // Diagnostic Route
-    Route::get('/diag', function() {
-        try {
-            $user = auth()->user();
-            return response()->json([
-                'status' => 'success',
-                'user' => $user ? $user->only(['id', 'name', 'email', 'role']) : 'Not Logged In',
-                'parent' => $user && $user->parent ? $user->parent->toArray() : null,
-                'students_count' => $user && $user->parent ? $user->parent->students()->count() : 0,
-                'has_requests_table' => \Illuminate\Support\Facades\Schema::hasTable('parent_student_requests'),
-            ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        }
-    })->name('diag');
 });
 
 // == GRUP RUTE GURU ==
@@ -452,96 +369,6 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->gro
     Route::delete('/anecdotes/{anecdote}', [StudentAnecdoteController::class, 'destroy'])->name('anecdotes.destroy');
 });
 
-// == UTILITAS: Pembersihan cache dan diagnostik server ==
-Route::get('/fix-storage-link', function () {
-    // Pengamanan sederhana dengan token rahasia
-    if (!auth()->check() && request('key') !== 'presensi123') {
-        return response('Akses ditolak. Silakan tambahkan parameter key rahasia (contoh: /fix-storage-link?key=presensi123) atau masuk log terlebih dahulu.', 403);
-    }
-
-    $output = '<html><body style="font-family: sans-serif; max-width: 800px; margin: 20px auto; padding: 0 20px;">';
-    $output .= '<h2>🔧 Utilitas Server Presensi</h2>';
-
-    // 1. Pembersihan Cache Sistem & Migrasi Database
-    $output .= '<h3>1. Pembersihan Cache Sistem</h3>';
-    try {
-        \Illuminate\Support\Facades\Artisan::call('route:clear');
-        \Illuminate\Support\Facades\Artisan::call('config:clear');
-        \Illuminate\Support\Facades\Artisan::call('view:clear');
-        \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        $output .= "<p style='color: green;'><b>✔ Route, Config, View, dan Cache berhasil dibersihkan!</b></p>";
-    } catch (\Throwable $e) {
-        $output .= "<p style='color: red;'><b>❌ Gagal membersihkan cache: " . htmlspecialchars($e->getMessage()) . "</b></p>";
-    }
-
-    // 1b. Migrasi Database (jika diminta atau otomatis)
-    $output .= '<h3>1b. Migrasi Database</h3>';
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
-        $output .= "<p style='color: green;'><b>✔ Migrasi database berhasil dijalankan!</b></p>";
-        $output .= "<pre style='background:#f1f5f9; padding:10px; border-radius:8px; font-size:11px;'>" . htmlspecialchars($migrateOutput) . "</pre>";
-    } catch (\Throwable $e) {
-        $output .= "<p style='color: red;'><b>❌ Gagal menjalankan migrasi: " . htmlspecialchars($e->getMessage()) . "</b></p>";
-    }
-
-    // 2. Diagnostik (hanya cek, TIDAK menghapus/membuat symlink)
-    $output .= '<h3>2. Diagnostik Jalur Server</h3>';
-    $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? '(tidak tersedia)';
-    $publicPath = public_path();
-    $storagePath = storage_path('app/public');
-    
-    $output .= "<p>Document Root: <code>" . htmlspecialchars($documentRoot) . "</code><br>";
-    $output .= "Laravel Public Path: <code>" . htmlspecialchars($publicPath) . "</code><br>";
-    $output .= "Laravel Storage Path: <code>" . htmlspecialchars($storagePath) . "</code></p>";
-
-    // 3. Cek status symlink (tanpa menghapus/membuat ulang)
-    $output .= '<h3>3. Status Symlink Storage</h3>';
-    $symlinkTarget = $publicPath . '/storage';
-    
-    if (is_link($symlinkTarget)) {
-        $realTarget = @readlink($symlinkTarget);
-        $output .= "<p style='color: green;'><b>✔ Symlink aktif:</b> <code>" . htmlspecialchars($symlinkTarget) . "</code> → <code>" . htmlspecialchars($realTarget) . "</code></p>";
-        
-        // Cek apakah target symlink valid
-        if (is_dir($symlinkTarget)) {
-            $output .= "<p style='color: green;'>✔ Target symlink valid dan dapat diakses.</p>";
-        } else {
-            $output .= "<p style='color: red;'>⚠ Symlink ada tapi target tidak dapat diakses. Buat ulang symlink via SSH.</p>";
-        }
-    } elseif (is_dir($symlinkTarget)) {
-        $output .= "<p style='color: orange;'><b>⚠ Direktori fisik ditemukan</b> (bukan symlink): <code>" . htmlspecialchars($symlinkTarget) . "</code></p>";
-    } else {
-        $output .= "<p style='color: red;'><b>❌ Symlink tidak ditemukan:</b> <code>" . htmlspecialchars($symlinkTarget) . "</code></p>";
-        $output .= "<p>Buat symlink via SSH Hostinger dengan perintah:<br><code>ln -s /home/u478110651/presensi-smpn1biau/storage/app/public /home/u478110651/presensi-smpn1biau/public/storage</code></p>";
-    }
-
-    // 4. Cek logo di database
-    $output .= '<h3>4. Status Logo Aplikasi</h3>';
-    try {
-        $logoSetting = \App\Models\Setting::where('key', 'app_logo')->first();
-        if ($logoSetting && $logoSetting->value) {
-            $logoPath = $logoSetting->value;
-            $output .= "<p>Logo path di database: <code>" . htmlspecialchars($logoPath) . "</code></p>";
-            
-            $fullPath = storage_path('app/public/' . $logoPath);
-            if (file_exists($fullPath)) {
-                $output .= "<p style='color: green;'>✔ File logo ditemukan di storage.</p>";
-                $output .= "<p>Preview: <img src='/storage/" . htmlspecialchars($logoPath) . "' style='max-height: 80px; border: 1px solid #ccc; padding: 4px;'></p>";
-            } else {
-                $output .= "<p style='color: red;'>❌ File logo TIDAK ditemukan di: <code>" . htmlspecialchars($fullPath) . "</code></p>";
-            }
-        } else {
-            $output .= "<p style='color: orange;'>⚠ Belum ada logo yang diunggah (kunci 'app_logo' kosong di database).</p>";
-        }
-    } catch (\Throwable $e) {
-        $output .= "<p style='color: red;'>❌ Gagal membaca database: " . htmlspecialchars($e->getMessage()) . "</p>";
-    }
-
-    $output .= '<hr><p><small>Halaman ini <b>tidak</b> menghapus atau membuat ulang symlink. Untuk membuat symlink, gunakan SSH.</small></p>';
-    $output .= '</body></html>';
-    return response($output);
-});
 
 // == PERBAIKAN: Jalur cadangan jika storage symlink tidak berfungsi / dinonaktifkan di shared hosting ==
 Route::get('/storage/{path}', function ($path) {

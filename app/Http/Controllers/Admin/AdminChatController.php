@@ -21,14 +21,8 @@ class AdminChatController extends Controller
     {
         $adminId = Auth::id();
 
-        // Langkah 1: Pastikan semua orang tua memiliki entri percakapan.
-        // Ini penting agar orang tua tanpa riwayat obrolan tetap muncul di daftar.
-        $allParentIds = ParentModel::whereHas('user')->pluck('id');
-        foreach ($allParentIds as $parentId) {
-            AdminConversation::firstOrCreate(
-                ['parent_id' => $parentId, 'admin_id' => $adminId]
-            );
-        }
+        // Percakapan di-load secara efisien melalui relasi adminConversation
+        // dan baru dibuat ketika parent dipilih atau mengirim pesan.
 
         // Langkah 2: Ambil semua data secara efisien dengan Eager Loading untuk menghindari N+1 problem.
         $parents = ParentModel::with([
