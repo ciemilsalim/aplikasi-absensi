@@ -114,6 +114,19 @@ return new class extends Migration
                 $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('cascade');
             });
         }
+
+        // Create teaching_assignment_student pivot table if not exists
+        if (!Schema::hasTable('teaching_assignment_student')) {
+            Schema::create('teaching_assignment_student', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('teaching_assignment_id');
+                $table->unsignedBigInteger('student_id');
+                $table->timestamps();
+
+                $table->foreign('teaching_assignment_id')->references('id')->on('teaching_assignments')->onDelete('cascade');
+                $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
+            });
+        }
     }
 
     /**

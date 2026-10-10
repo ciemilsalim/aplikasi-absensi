@@ -58,9 +58,16 @@ class TeachingAssignment extends Model
             : true;
 
         // 1. Cek jika ada custom siswa di pivot
-        $hasCustomStudents = $this->relationLoaded('students') 
-            ? $this->students->isNotEmpty() 
-            : $this->students()->exists();
+        $hasCustomStudents = false;
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('teaching_assignment_student')) {
+                $hasCustomStudents = $this->relationLoaded('students') 
+                    ? $this->students->isNotEmpty() 
+                    : $this->students()->exists();
+            }
+        } catch (\Throwable $e) {
+            $hasCustomStudents = false;
+        }
 
         if ($hasCustomStudents) {
             $query = $this->relationLoaded('students') ? $this->students : $this->students();
