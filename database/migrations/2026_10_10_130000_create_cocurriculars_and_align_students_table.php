@@ -26,6 +26,66 @@ return new class extends Migration
             });
         }
 
+        // Align teaching_assignments table columns
+        if (Schema::hasTable('teaching_assignments')) {
+            Schema::table('teaching_assignments', function (Blueprint $table) {
+                if (!Schema::hasColumn('teaching_assignments', 'academic_year_id')) {
+                    $table->unsignedBigInteger('academic_year_id')->nullable()->after('teacher_id');
+                }
+                if (!Schema::hasColumn('teaching_assignments', 'semester_id')) {
+                    $table->unsignedBigInteger('semester_id')->nullable()->after('teacher_id');
+                }
+            });
+        }
+
+        // Align schedules table columns
+        if (Schema::hasTable('schedules')) {
+            Schema::table('schedules', function (Blueprint $table) {
+                if (!Schema::hasColumn('schedules', 'teacher_id')) {
+                    $table->unsignedBigInteger('teacher_id')->nullable();
+                }
+                if (!Schema::hasColumn('schedules', 'school_class_id')) {
+                    $table->unsignedBigInteger('school_class_id')->nullable();
+                }
+                if (!Schema::hasColumn('schedules', 'schedule_type')) {
+                    $table->string('schedule_type')->default('regular');
+                }
+                if (!Schema::hasColumn('schedules', 'academic_year_id')) {
+                    $table->unsignedBigInteger('academic_year_id')->nullable();
+                }
+                if (!Schema::hasColumn('schedules', 'semester_id')) {
+                    $table->unsignedBigInteger('semester_id')->nullable();
+                }
+                if (!Schema::hasColumn('schedules', 'cocurricular_id')) {
+                    $table->unsignedBigInteger('cocurricular_id')->nullable();
+                }
+            });
+        }
+
+        // Align school_classes table columns
+        if (Schema::hasTable('school_classes')) {
+            Schema::table('school_classes', function (Blueprint $table) {
+                if (!Schema::hasColumn('school_classes', 'academic_year_id')) {
+                    $table->unsignedBigInteger('academic_year_id')->nullable();
+                }
+                if (!Schema::hasColumn('school_classes', 'semester_id')) {
+                    $table->unsignedBigInteger('semester_id')->nullable();
+                }
+            });
+        }
+
+        // Align extracurriculars table columns
+        if (Schema::hasTable('extracurriculars')) {
+            Schema::table('extracurriculars', function (Blueprint $table) {
+                if (!Schema::hasColumn('extracurriculars', 'academic_year_id')) {
+                    $table->unsignedBigInteger('academic_year_id')->nullable();
+                }
+                if (!Schema::hasColumn('extracurriculars', 'semester_id')) {
+                    $table->unsignedBigInteger('semester_id')->nullable();
+                }
+            });
+        }
+
         // Create cocurriculars table if not exists
         if (!Schema::hasTable('cocurriculars')) {
             Schema::create('cocurriculars', function (Blueprint $table) {
