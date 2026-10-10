@@ -613,6 +613,37 @@
                 }
             }
 
+            // === AUDIO SYNTH FEEDBACK (ZERO EXTERNAL ASSET) ===
+            function playAttendanceChime(isSuccess = true) {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    if (isSuccess) {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(880, ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.12);
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.18);
+                    } else {
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(220, ctx.currentTime);
+                        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.25);
+                    }
+                } catch (e) {}
+            }
+
+            // Map untuk pencarian cepat siswa berdasarkan unique_id
+            const studentLookup = new Map();
+            studentsWithPhotos.forEach(s => studentLookup.set(s.unique_id, s));
+
             async function startFaceScanFlow() {
                 readerError.classList.add('hidden');
 
@@ -621,14 +652,15 @@
 
                 // 2. Load Student Photos & Create Matcher
                 if (!faceMatcher) {
-                    faceStatus.textContent = 'Memproses data wajah siswa... (Mohon tunggu)';
+                    faceStatus.textContent = 'Memproses data biometrik siswa... (Mohon tunggu)';
                     try {
                         const labeledDescriptors = await loadLabeledImages();
                         if (labeledDescriptors.length === 0) {
-                            faceStatus.textContent = 'Tidak ada data wajah valid yang dapat dimuat. Pastikan foto jelas dan berwajah tunggal.';
-                            return; // Stop the camera from starting if no valid models exist
+                            faceStatus.textContent = 'Belum ada data foto wajah siswa yang valid untuk pemindai.';
+                            return;
                         }
-                        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
+                        // 0.45 threshold: keseimbangan sempurna akurasi & toleransi pencahayaan
+                        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.45);
                     } catch (error) {
                         faceStatus.textContent = 'Terjadi kesalahan sistem saat memproses wajah.';
                         console.error(error);
@@ -644,88 +676,94 @@
                         startFaceVideo();
                     },
                     (error) => {
-                        readerError.textContent = 'Gagal mendapatkan lokasi GPS.';
+                        readerError.textContent = 'Gagal mendapatkan lokasi GPS. Izinkan lokasi untuk absensi.';
                         readerError.classList.remove('hidden');
                     }
                 );
             }
 
-            function loadLabeledImages() {
-                return Promise.all(
-                    studentsWithPhotos.map(async student => {
-                        return new Promise(async (resolve) => {
-                            try {
-                                // JIKA SUDAH ADA DESCRIPTOR DI DATABASE, GUNAKAN LANGSUNG (CEPAT!)
-                                if (student.face_descriptor) {
-                                    try {
-                                        const descArray = JSON.parse(student.face_descriptor);
-                                        const floatArray = new Float32Array(descArray);
-                                        resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [floatArray]));
-                                        return;
-                                    } catch (e) {
-                                        console.warn("Gagal parsing descriptor untuk student:", student.name, e);
-                                    }
-                                }
+            async function loadLabeledImages() {
+                const results = [];
+                const uncachedStudents = [];
 
-                                // JIKA BELUM ADA, PROSES SEPERTI BIASA (LAMBAT)
-                                const img = new Image();
-                                img.crossOrigin = 'anonymous';
-                                img.src = student.photo_url;
+                // Langkah A: Muat seluruh siswa yang sudah memiliki face_descriptor tersimpan (INSTAN!)
+                studentsWithPhotos.forEach(student => {
+                    if (student.face_descriptor) {
+                        try {
+                            const descArray = JSON.parse(student.face_descriptor);
+                            const floatArray = new Float32Array(descArray);
+                            results.push(new faceapi.LabeledFaceDescriptors(student.unique_id, [floatArray]));
+                        } catch (e) {
+                            console.warn("Gagal parsing descriptor untuk:", student.name, e);
+                            uncachedStudents.push(student);
+                        }
+                    } else if (student.photo_url) {
+                        uncachedStudents.push(student);
+                    }
+                });
 
-                                img.onload = async () => {
-                                    try {
-                                        const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }); // Turunkan threshold agar lebih mudah mendeteksi wajah
-                                        const detections = await faceapi.detectSingleFace(img, options).withFaceLandmarks().withFaceDescriptor();
-                                        if (!detections) {
-                                            console.warn(`Wajah tidak terdeteksi pada foto profil: ${student.name} (Bahkan dengan confidence 0.3)`);
-                                            resolve(null);
-                                            return;
-                                        }
+                // Langkah B: Jika ada siswa tanpa descriptor, proses berurutan dengan indikator status
+                if (uncachedStudents.length > 0) {
+                    for (let i = 0; i < uncachedStudents.length; i++) {
+                        const student = uncachedStudents[i];
+                        faceStatus.textContent = `Mengindeks foto baru (${i + 1}/${uncachedStudents.length}): ${student.name}...`;
 
-                                        // SIMPAN KE DATABASE SECARA ASYNCHRONOUS UNTUK PENGGUNAAN BERIKUTNYA
-                                        const descriptorStr = JSON.stringify(Array.from(detections.descriptor));
-                                        fetch("{{ route('attendance.save_descriptor') }}", {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                                'Accept': 'application/json'
-                                            },
-                                            body: JSON.stringify({
-                                                unique_id: student.unique_id,
-                                                face_descriptor: descriptorStr
-                                            })
-                                        }).catch(err => console.error("Gagal menyimpan cache descriptor:", err));
+                        try {
+                            const descriptor = await extractDescriptorFromImage(student.photo_url);
+                            if (descriptor) {
+                                results.push(new faceapi.LabeledFaceDescriptors(student.unique_id, [descriptor]));
 
-                                        resolve(new faceapi.LabeledFaceDescriptors(student.unique_id, [detections.descriptor]));
-                                    } catch (e) {
-                                        console.error(`Gagal deteksi AI foto ${student.name}:`, e);
-                                        resolve(null);
-                                    }
-                                };
-
-                                img.onerror = () => {
-                                    console.error(`Gagal memuat URL foto untuk ${student.name} (CORS/URL Tdk Valid)`);
-                                    resolve(null);
-                                };
-                            } catch (err) {
-                                console.error(`Error kritis proses foto ${student.name}:`, err);
-                                resolve(null);
+                                // Simpan ke database di latar belakang
+                                const descriptorStr = JSON.stringify(Array.from(descriptor));
+                                fetch("{{ route('attendance.save_descriptor') }}", {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        unique_id: student.unique_id,
+                                        face_descriptor: descriptorStr
+                                    })
+                                }).catch(() => {});
                             }
-                        });
-                    })
-                ).then(results => results.filter(res => res !== null));
+                        } catch (err) {
+                            console.warn(`Gagal ekstraksi biometrik untuk ${student.name}:`, err);
+                        }
+                    }
+                }
+
+                return results;
+            }
+
+            function extractDescriptorFromImage(photoUrl) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.src = photoUrl;
+                    img.onload = async () => {
+                        try {
+                            const detection = await faceapi.detectSingleFace(
+                                img, 
+                                new faceapi.SsdMobilenetv1Options({ minConfidence: 0.35 })
+                            ).withFaceLandmarks().withFaceDescriptor();
+                            resolve(detection ? detection.descriptor : null);
+                        } catch (e) {
+                            resolve(null);
+                        }
+                    };
+                    img.onerror = () => resolve(null);
+                });
             }
 
             faceSwitchButton.addEventListener('click', () => {
                 currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
 
-                // Hentikan stream yang ada
                 if (faceVideo.srcObject) {
                     faceVideo.srcObject.getTracks().forEach(track => track.stop());
                 }
 
-                // Hapus canvas sisa
                 if (faceCanvas.getContext) {
                     faceCanvas.getContext('2d').clearRect(0, 0, faceCanvas.width, faceCanvas.height);
                 }
@@ -735,8 +773,14 @@
             });
 
             function startFaceVideo() {
+                // Resolusi optimal 640x480 untuk kecepatan inferensi real-time maksimal
                 navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: currentFacingMode }
+                    video: { 
+                        facingMode: currentFacingMode,
+                        width: { ideal: 640, max: 1280 },
+                        height: { ideal: 480, max: 720 },
+                        frameRate: { ideal: 24, max: 30 }
+                    }
                 })
                     .then(stream => {
                         faceVideo.srcObject = stream;
@@ -746,7 +790,6 @@
                         readerError.textContent = "Gagal mengakses kamera. Pastikan browser memiliki izin.";
                         readerError.classList.remove('hidden');
 
-                        // Fallback ke kamera default jika environment/user gagal
                         if (currentFacingMode !== 'user') {
                             currentFacingMode = 'user';
                             startFaceVideo();
@@ -754,48 +797,137 @@
                     });
             }
 
+            // Visual HUD Bounding Box Drawer
+            function drawFaceHUD(ctx, box, studentInfo, matchCount, isMatched) {
+                const { x, y, width, height } = box;
+                const cornerLength = Math.min(width, height) * 0.22;
+                const strokeColor = isMatched ? '#10b981' : '#f59e0b';
+
+                ctx.save();
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 3.5;
+                ctx.lineCap = 'round';
+                ctx.shadowColor = isMatched ? 'rgba(16, 185, 129, 0.6)' : 'rgba(245, 158, 11, 0.4)';
+                ctx.shadowBlur = 12;
+
+                // 4 Sudut Bounding Box Futuristik
+                // Top-Left
+                ctx.beginPath();
+                ctx.moveTo(x, y + cornerLength);
+                ctx.lineTo(x, y);
+                ctx.lineTo(x + cornerLength, y);
+                ctx.stroke();
+
+                // Top-Right
+                ctx.beginPath();
+                ctx.moveTo(x + width - cornerLength, y);
+                ctx.lineTo(x + width, y);
+                ctx.lineTo(x + width, y + cornerLength);
+                ctx.stroke();
+
+                // Bottom-Left
+                ctx.beginPath();
+                ctx.moveTo(x, y + height - cornerLength);
+                ctx.lineTo(x, y + height);
+                ctx.lineTo(x + cornerLength, y + height);
+                ctx.stroke();
+
+                // Bottom-Right
+                ctx.beginPath();
+                ctx.moveTo(x + width - cornerLength, y + height);
+                ctx.lineTo(x + width, y + height);
+                ctx.lineTo(x + width, y + height - cornerLength);
+                ctx.stroke();
+
+                // Floating Tag Banner
+                ctx.shadowBlur = 0;
+                const tagText = isMatched 
+                    ? `${studentInfo.name} (${matchCount}/3)` 
+                    : 'Wajah Tidak Dikenali';
+                ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+                const textWidth = ctx.measureText(tagText).width;
+                const badgeWidth = textWidth + 24;
+                const badgeHeight = 26;
+                const badgeX = x + (width - badgeWidth) / 2;
+                const badgeY = y - badgeHeight - 8 > 0 ? y - badgeHeight - 8 : y + height + 8;
+
+                // Background Tag
+                ctx.fillStyle = isMatched ? 'rgba(6, 78, 59, 0.92)' : 'rgba(120, 53, 15, 0.92)';
+                ctx.beginPath();
+                ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 8);
+                ctx.fill();
+
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                // Label Text
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(tagText, badgeX + 12, badgeY + 17);
+
+                ctx.restore();
+            }
+
             faceVideo.addEventListener('play', () => {
-                const displaySize = { width: faceVideo.offsetWidth, height: faceVideo.offsetHeight }; // Use dynamic size
-                // Check if dimensions are valid
+                const displaySize = { width: faceVideo.offsetWidth, height: faceVideo.offsetHeight };
                 if (displaySize.width === 0 || displaySize.height === 0) return;
 
                 faceapi.matchDimensions(faceCanvas, displaySize);
                 faceStatus.textContent = 'Arahkan wajah ke kamera...';
 
+                let isDetectingFrame = false;
+
                 faceScanInterval = setInterval(async () => {
-                    if (faceVideo.paused || faceVideo.ended) return;
+                    if (isDetectingFrame || faceVideo.paused || faceVideo.ended || !faceMatcher) return;
 
-                    const detections = await faceapi.detectAllFaces(faceVideo, new faceapi.SsdMobilenetv1Options())
-                        .withFaceLandmarks()
-                        .withFaceDescriptors();
+                    isDetectingFrame = true;
+                    try {
+                        // SsdMobilenetv1 dioptimalkan: maxResults = 1 untuk efisiensi kiosk 1 siswa
+                        const detections = await faceapi.detectAllFaces(
+                            faceVideo, 
+                            new faceapi.SsdMobilenetv1Options({ minConfidence: 0.45, maxResults: 1 })
+                        )
+                            .withFaceLandmarks()
+                            .withFaceDescriptors();
 
-                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                    faceCanvas.getContext('2d').clearRect(0, 0, faceCanvas.width, faceCanvas.height);
-                    // faceapi.draw.drawDetections(faceCanvas, resizedDetections); // Optional: Draw box
+                        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                        const ctx = faceCanvas.getContext('2d');
+                        ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
 
-                    if (detections.length > 0) {
-                        const bestMatch = faceMatcher.findBestMatch(detections[0].descriptor);
-                        if (bestMatch.label !== 'unknown') {
-                            consecutiveMatches++;
-                            faceStatus.textContent = `Wajah dikenali! Tahan posisi... (${consecutiveMatches}/3)`;
+                        if (resizedDetections.length > 0) {
+                            const detection = resizedDetections[0];
+                            const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+                            const matchedStudent = studentLookup.get(bestMatch.label);
 
-                            // Check Cooldown
-                            if (consecutiveMatches >= 3 && Date.now() - lastScanTime > scanCooldown) {
-                                lastScanTime = Date.now();
-                                processAttendance(bestMatch.label); // label is unique_id
-                                consecutiveMatches = 0; // Reset
+                            if (bestMatch.label !== 'unknown' && matchedStudent) {
+                                consecutiveMatches++;
+                                drawFaceHUD(ctx, detection.detection.box, matchedStudent, consecutiveMatches, true);
+                                faceStatus.textContent = `Wajah terdeteksi: ${matchedStudent.name}. Tahan posisi... (${consecutiveMatches}/3)`;
+
+                                // Trigger kehadiran setelah 3 frame stabil & cooldown lewat
+                                if (consecutiveMatches >= 3 && Date.now() - lastScanTime > scanCooldown) {
+                                    lastScanTime = Date.now();
+                                    playAttendanceChime(true);
+                                    processAttendance(bestMatch.label);
+                                    consecutiveMatches = 0;
+                                }
+                            } else {
+                                consecutiveMatches = 0;
+                                drawFaceHUD(ctx, detection.detection.box, null, 0, false);
+                                faceStatus.textContent = 'Wajah belum terdaftar atau posisi kurang jelas. Dekatkan wajah...';
                             }
                         } else {
                             consecutiveMatches = 0;
-                            faceStatus.textContent = 'Arahkan wajah ke kamera...';
+                            if (faceStatus.textContent !== 'Menyiapkan kamera...') {
+                                faceStatus.textContent = 'Arahkan wajah ke kamera...';
+                            }
                         }
-                    } else {
-                        consecutiveMatches = 0;
-                        if (faceStatus.textContent !== 'Menyiapkan kamera...') {
-                            faceStatus.textContent = 'Arahkan wajah ke kamera...';
-                        }
+                    } catch (err) {
+                        console.warn("Kesalahan evaluasi frame:", err);
+                    } finally {
+                        isDetectingFrame = false;
                     }
-                }, 500); // Check every 500ms
+                }, 300); // 300ms = ~3.3 FPS ideal untuk neural net realtime tanpa panas berlebih
             });
 
             // Event listener untuk input manual (dengan debounce)
