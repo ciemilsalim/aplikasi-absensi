@@ -196,4 +196,64 @@ class StudentController extends Controller
         return redirect()->route('admin.students.index')->with('success', 'Siswa yang dipilih berhasil dipindahkan ke kelas baru.');
     }
 
+    /**
+     * Menampilkan dan mencetak kartu identitas siswa dengan QR Code presensi.
+     */
+    public function printQrCards(Request $request)
+    {
+        $classes = SchoolClass::orderBy('name')->get();
+        $query = Student::with('schoolClass')->orderBy('name');
+
+        if ($request->filled('school_class_id')) {
+            $query->where('school_class_id', $request->school_class_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        $students = $query->get();
+        $selectedClass = $request->filled('school_class_id')
+            ? SchoolClass::find($request->school_class_id)
+            : null;
+
+        return view('admin.students.qr-cards', compact('students', 'classes', 'selectedClass'));
+    }
+
+    /**
+     * Menampilkan form untuk impor data siswa dari Excel.
+     */
+    public function showImportForm()
+    {
+        return view('admin.students.import');
+    }
+
+    /**
+     * Memproses impor data siswa dari file Excel.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:10240'
+        ]);
+
+        try {
+            Excel::import(new StudentsImport, $request->file('file'));
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+            return redirect()->back()->with('import_errors', $errorMessages);
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses file: ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.students.index')->with('success', 'Data siswa berhasil diimpor!');
+    }
 }

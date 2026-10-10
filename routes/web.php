@@ -106,11 +106,6 @@ Route::middleware('auth')->group(function () {
 
     // Rute Notifikasi Internal
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-
-    // == RUTE BARU UNTUK IZIN KELUAR/KEMBALI ==
-    Route::get('/permit-scanner', [\App\Http\Controllers\PermitController::class, 'showScanner'])->name('permit.scanner');
-    Route::post('/permit-scanner/store', [\App\Http\Controllers\PermitController::class, 'storePermit'])->name('permit.store');
-    // =========================================
 });
 
 // == GRUP RUTE UNTUK AKSES PEMINDAI ==
@@ -120,6 +115,10 @@ Route::middleware(['auth', 'scanner.access'])->group(function () {
     Route::post('/attendance/sync-offline', [AttendanceController::class, 'syncOffline'])->name('attendance.sync_offline');
     // Baru: Menyimpan pola wajah (descriptor) siswa dari scanner
     Route::post('/attendance/save-student-descriptor', [AttendanceController::class, 'saveStudentDescriptor'])->name('attendance.save_descriptor');
+
+    // Rute Pemindai Izin Keluar/Kembali Siswa (Hanya untuk Satpam, Guru, Operator, Admin)
+    Route::get('/permit-scanner', [\App\Http\Controllers\PermitController::class, 'showScanner'])->name('permit.scanner');
+    Route::post('/permit-scanner/store', [\App\Http\Controllers\PermitController::class, 'storePermit'])->name('permit.store');
 });
 
 // == GRUP RUTE ADMIN ==
@@ -214,6 +213,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'students'])->name('extracurriculars.students');
         Route::post('extracurriculars/{extracurricular}/students', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'assignStudents'])->name('extracurriculars.assign_students');
         Route::delete('extracurriculars/{extracurricular}/students/{student}', [\App\Http\Controllers\Admin\ExtracurricularController::class, 'removeStudent'])->name('extracurriculars.remove_student');
+
+        // Cetak Kartu Siswa & QR Code (Utilitas Cetak Lokal)
+        Route::get('/students/qr-cards', [StudentController::class, 'printQrCards'])->name('students.qr');
     });
 
     // Rute master data yang DIREDIRECT karena dikelola terpusat di SIPADA
@@ -236,6 +238,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::post('classes/{school_class}/assign-teacher', [\App\Http\Controllers\Admin\TeachingAssignmentController::class, 'store'])->name('classes.store_teacher_assignment');
 
             // Impor Data
+            Route::get('/students/import', [StudentController::class, 'showImportForm'])->name('students.import.form');
+            Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
             Route::get('/parents/import', [ParentController::class, 'showImportForm'])->name('parents.import.form');
             Route::post('/parents/import', [ParentController::class, 'import'])->name('parents.import');
             Route::get('/teachers/import', [TeacherController::class, 'showImportForm'])->name('teachers.import.form');

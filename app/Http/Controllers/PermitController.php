@@ -43,13 +43,14 @@ class PermitController extends Controller
         ]);
 
         $qrData = $request->student_unique_id;
-        $parts = explode('-', $qrData, 2);
         
-        if (count($parts) === 2) {
-            // Format gabungan: NIS-UNIQUE_ID
-            $student = Student::where('nis', $parts[0])->where('unique_id', $parts[1])->firstOrFail();
+        // Format gabungan: NIS-UNIQUE_ID (panjang UUID = 36 karakter)
+        if (strlen($qrData) > 37 && substr($qrData, -37, 1) === '-') {
+            $nis = substr($qrData, 0, -37);
+            $uniqueId = substr($qrData, -36);
+            $student = Student::where('nis', $nis)->where('unique_id', $uniqueId)->firstOrFail();
         } else {
-            // Format lama atau manual
+            // Format tunggal (hanya UUID atau hanya NIS)
             $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->firstOrFail();
         }
         $today = now()->startOfDay();
@@ -89,11 +90,20 @@ class PermitController extends Controller
         // KASUS 1: Siswa kembali dari izin
         if ($activePermit) {
             $activePermit->update(['time_in' => now()]);
-            $attendance->update(['status' => 'tepat_waktu']); // Asumsi kembali menjadi tepat waktu
+
+            // Pulihkan status kehadiran sesuai kedatangan pagi hari agar status 'terlambat' tidak terhapus
+            $startTimeSetting = $settings->get('start_time', '07:15');
+            $clockInDate = Carbon::parse($attendance->attendance_time)->format('Y-m-d');
+            $lateThreshold = Carbon::parse($clockInDate . ' ' . $startTimeSetting);
+            $restoredStatus = Carbon::parse($attendance->attendance_time)->gt($lateThreshold) ? 'terlambat' : 'tepat_waktu';
+
+            $attendance->update(['status' => $restoredStatus]);
+
+            $statusText = $restoredStatus === 'terlambat' ? ' (Terlambat Pagi)' : '';
 
             return response()->json([
                 'status' => 'clock_in_from_permit',
-                'message' => 'Telah Kembali ke Sekolah',
+                'message' => 'Telah Kembali ke Sekolah' . $statusText,
                 'student_name' => $student->name,
                 'time' => now()->format('H:i:s'),
             ]);
