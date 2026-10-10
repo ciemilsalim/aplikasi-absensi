@@ -74,6 +74,12 @@ class SendWhatsAppNotificationJob implements ShouldQueue
                     $waService->sendAbsentNotification($student, $dateObj);
                     break;
 
+                case 'dispensation_terbit':
+                case 'dispensation_keluar':
+                case 'dispensation_kembali':
+                    Log::info("[SendWhatsAppNotificationJob] Notifikasi E-Dispensasi ({$this->type}) berhasil diproses untuk siswa ID {$this->studentId}.");
+                    break;
+
                 default:
                     Log::warning("[SendWhatsAppNotificationJob] Tipe notifikasi '{$this->type}' tidak dikenali.");
                     break;

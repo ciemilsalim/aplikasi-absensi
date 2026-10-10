@@ -35,40 +35,60 @@ class PermitController extends Controller
      */
     public function storePermit(Request $request)
     {
+        // Normalisasi format input dari scanner (student_unique_id / qr_data / pass_code)
+        if ($request->has('qr_data') && !$request->has('student_unique_id')) {
+            $request->merge(['student_unique_id' => $request->input('qr_data')]);
+        }
+        if ($request->has('pass_code') && !$request->has('student_unique_id')) {
+            $request->merge(['student_unique_id' => $request->input('pass_code')]);
+        }
+
         $request->validate([
             'student_unique_id' => 'required|string',
-            'reason' => 'nullable|string|max:255',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+            'reason'            => 'nullable|string|max:255',
+            'latitude'          => 'nullable|numeric',
+            'longitude'         => 'nullable|numeric',
         ]);
 
         $qrData = $request->student_unique_id;
-        
-        // Format gabungan: NIS-UNIQUE_ID (panjang UUID = 36 karakter)
+
+        // Validasi Jarak GPS (Jika sekolah mengonfigurasi koordinat & pemindai mengirim koordinat)
+        $settings = Setting::pluck('value', 'key');
+        $schoolLat = $settings->get('school_latitude');
+        $schoolLng = $settings->get('school_longitude');
+        $radius = (float) $settings->get('attendance_radius', 100);
+
+        if ($request->filled('latitude') && $request->filled('longitude') && !empty($schoolLat) && !empty($schoolLng)) {
+            $distance = $this->haversineDistance($request->latitude, $request->longitude, $schoolLat, $schoolLng);
+            if ($distance > $radius) {
+                return response()->json([
+                    'status' => 'location_error',
+                    'message' => "Anda berada di luar radius yang diizinkan (" . round($distance) . " meter dari sekolah).",
+                ], 403);
+            }
+        }
+
+        // 1. Integrasi Utama: Layanan E-Dispensasi Terverifikasi Satpam
+        $dispensationsService = app(\App\Services\Permit\StudentDispensationsService::class);
+        $scanResult = $dispensationsService->verifyAndProcessScan(
+            identifier: $qrData,
+            securityActor: $request->user(),
+            fallbackReason: $request->reason
+        );
+
+        if (isset($scanResult['code']) && $scanResult['code'] === 200) {
+            return response()->json($scanResult, 200);
+        }
+
+        // 2. Fallback: Parse siswa jika bukan pass code e-dispensasi
         if (strlen($qrData) > 37 && substr($qrData, -37, 1) === '-') {
             $nis = substr($qrData, 0, -37);
             $uniqueId = substr($qrData, -36);
             $student = Student::where('nis', $nis)->where('unique_id', $uniqueId)->firstOrFail();
         } else {
-            // Format tunggal (hanya UUID atau hanya NIS)
             $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->firstOrFail();
         }
         $today = now()->startOfDay();
-
-        // Validasi Jarak GPS
-        $settings = Setting::pluck('value', 'key');
-        $schoolLat = $settings->get('school_latitude');
-        $schoolLng = $settings->get('school_longitude');
-        $radius = $settings->get('attendance_radius', 100);
-        $distance = $this->haversineDistance($request->latitude, $request->longitude, $schoolLat, $schoolLng);
-
-        if ($distance > $radius) {
-            return response()->json([
-                'status' => 'location_error',
-                'message' => "Anda berada di luar radius yang diizinkan (" . round($distance) . " meter dari sekolah).",
-                'student_name' => $student->name
-            ], 403);
-        }
 
         // Cari data absensi masuk hari ini
         $attendance = Attendance::where('student_id', $student->id)
@@ -89,7 +109,10 @@ class PermitController extends Controller
 
         // KASUS 1: Siswa kembali dari izin
         if ($activePermit) {
-            $activePermit->update(['time_in' => now()]);
+            $activePermit->update([
+                'time_in' => now(),
+                'status'  => 'completed',
+            ]);
 
             // Pulihkan status kehadiran sesuai kedatangan pagi hari agar status 'terlambat' tidak terhapus
             $startTimeSetting = $settings->get('start_time', '07:15');
@@ -120,10 +143,13 @@ class PermitController extends Controller
             }
 
             StudentPermit::create([
-                'student_id' => $student->id,
-                'attendance_id' => $attendance->id,
-                'reason' => $request->reason,
-                'time_out' => now(),
+                'student_id'          => $student->id,
+                'attendance_id'       => $attendance->id,
+                'reason'              => $request->reason,
+                'status'              => 'checked_out',
+                'security_user_id'    => $request->user()?->id,
+                'security_name'       => $request->user()?->name,
+                'time_out'            => now(),
             ]);
 
             $attendance->update(['status' => 'izin_keluar']);

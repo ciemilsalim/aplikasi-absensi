@@ -651,6 +651,24 @@
                     </li>
                     @endif
 
+                    {{-- Menu E-Dispensasi & Pass Card Gerbang --}}
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'satpam', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer', 'teacher', 'guru']))
+                    @php $isDispensationsActive = request()->routeIs('admin.dispensations.*'); @endphp
+                    <li>
+                        <a href="{{ route('admin.dispensations.index') }}" :title="sidebarCollapsed ? 'E-Dispensasi Gerbang' : ''" 
+                           class="{{ $isDispensationsActive ? 'bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
+                           :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
+                            <span class="flex gap-x-3 items-center">
+                                <span class="material-icons text-xl shrink-0 text-indigo-500">confirmation_number</span>
+                                <span x-show="!sidebarCollapsed" class="truncate">E-Dispensasi Gerbang</span>
+                            </span>
+                            @if($isDispensationsActive)
+                                <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-indigo-500 ml-auto shrink-0"></span>
+                            @endif
+                        </a>
+                    </li>
+                    @endif
+
                     {{-- DROPDOWN: LAPORAN PRESENSI ADMIN --}}
                     @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
                     @php 

@@ -134,6 +134,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
             // Audit Trail Presensi (Akuntabilitas BOS, Kepala Sekolah & Inspektorat)
             Route::get('/audit-logs', [\App\Http\Controllers\Admin\AttendanceAuditLogController::class, 'index'])->name('audit_logs.index');
+
+            // E-Dispensasi Siswa & Pass Card Gerbang (Akses Baca & Cetak)
+            Route::get('/dispensations', [\App\Http\Controllers\Admin\DispensationsController::class, 'index'])->name('dispensations.index');
+            Route::get('/dispensations/{dispensation}/print', [\App\Http\Controllers\Admin\DispensationsController::class, 'print'])->name('dispensations.print');
+        }
+    );
+
+    // E-Dispensasi Siswa & Pass Card Gerbang (Penerbitan & Pembatalan)
+    Route::middleware(['role:admin,operator,satpam,teacher,guru,tu,tata_usaha'])->group(
+        function () {
+            Route::post('/dispensations', [\App\Http\Controllers\Admin\DispensationsController::class, 'store'])->name('dispensations.store');
+            Route::delete('/dispensations/{dispensation}', [\App\Http\Controllers\Admin\DispensationsController::class, 'destroy'])->name('dispensations.destroy');
         }
     );
 

@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('student_permits', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
-            $table->foreignId('attendance_id')->constrained('attendances')->onDelete('cascade');
+            $table->foreignId('attendance_id')->nullable()->constrained('attendances')->onDelete('cascade');
             $table->text('reason');
-            $table->timestamp('time_out');
+            $table->timestamp('time_out')->nullable();
             $table->timestamp('time_in')->nullable();
             $table->timestamps();
         });
