@@ -23,19 +23,25 @@ class Calendar extends Model
     ];
 
     /**
-     * Mendapatkan daftar hari libur dalam rentang tanggal tertentu
+     * Mendapatkan daftar hari libur dalam rentang tanggal tertentu (dengan caching)
      */
     public static function getHolidaysInRange($startDate, $endDate)
     {
-        return self::where('is_holiday', true)
-            ->where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('start_date', [$startDate, $endDate])
-                    ->orWhereBetween('end_date', [$startDate, $endDate])
-                    ->orWhere(function ($q) use ($startDate, $endDate) {
-                        $q->whereDate('start_date', '<=', $startDate)
-                            ->whereDate('end_date', '>=', $endDate);
-                    });
-            })->get();
+        $startStr = \Carbon\Carbon::parse($startDate)->format('Y-m-d');
+        $endStr = \Carbon\Carbon::parse($endDate)->format('Y-m-d');
+        $cacheKey = "calendar:holidays:{$startStr}:{$endStr}";
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 1800, function () use ($startDate, $endDate) {
+            return self::where('is_holiday', true)
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('start_date', [$startDate, $endDate])
+                        ->orWhereBetween('end_date', [$startDate, $endDate])
+                        ->orWhere(function ($q) use ($startDate, $endDate) {
+                            $q->whereDate('start_date', '<=', $startDate)
+                                ->whereDate('end_date', '>=', $endDate);
+                        });
+                })->get();
+        });
     }
 
     /**
@@ -55,19 +61,25 @@ class Calendar extends Model
     }
 
     /**
-     * Mendapatkan daftar hari belajar mandiri dalam rentang tanggal tertentu
+     * Mendapatkan daftar hari belajar mandiri dalam rentang tanggal tertentu (dengan caching)
      */
     public static function getSelfStudyDaysInRange($startDate, $endDate)
     {
-        return self::where('is_self_study', true)
-            ->where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('start_date', [$startDate, $endDate])
-                    ->orWhereBetween('end_date', [$startDate, $endDate])
-                    ->orWhere(function ($q) use ($startDate, $endDate) {
-                        $q->whereDate('start_date', '<=', $startDate)
-                            ->whereDate('end_date', '>=', $endDate);
-                    });
-            })->get();
+        $startStr = \Carbon\Carbon::parse($startDate)->format('Y-m-d');
+        $endStr = \Carbon\Carbon::parse($endDate)->format('Y-m-d');
+        $cacheKey = "calendar:self_study:{$startStr}:{$endStr}";
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 1800, function () use ($startDate, $endDate) {
+            return self::where('is_self_study', true)
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('start_date', [$startDate, $endDate])
+                        ->orWhereBetween('end_date', [$startDate, $endDate])
+                        ->orWhere(function ($q) use ($startDate, $endDate) {
+                            $q->whereDate('start_date', '<=', $startDate)
+                                ->whereDate('end_date', '>=', $endDate);
+                        });
+                })->get();
+        });
     }
 
     /**

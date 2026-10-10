@@ -446,30 +446,6 @@ class TeacherRoleContextService
             ];
         }
 
-        $classPerformanceData = [];
-        $thirtyDaysAgo = now()->subDays(30);
-        $assignments = TeachingAssignment::where('teacher_id', $teacher->id)
-            ->with('schoolClass', 'subject')
-            ->get();
-
-        foreach ($assignments as $assignment) {
-            $scheduleIds = Schedule::where('teaching_assignment_id', $assignment->id)->pluck('id');
-            if ($scheduleIds->isEmpty()) {
-                continue;
-            }
-            $totalSessions = SubjectAttendance::whereIn('schedule_id', $scheduleIds)->where('created_at', '>=', $thirtyDaysAgo)->distinct(DB::raw('DATE(created_at)'))->count();
-            $totalHadir = SubjectAttendance::whereIn('schedule_id', $scheduleIds)->where('status', 'hadir')->where('created_at', '>=', $thirtyDaysAgo)->count();
-            $totalStudentsInClass = $assignment->getEnrolledStudents()->count();
-            $potentialAttendance = $totalStudentsInClass * $totalSessions;
-            $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
-            $classPerformanceData[] = [
-                'label' => ($assignment->schoolClass?->name ?? 'Kelas') . ' - ' . ($assignment->subject?->name ?? 'Mapel'),
-                'className' => $assignment->schoolClass?->name ?? 'Kelas',
-                'subjectName' => $assignment->subject?->name ?? 'Mapel',
-                'percentage' => $percentage,
-            ];
-        }
-
         $allSchedules = Schedule::with([
             'teachingAssignment.schoolClass',
             'teachingAssignment.subject'
@@ -481,6 +457,49 @@ class TeacherRoleContextService
             ->orderBy('day_of_week', 'asc')
             ->orderBy('start_time', 'asc')
             ->get();
+
+        $classPerformanceData = [];
+        $thirtyDaysAgo = now()->subDays(30);
+        $assignments = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->with('schoolClass', 'subject')
+            ->get();
+
+        $assignmentScheduleMap = $allSchedules->groupBy('teaching_assignment_id');
+        $allScheduleIds = $allSchedules->pluck('id');
+
+        $sessionStats = collect();
+        if ($allScheduleIds->isNotEmpty()) {
+            $sessionStats = SubjectAttendance::whereIn('schedule_id', $allScheduleIds)
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->select(
+                    'schedule_id',
+                    DB::raw('DATE(created_at) as session_date'),
+                    DB::raw('SUM(CASE WHEN status = "hadir" THEN 1 ELSE 0 END) as total_hadir')
+                )
+                ->groupBy('schedule_id', DB::raw('DATE(created_at)'))
+                ->get();
+        }
+
+        foreach ($assignments as $assignment) {
+            $scheduleIds = $assignmentScheduleMap->get($assignment->id, collect())->pluck('id');
+            if ($scheduleIds->isEmpty()) {
+                continue;
+            }
+
+            $statsForAssignment = $sessionStats->whereIn('schedule_id', $scheduleIds);
+            $totalSessions = $statsForAssignment->pluck('session_date')->unique()->count();
+            $totalHadir = $statsForAssignment->sum('total_hadir');
+
+            $totalStudentsInClass = $assignment->getEnrolledStudents()->count();
+            $potentialAttendance = $totalStudentsInClass * $totalSessions;
+            $percentage = ($potentialAttendance > 0) ? round(($totalHadir / $potentialAttendance) * 100) : 0;
+            $classPerformanceData[] = [
+                'label' => ($assignment->schoolClass?->name ?? 'Kelas') . ' - ' . ($assignment->subject?->name ?? 'Mapel'),
+                'className' => $assignment->schoolClass?->name ?? 'Kelas',
+                'subjectName' => $assignment->subject?->name ?? 'Mapel',
+                'percentage' => $percentage,
+            ];
+        }
 
         $teacherNote = TeacherNote::firstOrCreate(['teacher_id' => $teacher->id]);
 
@@ -625,37 +644,44 @@ class TeacherRoleContextService
         $completedSessionsToday = count($attendedScheduleIdsToday);
         $remainingSessionsToday = max(0, $totalSessionsToday - $completedSessionsToday);
 
-        // Performa Kehadiran Kelas Kokurikuler 30 Hari Terakhir
+        // Performa Kehadiran Kelas Kokurikuler 30 Hari Terakhir (Bulk Aggregation)
         $classPerformanceData = [];
         $thirtyDaysAgo = now()->subDays(30);
         $totalSessions30Days = 0;
         $totalPercentageSum = 0;
 
+        $cocurricularStats = collect();
+        if ($cocurricularScheduleIds->isNotEmpty()) {
+            $cocurricularStats = SubjectAttendance::whereIn('schedule_id', $cocurricularScheduleIds)
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->select(
+                    'schedule_id',
+                    DB::raw('DATE(created_at) as session_date'),
+                    DB::raw('SUM(CASE WHEN status = "hadir" THEN 1 ELSE 0 END) as total_hadir')
+                )
+                ->groupBy('schedule_id', DB::raw('DATE(created_at)'))
+                ->get();
+        }
+
         $distinctPairs = $allSchedules->unique(function ($item) {
             return $item->cocurricular_id . '-' . $item->school_class_id;
         });
 
+        $pairScheduleMap = $allSchedules->groupBy(function ($item) {
+            return $item->cocurricular_id . '-' . $item->school_class_id;
+        });
+
         foreach ($distinctPairs as $item) {
-            $pairScheduleIds = Schedule::where('schedule_type', 'cocurricular')
-                ->where('cocurricular_id', $item->cocurricular_id)
-                ->where('school_class_id', $item->school_class_id)
-                ->pluck('id');
+            $pairKey = $item->cocurricular_id . '-' . $item->school_class_id;
+            $pairScheduleIds = $pairScheduleMap->get($pairKey, collect())->pluck('id');
 
             if ($pairScheduleIds->isEmpty()) {
                 continue;
             }
 
-            $totalSessions = SubjectAttendance::whereIn('schedule_id', $pairScheduleIds)
-                ->where('created_at', '>=', $thirtyDaysAgo)
-                ->selectRaw('DATE(created_at) as session_date')
-                ->distinct()
-                ->get()
-                ->count();
-
-            $totalHadir = SubjectAttendance::whereIn('schedule_id', $pairScheduleIds)
-                ->where('status', 'hadir')
-                ->where('created_at', '>=', $thirtyDaysAgo)
-                ->count();
+            $statsForPair = $cocurricularStats->whereIn('schedule_id', $pairScheduleIds);
+            $totalSessions = $statsForPair->pluck('session_date')->unique()->count();
+            $totalHadir = $statsForPair->sum('total_hadir');
 
             $totalStudentsInClass = $item->schoolClass ? $item->schoolClass->students()->count() : Student::active()->where('school_class_id', $item->school_class_id)->count();
             $potentialAttendance = $totalStudentsInClass * $totalSessions;
@@ -709,13 +735,18 @@ class TeacherRoleContextService
         $ekskulIds = $extracurriculars->pluck('id');
 
         $todayAttendanceStats = [];
-        foreach ($extracurriculars as $ekskul) {
-            $stats = ExtracurricularAttendance::where('extracurricular_id', $ekskul->id)
+        $todayStatsGroup = collect();
+        if ($ekskulIds->isNotEmpty()) {
+            $todayStatsGroup = ExtracurricularAttendance::whereIn('extracurricular_id', $ekskulIds)
                 ->whereDate('attendance_date', $today)
-                ->select('status', DB::raw('count(*) as total'))
-                ->groupBy('status')
-                ->pluck('total', 'status');
+                ->select('extracurricular_id', 'status', DB::raw('count(*) as total'))
+                ->groupBy('extracurricular_id', 'status')
+                ->get()
+                ->groupBy('extracurricular_id');
+        }
 
+        foreach ($extracurriculars as $ekskul) {
+            $stats = $todayStatsGroup->get($ekskul->id, collect())->pluck('total', 'status');
             $todayAttendanceStats[$ekskul->id] = [
                 'hadir' => $stats->get('hadir', 0),
                 'sakit' => $stats->get('sakit', 0),
@@ -770,22 +801,30 @@ class TeacherRoleContextService
             ];
         }
 
-        // Performa Kehadiran Ekskul 30 Hari Terakhir
+        // Performa Kehadiran Ekskul 30 Hari Terakhir (Bulk Aggregation)
         $thirtyDaysAgo = now()->subDays(30);
         $classPerformanceDataEkskul = [];
         $totalSessions30Days = 0;
         $totalPercentageSum = 0;
 
-        foreach ($extracurriculars as $ekskul) {
-            $totalSessions = ExtracurricularAttendance::where('extracurricular_id', $ekskul->id)
+        $thirtyDaysStatsGroup = collect();
+        if ($ekskulIds->isNotEmpty()) {
+            $thirtyDaysStatsGroup = ExtracurricularAttendance::whereIn('extracurricular_id', $ekskulIds)
                 ->where('attendance_date', '>=', $thirtyDaysAgo->toDateString())
-                ->distinct('attendance_date')
-                ->count('attendance_date');
+                ->select(
+                    'extracurricular_id',
+                    'attendance_date',
+                    DB::raw('SUM(CASE WHEN status = "hadir" THEN 1 ELSE 0 END) as total_hadir')
+                )
+                ->groupBy('extracurricular_id', 'attendance_date')
+                ->get()
+                ->groupBy('extracurricular_id');
+        }
 
-            $totalHadir = ExtracurricularAttendance::where('extracurricular_id', $ekskul->id)
-                ->where('status', 'hadir')
-                ->where('attendance_date', '>=', $thirtyDaysAgo->toDateString())
-                ->count();
+        foreach ($extracurriculars as $ekskul) {
+            $ekskulStats = $thirtyDaysStatsGroup->get($ekskul->id, collect());
+            $totalSessions = $ekskulStats->count();
+            $totalHadir = $ekskulStats->sum('total_hadir');
 
             $totalMembers = $ekskul->students_count;
             $potentialAttendance = $totalMembers * $totalSessions;

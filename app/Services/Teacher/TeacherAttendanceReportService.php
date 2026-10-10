@@ -10,12 +10,35 @@ use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TeacherAttendanceReportService
 {
+    /**
+     * Get or cache the base64 encoded school logo.
+     */
+    protected function getCachedLogoBase64(?string $logoPath): ?string
+    {
+        if (!$logoPath) {
+            return null;
+        }
+
+        return Cache::remember('app_logo_base64_' . md5($logoPath), 3600, function () use ($logoPath) {
+            if (Storage::disk('public')->exists($logoPath)) {
+                try {
+                    $logoData = Storage::disk('public')->get($logoPath);
+                    return 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
+                } catch (\Throwable $e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
     /**
      * Prepare data for showAttendanceHistory view.
      */
@@ -61,7 +84,7 @@ class TeacherAttendanceReportService
         $totalClassAlpa = 0;
 
         foreach ($students as $student) {
-            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
+            $studentAttendances = $attendances->get($student->id, collect());
             $hadirCount = 0;
             $sakitCount = 0;
             $izinCount = 0;
@@ -69,9 +92,7 @@ class TeacherAttendanceReportService
 
             foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
-                $attendanceRecord = $studentAttendances->firstWhere(function ($item) use ($dateString) {
-                    return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
-                });
+                $attendanceRecord = $studentAttendances->get($dateString);
 
                 if ($attendanceRecord) {
                     if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) {
@@ -171,7 +192,7 @@ class TeacherAttendanceReportService
         $totalAlpa = 0;
 
         foreach ($students as $student) {
-            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
+            $studentAttendances = $attendances->get($student->id, collect());
             $hadirCount = 0;
             $sakitCount = 0;
             $izinCount = 0;
@@ -184,9 +205,7 @@ class TeacherAttendanceReportService
                 if ($isSelfStudy) {
                     $hadirCount++;
                 } else {
-                    $attendanceRecord = $studentAttendances->firstWhere(function ($item) use ($dateString) {
-                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
-                    });
+                    $attendanceRecord = $studentAttendances->get($dateString);
 
                     if ($attendanceRecord) {
                         if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) {
@@ -240,15 +259,7 @@ class TeacherAttendanceReportService
 
         $settings = Setting::pluck('value', 'key');
         $logoPath = $settings->get('app_logo');
-        $logoBase64 = null;
-        if ($logoPath && Storage::disk('public')->exists($logoPath)) {
-            try {
-                $logoData = Storage::disk('public')->get($logoPath);
-                $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
-            } catch (\Exception $e) {
-                $logoBase64 = null;
-            }
-        }
+        $logoBase64 = $this->getCachedLogoBase64($logoPath);
 
         $schoolName = $settings->get('school_name', config('app.name', 'SMP Negeri 1 Biau'));
         $schoolAddress = $settings->get('school_address', '');
@@ -363,11 +374,12 @@ class TeacherAttendanceReportService
                 'monthly_data' => []
             ];
 
-            foreach ($months as $m) {
-                $attendancesInMonth = $student->attendances->filter(function ($att) use ($m) {
-                    return Carbon::parse($att->attendance_time)->month == $m;
-                });
+            // Pre-index student attendances by date for O(1) lookup
+            $attendancesByDate = $student->attendances->keyBy(function ($att) {
+                return Carbon::parse($att->attendance_time)->format('Y-m-d');
+            });
 
+            foreach ($months as $m) {
                 $startDate = Carbon::create($year, $m, 1)->startOfMonth();
                 $endDate = $startDate->copy()->endOfMonth();
                 $holidays = Calendar::getHolidaysInRange($startDate, $endDate);
@@ -385,16 +397,14 @@ class TeacherAttendanceReportService
 
                 foreach ($workdays as $wDate) {
                     $dateString = $wDate->format('Y-m-d');
-                    $attendanceRecord = $attendancesInMonth->firstWhere(function ($item) use ($dateString) {
-                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
-                    });
-
                     $isSelfStudy = Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
 
                     if ($isSelfStudy) {
                         $hadir++;
                     } else {
+                        $attendanceRecord = $attendancesByDate->get($dateString);
                         $status = $attendanceRecord ? $attendanceRecord->status : null;
+
                         if (in_array($status, ['tepat_waktu', 'terlambat'])) {
                             $hadir++;
                         } elseif ($status === 'sakit') {
@@ -460,15 +470,7 @@ class TeacherAttendanceReportService
 
         $settings = Setting::pluck('value', 'key');
         $logoPath = $settings->get('app_logo');
-        $logoBase64 = null;
-        if ($logoPath && Storage::disk('public')->exists($logoPath)) {
-            try {
-                $logoData = Storage::disk('public')->get($logoPath);
-                $logoBase64 = 'data:image/' . pathinfo(storage_path('app/public/' . $logoPath), PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
-            } catch (\Exception $e) {
-                $logoBase64 = null;
-            }
-        }
+        $logoBase64 = $this->getCachedLogoBase64($logoPath);
 
         $pdfData = [
             'schoolName' => $settings->get('school_name', config('app.name')),
@@ -516,142 +518,150 @@ class TeacherAttendanceReportService
         }
 
         $class = $teacher->homeroomClass;
-        $year = (int) $params['year'];
-        $months = [];
-        $labels = [];
+        $cacheKey = "teacher:chart:{$teacher->id}:" . md5(json_encode($params));
 
-        if ($params['period_type'] === 'month') {
-            $months = [(int) $params['period_value']];
-            $labels = [Carbon::create()->month($months[0])->translatedFormat('F')];
-        } elseif ($params['period_type'] === 'trimester') {
-            $t = (int) $params['period_value'];
-            $months = [($t - 1) * 3 + 1, ($t - 1) * 3 + 2, ($t - 1) * 3 + 3];
-            foreach ($months as $m) {
-                $labels[] = Carbon::create()->month($m)->translatedFormat('F');
-            }
-        } elseif ($params['period_type'] === 'semester') {
-            $s = (int) $params['period_value'];
-            if ($s === 1) { // Ganjil: Jul - Dec
-                $months = [7, 8, 9, 10, 11, 12];
-            } else { // Genap: Jan - Jun
-                $months = [1, 2, 3, 4, 5, 6];
-            }
-            foreach ($months as $m) {
-                $labels[] = Carbon::create()->month($m)->translatedFormat('F');
-            }
-        }
+        return Cache::remember($cacheKey, 60, function () use ($class, $params) {
+            $year = (int) $params['year'];
+            $months = [];
+            $labels = [];
 
-        $attendanceRelation = function ($query) use ($year, $months) {
-            $query->withoutGlobalScope('academic_period')
-                ->whereYear('attendance_time', $year)
-                ->whereIn(DB::raw('MONTH(attendance_time)'), $months);
-        };
-
-        if ($params['target_type'] === 'student' && !empty($params['student_id'])) {
-            $students = Student::where('id', $params['student_id'])->with(['attendances' => $attendanceRelation])->get();
-        } else {
-            $students = TeacherRoleContextService::getClassStudents($class, ['attendances' => $attendanceRelation]);
-        }
-
-        $monthlyDataArray = [];
-        $totalSum = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
-
-        foreach ($months as $m) {
-            $startDate = Carbon::create($year, $m, 1)->startOfMonth();
-            $endDate = $startDate->copy()->endOfMonth();
-
-            $holidays = Calendar::getHolidaysInRange($startDate, $endDate);
-            $selfStudyDays = Calendar::getSelfStudyDaysInRange($startDate, $endDate);
-            $period = CarbonPeriod::create($startDate, $endDate);
-
-            $workdays = collect($period)->filter(function ($d) use ($holidays) {
-                return !$d->isWeekend() && !Calendar::isDateInHolidays($d, $holidays);
-            });
-
-            // Hanya hitung hari yang sudah berlalu (sampai hari ini)
-            $passedWorkdays = $workdays->filter(function ($d) {
-                return $d->startOfDay() <= now()->startOfDay();
-            });
-
-            $hadirMonth = 0;
-            $sakitMonth = 0;
-            $izinMonth = 0;
-            $alpaMonth = 0;
-
-            foreach ($passedWorkdays as $wDate) {
-                $dateString = $wDate->format('Y-m-d');
-                $isSelfStudy = Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
-
-                foreach ($students as $student) {
-                    $attendanceRecord = $student->attendances->firstWhere(function ($item) use ($dateString) {
-                        return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
-                    });
-
-                    if ($isSelfStudy) {
-                        $hadirMonth++;
-                    } else {
-                        $status = $attendanceRecord ? $attendanceRecord->status : null;
-                        if (in_array($status, ['tepat_waktu', 'terlambat'])) {
-                            $hadirMonth++;
-                        } elseif ($status === 'sakit') {
-                            $sakitMonth++;
-                        } elseif (in_array($status, ['izin', 'izin_keluar'])) {
-                            $izinMonth++;
-                        } elseif ($status === 'alpa') {
-                            $alpaMonth++;
-                        }
-                    }
+            if ($params['period_type'] === 'month') {
+                $months = [(int) $params['period_value']];
+                $labels = [Carbon::create()->month($months[0])->translatedFormat('F')];
+            } elseif ($params['period_type'] === 'trimester') {
+                $t = (int) $params['period_value'];
+                $months = [($t - 1) * 3 + 1, ($t - 1) * 3 + 2, ($t - 1) * 3 + 3];
+                foreach ($months as $m) {
+                    $labels[] = Carbon::create()->month($m)->translatedFormat('F');
+                }
+            } elseif ($params['period_type'] === 'semester') {
+                $s = (int) $params['period_value'];
+                if ($s === 1) { // Ganjil: Jul - Dec
+                    $months = [7, 8, 9, 10, 11, 12];
+                } else { // Genap: Jan - Jun
+                    $months = [1, 2, 3, 4, 5, 6];
+                }
+                foreach ($months as $m) {
+                    $labels[] = Carbon::create()->month($m)->translatedFormat('F');
                 }
             }
 
-            $totalStudentsCount = count($students);
-            $maxPossible = $passedWorkdays->count() * $totalStudentsCount;
+            $attendanceRelation = function ($query) use ($year, $months) {
+                $query->withoutGlobalScope('academic_period')
+                    ->whereYear('attendance_time', $year)
+                    ->whereIn(DB::raw('MONTH(attendance_time)'), $months);
+            };
 
-            if ($maxPossible > 0) {
-                $p_hadir = round(($hadirMonth / $maxPossible) * 100, 1);
-                $p_sakit = round(($sakitMonth / $maxPossible) * 100, 1);
-                $p_izin  = round(($izinMonth / $maxPossible) * 100, 1);
-
-                // Hari tanpa keterangan/belum absen dianggap Alpa
-                $recorded = $hadirMonth + $sakitMonth + $izinMonth + $alpaMonth;
-                $unrecorded = $maxPossible - $recorded;
-                $totalAlpa = $alpaMonth + ($unrecorded > 0 ? $unrecorded : 0);
-
-                $p_alpa  = round(($totalAlpa / $maxPossible) * 100, 1);
+            if ($params['target_type'] === 'student' && !empty($params['student_id'])) {
+                $students = Student::where('id', $params['student_id'])->with(['attendances' => $attendanceRelation])->get();
             } else {
-                $p_hadir = 0;
-                $p_sakit = 0;
-                $p_izin = 0;
-                $p_alpa = 0;
+                $students = TeacherRoleContextService::getClassStudents($class, ['attendances' => $attendanceRelation]);
             }
 
-            $monthlyDataArray[] = [
-                'hadir' => $p_hadir,
-                'sakit' => $p_sakit,
-                'izin' => $p_izin,
-                'alpa' => $p_alpa,
+            // Map student attendances keyed by student_id and date for O(1) lookups
+            $studentAttendanceMap = [];
+            foreach ($students as $s) {
+                $studentAttendanceMap[$s->id] = $s->attendances->keyBy(fn($att) => Carbon::parse($att->attendance_time)->format('Y-m-d'));
+            }
+
+            $monthlyDataArray = [];
+            $totalSum = ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpa' => 0];
+
+            foreach ($months as $m) {
+                $startDate = Carbon::create($year, $m, 1)->startOfMonth();
+                $endDate = $startDate->copy()->endOfMonth();
+
+                $holidays = Calendar::getHolidaysInRange($startDate, $endDate);
+                $selfStudyDays = Calendar::getSelfStudyDaysInRange($startDate, $endDate);
+                $period = CarbonPeriod::create($startDate, $endDate);
+
+                $workdays = collect($period)->filter(function ($d) use ($holidays) {
+                    return !$d->isWeekend() && !Calendar::isDateInHolidays($d, $holidays);
+                });
+
+                // Hanya hitung hari yang sudah berlalu (sampai hari ini)
+                $passedWorkdays = $workdays->filter(function ($d) {
+                    return $d->startOfDay() <= now()->startOfDay();
+                });
+
+                $hadirMonth = 0;
+                $sakitMonth = 0;
+                $izinMonth = 0;
+                $alpaMonth = 0;
+
+                foreach ($passedWorkdays as $wDate) {
+                    $dateString = $wDate->format('Y-m-d');
+                    $isSelfStudy = Calendar::isDateInSelfStudy($wDate, $selfStudyDays);
+
+                    foreach ($students as $student) {
+                        $attendanceRecord = $studentAttendanceMap[$student->id][$dateString] ?? null;
+
+                        if ($isSelfStudy) {
+                            $hadirMonth++;
+                        } else {
+                            $status = $attendanceRecord ? $attendanceRecord->status : null;
+                            if (in_array($status, ['tepat_waktu', 'terlambat'])) {
+                                $hadirMonth++;
+                            } elseif ($status === 'sakit') {
+                                $sakitMonth++;
+                            } elseif (in_array($status, ['izin', 'izin_keluar'])) {
+                                $izinMonth++;
+                            } elseif ($status === 'alpa') {
+                                $alpaMonth++;
+                            }
+                        }
+                    }
+                }
+
+                $totalStudentsCount = count($students);
+                $maxPossible = $passedWorkdays->count() * $totalStudentsCount;
+
+                if ($maxPossible > 0) {
+                    $p_hadir = round(($hadirMonth / $maxPossible) * 100, 1);
+                    $p_sakit = round(($sakitMonth / $maxPossible) * 100, 1);
+                    $p_izin  = round(($izinMonth / $maxPossible) * 100, 1);
+
+                    // Hari tanpa keterangan/belum absen dianggap Alpa
+                    $recorded = $hadirMonth + $sakitMonth + $izinMonth + $alpaMonth;
+                    $unrecorded = $maxPossible - $recorded;
+                    $totalAlpa = $alpaMonth + ($unrecorded > 0 ? $unrecorded : 0);
+
+                    $p_alpa  = round(($totalAlpa / $maxPossible) * 100, 1);
+                } else {
+                    $p_hadir = 0;
+                    $p_sakit = 0;
+                    $p_izin = 0;
+                    $p_alpa = 0;
+                }
+
+                $monthlyDataArray[] = [
+                    'hadir' => $p_hadir,
+                    'sakit' => $p_sakit,
+                    'izin' => $p_izin,
+                    'alpa' => $p_alpa,
+                ];
+
+                // Akumulasi sum
+                $totalSum['hadir'] += $p_hadir;
+                $totalSum['sakit'] += $p_sakit;
+                $totalSum['izin'] += $p_izin;
+                $totalSum['alpa'] += $p_alpa;
+            }
+
+            $numMonths = count($months);
+            if ($numMonths > 0) {
+                $totalSum['hadir'] = round($totalSum['hadir'] / $numMonths, 1);
+                $totalSum['sakit'] = round($totalSum['sakit'] / $numMonths, 1);
+                $totalSum['izin'] = round($totalSum['izin'] / $numMonths, 1);
+                $totalSum['alpa'] = round($totalSum['alpa'] / $numMonths, 1);
+            }
+
+            return [
+                'labels' => $labels,
+                'summary' => $totalSum,
+                'monthly' => $monthlyDataArray,
             ];
-
-            // Akumulasi sum
-            $totalSum['hadir'] += $p_hadir;
-            $totalSum['sakit'] += $p_sakit;
-            $totalSum['izin'] += $p_izin;
-            $totalSum['alpa'] += $p_alpa;
-        }
-
-        $numMonths = count($months);
-        if ($numMonths > 0) {
-            $totalSum['hadir'] = round($totalSum['hadir'] / $numMonths, 1);
-            $totalSum['sakit'] = round($totalSum['sakit'] / $numMonths, 1);
-            $totalSum['izin'] = round($totalSum['izin'] / $numMonths, 1);
-            $totalSum['alpa'] = round($totalSum['alpa'] / $numMonths, 1);
-        }
-
-        return [
-            'labels' => $labels,
-            'summary' => $totalSum,
-            'monthly' => $monthlyDataArray,
-        ];
+        });
     }
 
     /**
@@ -699,7 +709,7 @@ class TeacherAttendanceReportService
         $totalAlpa = 0;
 
         foreach ($students as $student) {
-            $studentAttendances = $allAttendancesInMonth->where('student_id', $student->id);
+            $studentAttendances = $attendances->get($student->id, collect());
             $hadirCount = 0;
             $sakitCount = 0;
             $izinCount = 0;
@@ -707,9 +717,7 @@ class TeacherAttendanceReportService
 
             foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
-                $attendanceRecord = $studentAttendances->firstWhere(function ($item) use ($dateString) {
-                    return Carbon::parse($item->attendance_time)->format('Y-m-d') === $dateString;
-                });
+                $attendanceRecord = $studentAttendances->get($dateString);
 
                 if ($attendanceRecord) {
                     if (in_array($attendanceRecord->status, ['tepat_waktu', 'terlambat'])) {
