@@ -18,7 +18,7 @@ class ContentSecurityPolicyMiddleware
         // Define comprehensive CSP allowing Tailwind CDN, AlpineJS, Google Fonts, Chart.js, camera data, and websockets
         $csp = "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; "
              . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://unpkg.com blob: data:; "
-             . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com; "
+             . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://unpkg.com; "
              . "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; "
              . "img-src 'self' data: blob: https: http:; "
              . "connect-src 'self' https: http: ws: wss: data: blob:; "

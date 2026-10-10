@@ -105,9 +105,9 @@
 
             {{-- 2. FILTER & SEARCH BAR --}}
             <div class="bg-white dark:bg-slate-850 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs no-print">
-                <form method="GET" action="{{ route('admin.dispensations.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+                <form method="GET" action="{{ route('admin.dispensations.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 items-end">
                     {{-- Pencarian --}}
-                    <div class="lg:col-span-2">
+                    <div class="sm:col-span-2 lg:col-span-3 xl:col-span-2">
                         <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Cari Siswa / Kode Pass</label>
                         <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Ketik nama, NIS, kode pass (PASS-)..." class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
@@ -115,7 +115,7 @@
                     {{-- Filter Kelas --}}
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Kelas</label>
-                        <select name="school_class_id" class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500">
+                        <select name="school_class_id" class="w-full pr-8 text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">Semua Kelas</option>
                             @foreach($classes as $c)
                                 <option value="{{ $c->id }}" {{ ($filters['school_class_id'] ?? '') == $c->id ? 'selected' : '' }}>
@@ -128,7 +128,7 @@
                     {{-- Filter Jenis Dispensasi --}}
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Jenis Dispensasi</label>
-                        <select name="permit_type" class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500">
+                        <select name="permit_type" class="w-full pr-8 text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="all">Semua Jenis</option>
                             <option value="pulang_cepat" {{ ($filters['permit_type'] ?? '') == 'pulang_cepat' ? 'selected' : '' }}>Pulang Cepat</option>
                             <option value="keluar_sementara" {{ ($filters['permit_type'] ?? '') == 'keluar_sementara' ? 'selected' : '' }}>Keluar Sementara</option>
@@ -141,7 +141,7 @@
                     {{-- Filter Status --}}
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Status Gerbang</label>
-                        <select name="status" class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500">
+                        <select name="status" class="w-full pr-8 text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="all">Semua Status</option>
                             <option value="approved" {{ ($filters['status'] ?? '') == 'approved' ? 'selected' : '' }}>Di Luar (Belum Kembali)</option>
                             <option value="completed" {{ ($filters['status'] ?? '') == 'completed' ? 'selected' : '' }}>Selesai / Sudah Kembali</option>

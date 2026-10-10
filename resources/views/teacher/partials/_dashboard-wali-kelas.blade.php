@@ -526,7 +526,7 @@
                                    class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 shadow-2xs">
                         </div>
 
-                        <select x-model="statusFilter" class="py-2 px-3 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 shadow-2xs">
+                        <select x-model="statusFilter" class="py-2 pl-3 pr-8 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 shadow-2xs">
                             <option value="all">Semua Status Kehadiran</option>
                             <option value="belum_hadir">Belum Hadir</option>
                             <option value="hadir">Hadir / Terlambat</option>

@@ -591,7 +591,7 @@
                 <!-- Modal Header -->
                 <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-850/50">
                     <div class="flex items-center gap-3 min-w-0">
-                        <img id="anecdote-student-photo" src="" alt="Foto Siswa" 
+                        <img id="anecdote-student-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Foto Siswa" 
                              class="w-10 h-10 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0">
                         <div class="min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">

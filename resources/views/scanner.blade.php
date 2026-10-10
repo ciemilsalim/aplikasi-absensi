@@ -240,7 +240,7 @@
             <div class="mt-3 mb-4">
                 <span id="modal-student-image-container"
                     class="inline-block h-20 w-20 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 ring-4 ring-slate-100 dark:ring-slate-800">
-                    <img id="modal-student-image" src="" alt="Foto Siswa" class="h-full w-full object-cover hidden">
+                    <img id="modal-student-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Foto Siswa" class="h-full w-full object-cover hidden">
                     <svg id="modal-student-placeholder" class="h-full w-full text-slate-300 dark:text-slate-600 p-2"
                         fill="currentColor" viewBox="0 0 24 24">
                         <path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />

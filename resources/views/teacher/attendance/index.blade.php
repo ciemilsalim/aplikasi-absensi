@@ -436,7 +436,7 @@
     <!-- Modal Foto Bukti -->
     <div id="photo-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xs hidden z-50 flex items-center justify-center p-4" onclick="closePhoto()">
         <div class="relative max-w-md w-full bg-slate-900 rounded-3xl overflow-hidden shadow-2xl p-2 border border-slate-700" onclick="event.stopPropagation()">
-            <img id="modal-image" src="" alt="Bukti Absensi" class="w-full h-auto rounded-2xl object-cover max-h-[75vh]">
+            <img id="modal-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Bukti Absensi" class="w-full h-auto rounded-2xl object-cover max-h-[75vh]">
             <button onclick="closePhoto()" class="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-xs transition-colors">
                 <span class="material-icons text-base">close</span>
             </button>
