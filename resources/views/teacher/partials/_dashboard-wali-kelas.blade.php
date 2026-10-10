@@ -699,31 +699,54 @@
             <!-- Kolom Kanan: Siswa Perlu Perhatian & Izin Keluar (1 col) -->
             <div class="lg:col-span-1 space-y-6">
                 
-                <!-- Siswa Perlu Perhatian -->
+                <!-- Siswa Perlu Perhatian (Early Warning Alert) -->
                 <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
-                    <div class="p-5 border-b border-slate-100 dark:border-slate-800">
-                        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span class="material-icons text-amber-500 text-lg">priority_high</span>
-                            Siswa Perlu Perhatian
-                        </h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Berdasarkan data 30 hari terakhir</p>
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <span class="material-icons text-amber-500 text-lg">priority_high</span>
+                                Siswa Perlu Perhatian
+                            </h3>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Deteksi dini presensi 30 hari terakhir</p>
+                        </div>
+                        @if(isset($studentsForAttentionWali) && $studentsForAttentionWali->isNotEmpty())
+                            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                                {{ $studentsForAttentionWali->count() }} Kasus
+                            </span>
+                        @endif
                     </div>
-                    <div class="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-60 overflow-y-auto no-scrollbar">
+                    <div class="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-72 overflow-y-auto no-scrollbar">
                         @forelse($studentsForAttentionWali as $student)
-                            <div class="p-3.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
-                                <img src="{{ $student->photo_url }}" 
-                                     onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';" 
-                                     class="h-9 w-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar" 
-                                     alt="{{ $student->name }}"
-                                     onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', 'NIS: {{ $student->nis ?? '-' }}')"
-                                     title="Klik untuk memperbesar foto siswa">
-                                <div class="min-w-0 flex-1">
-                                    <p class="font-bold text-xs text-slate-800 dark:text-white truncate">{{ $student->name }}</p>
-                                    <div class="flex gap-2 text-[10px] font-semibold mt-0.5">
-                                        @if($student->late_count > 0)<span class="text-rose-600 dark:text-rose-400">{{ $student->late_count }}x Terlambat</span>@endif
-                                        @if($student->alpha_count > 0)<span class="text-red-600 dark:text-red-400">{{ $student->alpha_count }}x Alpa</span>@endif
+                            <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <img src="{{ $student->photo_url }}" 
+                                         onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';" 
+                                         class="h-9 w-9 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar" 
+                                         alt="{{ $student->name }}"
+                                         onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', 'NIS: {{ $student->nis ?? '-' }}')"
+                                         title="Klik untuk memperbesar foto siswa">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <p class="font-bold text-xs text-slate-800 dark:text-white truncate">{{ $student->name }}</p>
+                                            @if(($student->risk_level ?? '') === 'high')
+                                                <span class="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">Kritis</span>
+                                            @elseif(($student->risk_level ?? '') === 'medium')
+                                                <span class="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">Waspada</span>
+                                            @endif
+                                        </div>
+                                        <div class="flex gap-2 text-[10px] font-semibold mt-0.5">
+                                            @if($student->alpha_count > 0)<span class="text-rose-600 dark:text-rose-400 font-bold">{{ $student->alpha_count }}x Alpa</span>@endif
+                                            @if($student->late_count > 0)<span class="text-amber-600 dark:text-amber-400">{{ $student->late_count }}x Terlambat</span>@endif
+                                        </div>
                                     </div>
                                 </div>
+                                @if(!empty($student->wa_link))
+                                    <a href="{{ $student->wa_link }}" target="_blank" 
+                                       title="Hubungi Orang Tua via WhatsApp ({{ $student->parent_name }})"
+                                       class="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 shrink-0 transition-all border border-emerald-200/60 dark:border-emerald-800/60">
+                                        <span class="material-icons text-base">chat</span>
+                                    </a>
+                                @endif
                             </div>
                         @empty
                             <div class="p-6 text-center text-xs text-slate-400 italic">

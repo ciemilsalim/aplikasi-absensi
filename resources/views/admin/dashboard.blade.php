@@ -325,6 +325,108 @@
             @endif
         </div>
 
+        <!-- Widget Deteksi Dini: Siswa Butuh Perhatian (Early Warning System) -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <span class="material-icons text-xl">warning_amber</span>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>Deteksi Dini Siswa Butuh Perhatian</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                                30 Hari Terakhir
+                            </span>
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Identifikasi siswa dengan akumulasi Alpa &ge; 1 atau Terlambat berulang untuk koordinasi Guru BK &amp; Wali Kelas
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-900/40">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                        <span>{{ $earlyWarningSummary['highRiskCount'] ?? 0 }} Kasus Kritis</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-900/40">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <span>{{ $earlyWarningSummary['mediumRiskCount'] ?? 0 }} Waspada</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                @if(isset($attentionStudents) && $attentionStudents->isNotEmpty())
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 max-h-96 overflow-y-auto no-scrollbar pr-1">
+                        @foreach($attentionStudents as $student)
+                            <div class="p-3.5 rounded-2xl border transition-all flex flex-col justify-between {{ $student->risk_level === 'high' ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-200/70 dark:border-rose-900/50 hover:border-rose-400' : 'bg-slate-50/70 dark:bg-slate-850/50 border-slate-200/70 dark:border-slate-800 hover:border-amber-400' }}">
+                                <div class="flex items-start gap-3">
+                                    <img src="{{ $student->photo_url }}" 
+                                         onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name) }}&color=0284c7&background=e0f2fe';"
+                                         class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0 cursor-pointer hover:ring-2 hover:ring-sky-500/50 hover:scale-105 active:scale-95 transition-all student-avatar"
+                                         alt="{{ $student->name }}"
+                                         onclick="previewStudentPhoto('{{ $student->photo_url }}', '{{ addslashes($student->name) }}', 'Kelas {{ $student->schoolClass->name ?? '-' }} &bull; NIS {{ $student->nis ?? '-' }}')">
+                                    
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center justify-between gap-1.5">
+                                            <h4 class="text-xs font-bold text-slate-800 dark:text-white truncate" title="{{ $student->name }}">
+                                                {{ $student->name }}
+                                            </h4>
+                                            @if($student->risk_level === 'high')
+                                                <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-500 text-white shrink-0">Kritis</span>
+                                            @elseif($student->risk_level === 'medium')
+                                                <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-500 text-white shrink-0">Waspada</span>
+                                            @else
+                                                <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-400 text-white shrink-0">Ringan</span>
+                                            @endif
+                                        </div>
+                                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                                            Kelas {{ $student->schoolClass->name ?? 'Tanpa Kelas' }} &bull; NIS: {{ $student->nis ?? '-' }}
+                                        </p>
+                                        
+                                        <div class="flex items-center gap-2 mt-2 text-[10px] font-bold">
+                                            @if($student->alpha_count > 0)
+                                                <span class="px-2 py-0.5 rounded-lg bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
+                                                    {{ $student->alpha_count }}x Alpa
+                                                </span>
+                                            @endif
+                                            @if($student->late_count > 0)
+                                                <span class="px-2 py-0.5 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+                                                    {{ $student->late_count }}x Terlambat
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-2 text-[11px]">
+                                    <span class="text-slate-500 dark:text-slate-400 truncate text-[10px]" title="{{ $student->recommendation }}">
+                                        {{ $student->recommendation }}
+                                    </span>
+                                    @if(!empty($student->wa_link))
+                                        <a href="{{ $student->wa_link }}" target="_blank"
+                                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] shadow-xs shrink-0 transition-all">
+                                            <span class="material-icons text-xs">chat</span>
+                                            <span>Hubungi Ortu</span>
+                                        </a>
+                                    @else
+                                        <span class="text-[10px] text-slate-400 italic">No HP (-)</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="p-6 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/30 text-center flex items-center justify-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                        <span class="material-icons text-emerald-600 text-base">check_circle</span>
+                        <span>Seluruh siswa memiliki rekam kehadiran baik. Tidak ada kasus Alpa atau keterlambatan berulang.</span>
+                    </div>
+                @endif
+            </div>
+        </div>
+
         <!-- Panel Pemantauan Langsung (Izin Keluar & Belum Pulang) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
             

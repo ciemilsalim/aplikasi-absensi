@@ -293,17 +293,13 @@ class TeacherRoleContextService
         $avgRate = count($validPercentages) > 0 ? round(array_sum($validPercentages) / count($validPercentages)) : 0;
         $trendInsight = $avgRate >= 80 ? 'Stabil di atas target 80%' : ($avgRate >= 60 ? 'Perlu ditingkatkan menuju target 80%' : 'Perlu perhatian khusus wali kelas');
 
-        // Siswa yang perlu perhatian khusus
-        $studentsForAttention = Student::whereIn('id', $studentIds)
-            ->withCount([
-                'attendances as late_count' => fn($query) => $query->where('status', 'terlambat')->where('attendance_time', '>=', $thirtyDaysAgo),
-                'attendances as alpha_count' => fn($query) => $query->where('status', 'alpa')->where('attendance_time', '>=', $thirtyDaysAgo)
-            ])
-            ->get()
-            ->filter(fn($student) => ($student->late_count > 0 || $student->alpha_count > 0))
-            ->sortByDesc(fn($student) => $student->late_count + $student->alpha_count)
-            ->take(5)
-            ->values();
+        // Siswa yang perlu perhatian khusus (Early Warning System)
+        $earlyWarningService = app(\App\Services\Attendance\EarlyWarningService::class);
+        $studentsForAttention = $earlyWarningService->getAttentionStudents([
+            'class_id' => $class?->id,
+            'days' => 30,
+            'limit' => 10,
+        ]);
 
         $dailyPresencePercentage = 0;
         if ($totalStudents > 0) {
