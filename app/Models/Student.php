@@ -180,7 +180,7 @@ class Student extends Model
 
     public function schoolClass()
     {
-        return $this->belongsTo(SchoolClass::class);
+        return $this->belongsTo(SchoolClass::class)->withoutGlobalScope('academic_period');
     }
 
     /**

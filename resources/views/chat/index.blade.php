@@ -103,13 +103,13 @@
                 </div>
 
                 <!-- Area Obrolan -->
-                <div class="flex-1 flex flex-col min-h-0 min-w-0 @if(!$activeConversation) hidden lg:flex @else fixed inset-0 z-50 lg:static lg:z-auto @endif bg-slate-50/50 dark:bg-slate-950/50 h-full overflow-hidden">
+                <div class="flex-1 flex flex-col min-h-0 min-w-0 @if(!$activeConversation) hidden lg:flex @else fixed inset-0 z-50 lg:static lg:z-auto @endif bg-slate-100 dark:bg-slate-950 h-full overflow-hidden">
                     @if($activeConversation)
                         <div class="flex flex-col h-full w-full min-h-0 min-w-0 overflow-hidden">
                             <!-- Header Obrolan Aktif -->
-                            <div class="p-4 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 flex items-center gap-3 shrink-0">
-                                <a href="{{ route('chat.index') }}" class="lg:hidden p-1.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                                    <span class="material-icons text-lg">arrow_back</span>
+                            <div class="px-4 py-3 sm:p-4 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 flex items-center gap-3 shrink-0 shadow-xs">
+                                <a href="{{ route('chat.index') }}" class="lg:hidden p-2 -ml-1 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" aria-label="Kembali ke Daftar Kontak">
+                                    <span class="material-icons text-xl">arrow_back</span>
                                 </a>
                                 
                                 @php
@@ -180,7 +180,7 @@
                                     </div>
                                     @foreach($dailyMessages as $message)
                                         <div class="flex {{ $message->user_id === Auth::id() ? 'justify-end' : 'justify-start' }}">
-                                            <div class="max-w-xs sm:max-w-md p-3.5 rounded-3xl shadow-2xs {{ $message->user_id === Auth::id() ? 'bg-sky-600 text-white rounded-br-xs' : 'bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-100 border border-slate-200/70 dark:border-slate-800 rounded-bl-xs' }}">
+                                            <div class="min-w-[80px] max-w-xs sm:max-w-md px-4 py-3 rounded-2xl shadow-2xs {{ $message->user_id === Auth::id() ? 'bg-sky-600 text-white rounded-br-xs' : 'bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-100 border border-slate-200/70 dark:border-slate-800 rounded-bl-xs' }}">
                                                 <p class="text-xs leading-relaxed break-words">{!! nl2br(e($message->body)) !!}</p>
                                                 <p class="text-[10px] mt-1 text-right {{ $message->user_id === Auth::id() ? 'text-sky-200' : 'text-slate-400' }}">
                                                     {{ $message->created_at->format('H:i') }}
@@ -189,9 +189,18 @@
                                         </div>
                                     @endforeach
                                 @empty
-                                    <div class="text-center py-12 text-slate-400 text-xs">
-                                        <span class="material-icons text-3xl mb-2 text-slate-300">chat</span>
-                                        <p>Belum ada pesan dalam percakapan ini.</p>
+                                    <div class="flex flex-col items-center justify-center py-16 px-4 text-center">
+                                        <div class="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-3">
+                                            <span class="material-icons text-2xl">chat_bubble_outline</span>
+                                        </div>
+                                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200">Mulai Percakapan</h4>
+                                        <p class="text-xs text-slate-400 mt-1 max-w-xs">
+                                            @if(request()->routeIs('chat.admin'))
+                                                Kirim pesan ke Admin Sekolah mengenai kendala akun, administrasi, atau bantuan sistem.
+                                            @else
+                                                Konsultasikan kehadiran, perkembangan belajar, atau kendala siswa dengan Wali Kelas.
+                                            @endif
+                                        </p>
                                     </div>
                                 @endforelse
                             </div>
@@ -208,7 +217,7 @@
                                                   @input="autoExpand($el)"
                                                   @keydown.enter.exact="if(!window.matchMedia('(max-width: 640px)').matches) { $event.preventDefault(); if(messageText.trim().length > 0) $refs.chatForm.requestSubmit(); }"
                                                   class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 focus:bg-white dark:focus:bg-slate-850 border border-transparent transition-all resize-none max-h-32 min-h-[44px] leading-relaxed no-scrollbar" 
-                                                  placeholder="Tulis pesan... (Enter untuk kirim, Shift+Enter baris baru)" 
+                                                  placeholder="Tulis pesan..." 
                                                   autocomplete="off" 
                                                   required></textarea>
                                     </div>

@@ -5,7 +5,7 @@
     $pendingLeaveRequestsCount = 0;
     $isChatConversation = (
         request()->routeIs(['admin.chat.*', 'chat.*']) && 
-        (request()->filled('selectedParent') || request()->route('selectedParent') || request()->route('conversation') || (isset($selectedParent) && $selectedParent && $selectedParent->exists) || (isset($activeConversation) && $activeConversation))
+        (request()->routeIs('chat.admin') || request()->filled('selectedParent') || request()->route('selectedParent') || request()->route('conversation') || (isset($selectedParent) && $selectedParent && $selectedParent->exists) || (isset($activeConversation) && $activeConversation))
     );
     
     if (auth()->check()) {

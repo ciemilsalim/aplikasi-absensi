@@ -128,20 +128,40 @@ class ChatController extends Controller
             if ($user->hasRole('parent')) {
                 $parent = $user->parent;
                 if (!$parent) return collect();
+
+                $conversationIds = Conversation::where('parent_id', $parent->id)->pluck('id')->toArray();
+
                 $students = $parent->students()->with('schoolClass.homeroomTeacher')->get();
                 foreach ($students as $student) {
-                    if ($student->schoolClass && $student->schoolClass->homeroomTeacher) {
-                        $conversation = Conversation::firstOrCreate(['parent_id' => $parent->id, 'teacher_id' => $student->schoolClass->homeroomTeacher->id, 'student_id' => $student->id]);
+                    $schoolClass = $student->schoolClass;
+                    $teacher = $schoolClass?->homeroomTeacher;
+                    if ($teacher) {
+                        $conversation = Conversation::firstOrCreate([
+                            'parent_id' => $parent->id,
+                            'teacher_id' => $teacher->id,
+                            'student_id' => $student->id
+                        ]);
                         $conversationIds[] = $conversation->id;
                     }
                 }
-            } elseif ($user->hasRole('teacher') && $user->teacher?->homeroomClass) {
+            } elseif ($user->hasRole('teacher')) {
                 $teacher = $user->teacher;
-                $students = $teacher->homeroomClass->students()->with('parents')->get();
-                foreach ($students as $student) {
-                    foreach ($student->parents as $parent) {
-                        $conversation = Conversation::firstOrCreate(['parent_id' => $parent->id, 'teacher_id' => $teacher->id, 'student_id' => $student->id]);
-                        $conversationIds[] = $conversation->id;
+                if (!$teacher) return collect();
+
+                $conversationIds = Conversation::where('teacher_id', $teacher->id)->pluck('id')->toArray();
+
+                $homeroomClasses = $teacher->allHomeroomClasses()->get();
+                foreach ($homeroomClasses as $hClass) {
+                    $students = $hClass->students()->with('parents')->get();
+                    foreach ($students as $student) {
+                        foreach ($student->parents as $parent) {
+                            $conversation = Conversation::firstOrCreate([
+                                'parent_id' => $parent->id,
+                                'teacher_id' => $teacher->id,
+                                'student_id' => $student->id
+                            ]);
+                            $conversationIds[] = $conversation->id;
+                        }
                     }
                 }
             }
@@ -150,8 +170,15 @@ class ChatController extends Controller
             return collect();
         }
 
-        return Conversation::whereIn('id', $conversationIds)
-            ->with(['student.schoolClass', 'teacher.user', 'teacher.homeroomClass', 'parent.user'])
+        return Conversation::whereIn('id', array_unique($conversationIds))
+            ->with([
+                'student.schoolClass',
+                'teacher.user',
+                'teacher.homeroomClass' => function ($q) {
+                    $q->withoutGlobalScope('academic_period');
+                },
+                'parent.user'
+            ])
             ->addSelect(['*', 'last_message_at' => Message::select('created_at')
                 ->whereColumn('conversation_id', 'conversations.id')
                 ->orderByDesc('created_at')
