@@ -21,6 +21,11 @@ class GuideController extends Controller
         if (Auth::check()) {
             $user = Auth::user();
 
+            // Pengguna dengan role parent diarahkan ke panduan khusus orang tua yang relevan
+            if ($user->hasRole('parent') || $user->parent !== null) {
+                return redirect()->route('parent.guide');
+            }
+
             if ($user->hasAnyRole(['wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster'])) {
                 $role = 'supervisor';
                 $userRoleLabel = 'Pimpinan / Wakasek Kurikulum / Kepala Sekolah';
@@ -30,9 +35,6 @@ class GuideController extends Controller
             } elseif ($user->hasRole('teacher') || $user->teacher !== null) {
                 $role = 'teacher';
                 $userRoleLabel = 'Guru Mata Pelajaran & Wali Kelas';
-            } elseif ($user->hasRole('parent') || $user->parent !== null) {
-                $role = 'parent';
-                $userRoleLabel = 'Orang Tua / Wali Murid';
             } elseif ($user->hasRole('satpam') || $user->hasRole('guru_piket')) {
                 $role = 'satpam';
                 $userRoleLabel = 'Petugas Piket & Satpam';

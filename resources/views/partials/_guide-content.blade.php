@@ -431,58 +431,81 @@
 
     <!-- ================= 4. PANDUAN ORANG TUA / WALI ================= -->
     <div x-show="activeTab === 'all' || activeTab === 'parent'" class="space-y-6">
-        <div class="flex items-center gap-3 pb-2 border-b border-slate-200/80 dark:border-slate-800">
-            <div class="p-2.5 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">
-                <span class="material-icons text-2xl">family_restroom</span>
+        <div class="flex items-center justify-between gap-3 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">
+                    <span class="material-icons text-2xl">family_restroom</span>
+                </div>
+                <div>
+                    <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">Panduan untuk Orang Tua & Wali Murid</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Pantau kehadiran harian, pengajuan izin/sakit digital, E-dispensasi, dan obrolan wali kelas</p>
+                </div>
             </div>
-            <div>
-                <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">Panduan untuk Orang Tua & Wali Murid</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Pantau kehadiran putra/putri Anda dan kirim surat izin sakit secara digital</p>
-            </div>
+            <a href="{{ route('parent.guide') }}" 
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-xs shrink-0">
+                <span class="material-icons text-sm">open_in_new</span>
+                <span>Buka Panduan Lengkap Orang Tua</span>
+            </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <!-- Status Warna -->
-            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4"
-                 x-show="matchesSearch('orang tua status hadir terlambat sakit izin alpa anak')">
-                <h3 class="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base flex items-center gap-2">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3"
+                 x-show="matchesSearch('orang tua status hadir terlambat sakit izin alpa anak dispensasi')">
+                <h3 class="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
                     <span class="material-icons text-emerald-500 text-lg">verified</span>
                     Arti Status & Warna Kehadiran
                 </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                    <div class="p-3 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-2.5">
-                        <span class="px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">Hadir</span>
-                        <span class="text-slate-600 dark:text-slate-400">Tepat waktu di sekolah</span>
+                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <span class="font-black text-emerald-600 dark:text-emerald-400">Hadir:</span> Tepat waktu
                     </div>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-2.5">
-                        <span class="px-2.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300">Terlambat</span>
-                        <span class="text-slate-600 dark:text-slate-400">Scan lewat batas waktu</span>
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <span class="font-black text-rose-600 dark:text-rose-400">Terlambat:</span> Lewat jam
                     </div>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-2.5">
-                        <span class="px-2.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300">Izin</span>
-                        <span class="text-slate-600 dark:text-slate-400">Ada surat permohonan</span>
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <span class="font-black text-purple-600 dark:text-purple-400">Izin:</span> Urusan keluarga
                     </div>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-2.5">
-                        <span class="px-2.5 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300">Sakit</span>
-                        <span class="text-slate-600 dark:text-slate-400">Surat dokter terlampir</span>
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <span class="font-black text-amber-600 dark:text-amber-400">Sakit:</span> Ada surat/keterangan
+                    </div>
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <span class="font-black text-teal-600 dark:text-teal-400">Dispensasi:</span> Pulang cepat
+                    </div>
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <span class="font-black text-rose-700 dark:text-rose-300">Alpa:</span> Tanpa keterangan
                     </div>
                 </div>
             </div>
 
             <!-- Cara Izin -->
-            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4"
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3"
                  x-show="matchesSearch('orang tua ajukan izin sakit foto surat dokter langkah')">
-                <h3 class="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base flex items-center gap-2">
+                <h3 class="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
                     <span class="material-icons text-purple-500 text-lg">assignment</span>
-                    Langkah Mengajukan Surat Izin / Sakit
+                    Langkah Pengajuan Izin / Sakit
                 </h3>
-                <ol class="list-decimal list-inside space-y-2 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    <li>Buka halaman dasbor orang tua, lalu klik <strong>Ajukan Izin atau Sakit</strong>.</li>
-                    <li>Pilih nama siswa & pilih jenis keterangan (<strong>Izin</strong> atau <strong>Sakit</strong>).</li>
-                    <li>Tentukan rentang tanggal dan tuliskan alasan singkat.</li>
-                    <li>Lampirkan foto surat dokter / surat izin bertanda tangan orang tua.</li>
-                    <li>Klik <strong>Simpan Pengajuan</strong> dan tunggu persetujuan dari sekolah.</li>
+                <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                    <li>Buka Dasbor Orang Tua &rarr; klik <strong>Ajukan Izin / Sakit</strong>.</li>
+                    <li>Pilih nama siswa & tipe (<strong>Izin</strong> atau <strong>Sakit</strong>).</li>
+                    <li>Tentukan rentang tanggal & tulis alasan.</li>
+                    <li>Lampirkan foto surat dokter / surat orang tua.</li>
+                    <li>Tekan <strong>Simpan Pengajuan</strong>.</li>
                 </ol>
+            </div>
+
+            <!-- Komunikasi & E-Dispensasi -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3"
+                 x-show="matchesSearch('orang tua chat obrolan wali kelas dispensasi satpam gerbang ekskul')">
+                <h3 class="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                    <span class="material-icons text-sky-500 text-lg">forum</span>
+                    Obrolan & E-Dispensasi Gerbang
+                </h3>
+                <ul class="list-disc list-inside space-y-1.5 text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                    <li><strong>Chat Wali Kelas:</strong> Konsultasi akademik & konfirmasi kehadiran anak.</li>
+                    <li><strong>Chat Admin:</strong> Bantuan teknis & masalah koneksi data NISN.</li>
+                    <li><strong>E-Dispensasi:</strong> Tiket Pass Card pulang cepat terintegrasi Satpam.</li>
+                </ul>
             </div>
         </div>
     </div>

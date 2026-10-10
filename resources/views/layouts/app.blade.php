@@ -313,7 +313,10 @@
                                 <span>&copy; {{ date('Y') }}</span>
                             </div>
                             <div class="flex items-center gap-3 text-[11px]">
-                                <a href="{{ route('guide') }}" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors flex items-center gap-1">
+                                @php
+                                    $footerGuideRoute = (auth()->check() && (auth()->user()->role === 'parent' || auth()->user()->hasRole('parent') || auth()->user()->parent !== null)) ? route('parent.guide') : route('guide');
+                                @endphp
+                                <a href="{{ $footerGuideRoute }}" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors flex items-center gap-1">
                                     <span class="material-icons text-xs text-sky-500">auto_stories</span>
                                     <span>Panduan Pengguna</span>
                                 </a>
@@ -970,8 +973,8 @@
                                                  <span class="material-icons text-lg">auto_stories</span>
                                              </div>
                                              <div>
-                                                 <div class="text-xs font-bold">Panduan Penggunaan Aplikasi</div>
-                                                 <div class="text-[10px] text-sky-600 dark:text-sky-400">Petunjuk izin & pemantauan kehadiran</div>
+                                                 <div class="text-xs font-bold">Panduan Orang Tua</div>
+                                                 <div class="text-[10px] text-sky-600 dark:text-sky-400">Petunjuk izin, presensi & fitur aplikasi</div>
                                              </div>
                                          </a>
 
@@ -1004,10 +1007,12 @@
                                          </a>
                                      @endif
 
+                                     @unless(auth()->user()->role === 'parent' || auth()->user()->hasRole('parent') || auth()->user()->parent !== null)
                                      <a href="{{ route('guide') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 px-4 py-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/60 rounded-xl hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
                                          <span class="material-icons text-sky-600 dark:text-sky-400 text-xl">auto_stories</span>
                                          <span class="text-xs font-bold text-sky-800 dark:text-sky-200">Panduan Penggunaan</span>
                                      </a>
+                                     @endunless
 
                                      <button type="button" 
                                              @click="mobileMenuOpen = false; showMobileLogoutConfirm = true" 
@@ -1021,7 +1026,7 @@
                              <!-- Mobile Drawer Footer Info -->
                              <div class="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
                                  <div class="flex items-center gap-2">
-                                     <a href="{{ route('guide') }}" @click="mobileMenuOpen = false" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors">
+                                     <a href="{{ (auth()->user()->role === 'parent' || auth()->user()->hasRole('parent') || auth()->user()->parent !== null) ? route('parent.guide') : route('guide') }}" @click="mobileMenuOpen = false" class="hover:text-sky-600 dark:hover:text-sky-400 font-semibold transition-colors">
                                          Panduan
                                      </a>
                                      <span>&bull;</span>
