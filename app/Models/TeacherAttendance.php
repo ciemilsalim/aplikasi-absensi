@@ -14,11 +14,16 @@ class TeacherAttendance extends Model
         'status',
         'latitude',
         'longitude',
+        'gps_accuracy',
+        'is_mock_location',
+        'device_info',
         'photo_evidence',
         'checkout_time',
         'checkout_photo_evidence',
         'checkout_latitude',
         'checkout_longitude',
+        'checkout_gps_accuracy',
+        'checkout_is_mock_location',
         'academic_year_id',
         'semester_id',
     ];
@@ -30,6 +35,10 @@ class TeacherAttendance extends Model
      */
     protected $casts = [
         'checkout_time' => 'datetime',
+        'is_mock_location' => 'boolean',
+        'checkout_is_mock_location' => 'boolean',
+        'gps_accuracy' => 'float',
+        'checkout_gps_accuracy' => 'float',
     ];
 
     public function teacher()
