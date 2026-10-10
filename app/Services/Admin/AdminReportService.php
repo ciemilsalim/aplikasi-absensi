@@ -11,6 +11,8 @@ use App\Models\Semester;
 use App\Models\Setting;
 use App\Models\Student;
 use App\Models\SubjectAttendance;
+use App\Models\Teacher;
+use App\Models\TeacherAttendance;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -707,5 +709,106 @@ class AdminReportService
 
         $pdf = Pdf::loadView('admin.reports.no_checkout_pdf', $pdfData);
         return $pdf->stream('laporan-tidak-absen-pulang.pdf');
+    }
+
+    /**
+     * Mengambil rekapitulasi kehadiran per guru untuk bulan dan tahun tertentu.
+     */
+    public function getTeacherAttendanceRecap(int $month, int $year, ?int $activeSemesterId = null): Collection
+    {
+        $teachers = Teacher::with(['attendances' => function ($q) use ($month, $year, $activeSemesterId) {
+            $q->whereMonth('created_at', $month)->whereYear('created_at', $year);
+            if ($activeSemesterId) {
+                $q->where('semester_id', $activeSemesterId);
+            }
+        }])->orderBy('name')->get();
+
+        return $teachers->map(function ($teacher) {
+            return [
+                'name' => $teacher->name,
+                'nip' => $teacher->nip,
+                'hadir' => $teacher->attendances->whereIn('status', ['tepat_waktu', 'terlambat'])->count(),
+                'terlambat' => $teacher->attendances->where('status', 'terlambat')->count(),
+                'sakit' => $teacher->attendances->where('status', 'sakit')->count(),
+                'izin' => $teacher->attendances->where('status', 'izin')->count(),
+                'alpa' => $teacher->attendances->where('status', 'alpa')->count(),
+            ];
+        });
+    }
+
+    /**
+     * Menyiapkan seluruh data dasbor laporan presensi guru.
+     */
+    public function getTeacherAttendanceReportData(int $month, int $year, ?int $activeSemesterId = null): array
+    {
+        // 1. Statistik Hari Ini
+        $today = Carbon::today();
+        $totalTeachers = Teacher::count();
+        $presentToday = TeacherAttendance::whereDate('created_at', $today)
+            ->whereIn('status', ['tepat_waktu', 'terlambat'])
+            ->count();
+        $lateToday = TeacherAttendance::whereDate('created_at', $today)
+            ->where('status', 'terlambat')
+            ->count();
+        $absentToday = TeacherAttendance::whereDate('created_at', $today)
+            ->where('status', 'alpa')
+            ->count();
+        $leaveToday = TeacherAttendance::whereDate('created_at', $today)
+            ->whereIn('status', ['izin', 'sakit'])
+            ->count();
+
+        // 2. Chart Data (Bulanan)
+        $driver = DB::connection()->getDriverName();
+        $dateExpr = ($driver === 'sqlite') ? "date(created_at)" : "DATE(created_at)";
+
+        $attendanceTrend = TeacherAttendance::select(DB::raw("{$dateExpr} as date"), 'status', DB::raw('count(*) as count'))
+            ->when($activeSemesterId, function ($query) use ($activeSemesterId) {
+                return $query->where('semester_id', $activeSemesterId);
+            })
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->groupBy('date', 'status')
+            ->get();
+
+        $dates = [];
+        $dataPresent = [];
+        $dataLate = [];
+        $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
+
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $date = Carbon::createFromDate($year, $month, $i)->format('Y-m-d');
+            $dates[] = $i;
+            $dataPresent[] = $attendanceTrend->where('date', $date)->whereIn('status', ['tepat_waktu', 'terlambat'])->sum('count');
+            $dataLate[] = $attendanceTrend->where('date', $date)->where('status', 'terlambat')->sum('count');
+        }
+
+        // 3. Rekapitulasi per Guru
+        $recap = $this->getTeacherAttendanceRecap($month, $year, $activeSemesterId);
+
+        return compact(
+            'totalTeachers', 'presentToday', 'lateToday', 'absentToday', 'leaveToday',
+            'dates', 'dataPresent', 'dataLate',
+            'recap', 'month', 'year'
+        );
+    }
+
+    /**
+     * Membuat dokumen PDF rekap presensi bulanan guru.
+     */
+    public function generateTeacherAttendancePdfReport(int $month, int $year, ?int $activeSemesterId = null)
+    {
+        $monthName = Carbon::createFromDate($year, $month)->translatedFormat('F Y');
+        $recap = $this->getTeacherAttendanceRecap($month, $year, $activeSemesterId);
+
+        $dates = [];
+        $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
+        for ($i = 1; $i <= $daysInMonth; $i++) {
+            $dates[] = $i;
+        }
+
+        $pdfData = array_merge($this->getCommonPdfData(), compact('recap', 'monthName', 'month', 'year', 'dates'));
+
+        $pdf = Pdf::loadView('admin.reports.teacher.pdf', $pdfData);
+        return $pdf->stream('laporan-absensi-guru-' . $monthName . '.pdf');
     }
 }

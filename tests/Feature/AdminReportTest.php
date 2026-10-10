@@ -222,4 +222,32 @@ class AdminReportTest extends TestCase
         $response->assertStatus(200);
         $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
     }
+
+    public function test_admin_can_view_teacher_report_index(): void
+    {
+        $ctx = $this->setupAdminContext();
+
+        $response = $this->actingAs($ctx['admin'])->get(route('admin.reports.teacher.index', [
+            'month' => 10,
+            'year' => 2026,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.reports.teacher.index');
+        $response->assertViewHas('totalTeachers');
+        $response->assertViewHas('recap');
+    }
+
+    public function test_admin_can_generate_teacher_report_pdf(): void
+    {
+        $ctx = $this->setupAdminContext();
+
+        $response = $this->actingAs($ctx['admin'])->get(route('admin.reports.teacher.print', [
+            'month' => 10,
+            'year' => 2026,
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
+    }
 }
