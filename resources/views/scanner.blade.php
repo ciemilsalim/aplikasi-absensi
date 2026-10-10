@@ -65,10 +65,30 @@
         <div class="w-full max-w-xl text-center">
             <!-- Jam Digital dan Tanggal Kiosk -->
             <div class="mb-6">
-                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-100 dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 shadow-2xs">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span id="current-date">Memuat tanggal...</span>
+                <div class="flex items-center justify-center gap-2 flex-wrap mb-2">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-100 dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="current-date">Memuat tanggal...</span>
+                    </div>
+
+                    <!-- Status Jaringan (Online / Offline) -->
+                    <div id="network-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs transition-colors">
+                        <span id="network-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span id="network-text">Online</span>
+                    </div>
+
+                    <!-- Antrean Offline Badge & Tombol Sinkronisasi -->
+                    <div id="offline-queue-container" class="hidden inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-xs font-bold text-amber-800 dark:text-amber-200 shadow-2xs">
+                        <span class="material-icons text-sm text-amber-600 dark:text-amber-400">cloud_queue</span>
+                        <span><span id="offline-queue-count">0</span> Antrean Offline</span>
+                        <button id="btn-sync-offline" type="button" title="Sinkronkan antrean sekarang"
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-semibold transition-all cursor-pointer">
+                            <span id="sync-icon" class="material-icons text-xs">sync</span>
+                            <span>Sinkron</span>
+                        </button>
+                    </div>
                 </div>
+
                 <p id="current-time" class="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight font-mono">
                     --:--:--
                 </p>
@@ -233,6 +253,13 @@
         </div>
     </div>
 
+    <!-- Floating Toast Notification for Sync & Offline Info -->
+    <div id="kiosk-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform translate-y-4">
+        <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-slate-900/90 dark:bg-slate-100/95 backdrop-blur text-white dark:text-slate-900 shadow-2xl border border-slate-700/50 dark:border-slate-300 text-xs font-bold">
+            <span id="kiosk-toast-icon" class="material-icons text-emerald-400 dark:text-emerald-600 text-base">cloud_done</span>
+            <span id="kiosk-toast-message">Notifikasi</span>
+        </div>
+    </div>
 
 @push('scripts')
     {{-- Library untuk Face Recognition --}}
@@ -247,8 +274,11 @@
             let lastScanTime = 0;
             const scanCooldown = 3000; // Jeda 3 detik antar scan
 
-            // Data Siswa untuk Face Recognition
+            // Data Siswa untuk Face Recognition & Fast Lookup
             const studentsWithPhotos = @json($students);
+            const studentLookup = new Map();
+            studentsWithPhotos.forEach(s => studentLookup.set(s.unique_id, s));
+
             let faceMatcher = null;
             let isModelsLoaded = false;
             let faceScanInterval = null;
@@ -275,6 +305,25 @@
             const faceCanvas = document.getElementById('face-canvas'); // NEW
             const faceStatus = document.getElementById('face-status'); // NEW
             const faceSwitchButton = document.getElementById('face-camera-switch-button');
+
+            // Elemen Status Jaringan & Antrean Kiosk Offline
+            const netBadge = document.getElementById('network-status-badge');
+            const netDot = document.getElementById('network-dot');
+            const netText = document.getElementById('network-text');
+            const queueContainer = document.getElementById('offline-queue-container');
+            const queueCount = document.getElementById('offline-queue-count');
+            const btnSync = document.getElementById('btn-sync-offline');
+            const syncIcon = document.getElementById('sync-icon');
+
+            // Ambil GPS sedini mungkin saat halaman dibuka
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userCoordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+                    },
+                    (err) => { console.warn("GPS belum aktif/diizinkan:", err); }
+                );
+            }
 
             // Objek untuk library scanner
             let html5QrCode = null;
@@ -416,9 +465,247 @@
                 processAttendance(decodedText);
             }
 
-            // Mengirim data absensi ke server
+            // === INDEXEDDB OFFLINE BUFFER QUEUE ===
+            const DB_NAME = 'SiasekKioskDB';
+            const DB_VERSION = 1;
+            const STORE_NAME = 'offline_scans';
+            let dbInstance = null;
+
+            function openKioskDB() {
+                return new Promise((resolve, reject) => {
+                    if (dbInstance) return resolve(dbInstance);
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains(STORE_NAME)) {
+                            db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        }
+                    };
+                    request.onsuccess = (event) => {
+                        dbInstance = event.target.result;
+                        resolve(dbInstance);
+                    };
+                    request.onerror = (event) => {
+                        reject(event.target.error);
+                    };
+                });
+            }
+
+            async function saveOfflineScan(scanItem) {
+                const db = await openKioskDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, 'readwrite');
+                    const store = tx.objectStore(STORE_NAME);
+                    scanItem.client_uuid = 'kiosk-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                    const req = store.add(scanItem);
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            async function getOfflineScans() {
+                const db = await openKioskDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, 'readonly');
+                    const store = tx.objectStore(STORE_NAME);
+                    const req = store.getAll();
+                    req.onsuccess = () => resolve(req.result || []);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            async function deleteOfflineScans(ids) {
+                if (!ids || ids.length === 0) return;
+                const db = await openKioskDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, 'readwrite');
+                    const store = tx.objectStore(STORE_NAME);
+                    ids.forEach(id => store.delete(id));
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                });
+            }
+
+            function updateNetworkStatus() {
+                const isOnline = navigator.onLine;
+                if (netBadge && netDot && netText) {
+                    if (isOnline) {
+                        netBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs transition-colors';
+                        netDot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+                        netText.textContent = 'Online';
+                    } else {
+                        netBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-xs font-bold text-amber-700 dark:text-amber-300 shadow-2xs transition-colors';
+                        netDot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+                        netText.textContent = 'Mode Offline';
+                    }
+                }
+            }
+
+            async function updateOfflineUI(count = null) {
+                if (count === null) {
+                    try {
+                        const items = await getOfflineScans();
+                        count = items.length;
+                    } catch (e) {
+                        count = 0;
+                    }
+                }
+
+                if (queueContainer && queueCount) {
+                    queueCount.textContent = count;
+                    if (count > 0) {
+                        queueContainer.classList.remove('hidden');
+                    } else {
+                        queueContainer.classList.add('hidden');
+                    }
+                }
+            }
+
+            function setSyncButtonState(isBusy) {
+                if (!syncIcon || !btnSync) return;
+                if (isBusy) {
+                    syncIcon.classList.add('animate-spin');
+                    btnSync.disabled = true;
+                    btnSync.classList.add('opacity-70', 'cursor-not-allowed');
+                } else {
+                    syncIcon.classList.remove('animate-spin');
+                    btnSync.disabled = false;
+                    btnSync.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
+            }
+
+            function showToastNotification(message, icon = 'cloud_done', isError = false) {
+                const toast = document.getElementById('kiosk-toast');
+                const toastMsg = document.getElementById('kiosk-toast-message');
+                const toastIcon = document.getElementById('kiosk-toast-icon');
+                if (!toast || !toastMsg) return;
+
+                toastMsg.textContent = message;
+                if (toastIcon) {
+                    toastIcon.textContent = icon;
+                    if (isError) {
+                        toastIcon.className = 'material-icons text-rose-400 dark:text-rose-600 text-base';
+                    } else {
+                        toastIcon.className = 'material-icons text-emerald-400 dark:text-emerald-600 text-base';
+                    }
+                }
+
+                toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                toast.classList.add('opacity-100', 'translate-y-0');
+
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                }, 3500);
+            }
+
+            let isSyncing = false;
+            async function syncOfflineQueue(isManual = false) {
+                if (isSyncing || !navigator.onLine) {
+                    if (isManual && !navigator.onLine) {
+                        showToastNotification("Perangkat masih offline, hubungkan internet terlebih dahulu.", 'wifi_off', true);
+                    }
+                    return;
+                }
+
+                try {
+                    const items = await getOfflineScans();
+                    if (items.length === 0) {
+                        updateOfflineUI(0);
+                        if (isManual) {
+                            showToastNotification("Antrean kosong, seluruh data presensi telah tersimpan di server.", 'done_all');
+                        }
+                        return;
+                    }
+
+                    isSyncing = true;
+                    setSyncButtonState(true);
+
+                    // Kirim batch maksimal 100 record per request
+                    const batch = items.slice(0, 100);
+                    const payload = {
+                        scans: batch.map(item => ({
+                            client_uuid: item.client_uuid,
+                            student_unique_id: item.student_unique_id,
+                            latitude: item.latitude,
+                            longitude: item.longitude,
+                            scanned_at: item.scanned_at
+                        }))
+                    };
+
+                    const response = await fetch("{{ route('attendance.sync_offline') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const resData = await response.json();
+                        const processedIds = batch.map(b => b.id);
+                        await deleteOfflineScans(processedIds);
+
+                        const remainingItems = await getOfflineScans();
+                        updateOfflineUI(remainingItems.length);
+
+                        showToastNotification(`Sinkronisasi berhasil: ${resData.synced_count} presensi tercatat di server.`);
+
+                        if (remainingItems.length > 0) {
+                            setTimeout(() => syncOfflineQueue(), 1500);
+                        }
+                    } else {
+                        if (isManual) {
+                            showToastNotification("Gagal menyinkronkan data ke server (Status: " + response.status + ")", 'error', true);
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Kesalahan auto-sync antrean offline:", e);
+                    if (isManual) {
+                        showToastNotification("Koneksi bermasalah saat menyinkronkan.", 'wifi_off', true);
+                    }
+                } finally {
+                    isSyncing = false;
+                    setSyncButtonState(false);
+                }
+            }
+
+            // Mengirim data absensi ke server (dengan fallback ke IndexedDB offline queue)
             function processAttendance(studentId) {
-                // Tampilkan loading spinner atau sejenisnya jika perlu
+                const nowIso = new Date().toISOString();
+                const studentMeta = studentLookup.get(studentId) || null;
+                const studentDisplayName = studentMeta ? studentMeta.name : (studentId.length > 20 ? 'Siswa' : studentId);
+                const currentCoords = userCoordinates || { latitude: 0, longitude: 0 };
+
+                // Jika terdeteksi offline secara eksplisit, simpan langsung ke IndexedDB
+                if (!navigator.onLine) {
+                    saveOfflineScan({
+                        student_unique_id: studentId,
+                        latitude: currentCoords.latitude,
+                        longitude: currentCoords.longitude,
+                        scanned_at: nowIso,
+                        student_name: studentDisplayName
+                    }).then(() => {
+                        showModal({
+                            status: 'clock_in_offline',
+                            student_name: studentDisplayName,
+                            message: 'Perangkat sedang offline. Presensi berhasil disimpan di perangkat dan akan disinkronkan saat terhubung internet.',
+                            student_photo_url: studentMeta ? studentMeta.photo_url : null
+                        });
+                        updateOfflineUI();
+                    }).catch(err => {
+                        console.error("Gagal menyimpan ke IndexedDB:", err);
+                        showModal({ status: 'error', message: 'Gagal menyimpan presensi offline.' });
+                    });
+                    return;
+                }
+
+                // Kirim request ke server dengan timeout 8 detik
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+
                 fetch("{{ route('attendance.store') }}", {
                     method: 'POST',
                     headers: {
@@ -426,21 +713,66 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         'Accept': 'application/json'
                     },
+                    signal: controller.signal,
                     body: JSON.stringify({
                         student_unique_id: studentId,
-                        latitude: userCoordinates.latitude,
-                        longitude: userCoordinates.longitude
+                        latitude: currentCoords.latitude,
+                        longitude: currentCoords.longitude,
+                        scanned_at: nowIso
                     })
-                }).then(response => response.json().then(data => ({ status: response.status, body: data })))
-                    .then(({ status, body }) => {
-                        // Normalisasi status error untuk kemudahan
-                        if (status === 403) body.status = 'location_error';
-                        if (status === 409) body.status = body.status || 'completed';
-                        if (status === 404) body.status = 'not_found';
-                        showModal(body);
-                    }).catch(error => {
-                        showModal({ status: 'error', message: 'Tidak dapat terhubung ke server.' });
+                })
+                .then(response => {
+                    clearTimeout(timeoutId);
+                    return response.json().then(data => ({ status: response.status, body: data }));
+                })
+                .then(({ status, body }) => {
+                    if (status >= 500) {
+                        // Server error -> fallback simpan offline agar antrean siswa tidak hilang
+                        saveOfflineScan({
+                            student_unique_id: studentId,
+                            latitude: currentCoords.latitude,
+                            longitude: currentCoords.longitude,
+                            scanned_at: nowIso,
+                            student_name: studentDisplayName
+                        }).then(() => {
+                            showModal({
+                                status: 'clock_in_offline',
+                                student_name: studentDisplayName,
+                                message: 'Gangguan respon server. Presensi telah diamankan di antrean offline kiosk.',
+                                student_photo_url: studentMeta ? studentMeta.photo_url : null
+                            });
+                            updateOfflineUI();
+                        });
+                        return;
+                    }
+
+                    if (status === 403) body.status = 'location_error';
+                    if (status === 409) body.status = body.status || 'completed';
+                    if (status === 404) body.status = 'not_found';
+                    showModal(body);
+                })
+                .catch(error => {
+                    clearTimeout(timeoutId);
+                    console.warn("Koneksi gagal atau timeout, mengalihkan ke antrean offline:", error);
+                    saveOfflineScan({
+                        student_unique_id: studentId,
+                        latitude: currentCoords.latitude,
+                        longitude: currentCoords.longitude,
+                        scanned_at: nowIso,
+                        student_name: studentDisplayName
+                    }).then(() => {
+                        showModal({
+                            status: 'clock_in_offline',
+                            student_name: studentDisplayName,
+                            message: 'Koneksi terputus/timeout. Presensi berhasil diamankan di antrean offline perangkat.',
+                            student_photo_url: studentMeta ? studentMeta.photo_url : null
+                        });
+                        updateOfflineUI();
+                    }).catch(dbErr => {
+                        console.error("Gagal menyimpan ke IndexedDB:", dbErr);
+                        showModal({ status: 'error', message: 'Gagal terhubung dan gagal menyimpan di perangkat.' });
                     });
+                });
             }
 
             // Menampilkan modal pop-up dengan hasil absensi
@@ -452,6 +784,14 @@
 
                 // Atur ikon, warna, dan judul berdasarkan status
                 switch (data.status) {
+                    case 'clock_in_offline':
+                    case 'offline_saved':
+                        modal.iconContainer.classList.add('bg-amber-100', 'dark:bg-amber-900');
+                        modal.iconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />`;
+                        modal.iconSvg.classList.add('text-amber-600', 'dark:text-amber-400');
+                        modal.title.textContent = 'Tersimpan Offline';
+                        playSound('success');
+                        break;
                     case 'clock_in':
                         modal.iconContainer.classList.add('bg-green-100', 'dark:bg-green-900');
                         modal.iconSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />`;
@@ -639,10 +979,6 @@
                     }
                 } catch (e) {}
             }
-
-            // Map untuk pencarian cepat siswa berdasarkan unique_id
-            const studentLookup = new Map();
-            studentsWithPhotos.forEach(s => studentLookup.set(s.unique_id, s));
 
             async function startFaceScanFlow() {
                 readerError.classList.add('hidden');
@@ -954,6 +1290,40 @@
                     }, 100); // Penundaan singkat untuk menunggu input selesai
                 }
             });
+
+            // Inisialisasi status jaringan & antrean IndexedDB
+            updateNetworkStatus();
+            openKioskDB().then(() => {
+                updateOfflineUI();
+                // Jika sedang online dan ada antrean tertinggal dari sesi sebelumnya, langsung sinkronkan
+                if (navigator.onLine) {
+                    syncOfflineQueue();
+                }
+            }).catch(e => console.warn("Inisialisasi IndexedDB Kiosk:", e));
+
+            window.addEventListener('online', () => {
+                updateNetworkStatus();
+                showToastNotification("Koneksi pulih. Memulai sinkronisasi antrean...", 'wifi');
+                syncOfflineQueue();
+            });
+
+            window.addEventListener('offline', () => {
+                updateNetworkStatus();
+                showToastNotification("Perangkat beralih ke Mode Offline. Presensi tetap tersimpan.", 'wifi_off', true);
+            });
+
+            if (btnSync) {
+                btnSync.addEventListener('click', () => {
+                    syncOfflineQueue(true);
+                });
+            }
+
+            // Interval berkala auto-sync setiap 20 detik jika online
+            setInterval(() => {
+                if (navigator.onLine && !isSyncing) {
+                    syncOfflineQueue();
+                }
+            }, 20000);
 
         });
     </script>

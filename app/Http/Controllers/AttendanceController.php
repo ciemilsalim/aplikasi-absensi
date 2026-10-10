@@ -36,26 +36,146 @@ class AttendanceController extends Controller
             'student_unique_id' => 'required|string',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'scanned_at' => 'nullable|date',
         ]);
 
-        // Snapshot data user yang melakukan scan
         $scanner = auth()->user();
+        $settings = Setting::pluck('value', 'key');
+        $scannedAt = $request->filled('scanned_at') ? Carbon::parse($request->scanned_at) : now();
+
+        $result = $this->processSingleAttendance(
+            $request->student_unique_id,
+            (float) $request->latitude,
+            (float) $request->longitude,
+            $scannedAt,
+            $scanner,
+            $settings
+        );
+
+        return response()->json($result['body'], $result['code']);
+    }
+
+    /**
+     * Sinkronisasi antrean pemindaian offline dari kiosk (PWA / IndexedDB)
+     */
+    public function syncOffline(Request $request)
+    {
+        $validated = $request->validate([
+            'scans' => 'required|array|min:1|max:200',
+            'scans.*.student_unique_id' => 'required|string',
+            'scans.*.latitude' => 'required|numeric',
+            'scans.*.longitude' => 'required|numeric',
+            'scans.*.scanned_at' => 'nullable|date',
+            'scans.*.client_uuid' => 'nullable|string',
+        ]);
+
+        $scanner = auth()->user();
+        $settings = Setting::pluck('value', 'key');
+
+        $synced = 0;
+        $failed = 0;
+        $results = [];
+
+        foreach ($validated['scans'] as $scanItem) {
+            $scannedAt = !empty($scanItem['scanned_at']) ? Carbon::parse($scanItem['scanned_at']) : now();
+            $clientUuid = $scanItem['client_uuid'] ?? null;
+
+            try {
+                $processResult = $this->processSingleAttendance(
+                    $scanItem['student_unique_id'],
+                    (float) $scanItem['latitude'],
+                    (float) $scanItem['longitude'],
+                    $scannedAt,
+                    $scanner,
+                    $settings
+                );
+
+                $isSuccess = ($processResult['code'] === 200);
+                if ($isSuccess) {
+                    $synced++;
+                } else {
+                    $failed++;
+                }
+
+                $results[] = [
+                    'client_uuid' => $clientUuid,
+                    'student_unique_id' => $scanItem['student_unique_id'],
+                    'success' => $isSuccess,
+                    'code' => $processResult['code'],
+                    'response' => $processResult['body'],
+                ];
+            } catch (\Exception $e) {
+                $failed++;
+                $results[] = [
+                    'client_uuid' => $clientUuid,
+                    'student_unique_id' => $scanItem['student_unique_id'],
+                    'success' => false,
+                    'code' => 500,
+                    'response' => [
+                        'status' => 'error',
+                        'message' => 'Gagal memproses item antrean offline.',
+                    ],
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Sinkronisasi selesai: {$synced} berhasil diproses, {$failed} ditolak/gagal.",
+            'synced_count' => $synced,
+            'failed_count' => $failed,
+            'total' => count($validated['scans']),
+            'results' => $results,
+        ]);
+    }
+
+    /**
+     * Memproses satu data pemindaian absensi siswa.
+     */
+    protected function processSingleAttendance(
+        string $qrData,
+        float $latitude,
+        float $longitude,
+        Carbon $scannedAt,
+        $scanner = null,
+        $settings = null
+    ): array {
+        if (!$settings) {
+            $settings = Setting::pluck('value', 'key');
+        }
+
         $scannerName = $scanner ? $scanner->name : 'Sistem';
         $scannerRole = $scanner ? ($scanner->role ?? 'unknown') : 'unknown';
-        $scannedAt = now();
 
         try {
-            $qrData = $request->student_unique_id;
-            
             // Format gabungan: NIS-UNIQUE_ID
             // UUID length is 36. We check if the string has NIS- prefix before UUID
             if (strlen($qrData) > 37 && substr($qrData, -37, 1) === '-') {
                 $nis = substr($qrData, 0, -37);
                 $uniqueId = substr($qrData, -36);
-                $student = Student::where('nis', $nis)->where('unique_id', $uniqueId)->firstOrFail();
+                $student = Student::where('nis', $nis)->where('unique_id', $uniqueId)->first();
             } else {
                 // Format lama atau manual (hanya UUID atau hanya NIS)
-                $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->firstOrFail();
+                $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->first();
+            }
+
+            if (!$student) {
+                ScanLog::create([
+                    'user_id'        => $scanner?->id,
+                    'user_name'      => $scannerName,
+                    'user_role'      => $scannerRole,
+                    'scan_type'      => 'gagal',
+                    'failure_reason' => 'Siswa tidak ditemukan (' . $qrData . ')',
+                    'scanned_at'     => $scannedAt,
+                ]);
+
+                return [
+                    'code' => 404,
+                    'body' => [
+                        'status' => 'not_found',
+                        'message' => 'ID Siswa tidak ditemukan di database.',
+                    ],
+                ];
             }
 
             // Cek status keaktifan siswa
@@ -71,18 +191,18 @@ class AttendanceController extends Controller
                     'failure_reason' => 'Siswa tidak aktif',
                     'scanned_at'     => $scannedAt,
                 ]);
-                return response()->json([
-                    'status' => 'inactive_error',
-                    'message' => 'Presensi ditolak. Siswa ' . $student->name . ' berstatus tidak aktif (' . ($student->status ?? 'nonaktif') . ').',
-                    'student_name' => $student->name
-                ], 403);
+                return [
+                    'code' => 403,
+                    'body' => [
+                        'status' => 'inactive_error',
+                        'message' => 'Presensi ditolak. Siswa ' . $student->name . ' berstatus tidak aktif (' . ($student->status ?? 'nonaktif') . ').',
+                        'student_name' => $student->name,
+                    ],
+                ];
             }
 
-            $now = now();
+            $now = $scannedAt->copy();
             $today = $now->copy()->startOfDay();
-
-            // PERBAIKAN: Mengambil semua pengaturan dari database
-            $settings = Setting::pluck('value', 'key');
 
             // == CEK HARI LIBUR & AKHIR PEKAN ==
             // 1. Cek Akhir Pekan (Sabtu & Minggu)
@@ -98,20 +218,23 @@ class AttendanceController extends Controller
                     'failure_reason' => 'Hari akhir pekan',
                     'scanned_at'     => $scannedAt,
                 ]);
-                return response()->json([
-                    'status' => 'holiday_error',
-                    'message' => 'Absensi tidak dapat dilakukan pada akhir pekan (Sabtu/Minggu).',
-                    'student_name' => $student->name
-                ], 403);
+                return [
+                    'code' => 403,
+                    'body' => [
+                        'status' => 'holiday_error',
+                        'message' => 'Absensi tidak dapat dilakukan pada akhir pekan (Sabtu/Minggu).',
+                        'student_name' => $student->name,
+                    ],
+                ];
             }
 
             // 2. Cek Kalender Pendidikan (Hari Libur)
             $holiday = \App\Models\Calendar::where('is_holiday', true)
                 ->whereDate('start_date', '<=', $today)
                 ->where(function ($query) use ($today) {
-                $query->whereNull('end_date')
-                    ->orWhereDate('end_date', '>=', $today);
-            })->first();
+                    $query->whereNull('end_date')
+                        ->orWhereDate('end_date', '>=', $today);
+                })->first();
 
             if ($holiday) {
                 ScanLog::create([
@@ -125,19 +248,21 @@ class AttendanceController extends Controller
                     'failure_reason' => 'Hari libur: ' . $holiday->title,
                     'scanned_at'     => $scannedAt,
                 ]);
-                return response()->json([
-                    'status' => 'holiday_error',
-                    'message' => 'Hari ini libur: ' . $holiday->title,
-                    'student_name' => $student->name
-                ], 403);
+                return [
+                    'code' => 403,
+                    'body' => [
+                        'status' => 'holiday_error',
+                        'message' => 'Hari ini libur: ' . $holiday->title,
+                        'student_name' => $student->name,
+                    ],
+                ];
             }
-            // ==================================
 
             // Validasi Jarak GPS
             $schoolLat = $settings->get('school_latitude');
             $schoolLng = $settings->get('school_longitude');
             $radius = $settings->get('attendance_radius', 100);
-            $distance = $this->haversineDistance($request->latitude, $request->longitude, $schoolLat, $schoolLng);
+            $distance = $this->haversineDistance($latitude, $longitude, $schoolLat, $schoolLng);
 
             if ($distance > $radius) {
                 ScanLog::create([
@@ -151,11 +276,14 @@ class AttendanceController extends Controller
                     'failure_reason' => 'Di luar radius (' . round($distance) . 'm)',
                     'scanned_at'     => $scannedAt,
                 ]);
-                return response()->json([
-                    'status' => 'location_error',
-                    'message' => "Anda berada di luar radius absensi. Jarak Anda: " . round($distance) . " meter dari sekolah.",
-                    'student_name' => $student->name
-                ], 403);
+                return [
+                    'code' => 403,
+                    'body' => [
+                        'status' => 'location_error',
+                        'message' => "Anda berada di luar radius absensi. Jarak Anda: " . round($distance) . " meter dari sekolah.",
+                        'student_name' => $student->name,
+                    ],
+                ];
             }
 
             $attendance = Attendance::where('student_id', $student->id)
@@ -175,11 +303,14 @@ class AttendanceController extends Controller
                     'failure_reason' => 'Sudah tercatat ' . $attendance->status,
                     'scanned_at'     => $scannedAt,
                 ]);
-                return response()->json([
-                    'status' => 'on_leave',
-                    'message' => 'Anda sudah tercatat ' . $attendance->status . ' hari ini dan tidak dapat melakukan absensi.',
-                    'student_name' => $student->name,
-                ], 409);
+                return [
+                    'code' => 409,
+                    'body' => [
+                        'status' => 'on_leave',
+                        'message' => 'Anda sudah tercatat ' . $attendance->status . ' hari ini dan tidak dapat melakukan absensi.',
+                        'student_name' => $student->name,
+                    ],
+                ];
             }
 
             // KASUS 1: Siswa sudah pernah scan hari ini (sudah absen masuk)
@@ -196,14 +327,16 @@ class AttendanceController extends Controller
                         'failure_reason' => 'Absensi hari ini sudah selesai',
                         'scanned_at'     => $scannedAt,
                     ]);
-                    return response()->json([
-                        'status' => 'completed',
-                        'message' => 'Anda sudah menyelesaikan absensi hari ini.',
-                        'student_name' => $student->name,
-                    ], 409);
+                    return [
+                        'code' => 409,
+                        'body' => [
+                            'status' => 'completed',
+                            'message' => 'Anda sudah menyelesaikan absensi hari ini.',
+                            'student_name' => $student->name,
+                        ],
+                    ];
                 }
 
-                // PERBAIKAN: Menggunakan jam pulang dari database
                 $jamPulangSetting = $settings->get('jam_pulang', '16:00');
                 $waktuPulang = $today->copy()->setTimeFromTimeString($jamPulangSetting);
 
@@ -219,11 +352,14 @@ class AttendanceController extends Controller
                         'failure_reason' => 'Belum waktunya absen pulang (sebelum ' . $waktuPulang->format('H:i') . ')',
                         'scanned_at'     => $scannedAt,
                     ]);
-                    return response()->json([
-                        'status' => 'already_clocked_in',
-                        'message' => 'Anda sudah absen masuk. Absen pulang baru bisa dilakukan setelah pukul ' . $waktuPulang->format('H:i') . '.',
-                        'student_name' => $student->name,
-                    ], 409);
+                    return [
+                        'code' => 409,
+                        'body' => [
+                            'status' => 'already_clocked_in',
+                            'message' => 'Anda sudah absen masuk. Absen pulang baru bisa dilakukan setelah pukul ' . $waktuPulang->format('H:i') . '.',
+                            'student_name' => $student->name,
+                        ],
+                    ];
                 }
 
                 $attendance->update(['checkout_time' => $now]);
@@ -240,16 +376,18 @@ class AttendanceController extends Controller
                     'scanned_at'   => $scannedAt,
                 ]);
 
-                return response()->json([
-                    'status' => 'clock_out',
-                    'student_name' => $student->name,
-                    'student_nis' => $student->nis,
-                    'time' => $now->format('H:i:s'),
-                ]);
+                return [
+                    'code' => 200,
+                    'body' => [
+                        'status' => 'clock_out',
+                        'student_name' => $student->name,
+                        'student_nis' => $student->nis,
+                        'time' => $now->format('H:i:s'),
+                    ],
+                ];
             }
 
             // KASUS 2: Siswa belum pernah scan sama sekali (proses absen masuk)
-            // PERBAIKAN: Menggunakan jam masuk dari database untuk menentukan keterlambatan
             $batasWaktuMasuk = $settings->get('jam_masuk', '07:30');
             $lateTime = $today->copy()->setTimeFromTimeString($batasWaktuMasuk);
             $status = ($now->gt($lateTime)) ? 'terlambat' : 'tepat_waktu';
@@ -272,17 +410,24 @@ class AttendanceController extends Controller
                 'scanned_at'   => $scannedAt,
             ]);
 
-            return response()->json([
-                'status' => 'clock_in',
-                'attendance_status' => $status,
-                'student_name' => $student->name,
-                'student_nis' => $student->nis,
-                'time' => $newAttendance->attendance_time->format('H:i:s'),
-            ]);
-
-        }
-        catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => 'Terjadi kesalahan pada server.'], 500);
+            return [
+                'code' => 200,
+                'body' => [
+                    'status' => 'clock_in',
+                    'attendance_status' => $status,
+                    'student_name' => $student->name,
+                    'student_nis' => $student->nis,
+                    'time' => $newAttendance->attendance_time->format('H:i:s'),
+                ],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'code' => 500,
+                'body' => [
+                    'status' => 'error',
+                    'message' => 'Terjadi kesalahan pada server: ' . $e->getMessage(),
+                ],
+            ];
         }
     }
 
