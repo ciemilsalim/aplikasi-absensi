@@ -1,0 +1,401 @@
+{
+  "fps": 60,
+  "frame_ms": 16.666666666666668,
+  "dsf": 1,
+  "viewport": [
+    1920,
+    1080
+  ],
+  "output": [
+    1920,
+    1080
+  ],
+  "scenes": [
+    {
+      "scene_id": "scene_01_status_kehadiran_hari_ini",
+      "start_ms": 0,
+      "narration_start_ms": 200,
+      "narration_end_ms": 28688,
+      "action_start_ms": 29000,
+      "action_end_ms": 33383.333,
+      "end_ms": 34783.333
+    },
+    {
+      "scene_id": "scene_02_riwayat_kehadiran_sekolah",
+      "start_ms": 34783.333,
+      "narration_start_ms": 34983.333,
+      "narration_end_ms": 55047.333,
+      "action_start_ms": 55350,
+      "action_end_ms": 58216.667,
+      "end_ms": 59616.667
+    },
+    {
+      "scene_id": "scene_03_riwayat_kehadiran_ekskul",
+      "start_ms": 59616.667,
+      "narration_start_ms": 59816.667,
+      "narration_end_ms": 78896.667,
+      "action_start_ms": 79200,
+      "action_end_ms": 83133.333,
+      "end_ms": 84533.333
+    },
+    {
+      "scene_id": "scene_04_tautan_izin_dan_rangkuman",
+      "start_ms": 84533.333,
+      "narration_start_ms": 84733.333,
+      "narration_end_ms": 103693.333,
+      "action_start_ms": 104000,
+      "action_end_ms": 106966.667,
+      "end_ms": 109166.667
+    }
+  ],
+  "events": [
+    {
+      "type": "scene_start",
+      "vt_ms": 0,
+      "frame": 0,
+      "scene_id": "scene_01_status_kehadiran_hari_ini"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 0,
+      "frame": 0,
+      "scene_id": "scene_01_status_kehadiran_hari_ini",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_114340_5723a1\\audio\\scene_01_status_kehadiran_hari_ini.mp3",
+      "duration_ms": 28488,
+      "at_ms": 200
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 28700,
+      "frame": 1722,
+      "scene_id": "scene_01_status_kehadiran_hari_ini"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 29000,
+      "frame": 1740,
+      "scene_id": "scene_01_status_kehadiran_hari_ini"
+    },
+    {
+      "type": "move_start",
+      "vt_ms": 29000,
+      "frame": 1740,
+      "from": [
+        1190.4,
+        669.6
+      ],
+      "to": [
+        1139,
+        374
+      ],
+      "dist_px": 300,
+      "move_ms": 919.6,
+      "settle_ms": 180
+    },
+    {
+      "type": "move_end",
+      "vt_ms": 30116.667,
+      "frame": 1807,
+      "at": [
+        1139,
+        374
+      ]
+    },
+    {
+      "type": "tap",
+      "vt_ms": 30200,
+      "frame": 1812,
+      "at": [
+        1139,
+        374
+      ],
+      "label": "h3:has-text('Najwa Dayani')",
+      "bbox": [
+        591,
+        360,
+        1096,
+        28
+      ]
+    },
+    {
+      "type": "move_start",
+      "vt_ms": 30933.333,
+      "frame": 1856,
+      "from": [
+        1139,
+        374
+      ],
+      "to": [
+        617.9296875,
+        480.5
+      ],
+      "dist_px": 531.8,
+      "move_ms": 1048,
+      "settle_ms": 180
+    },
+    {
+      "type": "move_end",
+      "vt_ms": 32166.667,
+      "frame": 1930,
+      "at": [
+        617.9296875,
+        480.5
+      ]
+    },
+    {
+      "type": "tap",
+      "vt_ms": 32250,
+      "frame": 1935,
+      "at": [
+        617.9296875,
+        480.5
+      ],
+      "label": "span:has-text('Status Kehadiran Hari Ini')",
+      "bbox": [
+        542,
+        473,
+        151.859375,
+        15
+      ]
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 33383.333,
+      "frame": 2003,
+      "scene_id": "scene_01_status_kehadiran_hari_ini"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 34783.333,
+      "frame": 2087,
+      "scene_id": "scene_01_status_kehadiran_hari_ini"
+    },
+    {
+      "type": "scene_start",
+      "vt_ms": 34783.333,
+      "frame": 2087,
+      "scene_id": "scene_02_riwayat_kehadiran_sekolah"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 34783.333,
+      "frame": 2087,
+      "scene_id": "scene_02_riwayat_kehadiran_sekolah",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_114340_5723a1\\audio\\scene_02_riwayat_kehadiran_sekolah.mp3",
+      "duration_ms": 20064,
+      "at_ms": 34983.333
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 55050,
+      "frame": 3303,
+      "scene_id": "scene_02_riwayat_kehadiran_sekolah"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 55350,
+      "frame": 3321,
+      "scene_id": "scene_02_riwayat_kehadiran_sekolah"
+    },
+    {
+      "type": "move_start",
+      "vt_ms": 55850,
+      "frame": 3351,
+      "from": [
+        617.9296875,
+        480.5
+      ],
+      "to": [
+        599.421875,
+        620
+      ],
+      "dist_px": 140.7,
+      "move_ms": 758.5,
+      "settle_ms": 180
+    },
+    {
+      "type": "move_end",
+      "vt_ms": 56800,
+      "frame": 3408,
+      "at": [
+        599.421875,
+        620
+      ]
+    },
+    {
+      "type": "tap",
+      "vt_ms": 56883.333,
+      "frame": 3413,
+      "at": [
+        599.421875,
+        620
+      ],
+      "label": "h4:has-text('Riwayat Kehadiran')",
+      "bbox": [
+        521,
+        608,
+        156.84375,
+        24
+      ]
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 58216.667,
+      "frame": 3493,
+      "scene_id": "scene_02_riwayat_kehadiran_sekolah"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 59616.667,
+      "frame": 3577,
+      "scene_id": "scene_02_riwayat_kehadiran_sekolah"
+    },
+    {
+      "type": "scene_start",
+      "vt_ms": 59616.667,
+      "frame": 3577,
+      "scene_id": "scene_03_riwayat_kehadiran_ekskul"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 59616.667,
+      "frame": 3577,
+      "scene_id": "scene_03_riwayat_kehadiran_ekskul",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_114340_5723a1\\audio\\scene_03_riwayat_kehadiran_ekskul.mp3",
+      "duration_ms": 19080,
+      "at_ms": 59816.667
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 78900,
+      "frame": 4734,
+      "scene_id": "scene_03_riwayat_kehadiran_ekskul"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 79200,
+      "frame": 4752,
+      "scene_id": "scene_03_riwayat_kehadiran_ekskul"
+    },
+    {
+      "type": "scroll_start",
+      "vt_ms": 79200,
+      "frame": 4752,
+      "from_y": 0,
+      "to_y": 314,
+      "dur_ms": 742.6
+    },
+    {
+      "type": "scroll_end",
+      "vt_ms": 79966.667,
+      "frame": 4798,
+      "y": 314
+    },
+    {
+      "type": "move_start",
+      "vt_ms": 80466.667,
+      "frame": 4828,
+      "from": [
+        599.421875,
+        620
+      ],
+      "to": [
+        1104,
+        830
+      ],
+      "dist_px": 546.5,
+      "move_ms": 1054.2,
+      "settle_ms": 180
+    },
+    {
+      "type": "move_end",
+      "vt_ms": 81716.667,
+      "frame": 4903,
+      "at": [
+        1104,
+        830
+      ]
+    },
+    {
+      "type": "tap",
+      "vt_ms": 81800,
+      "frame": 4908,
+      "at": [
+        1104,
+        830
+      ],
+      "label": "h4:has-text('Kegiatan Ekstrakurikuler')",
+      "bbox": [
+        521,
+        818,
+        1166,
+        24
+      ]
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 83133.333,
+      "frame": 4988,
+      "scene_id": "scene_03_riwayat_kehadiran_ekskul"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 84533.333,
+      "frame": 5072,
+      "scene_id": "scene_03_riwayat_kehadiran_ekskul"
+    },
+    {
+      "type": "scene_start",
+      "vt_ms": 84533.333,
+      "frame": 5072,
+      "scene_id": "scene_04_tautan_izin_dan_rangkuman"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 84533.333,
+      "frame": 5072,
+      "scene_id": "scene_04_tautan_izin_dan_rangkuman",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_114340_5723a1\\audio\\scene_04_tautan_izin_dan_rangkuman.mp3",
+      "duration_ms": 18960,
+      "at_ms": 84733.333
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 103700,
+      "frame": 6222,
+      "scene_id": "scene_04_tautan_izin_dan_rangkuman"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 104000,
+      "frame": 6240,
+      "scene_id": "scene_04_tautan_izin_dan_rangkuman"
+    },
+    {
+      "type": "scroll_start",
+      "vt_ms": 104800,
+      "frame": 6288,
+      "from_y": 314,
+      "to_y": 0,
+      "dur_ms": 742.6
+    },
+    {
+      "type": "scroll_end",
+      "vt_ms": 105566.667,
+      "frame": 6334,
+      "y": 0
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 106966.667,
+      "frame": 6418,
+      "scene_id": "scene_04_tautan_izin_dan_rangkuman"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 109166.667,
+      "frame": 6550,
+      "scene_id": "scene_04_tautan_izin_dan_rangkuman"
+    }
+  ]
+}

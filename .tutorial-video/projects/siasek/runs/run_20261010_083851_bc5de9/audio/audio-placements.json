@@ -1,0 +1,396 @@
+{
+  "sample_rate": 48000,
+  "source": "recording/events.json",
+  "placements": [
+    {
+      "kind": "narration",
+      "at_ms": 200,
+      "dur_ms": 19608.0,
+      "ref": "scene_01_informasi_kontak_whatsapp"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 21083.333,
+      "dur_ms": 45.0,
+      "ref": "input[x-model='phoneNumber']"
+    },
+    {
+      "kind": "key",
+      "at_ms": 21450,
+      "dur_ms": 30.0,
+      "ref": "0"
+    },
+    {
+      "kind": "key",
+      "at_ms": 21550,
+      "dur_ms": 30.0,
+      "ref": "8"
+    },
+    {
+      "kind": "key",
+      "at_ms": 21666.667,
+      "dur_ms": 30.0,
+      "ref": "5"
+    },
+    {
+      "kind": "key",
+      "at_ms": 21800,
+      "dur_ms": 30.0,
+      "ref": "2"
+    },
+    {
+      "kind": "key",
+      "at_ms": 21900,
+      "dur_ms": 30.0,
+      "ref": "1"
+    },
+    {
+      "kind": "key",
+      "at_ms": 22033.333,
+      "dur_ms": 30.0,
+      "ref": "1"
+    },
+    {
+      "kind": "key",
+      "at_ms": 22166.667,
+      "dur_ms": 30.0,
+      "ref": "2"
+    },
+    {
+      "kind": "key",
+      "at_ms": 22316.667,
+      "dur_ms": 30.0,
+      "ref": "2"
+    },
+    {
+      "kind": "key",
+      "at_ms": 22466.667,
+      "dur_ms": 30.0,
+      "ref": "3"
+    },
+    {
+      "kind": "key",
+      "at_ms": 22566.667,
+      "dur_ms": 30.0,
+      "ref": "3"
+    },
+    {
+      "kind": "key",
+      "at_ms": 22683.333,
+      "dur_ms": 30.0,
+      "ref": "4"
+    },
+    {
+      "kind": "key",
+      "at_ms": 22783.333,
+      "dur_ms": 30.0,
+      "ref": "4"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 24233.333,
+      "dur_ms": 45.0,
+      "ref": "textarea[x-model='address']"
+    },
+    {
+      "kind": "key",
+      "at_ms": 24600,
+      "dur_ms": 30.0,
+      "ref": "J"
+    },
+    {
+      "kind": "key",
+      "at_ms": 24716.667,
+      "dur_ms": 30.0,
+      "ref": "l"
+    },
+    {
+      "kind": "key",
+      "at_ms": 24850,
+      "dur_ms": 30.0,
+      "ref": "."
+    },
+    {
+      "kind": "key",
+      "at_ms": 24983.333,
+      "dur_ms": 30.0,
+      "ref": " "
+    },
+    {
+      "kind": "key",
+      "at_ms": 25150,
+      "dur_ms": 30.0,
+      "ref": "M"
+    },
+    {
+      "kind": "key",
+      "at_ms": 25266.667,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 25400,
+      "dur_ms": 30.0,
+      "ref": "w"
+    },
+    {
+      "kind": "key",
+      "at_ms": 25483.333,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 25566.667,
+      "dur_ms": 30.0,
+      "ref": "r"
+    },
+    {
+      "kind": "key",
+      "at_ms": 25716.667,
+      "dur_ms": 30.0,
+      "ref": " "
+    },
+    {
+      "kind": "key",
+      "at_ms": 25866.667,
+      "dur_ms": 30.0,
+      "ref": "N"
+    },
+    {
+      "kind": "key",
+      "at_ms": 25983.333,
+      "dur_ms": 30.0,
+      "ref": "o"
+    },
+    {
+      "kind": "key",
+      "at_ms": 26083.333,
+      "dur_ms": 30.0,
+      "ref": "."
+    },
+    {
+      "kind": "key",
+      "at_ms": 26216.667,
+      "dur_ms": 30.0,
+      "ref": " "
+    },
+    {
+      "kind": "key",
+      "at_ms": 26416.667,
+      "dur_ms": 30.0,
+      "ref": "1"
+    },
+    {
+      "kind": "key",
+      "at_ms": 26516.667,
+      "dur_ms": 30.0,
+      "ref": "2"
+    },
+    {
+      "kind": "key",
+      "at_ms": 26633.333,
+      "dur_ms": 30.0,
+      "ref": ","
+    },
+    {
+      "kind": "key",
+      "at_ms": 26783.333,
+      "dur_ms": 30.0,
+      "ref": " "
+    },
+    {
+      "kind": "key",
+      "at_ms": 26933.333,
+      "dur_ms": 30.0,
+      "ref": "K"
+    },
+    {
+      "kind": "key",
+      "at_ms": 27200,
+      "dur_ms": 30.0,
+      "ref": "e"
+    },
+    {
+      "kind": "key",
+      "at_ms": 27300,
+      "dur_ms": 30.0,
+      "ref": "l"
+    },
+    {
+      "kind": "key",
+      "at_ms": 27433.333,
+      "dur_ms": 30.0,
+      "ref": "."
+    },
+    {
+      "kind": "key",
+      "at_ms": 27633.333,
+      "dur_ms": 30.0,
+      "ref": " "
+    },
+    {
+      "kind": "key",
+      "at_ms": 27833.333,
+      "dur_ms": 30.0,
+      "ref": "B"
+    },
+    {
+      "kind": "key",
+      "at_ms": 28083.333,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 28200,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 28433.333,
+      "dur_ms": 30.0,
+      "ref": "u"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 30550,
+      "dur_ms": 9144.0,
+      "ref": "scene_02_lanjut_ke_hubungkan_anak"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 40966.667,
+      "dur_ms": 45.0,
+      "ref": "button:has-text('Lanjut ke Langkah 2: Hubungkan Anak')"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 45116.667,
+      "dur_ms": 17232.0,
+      "ref": "scene_03_pilih_kelas_dan_cari_nama"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 63616.667,
+      "dur_ms": 45.0,
+      "ref": "select[x-model='selectedClassId']"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 65300,
+      "dur_ms": 45.0,
+      "ref": "option:10"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 67283.333,
+      "dur_ms": 45.0,
+      "ref": "input[x-model='typedStudentName']"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67650,
+      "dur_ms": 30.0,
+      "ref": "N"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67800,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67883.333,
+      "dur_ms": 30.0,
+      "ref": "j"
+    },
+    {
+      "kind": "key",
+      "at_ms": 68033.333,
+      "dur_ms": 30.0,
+      "ref": "w"
+    },
+    {
+      "kind": "key",
+      "at_ms": 68316.667,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 71816.667,
+      "dur_ms": 12384.0,
+      "ref": "scene_04_pilih_siswa_dan_masukkan_nis"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 85483.333,
+      "dur_ms": 45.0,
+      "ref": "button:has-text('Pilih Siswa Ini')"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 88216.667,
+      "dur_ms": 45.0,
+      "ref": "input[x-model='verificationCode']"
+    },
+    {
+      "kind": "key",
+      "at_ms": 88583.333,
+      "dur_ms": 30.0,
+      "ref": "1"
+    },
+    {
+      "kind": "key",
+      "at_ms": 88700,
+      "dur_ms": 30.0,
+      "ref": "2"
+    },
+    {
+      "kind": "key",
+      "at_ms": 88816.667,
+      "dur_ms": 30.0,
+      "ref": "1"
+    },
+    {
+      "kind": "key",
+      "at_ms": 88950,
+      "dur_ms": 30.0,
+      "ref": "9"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 91083.333,
+      "dur_ms": 16392.0,
+      "ref": "scene_05_hubungkan_siswa_aktif"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 108750,
+      "dur_ms": 45.0,
+      "ref": "button:has-text('Hubungkan Siswa Ini')"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 112300,
+      "dur_ms": 45.0,
+      "ref": "button:has-text('Lanjut ke Langkah 3: Konfirmasi')"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 116450,
+      "dur_ms": 18432.0,
+      "ref": "scene_06_konfirmasi_dan_masuk_dasbor"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 136550,
+      "dur_ms": 45.0,
+      "ref": "button:has-text('Selesai & Masuk ke Dasbor Utama')"
+    }
+  ]
+}

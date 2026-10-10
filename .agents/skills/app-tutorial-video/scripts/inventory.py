@@ -248,6 +248,43 @@ def build_feature_inventory(workspace_root: str, catalog_data: dict = None) -> d
 
     features = []
 
+    # Check if current workspace matches SIASEK workflow controllers
+    is_siasek = any(os.path.isfile(os.path.join(workspace_root, c)) for defn in FEATURE_WORKFLOW_DEFINITIONS for c in defn.get('controller_paths', []))
+
+    if not is_siasek:
+        # Cross-project dynamic adapter discovery
+        try:
+            from adapters import AdapterRegistry
+            reg = AdapterRegistry()
+            adp, _ = reg.detect(workspace_root)
+            discovered_flows = adp.discover_workflows(workspace_root)
+            for df in discovered_flows:
+                fid = df['workflow_id']
+                cat_entry = catalog_tutorials.get(fid)
+                features.append({
+                    "feature_id": fid,
+                    "name": df['name'],
+                    "target_users": df.get('target_users', ['user']),
+                    "routes": [df.get('path', '/')],
+                    "controllers": [],
+                    "views": [],
+                    "status": "active",
+                    "tutorial_exists": bool(cat_entry),
+                    "tutorial_id": cat_entry.get('tutorial_id') if cat_entry else None,
+                    "fingerprints": {"feature_fingerprint": fid}
+                })
+        except Exception as e:
+            print(f"[Inventory] Dynamic adapter fallback warning: {e}")
+
+        inventory_data = {
+            "version": "1.0",
+            "generated_at": __import__('datetime').datetime.now().isoformat(),
+            "total_features": len(features),
+            "tutorial_coverage": sum(1 for f in features if f['tutorial_exists']),
+            "features": features
+        }
+        return inventory_data
+
     for defn in FEATURE_WORKFLOW_DEFINITIONS:
         fid = defn['feature_id']
         name = defn['name']

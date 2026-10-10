@@ -1,0 +1,54 @@
+{
+  "sample_rate": 48000,
+  "source": "recording/events.json",
+  "placements": [
+    {
+      "kind": "narration",
+      "at_ms": 200,
+      "dur_ms": 28488.0,
+      "ref": "scene_01_status_kehadiran_hari_ini"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 30200,
+      "dur_ms": 45.0,
+      "ref": "h3:has-text('Najwa Dayani')"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 32250,
+      "dur_ms": 45.0,
+      "ref": "span:has-text('Status Kehadiran Hari Ini')"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 34983.333,
+      "dur_ms": 20064.0,
+      "ref": "scene_02_riwayat_kehadiran_sekolah"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 56883.333,
+      "dur_ms": 45.0,
+      "ref": "h4:has-text('Riwayat Kehadiran')"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 59816.667,
+      "dur_ms": 19080.0,
+      "ref": "scene_03_riwayat_kehadiran_ekskul"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 81800,
+      "dur_ms": 45.0,
+      "ref": "h4:has-text('Kegiatan Ekstrakurikuler')"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 84733.333,
+      "dur_ms": 18960.0,
+      "ref": "scene_04_tautan_izin_dan_rangkuman"
+    }
+  ]
+}

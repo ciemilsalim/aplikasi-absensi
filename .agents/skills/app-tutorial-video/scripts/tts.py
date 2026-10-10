@@ -57,25 +57,16 @@ def condense_indonesian_narration(text: str) -> str:
     Removes polite filler and compresses phrasing to concise action-first sentences.
     """
     text = text.strip()
+    # Universal filler and polite padding reductions (framework/project agnostic)
     replacements = [
-        ("Selamat datang di panduan aplikasi SIASEK portal orang tua.", "Panduan portal orang tua SIASEK."),
-        ("Pada video kali ini, kita akan mempelajari cara mengajukan izin atau surat sakit anak secara online.", "Berikut cara mengajukan izin atau sakit anak online."),
-        ("Silakan masuk ke portal orang tua dengan akun terdaftar Anda.", "Masuk ke portal orang tua Anda."),
-        ("Buka menu riwayat permohonan izin lalu klik tombol Buat Pengajuan Baru untuk membuka formulir.", "Klik tombol Buat Pengajuan Baru."),
-        ("Pada formulir pengajuan, pilih nama anak yang akan diajukan izin pada daftar siswa yang terhubung dengan akun Anda.", "Pilih nama anak yang akan diajukan izin."),
-        ("Tentukan rentang tanggal izin dan pilih kategori permohonan yang sesuai, seperti kategori sakit atau izin keperluan keluarga.", "Pilih kategori permohonan izin sakit siswa."),
-        ("Selanjutnya tuliskan keterangan alasan secara rinci pada kolom alasan agar wali kelas dan pihak sekolah dapat melakukan verifikasi.", "Ketik keterangan alasan izin dengan jelas."),
-        ("Periksa kembali seluruh data permohonan, lalu klik tombol Kirim Permohonan untuk mengirimkan pengajuan ke sekolah.", "Klik tombol Kirim Permohonan Izin."),
-        ("Permohonan izin anak Anda telah berhasil dikirim dan menunggu persetujuan dari pihak sekolah.", "Permohonan izin berhasil dikirim ke sekolah."),
         ("silakan ", ""),
         ("pada video kali ini, kita akan ", ""),
-        ("pada formulir pengajuan, ", ""),
+        ("pada kesempatan kali ini, kita akan ", ""),
+        ("di sini kita akan ", ""),
         ("secara online", "online"),
-        ("terhubung dengan akun Anda", "terdaftar"),
-        ("agar wali kelas dan pihak sekolah dapat melakukan verifikasi", "untuk verifikasi sekolah"),
         ("secara rinci", ""),
-        ("pada kolom alasan", ""),
-        ("selanjutnya ", "")
+        ("selanjutnya ", ""),
+        ("kemudian ", "")
     ]
     condensed = text
     for old, new in replacements:

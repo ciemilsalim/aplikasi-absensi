@@ -1,0 +1,1 @@
+mysql -u root -e "DELETE FROM db_absen.parents WHERE user_id IN (SELECT id FROM db_absen.users WHERE email='ahmad.subarjo@example.com'); DELETE FROM db_absen.users WHERE email='ahmad.subarjo@example.com';"

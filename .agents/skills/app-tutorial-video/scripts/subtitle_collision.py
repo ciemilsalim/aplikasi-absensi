@@ -129,7 +129,7 @@ def generate_adaptive_ass(srt_entries, placements, out_ass_path, font_size=22, r
         margin_lr = 48
 
     ass_header = f"""[Script Info]
-Title: SIASEK Adaptive Tutorial Subtitles (V3.5)
+Title: Adaptive Tutorial Subtitles (V4.1)
 ScriptType: v4.00+
 WrapStyle: 0
 ScaledBorderAndShadow: yes

@@ -1,0 +1,714 @@
+{
+  "voice": {
+    "name": "id-ID-GadisNeural",
+    "rate": "-2%",
+    "pitch": "+0Hz"
+  },
+  "scenes": {
+    "scene_01_buka_menu_obrolan": {
+      "text": "Halo Bapak dan Ibu orang tua siswa. Dalam panduan ini, kita akan mempelajari cara berkomunikasi dengan guru wali kelas dan admin sekolah melalui fitur Obrolan di SIASEK. Dari dasbor utama, sentuh menu Obrolan pada bilah navigasi bawah.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_110634_7ef2db\\audio\\scene_01_buka_menu_obrolan.mp3",
+      "duration_ms": 19680.0,
+      "words": [
+        {
+          "w": "Halo",
+          "s": 100.0,
+          "e": 533.7
+        },
+        {
+          "w": "Bapak",
+          "s": 533.7,
+          "e": 1031.1
+        },
+        {
+          "w": "dan",
+          "s": 1031.1,
+          "e": 1209.7
+        },
+        {
+          "w": "Ibu",
+          "s": 1209.7,
+          "e": 1605.1
+        },
+        {
+          "w": "orang",
+          "s": 1605.1,
+          "e": 1987.7
+        },
+        {
+          "w": "tua",
+          "s": 1987.8,
+          "e": 2293.9
+        },
+        {
+          "w": "siswa",
+          "s": 2293.9,
+          "e": 2995.4
+        },
+        {
+          "w": "Dalam",
+          "s": 3851.0,
+          "e": 4297.4
+        },
+        {
+          "w": "panduan",
+          "s": 4297.5,
+          "e": 4654.6
+        },
+        {
+          "w": "ini",
+          "s": 4654.6,
+          "e": 5152.0
+        },
+        {
+          "w": "kita",
+          "s": 5547.5,
+          "e": 5815.3
+        },
+        {
+          "w": "akan",
+          "s": 5815.3,
+          "e": 6121.4
+        },
+        {
+          "w": "mempelajari",
+          "s": 6121.4,
+          "e": 6682.6
+        },
+        {
+          "w": "cara",
+          "s": 6682.7,
+          "e": 7014.3
+        },
+        {
+          "w": "berkomunikasi",
+          "s": 7014.3,
+          "e": 7894.4
+        },
+        {
+          "w": "dengan",
+          "s": 7894.4,
+          "e": 8238.8
+        },
+        {
+          "w": "guru",
+          "s": 8238.8,
+          "e": 8544.9
+        },
+        {
+          "w": "wali",
+          "s": 8544.9,
+          "e": 8761.7
+        },
+        {
+          "w": "kelas",
+          "s": 8761.8,
+          "e": 9297.5
+        },
+        {
+          "w": "dan",
+          "s": 9297.5,
+          "e": 9488.8
+        },
+        {
+          "w": "admin",
+          "s": 9488.8,
+          "e": 9999.0
+        },
+        {
+          "w": "sekolah",
+          "s": 9999.0,
+          "e": 10534.7
+        },
+        {
+          "w": "melalui",
+          "s": 10534.7,
+          "e": 11006.6
+        },
+        {
+          "w": "fitur",
+          "s": 11006.6,
+          "e": 11414.8
+        },
+        {
+          "w": "Obrolan",
+          "s": 11414.8,
+          "e": 12014.3
+        },
+        {
+          "w": "di",
+          "s": 12014.3,
+          "e": 12129.1
+        },
+        {
+          "w": "SIASEK",
+          "s": 12129.1,
+          "e": 12703.1
+        },
+        {
+          "w": "Dari",
+          "s": 13557.7,
+          "e": 13902.0
+        },
+        {
+          "w": "dasbor",
+          "s": 13902.0,
+          "e": 14374.0
+        },
+        {
+          "w": "utama",
+          "s": 14374.0,
+          "e": 15075.5
+        },
+        {
+          "w": "sentuh",
+          "s": 15419.9,
+          "e": 15917.3
+        },
+        {
+          "w": "menu",
+          "s": 15917.3,
+          "e": 16185.2
+        },
+        {
+          "w": "Obrolan",
+          "s": 16185.2,
+          "e": 16797.5
+        },
+        {
+          "w": "pada",
+          "s": 16797.5,
+          "e": 17065.3
+        },
+        {
+          "w": "bilah",
+          "s": 17065.3,
+          "e": 17499.0
+        },
+        {
+          "w": "navigasi",
+          "s": 17499.0,
+          "e": 18213.2
+        },
+        {
+          "w": "bawah",
+          "s": 18213.2,
+          "e": 18812.8
+        }
+      ],
+      "sha256": "702267dc859054ee003e3527ba0fd4d33faac377d463463b3fd8ea6c54d5895f"
+    },
+    "scene_02_pilih_kontak_wali_kelas": {
+      "text": "Pada daftar kontak, sentuh nama guru wali kelas ananda untuk membuka ruang obrolan dan membaca pesan mengenai perkembangan belajar siswa.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_110634_7ef2db\\audio\\scene_02_pilih_kontak_wali_kelas.mp3",
+      "duration_ms": 10104.0,
+      "words": [
+        {
+          "w": "Pada",
+          "s": 101.0,
+          "e": 534.7
+        },
+        {
+          "w": "daftar",
+          "s": 534.7,
+          "e": 1019.4
+        },
+        {
+          "w": "kontak",
+          "s": 1019.4,
+          "e": 1606.1
+        },
+        {
+          "w": "sentuh",
+          "s": 1937.8,
+          "e": 2473.5
+        },
+        {
+          "w": "nama",
+          "s": 2473.5,
+          "e": 2779.6
+        },
+        {
+          "w": "guru",
+          "s": 2779.6,
+          "e": 3149.5
+        },
+        {
+          "w": "wali",
+          "s": 3149.5,
+          "e": 3379.1
+        },
+        {
+          "w": "kelas",
+          "s": 3379.1,
+          "e": 3685.2
+        },
+        {
+          "w": "ananda",
+          "s": 3685.2,
+          "e": 4208.2
+        },
+        {
+          "w": "untuk",
+          "s": 4208.2,
+          "e": 4641.8
+        },
+        {
+          "w": "membuka",
+          "s": 4641.8,
+          "e": 5037.2
+        },
+        {
+          "w": "ruang",
+          "s": 5037.2,
+          "e": 5330.6
+        },
+        {
+          "w": "obrolan",
+          "s": 5330.6,
+          "e": 5993.9
+        },
+        {
+          "w": "dan",
+          "s": 5993.9,
+          "e": 6223.5
+        },
+        {
+          "w": "membaca",
+          "s": 6223.5,
+          "e": 6567.8
+        },
+        {
+          "w": "pesan",
+          "s": 6567.9,
+          "e": 6988.8
+        },
+        {
+          "w": "mengenai",
+          "s": 6988.8,
+          "e": 7422.5
+        },
+        {
+          "w": "perkembangan",
+          "s": 7422.5,
+          "e": 8073.0
+        },
+        {
+          "w": "belajar",
+          "s": 8073.0,
+          "e": 8544.9
+        },
+        {
+          "w": "siswa",
+          "s": 8544.9,
+          "e": 9246.5
+        }
+      ],
+      "sha256": "b465016ad429215b429c7e927b05c827e6ad03c493ba95b292142a7fcd12e692"
+    },
+    "scene_03_kirim_pesan_wali_kelas": {
+      "text": "Ketik pesan konsultasi Anda pada kolom di bagian bawah, lalu sentuh tombol Kirim. Pesan akan langsung terkirim secara aman kepada wali kelas.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_110634_7ef2db\\audio\\scene_03_kirim_pesan_wali_kelas.mp3",
+      "duration_ms": 11856.0,
+      "words": [
+        {
+          "w": "Ketik",
+          "s": 100.0,
+          "e": 457.1
+        },
+        {
+          "w": "pesan",
+          "s": 457.1,
+          "e": 827.0
+        },
+        {
+          "w": "konsultasi",
+          "s": 827.0,
+          "e": 1477.5
+        },
+        {
+          "w": "Anda",
+          "s": 1477.5,
+          "e": 1885.7
+        },
+        {
+          "w": "pada",
+          "s": 1885.7,
+          "e": 2153.6
+        },
+        {
+          "w": "kolom",
+          "s": 2153.6,
+          "e": 2574.5
+        },
+        {
+          "w": "di",
+          "s": 2574.5,
+          "e": 2689.3
+        },
+        {
+          "w": "bagian",
+          "s": 2689.3,
+          "e": 3186.7
+        },
+        {
+          "w": "bawah",
+          "s": 3186.8,
+          "e": 3722.5
+        },
+        {
+          "w": "lalu",
+          "s": 4054.1,
+          "e": 4398.5
+        },
+        {
+          "w": "sentuh",
+          "s": 4398.5,
+          "e": 4908.7
+        },
+        {
+          "w": "tombol",
+          "s": 4908.7,
+          "e": 5393.4
+        },
+        {
+          "w": "Kirim",
+          "s": 5393.4,
+          "e": 6005.6
+        },
+        {
+          "w": "Pesan",
+          "s": 6861.2,
+          "e": 7345.9
+        },
+        {
+          "w": "akan",
+          "s": 7345.9,
+          "e": 7664.8
+        },
+        {
+          "w": "langsung",
+          "s": 7664.8,
+          "e": 8073.0
+        },
+        {
+          "w": "terkirim",
+          "s": 8073.0,
+          "e": 8621.4
+        },
+        {
+          "w": "secara",
+          "s": 8621.4,
+          "e": 9016.8
+        },
+        {
+          "w": "aman",
+          "s": 9016.8,
+          "e": 9488.8
+        },
+        {
+          "w": "kepada",
+          "s": 9488.8,
+          "e": 9909.7
+        },
+        {
+          "w": "wali",
+          "s": 9909.7,
+          "e": 10241.3
+        },
+        {
+          "w": "kelas",
+          "s": 10241.3,
+          "e": 10981.1
+        }
+      ],
+      "sha256": "7f5542afca48c0e79d47608cef304572be69b9edcf541a5a08ac055d829d1b99"
+    },
+    "scene_04_hubungi_admin_sekolah": {
+      "text": "Untuk menghubungi pihak tata usaha sekolah, sentuh tombol kembali ke daftar kontak, lalu pilih Admin Sekolah. Jalur komunikasi ini khusus untuk bantuan administrasi dan teknis aplikasi.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_110634_7ef2db\\audio\\scene_04_hubungi_admin_sekolah.mp3",
+      "duration_ms": 15552.0,
+      "words": [
+        {
+          "w": "Untuk",
+          "s": 100.0,
+          "e": 533.7
+        },
+        {
+          "w": "menghubungi",
+          "s": 533.7,
+          "e": 1043.9
+        },
+        {
+          "w": "pihak",
+          "s": 1043.9,
+          "e": 1413.8
+        },
+        {
+          "w": "tata",
+          "s": 1413.8,
+          "e": 1758.2
+        },
+        {
+          "w": "usaha",
+          "s": 1758.2,
+          "e": 2179.1
+        },
+        {
+          "w": "sekolah",
+          "s": 2179.1,
+          "e": 2816.8
+        },
+        {
+          "w": "sentuh",
+          "s": 3174.0,
+          "e": 3620.4
+        },
+        {
+          "w": "tombol",
+          "s": 3620.4,
+          "e": 3990.3
+        },
+        {
+          "w": "kembali",
+          "s": 3990.3,
+          "e": 4564.3
+        },
+        {
+          "w": "ke",
+          "s": 4564.3,
+          "e": 4717.3
+        },
+        {
+          "w": "daftar",
+          "s": 4717.3,
+          "e": 5138.2
+        },
+        {
+          "w": "kontak",
+          "s": 5138.2,
+          "e": 5674.0
+        },
+        {
+          "w": "lalu",
+          "s": 5980.1,
+          "e": 6337.2
+        },
+        {
+          "w": "pilih",
+          "s": 6337.2,
+          "e": 6745.4
+        },
+        {
+          "w": "Admin",
+          "s": 6745.4,
+          "e": 7293.9
+        },
+        {
+          "w": "Sekolah",
+          "s": 7293.9,
+          "e": 7982.7
+        },
+        {
+          "w": "Jalur",
+          "s": 8838.2,
+          "e": 9323.0
+        },
+        {
+          "w": "komunikasi",
+          "s": 9323.0,
+          "e": 9986.2
+        },
+        {
+          "w": "ini",
+          "s": 9986.2,
+          "e": 10305.1
+        },
+        {
+          "w": "khusus",
+          "s": 10305.1,
+          "e": 10891.8
+        },
+        {
+          "w": "untuk",
+          "s": 10891.8,
+          "e": 11351.0
+        },
+        {
+          "w": "bantuan",
+          "s": 11351.0,
+          "e": 11810.2
+        },
+        {
+          "w": "administrasi",
+          "s": 11810.2,
+          "e": 12868.9
+        },
+        {
+          "w": "dan",
+          "s": 12868.9,
+          "e": 13124.0
+        },
+        {
+          "w": "teknis",
+          "s": 13124.0,
+          "e": 13659.7
+        },
+        {
+          "w": "aplikasi",
+          "s": 13659.7,
+          "e": 14680.1
+        }
+      ],
+      "sha256": "b607fffedd84772ffcd82034ca137636096ee74e84a4853ac428a1a73916edcf"
+    },
+    "scene_05_kirim_pesan_admin_dan_selesai": {
+      "text": "Kirimkan pertanyaan Anda ke Admin Sekolah dengan mudah. Seluruh riwayat percakapan tersimpan rapi dan terhubung dengan akun ananda. Komunikasi dengan sekolah kini menjadi jauh lebih praktis dan transparan!",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_110634_7ef2db\\audio\\scene_05_kirim_pesan_admin_dan_selesai.mp3",
+      "duration_ms": 16752.0,
+      "words": [
+        {
+          "w": "Kirimkan",
+          "s": 100.0,
+          "e": 737.8
+        },
+        {
+          "w": "pertanyaan",
+          "s": 737.8,
+          "e": 1350.0
+        },
+        {
+          "w": "Anda",
+          "s": 1350.0,
+          "e": 1783.7
+        },
+        {
+          "w": "ke",
+          "s": 1783.7,
+          "e": 1936.7
+        },
+        {
+          "w": "Admin",
+          "s": 1936.8,
+          "e": 2408.7
+        },
+        {
+          "w": "Sekolah",
+          "s": 2408.7,
+          "e": 2995.4
+        },
+        {
+          "w": "dengan",
+          "s": 2995.4,
+          "e": 3390.8
+        },
+        {
+          "w": "mudah",
+          "s": 3390.8,
+          "e": 3952.0
+        },
+        {
+          "w": "Seluruh",
+          "s": 4807.7,
+          "e": 5394.4
+        },
+        {
+          "w": "riwayat",
+          "s": 5394.4,
+          "e": 5802.5
+        },
+        {
+          "w": "percakapan",
+          "s": 5802.5,
+          "e": 6414.8
+        },
+        {
+          "w": "tersimpan",
+          "s": 6414.8,
+          "e": 6925.0
+        },
+        {
+          "w": "rapi",
+          "s": 6925.0,
+          "e": 7397.0
+        },
+        {
+          "w": "dan",
+          "s": 7397.0,
+          "e": 7613.8
+        },
+        {
+          "w": "terhubung",
+          "s": 7613.8,
+          "e": 8302.5
+        },
+        {
+          "w": "dengan",
+          "s": 8302.5,
+          "e": 8710.7
+        },
+        {
+          "w": "akun",
+          "s": 8710.7,
+          "e": 9208.2
+        },
+        {
+          "w": "ananda",
+          "s": 9208.2,
+          "e": 9986.2
+        },
+        {
+          "w": "Komunikasi",
+          "s": 10840.8,
+          "e": 11669.9
+        },
+        {
+          "w": "dengan",
+          "s": 11669.9,
+          "e": 11963.2
+        },
+        {
+          "w": "sekolah",
+          "s": 11963.2,
+          "e": 12345.9
+        },
+        {
+          "w": "kini",
+          "s": 12345.9,
+          "e": 12728.6
+        },
+        {
+          "w": "menjadi",
+          "s": 12728.6,
+          "e": 13136.7
+        },
+        {
+          "w": "jauh",
+          "s": 13136.8,
+          "e": 13761.8
+        },
+        {
+          "w": "lebih",
+          "s": 13761.8,
+          "e": 14055.1
+        },
+        {
+          "w": "praktis",
+          "s": 14055.1,
+          "e": 14705.6
+        },
+        {
+          "w": "dan",
+          "s": 14705.6,
+          "e": 14973.5
+        },
+        {
+          "w": "transparan",
+          "s": 14973.5,
+          "e": 15879.1
+        }
+      ],
+      "sha256": "e9750794e2271c4e8d3ba5822855b20ead6d0edda28e9fecb4f2aa26e963faf9"
+    }
+  }
+}

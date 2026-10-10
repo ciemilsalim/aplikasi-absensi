@@ -1,0 +1,147 @@
+{
+  "version": "4.0.0",
+  "engine": "TRUE_CONTINUOUS_BROWSER_VIDEO_V4",
+  "project_id": "siasek",
+  "title": "Panduan Registrasi Akun Orang Tua — SIASEK",
+  "mode": "desktop",
+  "fps": 60,
+  "target_resolution": [1920, 1080],
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "voice": {
+    "name": "id-ID-GadisNeural",
+    "rate": "-2%",
+    "pitch": "+0Hz"
+  },
+  "reaction_delay_ms": 300,
+  "color_scheme": "light",
+  "setup": [
+    {
+      "do": "goto",
+      "url": "http://127.0.0.1:8000/login"
+    },
+    {
+      "do": "wait_for",
+      "selector": "#email"
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "scene_01_buka_registrasi",
+      "narration": "Halo Bapak dan Ibu orang tua siswa. Dalam panduan ini, kita akan mempelajari cara mendaftar akun baru pada aplikasi presensi SIASEK. Kita mulai dari halaman masuk, lalu memilih menu Daftar Sekarang.",
+      "steps": [
+        {
+          "do": "tap",
+          "target": "a:has-text('Daftar sekarang')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#name"
+        },
+        {
+          "do": "hold",
+          "ms": 800
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_02_isi_nama_email",
+      "narration": "Pada formulir registrasi, masukkan Nama Lengkap Anda dengan benar. Selanjutnya, ketikkan alamat email aktif yang akan digunakan untuk masuk ke akun dan menerima pemberitahuan kehadiran siswa.",
+      "steps": [
+        {
+          "do": "type",
+          "target": "#name",
+          "text": "Ibu Siti Rahma"
+        },
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "type",
+          "target": "#email",
+          "text": "ortu.siti.rahma@test-siasek.id"
+        },
+        {
+          "do": "hold",
+          "ms": 600
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_03_isi_kata_sandi",
+      "narration": "Berikutnya, tentukan kata sandi yang aman dengan minimal delapan karakter. Ketikkan kembali kata sandi yang persis sama pada kolom konfirmasi untuk memastikan tidak terjadi kesalahan ketik.",
+      "steps": [
+        {
+          "do": "type",
+          "target": "#password",
+          "text": "RahasiaOrtu123!"
+        },
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "type",
+          "target": "#password_confirmation",
+          "text": "RahasiaOrtu123!"
+        },
+        {
+          "do": "hold",
+          "ms": 600
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_04_submit_registrasi",
+      "narration": "Setelah seluruh kolom terisi dengan lengkap, periksa kembali data Anda. Jika sudah sesuai, klik tombol Daftarkan Akun untuk menyelesaikan proses registrasi.",
+      "steps": [
+        {
+          "do": "tap",
+          "target": "button[type='submit']"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Selamat Datang, Bapak/Ibu!",
+          "budget_ms": 5000
+        },
+        {
+          "do": "hold",
+          "ms": 800
+        }
+      ],
+      "result_hold_ms": 1400
+    },
+    {
+      "scene_id": "scene_05_konfirmasi_dan_langkah_lanjut",
+      "narration": "Selamat, akun Anda telah berhasil didaftarkan dan aktif secara otomatis. Anda langsung diarahkan ke gerbang aktivasi untuk melengkapi nomor WhatsApp serta menghubungkan akun dengan data ananda di sekolah.",
+      "steps": [
+        {
+          "do": "scroll_to",
+          "target": "text=Nomor WhatsApp Aktif"
+        },
+        {
+          "do": "hold",
+          "ms": 1400
+        }
+      ],
+      "result_hold_ms": 1400
+    },
+    {
+      "scene_id": "scene_06_outro",
+      "narration": "Proses pendaftaran akun orang tua pada SIASEK telah selesai dengan mudah dan aman. Terima kasih telah mengikuti panduan ini, dan selamat mendampingi kehadiran putra-putri tercinta.",
+      "steps": [
+        {
+          "do": "hold",
+          "ms": 1200
+        }
+      ],
+      "result_hold_ms": 1800
+    }
+  ]
+}

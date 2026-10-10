@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ProjectProfile",
+  "description": "Configuration schema for cross-project tutorial video creation",
+  "type": "object",
+  "required": ["version", "project_id", "project_name", "base_url"],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "project_name": {
+      "type": "string"
+    },
+    "framework": {
+      "type": "string"
+    },
+    "app_type": {
+      "type": "string",
+      "enum": ["web", "mobile_web", "spa"]
+    },
+    "base_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "local_server_cmd": {
+      "type": ["string", "null"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["mobile", "desktop"]
+    },
+    "viewport": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "integer" },
+        "height": { "type": "integer" }
+      },
+      "required": ["width", "height"]
+    },
+    "target_resolution": {
+      "type": "array",
+      "items": { "type": "integer" },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "fps": {
+      "type": "integer",
+      "default": 60
+    },
+    "voice": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "rate": { "type": "string" },
+        "pitch": { "type": "string" }
+      }
+    },
+    "reaction_delay_ms": {
+      "type": "integer",
+      "default": 300
+    },
+    "result_hold_ms": {
+      "type": "integer",
+      "default": 1200
+    },
+    "color_scheme": {
+      "type": "string",
+      "enum": ["light", "dark"]
+    },
+    "auth": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "form_login", "token", "session"]
+        },
+        "login_url": { "type": "string" },
+        "email_selector": { "type": "string" },
+        "password_selector": { "type": "string" },
+        "submit_selector": { "type": "string" },
+        "success_selector": { "type": "string" },
+        "email_env": { "type": "string" },
+        "password_env": { "type": "string" }
+      }
+    },
+    "navigation_rules": {
+      "type": "object"
+    },
+    "workflows": {
+      "type": "array"
+    }
+  }
+}

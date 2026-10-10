@@ -220,19 +220,14 @@ async function main() {
     postActionDelay: 1200
   }, plan.delays || {});
 
-  const isMobile = (plan.tutorial_mode === 'mobile') || (mode === 'mobile');
+  const isMobile = (plan.tutorial_mode === 'mobile') || (mode === 'mobile') || (plan.mode === 'mobile') || (plan.variant === 'mobile');
   let viewportWidth = 1920;
   let viewportHeight = 1080;
+  let dsf = 1.0;
   if (isMobile) {
-    const preset = plan.viewport_preset || 'iphone-standard';
-    if (preset === 'iphone-small') {
-      viewportWidth = 375; viewportHeight = 667;
-    } else if (preset === 'android-standard') {
-      viewportWidth = 412; viewportHeight = 915;
-    } else { // iphone-standard or custom
-      viewportWidth = plan.mobile_viewport?.width || 390;
-      viewportHeight = plan.mobile_viewport?.height || 844;
-    }
+    viewportWidth = plan.mobile_viewport?.width || 414;
+    viewportHeight = plan.mobile_viewport?.height || 736;
+    dsf = 1080.0 / viewportWidth;
   }
 
   const browser = await playwright.chromium.launch({
@@ -244,8 +239,8 @@ async function main() {
     viewport: { width: viewportWidth, height: viewportHeight },
     isMobile: isMobile,
     hasTouch: isMobile,
-    deviceScaleFactor: isMobile ? 2 : 1,
-    recordVideo: { dir: outDir, size: { width: viewportWidth, height: viewportHeight } }
+    deviceScaleFactor: isMobile ? dsf : 1,
+    recordVideo: { dir: outDir, size: { width: isMobile ? 1080 : viewportWidth, height: isMobile ? 1920 : viewportHeight } }
   });
 
   const page = await context.newPage();
@@ -297,8 +292,8 @@ async function main() {
       `;
       document.head.appendChild(style);
 
-      // Inject Tutorial Cursor or Mobile Finger Pointer with session persistence
-      if (!document.getElementById('__tutorial_cursor')) {
+      // V3.7: In-DOM cursor injection disabled — composer renders the single high-precision vector white cursor
+      if (false) {
         const cursorDiv = document.createElement('div');
         cursorDiv.id = '__tutorial_cursor';
         let initX = Math.round(vW / 2);
@@ -324,32 +319,22 @@ async function main() {
           top: ${initY}px;
           pointer-events: none;
           z-index: 9999999;
-          transform: scale(${isMobileDevice ? 1.0 : cScale}) translate(${isMobileDevice ? '-16px, -16px' : '-2px, -2px'});
+          transform: scale(${cScale}) translate(-2px, -2px);
           filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.65));
           transition: transform 0.12s ease;
           display: block;
         `;
-        if (isMobileDevice) {
-          cursorDiv.innerHTML = `
-            <svg width="34" height="34" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="16" cy="16" r="14" fill="#3b82f6" fill-opacity="0.25" stroke="#ffffff" stroke-width="1.5"/>
-              <circle cx="16" cy="16" r="6" fill="#ffffff"/>
-              <circle cx="16" cy="16" r="3.5" fill="#2563eb"/>
-              <path d="M16 16 L25 33 L29 27 L37 25 Z" fill="#2563eb" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
-          `;
-        } else {
-          cursorDiv.innerHTML = `
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 2L23 12L13 14L10 24L3 2Z" fill="#1d4ed8" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round"/>
-            </svg>
-          `;
-        }
+        cursorDiv.innerHTML = `
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 2L23 12L13 14L10 24L3 2Z" fill="#1d4ed8" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round"/>
+          </svg>
+        `;
         document.body.appendChild(cursorDiv);
       }
     };
 
     window.__moveTutorialCursor = (x, y) => {
+      if (isMobileDevice) return;
       window.__injectTutorialOverlay();
       const cursor = document.getElementById('__tutorial_cursor');
       if (cursor) {
@@ -378,6 +363,7 @@ async function main() {
     };
 
     window.__showRipple = (x, y) => {
+      if (isMobileDevice) return;
       window.__injectTutorialOverlay();
       const cursor = document.getElementById('__tutorial_cursor');
       let rx = x;
@@ -407,8 +393,9 @@ async function main() {
       document.querySelectorAll('.__element_highlight').forEach(el => el.classList.remove('__element_highlight'));
       if (!selector) return;
       try {
-        const el = document.querySelector(selector);
-        if (el) el.classList.add('__element_highlight');
+        const els = Array.from(document.querySelectorAll(selector));
+        const visibleEl = els.find(el => el.offsetParent !== null) || els[0];
+        if (visibleEl) visibleEl.classList.add('__element_highlight');
       } catch (e) {}
     };
 
@@ -529,6 +516,18 @@ async function main() {
 
   const clickSoundMode = effectiveClickSource;
 
+  async function getVisibleLocator(sel) {
+    if (!sel) return null;
+    try {
+      const base = page.locator(sel);
+      const vis = base.locator('visible=true');
+      if (await vis.count().catch(() => 0) > 0) return vis.first();
+      return base.first();
+    } catch (e) {
+      return page.locator(sel).first();
+    }
+  }
+
   async function performAction(act, sceneInfo, sceneId, sceneStartSec, startTime) {
     const actionType = act.type || sceneInfo.action || sceneInfo.cursor_action;
     const selector = act.selector || sceneInfo.locator;
@@ -554,7 +553,7 @@ async function main() {
       };
     } else if (targetSelector) {
       try {
-        const loc = page.locator(targetSelector).first();
+        const loc = await getVisibleLocator(targetSelector);
         if (await loc.count() > 0) {
           await loc.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
           targetBox = await loc.boundingBox().catch(() => null);
@@ -581,7 +580,7 @@ async function main() {
       case 'move-and-click': {
         if (!targetSelector) break;
         console.log(`  -> ${isMobile ? 'Tap' : 'Click'}: ${targetSelector}`);
-        const loc = page.locator(targetSelector).first();
+        const loc = await getVisibleLocator(targetSelector);
         await loc.waitFor({ state: 'visible', timeout: 10000 });
         const box = targetBox || await loc.boundingBox();
         const targetX = box ? Math.round(box.x + box.width / 2) : Math.round(viewportWidth / 2);
@@ -668,7 +667,7 @@ async function main() {
       case 'long_press': {
         if (!targetSelector) break;
         console.log(`  -> Gesture: Long Press ${targetSelector}`);
-        const loc = page.locator(targetSelector).first();
+        const loc = await getVisibleLocator(targetSelector);
         await loc.waitFor({ state: 'visible', timeout: 10000 });
         const box = targetBox || await loc.boundingBox();
         const targetX = box ? Math.round(box.x + box.width / 2) : Math.round(viewportWidth / 2);
@@ -697,7 +696,7 @@ async function main() {
         if (act.valueFromEnv) value = process.env[act.valueFromEnv];
         if (value === undefined) value = act.value || '';
         console.log(`  -> Type into ${targetSelector} (${value.length} chars)`);
-        const loc = page.locator(targetSelector).first();
+        const loc = await getVisibleLocator(targetSelector);
         await loc.waitFor({ state: 'visible', timeout: 10000 });
         const box = targetBox || await loc.boundingBox();
         if (box) {
@@ -740,7 +739,7 @@ async function main() {
       case 'select': {
         if (!targetSelector) break;
         console.log(`  -> Select ${targetSelector} = ${act.value}`);
-        const loc = page.locator(targetSelector).first();
+        const loc = await getVisibleLocator(targetSelector);
         await loc.waitFor({ state: 'visible', timeout: 10000 });
         const box = targetBox || await loc.boundingBox();
         if (box) {
@@ -803,13 +802,13 @@ async function main() {
       mode: sceneFocus.mode || (sceneFocus.x !== undefined ? 'region' : 'element'),
       target: targetSelector || null,
       target_box: targetBox ? {
-        x: Math.round(targetBox.x),
-        y: Math.round(targetBox.y),
-        width: Math.round(targetBox.width),
-        height: Math.round(targetBox.height)
+        x: Math.round(targetBox.x * (isMobile ? dsf : 1.0)),
+        y: Math.round(targetBox.y * (isMobile ? dsf : 1.0)),
+        width: Math.round(targetBox.width * (isMobile ? dsf : 1.0)),
+        height: Math.round(targetBox.height * (isMobile ? dsf : 1.0))
       } : null,
       action_type: actionType,
-      zoom_level: zoomLevel,
+      zoom_level: isMobile ? 1.0 : zoomLevel,
       timing: {
         scene_start_sec: sceneStartSec,
         zoom_in_start: Math.max(sceneStartSec, actionSec - zoomInDur - 0.2),
@@ -820,19 +819,24 @@ async function main() {
         zoom_out_end: actionSec + effectiveHold + zoomOutDur
       },
       center: {
-        cx: smartCenter.cx,
-        cy: smartCenter.cy
+        cx: isMobile ? 540 : smartCenter.cx,
+        cy: isMobile ? 960 : smartCenter.cy
       },
       subtitle_safe: smartCenter.subtitle_safe,
       cursor: {
         scale: sceneCursor.scale || cursorDefaults.scale,
-        position: targetBox ? { x: Math.round(targetBox.x + targetBox.width / 2), y: Math.round(targetBox.y + targetBox.height / 2) } : mousePos,
+        position: targetBox ? {
+          x: Math.round((targetBox.x + targetBox.width / 2) * (isMobile ? dsf : 1.0)),
+          y: Math.round((targetBox.y + targetBox.height / 2) * (isMobile ? dsf : 1.0))
+        } : mousePos,
         ripple: sceneCursor.click_ripple !== false
       },
       status: targetBox ? 'RESOLVED' : 'FALLBACK'
     };
 
-    sceneFocusTimeline[sceneId] = focusEntry;
+    if (targetBox || !sceneFocusTimeline[sceneId] || !sceneFocusTimeline[sceneId].target_box) {
+      sceneFocusTimeline[sceneId] = focusEntry;
+    }
     focusManifestList.push(focusEntry);
 
     await page.evaluate(() => window.__clearHighlight && window.__clearHighlight()).catch(() => {});
@@ -843,6 +847,19 @@ async function main() {
   const sceneEvidenceList = [];   // V2.3: per-scene evidence data
   const sceneTimeline = {};       // V2.3: scene-timeline.json
   const clipManifest = [];        // V3.6: Deterministic Clip Manifest
+  // Ensure initial tutorial page is loaded before recording scenes
+  const firstScene = (plan.scenes && plan.scenes[0]) || {};
+  const initialUrl = firstScene.target_url || plan.base_url || 'http://127.0.0.1:8000/login';
+  if (page.url() === 'about:blank') {
+    console.log(`[V3.6 Recording] Loading initial tutorial page: ${initialUrl}`);
+    try {
+      await page.goto(initialUrl, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(600);
+    } catch (e) {
+      console.warn(`[V3.6 Recording] Warning loading initial page: ${e.message}`);
+    }
+  }
+
   const startTime = Date.now();
 
   try {
@@ -857,11 +874,25 @@ async function main() {
       const narrDurMs = sceneDurInfo.narration_duration_ms || (scene.narration_duration_ms || 2800);
       const reactionDelayMs = sceneDurInfo.reaction_delay_ms || 300;
 
-      if (scene.target_url && (!scene.actions || scene.actions.length === 0)) {
+      if (scene.target_url && page.url() !== scene.target_url) {
+        console.log(`  -> Navigating to Scene URL: ${scene.target_url}`);
+        await page.goto(scene.target_url, { waitUntil: 'networkidle' }).catch(() => {});
+        await page.waitForTimeout(400);
+      } else if (scene.target_url && (!scene.actions || scene.actions.length === 0)) {
         await performAction({ type: 'goto', url: scene.target_url }, scene, sceneId, sceneStartSec, startTime);
       }
 
       // ── V3.6 PRE-ACTION STATE CAPTURE ──
+      const targetSel = scene.target_element || (scene.actions && scene.actions[0] && scene.actions[0].selector);
+      if (targetSel && !scene.target_url) {
+        try {
+          const loc = await getVisibleLocator(targetSel);
+          if (loc && await loc.count() > 0) {
+            await loc.scrollIntoViewIfNeeded({ timeout: 2000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        } catch (e) {}
+      }
       await page.waitForTimeout(300);
       const preActionPath = path.join(outDir, `pre_action_${sceneId}.png`);
       await page.screenshot({ path: preActionPath });
@@ -941,14 +972,39 @@ async function main() {
       let domEvidence = { headings: [], buttons: [], alerts: [], navItems: [], formLabels: [], textFound: [], textMissing: expectedTexts, selectorStates: [], pageTitle: '' };
       let foundForbiddenText = [];
       try {
-        domEvidence = await page.evaluate(
-          ([et, es]) => window.__extractDOMEvidence(et, es),
-          [expectedTexts, expectedSelectors]
-        );
-        foundForbiddenText = await page.evaluate(
-          (fw) => window.__getForbiddenText(fw),
-          forbiddenTexts
-        );
+        domEvidence = await page.evaluate(([et, es]) => {
+          if (typeof window.__extractDOMEvidence === 'function') {
+            return window.__extractDOMEvidence(et, es);
+          }
+          const headings = Array.from(document.querySelectorAll('h1,h2,h3,h4,[class*="title"],[class*="heading"]'))
+            .map(el => el.textContent.trim()).filter(t => t && t.length < 200 && t.length > 2).slice(0, 8);
+          const buttons = Array.from(document.querySelectorAll('button,[role="button"],a.btn,[class*="btn"]'))
+            .map(el => el.textContent.trim()).filter(t => t && t.length < 80).slice(0, 12);
+          const alerts = Array.from(document.querySelectorAll('[class*="alert"],[class*="success"],[class*="error"],[role="alert"],[class*="notification"],[class*="flash"]'))
+            .map(el => el.textContent.trim()).filter(t => t && t.length < 300).slice(0, 5);
+          const navItems = Array.from(document.querySelectorAll('nav a,[class*="sidebar"] a,[class*="menu"] a'))
+            .map(el => el.textContent.trim()).filter(t => t && t.length < 60).slice(0, 15);
+          const formLabels = Array.from(document.querySelectorAll('label,legend,th,[class*="label"]'))
+            .map(el => el.textContent.trim()).filter(t => t && t.length < 100).slice(0, 15);
+          const pageText = (document.body.innerText || '').toLowerCase();
+          const textFound = (et || []).filter(t => pageText.includes(t.toLowerCase()));
+          const textMissing = (et || []).filter(t => !pageText.includes(t.toLowerCase()));
+          const selectorStates = (es || []).map(sel => {
+            try {
+              const el = document.querySelector(sel);
+              return { selector: sel, found: !!el, visible: el ? el.offsetParent !== null : false };
+            } catch(e) { return { selector: sel, found: false, visible: false }; }
+          });
+          return { headings, buttons, alerts, navItems, formLabels, textFound, textMissing, selectorStates, pageTitle: document.title };
+        }, [expectedTexts, expectedSelectors]);
+
+        foundForbiddenText = await page.evaluate((fw) => {
+          if (typeof window.__getForbiddenText === 'function') {
+            return window.__getForbiddenText(fw);
+          }
+          const pageText = (document.body.innerText || '').toLowerCase();
+          return (fw || []).filter(w => pageText.includes(w.toLowerCase()));
+        }, forbiddenTexts);
       } catch (e) {
         console.log(`  [V2.3] DOM evidence collection warning: ${e.message}`);
       }

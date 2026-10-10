@@ -345,21 +345,21 @@ def orchestrate_single_tutorial(
             "voice": "id-ID-ArdiNeural",
             "music": False,
             "delays": {"actionDelay": 800, "sceneDelay": 1500, "typingDelay": 35, "postActionDelay": 1200},
-            "expected_visual_keywords": [feat_id.split('_')[0], "absensi", "siasek"],
+            "expected_visual_keywords": [feat_id.split('_')[0], change_item['feature_name'].lower().split()[0]],
             "forbidden_visual_keywords": ["fatal error", "exception"],
-            "intro": {"enabled": True, "title": "SIASEK", "subtitle": f"Panduan {change_item['feature_name']}", "duration": 4.0},
-            "outro": {"enabled": True, "title": "Selesai", "subtitle": "Proses pembelajaran dan presensi tercatat akurat.", "duration": 4.0},
+            "intro": {"enabled": True, "title": change_item.get('project_title', 'Tutorial'), "subtitle": f"Panduan {change_item['feature_name']}", "duration": 4.0},
+            "outro": {"enabled": True, "title": "Selesai", "subtitle": "Fitur telah selesai dipelajari dan siap digunakan.", "duration": 4.0},
             "scenes": [
                 {
                     "scene_id": "scene_01_intro",
                     "title": "Akses Halaman Fitur",
                     "purpose": f"Navigasi ke fitur {change_item['feature_name']}",
-                    "narration": f"Selamat datang di panduan aplikasi SIASEK. Kali ini kita membahas fitur {change_item['feature_name']}.",
+                    "narration": f"Selamat datang di panduan aplikasi. Kali ini kita membahas fitur {change_item['feature_name']}.",
                     "target_url": "http://127.0.0.1:8000/login",
                     "duration_target": 12,
                     "actions": [{"type": "goto", "url": "http://127.0.0.1:8000/login"}, {"type": "wait", "ms": 1500}],
                     "expected_result": "Halaman fitur terbuka dengan benar",
-                    "expected_ui": ["Formulir SIASEK"],
+                    "expected_ui": [f"Formulir {change_item['feature_name']}"],
                     "expected_text": ["Masuk ke Akun Anda"],
                     "expected_dom_state": ["input[name='email']"],
                     "verification_required": True
@@ -667,7 +667,7 @@ def cmd_release(args):
     session = ReleaseSession(WORKSPACE_ROOT, mode="release", dry_run=is_dry_run)
     
     print("\n" + "=" * 70)
-    print("      V3.2 CANONICAL RELEASE MANAGER — SIASEK")
+    print("      CANONICAL RELEASE MANAGER — APP TUTORIAL ENGINE")
     print("=" * 70)
     print(f"Release ID    : {session.release_id}")
     print(f"Mode          : {'EXECUTION' if is_execute else ('PLAN ONLY' if is_plan_only else 'DRY RUN')}")

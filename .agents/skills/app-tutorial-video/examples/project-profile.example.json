@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "project_id": "example-app",
+  "project_name": "Example Web Application",
+  "framework": "react_vite",
+  "app_type": "web",
+  "base_url": "http://127.0.0.1:5173",
+  "local_server_cmd": "npm run dev -- --port 5173",
+  "mode": "mobile",
+  "viewport": {
+    "width": 414,
+    "height": 736
+  },
+  "target_resolution": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "voice": {
+    "name": "id-ID-GadisNeural",
+    "rate": "-2%",
+    "pitch": "+0Hz"
+  },
+  "reaction_delay_ms": 300,
+  "result_hold_ms": 1200,
+  "color_scheme": "light",
+  "auth": {
+    "type": "none"
+  },
+  "navigation_rules": {
+    "default_wait_selector": "body",
+    "page_load_timeout_ms": 20000
+  },
+  "workflows": [
+    {
+      "workflow_id": "overview",
+      "name": "Eksplorasi Halaman Utama",
+      "target_users": ["visitor", "user"],
+      "description": "Menampilkan navbar dan konten utama aplikasi.",
+      "path": "/",
+      "steps": [
+        {
+          "do": "goto",
+          "url": "/"
+        },
+        {
+          "do": "wait_for",
+          "selector": "#root"
+        }
+      ]
+    }
+  ]
+}

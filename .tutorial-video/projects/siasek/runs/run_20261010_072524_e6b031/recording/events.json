@@ -1,0 +1,1126 @@
+{
+  "fps": 60,
+  "frame_ms": 16.666666666666668,
+  "dsf": 1,
+  "viewport": [
+    1920,
+    1080
+  ],
+  "output": [
+    1920,
+    1080
+  ],
+  "scenes": [
+    {
+      "scene_id": "scene_01_buka_registrasi",
+      "start_ms": 0,
+      "narration_start_ms": 200,
+      "narration_end_ms": 17552,
+      "action_start_ms": 17866.667,
+      "action_end_ms": 21316.667,
+      "end_ms": 22516.667
+    },
+    {
+      "scene_id": "scene_02_isi_nama_email",
+      "start_ms": 22516.667,
+      "narration_start_ms": 22716.667,
+      "narration_end_ms": 37956.667,
+      "action_start_ms": 38266.667,
+      "action_end_ms": 46416.667,
+      "end_ms": 47616.667
+    },
+    {
+      "scene_id": "scene_03_isi_kata_sandi",
+      "start_ms": 47616.667,
+      "narration_start_ms": 47816.667,
+      "narration_end_ms": 61952.667,
+      "action_start_ms": 62266.667,
+      "action_end_ms": 69550,
+      "end_ms": 70750
+    },
+    {
+      "scene_id": "scene_04_submit_registrasi",
+      "start_ms": 70750,
+      "narration_start_ms": 70950,
+      "narration_end_ms": 83790,
+      "action_start_ms": 84100,
+      "action_end_ms": 91000,
+      "end_ms": 92400
+    },
+    {
+      "scene_id": "scene_05_konfirmasi_dan_langkah_lanjut",
+      "start_ms": 92400,
+      "narration_start_ms": 92600,
+      "narration_end_ms": 108392,
+      "action_start_ms": 108700,
+      "action_end_ms": 110100,
+      "end_ms": 111500
+    },
+    {
+      "scene_id": "scene_06_outro",
+      "start_ms": 111500,
+      "narration_start_ms": 111700,
+      "narration_end_ms": 125788,
+      "action_start_ms": 126100,
+      "action_end_ms": 127300,
+      "end_ms": 129100
+    }
+  ],
+  "events": [
+    {
+      "type": "scene_start",
+      "vt_ms": 0,
+      "frame": 0,
+      "scene_id": "scene_01_buka_registrasi"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 0,
+      "frame": 0,
+      "scene_id": "scene_01_buka_registrasi",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_01_buka_registrasi.mp3",
+      "duration_ms": 17352,
+      "at_ms": 200
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 17566.667,
+      "frame": 1054,
+      "scene_id": "scene_01_buka_registrasi"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 17866.667,
+      "frame": 1072,
+      "scene_id": "scene_01_buka_registrasi"
+    },
+    {
+      "type": "move_start",
+      "vt_ms": 17866.667,
+      "frame": 1072,
+      "from": [
+        1190.4,
+        669.6
+      ],
+      "to": [
+        1637,
+        413.5
+      ],
+      "dist_px": 514.8,
+      "move_ms": 1040.6,
+      "settle_ms": 180
+    },
+    {
+      "type": "move_end",
+      "vt_ms": 19100,
+      "frame": 1146,
+      "at": [
+        1637,
+        413.5
+      ]
+    },
+    {
+      "type": "tap",
+      "vt_ms": 19183.333,
+      "frame": 1151,
+      "at": [
+        1637,
+        413.5
+      ],
+      "label": "a:has-text('Daftar sekarang')",
+      "bbox": [
+        1582.640625,
+        404.5,
+        108.71875,
+        18
+      ]
+    },
+    {
+      "type": "wait_for",
+      "vt_ms": 19316.667,
+      "frame": 1159,
+      "selector": "#name",
+      "budget_ms": 1200,
+      "satisfied": true,
+      "extended_ms": 0
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 21316.667,
+      "frame": 1279,
+      "scene_id": "scene_01_buka_registrasi"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 22516.667,
+      "frame": 1351,
+      "scene_id": "scene_01_buka_registrasi"
+    },
+    {
+      "type": "scene_start",
+      "vt_ms": 22516.667,
+      "frame": 1351,
+      "scene_id": "scene_02_isi_nama_email"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 22516.667,
+      "frame": 1351,
+      "scene_id": "scene_02_isi_nama_email",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_02_isi_nama_email.mp3",
+      "duration_ms": 15240,
+      "at_ms": 22716.667
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 37966.667,
+      "frame": 2278,
+      "scene_id": "scene_02_isi_nama_email"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 38266.667,
+      "frame": 2296,
+      "scene_id": "scene_02_isi_nama_email"
+    },
+    {
+      "type": "type_start",
+      "vt_ms": 38433.333,
+      "frame": 2306,
+      "target": "#name",
+      "text_len": 14,
+      "bbox": [
+        1440,
+        415.5,
+        384,
+        42
+      ],
+      "end_vt_ms": 40200
+    },
+    {
+      "type": "key",
+      "vt_ms": 38433.333,
+      "frame": 2306,
+      "ch": "I",
+      "i": 0
+    },
+    {
+      "type": "key",
+      "vt_ms": 38550,
+      "frame": 2313,
+      "ch": "b",
+      "i": 1
+    },
+    {
+      "type": "key",
+      "vt_ms": 38683.333,
+      "frame": 2321,
+      "ch": "u",
+      "i": 2
+    },
+    {
+      "type": "key",
+      "vt_ms": 38833.333,
+      "frame": 2330,
+      "ch": " ",
+      "i": 3
+    },
+    {
+      "type": "key",
+      "vt_ms": 39016.667,
+      "frame": 2341,
+      "ch": "S",
+      "i": 4
+    },
+    {
+      "type": "key",
+      "vt_ms": 39133.333,
+      "frame": 2348,
+      "ch": "i",
+      "i": 5
+    },
+    {
+      "type": "key",
+      "vt_ms": 39283.333,
+      "frame": 2357,
+      "ch": "t",
+      "i": 6
+    },
+    {
+      "type": "key",
+      "vt_ms": 39400,
+      "frame": 2364,
+      "ch": "i",
+      "i": 7
+    },
+    {
+      "type": "key",
+      "vt_ms": 39550,
+      "frame": 2373,
+      "ch": " ",
+      "i": 8
+    },
+    {
+      "type": "key",
+      "vt_ms": 39733.333,
+      "frame": 2384,
+      "ch": "R",
+      "i": 9
+    },
+    {
+      "type": "key",
+      "vt_ms": 39816.667,
+      "frame": 2389,
+      "ch": "a",
+      "i": 10
+    },
+    {
+      "type": "key",
+      "vt_ms": 39900,
+      "frame": 2394,
+      "ch": "h",
+      "i": 11
+    },
+    {
+      "type": "key",
+      "vt_ms": 40016.667,
+      "frame": 2401,
+      "ch": "m",
+      "i": 12
+    },
+    {
+      "type": "key",
+      "vt_ms": 40116.667,
+      "frame": 2407,
+      "ch": "a",
+      "i": 13
+    },
+    {
+      "type": "type_end",
+      "vt_ms": 40200,
+      "frame": 2412,
+      "target": "#name"
+    },
+    {
+      "type": "move_start",
+      "vt_ms": 40600,
+      "frame": 2436,
+      "from": [
+        1637,
+        413.5
+      ],
+      "to": [
+        1555.2,
+        516.5
+      ],
+      "dist_px": 131.5,
+      "move_ms": 744.9,
+      "settle_ms": 180
+    },
+    {
+      "type": "move_end",
+      "vt_ms": 41533.333,
+      "frame": 2492,
+      "at": [
+        1555.2,
+        516.5
+      ]
+    },
+    {
+      "type": "tap",
+      "vt_ms": 41616.667,
+      "frame": 2497,
+      "at": [
+        1555.2,
+        516.5
+      ],
+      "label": "#email",
+      "bbox": [
+        1440,
+        495.5,
+        384,
+        42
+      ]
+    },
+    {
+      "type": "type_start",
+      "vt_ms": 41916.667,
+      "frame": 2515,
+      "target": "#email",
+      "text_len": 30,
+      "bbox": [
+        1440,
+        495.5,
+        384,
+        42
+      ],
+      "end_vt_ms": 45816.667
+    },
+    {
+      "type": "key",
+      "vt_ms": 41916.667,
+      "frame": 2515,
+      "ch": "o",
+      "i": 0
+    },
+    {
+      "type": "key",
+      "vt_ms": 42016.667,
+      "frame": 2521,
+      "ch": "r",
+      "i": 1
+    },
+    {
+      "type": "key",
+      "vt_ms": 42116.667,
+      "frame": 2527,
+      "ch": "t",
+      "i": 2
+    },
+    {
+      "type": "key",
+      "vt_ms": 42250,
+      "frame": 2535,
+      "ch": "u",
+      "i": 3
+    },
+    {
+      "type": "key",
+      "vt_ms": 42483.333,
+      "frame": 2549,
+      "ch": ".",
+      "i": 4
+    },
+    {
+      "type": "key",
+      "vt_ms": 42650,
+      "frame": 2559,
+      "ch": "s",
+      "i": 5
+    },
+    {
+      "type": "key",
+      "vt_ms": 42783.333,
+      "frame": 2567,
+      "ch": "i",
+      "i": 6
+    },
+    {
+      "type": "key",
+      "vt_ms": 42933.333,
+      "frame": 2576,
+      "ch": "t",
+      "i": 7
+    },
+    {
+      "type": "key",
+      "vt_ms": 43083.333,
+      "frame": 2585,
+      "ch": "i",
+      "i": 8
+    },
+    {
+      "type": "key",
+      "vt_ms": 43166.667,
+      "frame": 2590,
+      "ch": ".",
+      "i": 9
+    },
+    {
+      "type": "key",
+      "vt_ms": 43333.333,
+      "frame": 2600,
+      "ch": "r",
+      "i": 10
+    },
+    {
+      "type": "key",
+      "vt_ms": 43416.667,
+      "frame": 2605,
+      "ch": "a",
+      "i": 11
+    },
+    {
+      "type": "key",
+      "vt_ms": 43516.667,
+      "frame": 2611,
+      "ch": "h",
+      "i": 12
+    },
+    {
+      "type": "key",
+      "vt_ms": 43616.667,
+      "frame": 2617,
+      "ch": "m",
+      "i": 13
+    },
+    {
+      "type": "key",
+      "vt_ms": 43733.333,
+      "frame": 2624,
+      "ch": "a",
+      "i": 14
+    },
+    {
+      "type": "key",
+      "vt_ms": 43850,
+      "frame": 2631,
+      "ch": "@",
+      "i": 15
+    },
+    {
+      "type": "key",
+      "vt_ms": 44050,
+      "frame": 2643,
+      "ch": "t",
+      "i": 16
+    },
+    {
+      "type": "key",
+      "vt_ms": 44166.667,
+      "frame": 2650,
+      "ch": "e",
+      "i": 17
+    },
+    {
+      "type": "key",
+      "vt_ms": 44400,
+      "frame": 2664,
+      "ch": "s",
+      "i": 18
+    },
+    {
+      "type": "key",
+      "vt_ms": 44533.333,
+      "frame": 2672,
+      "ch": "t",
+      "i": 19
+    },
+    {
+      "type": "key",
+      "vt_ms": 44616.667,
+      "frame": 2677,
+      "ch": "-",
+      "i": 20
+    },
+    {
+      "type": "key",
+      "vt_ms": 44750,
+      "frame": 2685,
+      "ch": "s",
+      "i": 21
+    },
+    {
+      "type": "key",
+      "vt_ms": 44883.333,
+      "frame": 2693,
+      "ch": "i",
+      "i": 22
+    },
+    {
+      "type": "key",
+      "vt_ms": 44966.667,
+      "frame": 2698,
+      "ch": "a",
+      "i": 23
+    },
+    {
+      "type": "key",
+      "vt_ms": 45066.667,
+      "frame": 2704,
+      "ch": "s",
+      "i": 24
+    },
+    {
+      "type": "key",
+      "vt_ms": 45150,
+      "frame": 2709,
+      "ch": "e",
+      "i": 25
+    },
+    {
+      "type": "key",
+      "vt_ms": 45283.333,
+      "frame": 2717,
+      "ch": "k",
+      "i": 26
+    },
+    {
+      "type": "key",
+      "vt_ms": 45400,
+      "frame": 2724,
+      "ch": ".",
+      "i": 27
+    },
+    {
+      "type": "key",
+      "vt_ms": 45583.333,
+      "frame": 2735,
+      "ch": "i",
+      "i": 28
+    },
+    {
+      "type": "key",
+      "vt_ms": 45683.333,
+      "frame": 2741,
+      "ch": "d",
+      "i": 29
+    },
+    {
+      "type": "type_end",
+      "vt_ms": 45816.667,
+      "frame": 2749,
+      "target": "#email"
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 46416.667,
+      "frame": 2785,
+      "scene_id": "scene_02_isi_nama_email"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 47616.667,
+      "frame": 2857,
+      "scene_id": "scene_02_isi_nama_email"
+    },
+    {
+      "type": "scene_start",
+      "vt_ms": 47616.667,
+      "frame": 2857,
+      "scene_id": "scene_03_isi_kata_sandi"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 47616.667,
+      "frame": 2857,
+      "scene_id": "scene_03_isi_kata_sandi",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_03_isi_kata_sandi.mp3",
+      "duration_ms": 14136,
+      "at_ms": 47816.667
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 61966.667,
+      "frame": 3718,
+      "scene_id": "scene_03_isi_kata_sandi"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 62266.667,
+      "frame": 3736,
+      "scene_id": "scene_03_isi_kata_sandi"
+    },
+    {
+      "type": "move_start",
+      "vt_ms": 62266.667,
+      "frame": 3736,
+      "from": [
+        1555.2,
+        516.5
+      ],
+      "to": [
+        1555.2,
+        596.5
+      ],
+      "dist_px": 80,
+      "move_ms": 649.1,
+      "settle_ms": 180
+    },
+    {
+      "type": "move_end",
+      "vt_ms": 63100,
+      "frame": 3786,
+      "at": [
+        1555.2,
+        596.5
+      ]
+    },
+    {
+      "type": "tap",
+      "vt_ms": 63183.333,
+      "frame": 3791,
+      "at": [
+        1555.2,
+        596.5
+      ],
+      "label": "#password",
+      "bbox": [
+        1440,
+        575.5,
+        384,
+        42
+      ]
+    },
+    {
+      "type": "type_start",
+      "vt_ms": 63483.333,
+      "frame": 3809,
+      "target": "#password",
+      "text_len": 15,
+      "bbox": [
+        1440,
+        575.5,
+        384,
+        42
+      ],
+      "end_vt_ms": 65533.333
+    },
+    {
+      "type": "key",
+      "vt_ms": 63483.333,
+      "frame": 3809,
+      "ch": "*",
+      "i": 0
+    },
+    {
+      "type": "key",
+      "vt_ms": 63600,
+      "frame": 3816,
+      "ch": "*",
+      "i": 1
+    },
+    {
+      "type": "key",
+      "vt_ms": 63733.333,
+      "frame": 3824,
+      "ch": "*",
+      "i": 2
+    },
+    {
+      "type": "key",
+      "vt_ms": 63866.667,
+      "frame": 3832,
+      "ch": "*",
+      "i": 3
+    },
+    {
+      "type": "key",
+      "vt_ms": 64000,
+      "frame": 3840,
+      "ch": "*",
+      "i": 4
+    },
+    {
+      "type": "key",
+      "vt_ms": 64150,
+      "frame": 3849,
+      "ch": "*",
+      "i": 5
+    },
+    {
+      "type": "key",
+      "vt_ms": 64300,
+      "frame": 3858,
+      "ch": "*",
+      "i": 6
+    },
+    {
+      "type": "key",
+      "vt_ms": 64450,
+      "frame": 3867,
+      "ch": "*",
+      "i": 7
+    },
+    {
+      "type": "key",
+      "vt_ms": 64566.667,
+      "frame": 3874,
+      "ch": "*",
+      "i": 8
+    },
+    {
+      "type": "key",
+      "vt_ms": 64716.667,
+      "frame": 3883,
+      "ch": "*",
+      "i": 9
+    },
+    {
+      "type": "key",
+      "vt_ms": 64850,
+      "frame": 3891,
+      "ch": "*",
+      "i": 10
+    },
+    {
+      "type": "key",
+      "vt_ms": 64966.667,
+      "frame": 3898,
+      "ch": "*",
+      "i": 11
+    },
+    {
+      "type": "key",
+      "vt_ms": 65116.667,
+      "frame": 3907,
+      "ch": "*",
+      "i": 12
+    },
+    {
+      "type": "key",
+      "vt_ms": 65266.667,
+      "frame": 3916,
+      "ch": "*",
+      "i": 13
+    },
+    {
+      "type": "key",
+      "vt_ms": 65383.333,
+      "frame": 3923,
+      "ch": "*",
+      "i": 14
+    },
+    {
+      "type": "type_end",
+      "vt_ms": 65533.333,
+      "frame": 3932,
+      "target": "#password"
+    },
+    {
+      "type": "move_start",
+      "vt_ms": 65933.333,
+      "frame": 3956,
+      "from": [
+        1555.2,
+        596.5
+      ],
+      "to": [
+        1555.2,
+        676.5
+      ],
+      "dist_px": 80,
+      "move_ms": 649.1,
+      "settle_ms": 180
+    },
+    {
+      "type": "move_end",
+      "vt_ms": 66766.667,
+      "frame": 4006,
+      "at": [
+        1555.2,
+        676.5
+      ]
+    },
+    {
+      "type": "tap",
+      "vt_ms": 66850,
+      "frame": 4011,
+      "at": [
+        1555.2,
+        676.5
+      ],
+      "label": "#password_confirmation",
+      "bbox": [
+        1440,
+        655.5,
+        384,
+        42
+      ]
+    },
+    {
+      "type": "type_start",
+      "vt_ms": 67150,
+      "frame": 4029,
+      "target": "#password_confirmation",
+      "text_len": 15,
+      "bbox": [
+        1440,
+        655.5,
+        384,
+        42
+      ],
+      "end_vt_ms": 68950
+    },
+    {
+      "type": "key",
+      "vt_ms": 67150,
+      "frame": 4029,
+      "ch": "*",
+      "i": 0
+    },
+    {
+      "type": "key",
+      "vt_ms": 67266.667,
+      "frame": 4036,
+      "ch": "*",
+      "i": 1
+    },
+    {
+      "type": "key",
+      "vt_ms": 67416.667,
+      "frame": 4045,
+      "ch": "*",
+      "i": 2
+    },
+    {
+      "type": "key",
+      "vt_ms": 67516.667,
+      "frame": 4051,
+      "ch": "*",
+      "i": 3
+    },
+    {
+      "type": "key",
+      "vt_ms": 67616.667,
+      "frame": 4057,
+      "ch": "*",
+      "i": 4
+    },
+    {
+      "type": "key",
+      "vt_ms": 67733.333,
+      "frame": 4064,
+      "ch": "*",
+      "i": 5
+    },
+    {
+      "type": "key",
+      "vt_ms": 67866.667,
+      "frame": 4072,
+      "ch": "*",
+      "i": 6
+    },
+    {
+      "type": "key",
+      "vt_ms": 68116.667,
+      "frame": 4087,
+      "ch": "*",
+      "i": 7
+    },
+    {
+      "type": "key",
+      "vt_ms": 68216.667,
+      "frame": 4093,
+      "ch": "*",
+      "i": 8
+    },
+    {
+      "type": "key",
+      "vt_ms": 68316.667,
+      "frame": 4099,
+      "ch": "*",
+      "i": 9
+    },
+    {
+      "type": "key",
+      "vt_ms": 68400,
+      "frame": 4104,
+      "ch": "*",
+      "i": 10
+    },
+    {
+      "type": "key",
+      "vt_ms": 68500,
+      "frame": 4110,
+      "ch": "*",
+      "i": 11
+    },
+    {
+      "type": "key",
+      "vt_ms": 68583.333,
+      "frame": 4115,
+      "ch": "*",
+      "i": 12
+    },
+    {
+      "type": "key",
+      "vt_ms": 68683.333,
+      "frame": 4121,
+      "ch": "*",
+      "i": 13
+    },
+    {
+      "type": "key",
+      "vt_ms": 68816.667,
+      "frame": 4129,
+      "ch": "*",
+      "i": 14
+    },
+    {
+      "type": "type_end",
+      "vt_ms": 68950,
+      "frame": 4137,
+      "target": "#password_confirmation"
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 69550,
+      "frame": 4173,
+      "scene_id": "scene_03_isi_kata_sandi"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 70750,
+      "frame": 4245,
+      "scene_id": "scene_03_isi_kata_sandi"
+    },
+    {
+      "type": "scene_start",
+      "vt_ms": 70750,
+      "frame": 4245,
+      "scene_id": "scene_04_submit_registrasi"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 70750,
+      "frame": 4245,
+      "scene_id": "scene_04_submit_registrasi",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_04_submit_registrasi.mp3",
+      "duration_ms": 12840,
+      "at_ms": 70950
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 83800,
+      "frame": 5028,
+      "scene_id": "scene_04_submit_registrasi"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 84100,
+      "frame": 5046,
+      "scene_id": "scene_04_submit_registrasi"
+    },
+    {
+      "type": "move_start",
+      "vt_ms": 84100,
+      "frame": 5046,
+      "from": [
+        1555.2,
+        676.5
+      ],
+      "to": [
+        1632,
+        745.5
+      ],
+      "dist_px": 103.2,
+      "move_ms": 697.1,
+      "settle_ms": 180
+    },
+    {
+      "type": "move_end",
+      "vt_ms": 84983.333,
+      "frame": 5099,
+      "at": [
+        1632,
+        745.5
+      ]
+    },
+    {
+      "type": "tap",
+      "vt_ms": 85066.667,
+      "frame": 5104,
+      "at": [
+        1632,
+        745.5
+      ],
+      "label": "button[type='submit']",
+      "bbox": [
+        1440,
+        721.5,
+        384,
+        48
+      ]
+    },
+    {
+      "type": "wait_for",
+      "vt_ms": 85200,
+      "frame": 5112,
+      "selector": "text=Selamat Datang, Bapak/Ibu!",
+      "budget_ms": 5000,
+      "satisfied": true,
+      "extended_ms": 0
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 91000,
+      "frame": 5460,
+      "scene_id": "scene_04_submit_registrasi"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 92400,
+      "frame": 5544,
+      "scene_id": "scene_04_submit_registrasi"
+    },
+    {
+      "type": "scene_start",
+      "vt_ms": 92400,
+      "frame": 5544,
+      "scene_id": "scene_05_konfirmasi_dan_langkah_lanjut"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 92400,
+      "frame": 5544,
+      "scene_id": "scene_05_konfirmasi_dan_langkah_lanjut",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_05_konfirmasi_dan_langkah_lanjut.mp3",
+      "duration_ms": 15792,
+      "at_ms": 92600
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 108400,
+      "frame": 6504,
+      "scene_id": "scene_05_konfirmasi_dan_langkah_lanjut"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 108700,
+      "frame": 6522,
+      "scene_id": "scene_05_konfirmasi_dan_langkah_lanjut"
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 110100,
+      "frame": 6606,
+      "scene_id": "scene_05_konfirmasi_dan_langkah_lanjut"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 111500,
+      "frame": 6690,
+      "scene_id": "scene_05_konfirmasi_dan_langkah_lanjut"
+    },
+    {
+      "type": "scene_start",
+      "vt_ms": 111500,
+      "frame": 6690,
+      "scene_id": "scene_06_outro"
+    },
+    {
+      "type": "narration_start",
+      "vt_ms": 111500,
+      "frame": 6690,
+      "scene_id": "scene_06_outro",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_06_outro.mp3",
+      "duration_ms": 14088,
+      "at_ms": 111700
+    },
+    {
+      "type": "narration_end",
+      "vt_ms": 125800,
+      "frame": 7548,
+      "scene_id": "scene_06_outro"
+    },
+    {
+      "type": "action_start",
+      "vt_ms": 126100,
+      "frame": 7566,
+      "scene_id": "scene_06_outro"
+    },
+    {
+      "type": "action_end",
+      "vt_ms": 127300,
+      "frame": 7638,
+      "scene_id": "scene_06_outro"
+    },
+    {
+      "type": "scene_end",
+      "vt_ms": 129100,
+      "frame": 7746,
+      "scene_id": "scene_06_outro"
+    }
+  ]
+}

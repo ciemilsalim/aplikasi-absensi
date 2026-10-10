@@ -1,0 +1,842 @@
+{
+  "voice": {
+    "name": "id-ID-GadisNeural",
+    "rate": "-2%",
+    "pitch": "+0Hz"
+  },
+  "scenes": {
+    "scene_01_buka_registrasi": {
+      "text": "Halo Bapak dan Ibu orang tua siswa. Dalam panduan ini, kita akan mempelajari cara mendaftar akun baru pada aplikasi presensi SIASEK. Kita mulai dari halaman masuk, lalu memilih menu Daftar Sekarang.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_01_buka_registrasi.mp3",
+      "duration_ms": 17352.0,
+      "words": [
+        {
+          "w": "Halo",
+          "s": 100.0,
+          "e": 533.7
+        },
+        {
+          "w": "Bapak",
+          "s": 533.7,
+          "e": 1031.1
+        },
+        {
+          "w": "dan",
+          "s": 1031.1,
+          "e": 1209.7
+        },
+        {
+          "w": "Ibu",
+          "s": 1209.7,
+          "e": 1605.1
+        },
+        {
+          "w": "orang",
+          "s": 1605.1,
+          "e": 1987.7
+        },
+        {
+          "w": "tua",
+          "s": 1987.8,
+          "e": 2281.1
+        },
+        {
+          "w": "siswa",
+          "s": 2281.1,
+          "e": 2982.7
+        },
+        {
+          "w": "Dalam",
+          "s": 3838.2,
+          "e": 4310.2
+        },
+        {
+          "w": "panduan",
+          "s": 4310.2,
+          "e": 4667.3
+        },
+        {
+          "w": "ini",
+          "s": 4667.3,
+          "e": 5164.8
+        },
+        {
+          "w": "kita",
+          "s": 5573.0,
+          "e": 5853.6
+        },
+        {
+          "w": "akan",
+          "s": 5853.6,
+          "e": 6185.2
+        },
+        {
+          "w": "mempelajari",
+          "s": 6185.2,
+          "e": 6759.2
+        },
+        {
+          "w": "cara",
+          "s": 6759.2,
+          "e": 7141.8
+        },
+        {
+          "w": "mendaftar",
+          "s": 7141.8,
+          "e": 7664.8
+        },
+        {
+          "w": "akun",
+          "s": 7664.8,
+          "e": 8073.0
+        },
+        {
+          "w": "baru",
+          "s": 8073.0,
+          "e": 8481.1
+        },
+        {
+          "w": "pada",
+          "s": 8481.1,
+          "e": 8863.8
+        },
+        {
+          "w": "aplikasi",
+          "s": 8863.8,
+          "e": 9488.8
+        },
+        {
+          "w": "presensi",
+          "s": 9488.8,
+          "e": 10164.8
+        },
+        {
+          "w": "SIASEK",
+          "s": 10164.8,
+          "e": 10777.0
+        },
+        {
+          "w": "Kita",
+          "s": 11631.6,
+          "e": 12014.3
+        },
+        {
+          "w": "mulai",
+          "s": 12014.3,
+          "e": 12384.2
+        },
+        {
+          "w": "dari",
+          "s": 12384.2,
+          "e": 12613.7
+        },
+        {
+          "w": "halaman",
+          "s": 12613.8,
+          "e": 13098.5
+        },
+        {
+          "w": "masuk",
+          "s": 13098.5,
+          "e": 13646.9
+        },
+        {
+          "w": "lalu",
+          "s": 13978.6,
+          "e": 14335.7
+        },
+        {
+          "w": "memilih",
+          "s": 14335.7,
+          "e": 14896.9
+        },
+        {
+          "w": "menu",
+          "s": 14897.0,
+          "e": 15215.8
+        },
+        {
+          "w": "Daftar",
+          "s": 15215.8,
+          "e": 15726.0
+        },
+        {
+          "w": "Sekarang",
+          "s": 15726.0,
+          "e": 16478.5
+        }
+      ],
+      "sha256": "1821db93c36f1104c033b23cd06b8b1030ff089b114d17df95c5fa95d89cce6e"
+    },
+    "scene_02_isi_nama_email": {
+      "text": "Pada formulir registrasi, masukkan Nama Lengkap Anda dengan benar. Selanjutnya, ketikkan alamat email aktif yang akan digunakan untuk masuk ke akun dan menerima pemberitahuan kehadiran siswa.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_02_isi_nama_email.mp3",
+      "duration_ms": 15240.0,
+      "words": [
+        {
+          "w": "Pada",
+          "s": 100.0,
+          "e": 584.7
+        },
+        {
+          "w": "formulir",
+          "s": 584.7,
+          "e": 1171.4
+        },
+        {
+          "w": "registrasi",
+          "s": 1171.4,
+          "e": 2153.5
+        },
+        {
+          "w": "masukkan",
+          "s": 2498.0,
+          "e": 3033.7
+        },
+        {
+          "w": "Nama",
+          "s": 3033.7,
+          "e": 3301.5
+        },
+        {
+          "w": "Lengkap",
+          "s": 3301.5,
+          "e": 3671.4
+        },
+        {
+          "w": "Anda",
+          "s": 3671.4,
+          "e": 4156.1
+        },
+        {
+          "w": "dengan",
+          "s": 4156.1,
+          "e": 4615.3
+        },
+        {
+          "w": "benar",
+          "s": 4615.3,
+          "e": 5176.5
+        },
+        {
+          "w": "Selanjutnya",
+          "s": 6032.1,
+          "e": 7014.2
+        },
+        {
+          "w": "ketikkan",
+          "s": 7358.7,
+          "e": 7868.9
+        },
+        {
+          "w": "alamat",
+          "s": 7868.9,
+          "e": 8289.8
+        },
+        {
+          "w": "email",
+          "s": 8289.8,
+          "e": 8646.9
+        },
+        {
+          "w": "aktif",
+          "s": 8647.0,
+          "e": 9182.7
+        },
+        {
+          "w": "yang",
+          "s": 9182.7,
+          "e": 9323.0
+        },
+        {
+          "w": "akan",
+          "s": 9323.0,
+          "e": 9692.9
+        },
+        {
+          "w": "digunakan",
+          "s": 9692.9,
+          "e": 10305.1
+        },
+        {
+          "w": "untuk",
+          "s": 10305.1,
+          "e": 10738.7
+        },
+        {
+          "w": "masuk",
+          "s": 10738.8,
+          "e": 11057.7
+        },
+        {
+          "w": "ke",
+          "s": 11057.7,
+          "e": 11134.2
+        },
+        {
+          "w": "akun",
+          "s": 11134.2,
+          "e": 11644.4
+        },
+        {
+          "w": "dan",
+          "s": 11644.4,
+          "e": 11835.7
+        },
+        {
+          "w": "menerima",
+          "s": 11835.7,
+          "e": 12282.1
+        },
+        {
+          "w": "pemberitahuan",
+          "s": 12282.1,
+          "e": 13034.7
+        },
+        {
+          "w": "kehadiran",
+          "s": 13034.7,
+          "e": 13698.0
+        },
+        {
+          "w": "siswa",
+          "s": 13698.0,
+          "e": 14374.0
+        }
+      ],
+      "sha256": "98c88937a43a2780f2a645b5ecc66cde1bdd0a644b5daf958c0e8e578c61feca"
+    },
+    "scene_03_isi_kata_sandi": {
+      "text": "Berikutnya, tentukan kata sandi yang aman dengan minimal delapan karakter. Ketikkan kembali kata sandi yang persis sama pada kolom konfirmasi untuk memastikan tidak terjadi kesalahan ketik.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_03_isi_kata_sandi.mp3",
+      "duration_ms": 14136.0,
+      "words": [
+        {
+          "w": "Berikutnya",
+          "s": 100.0,
+          "e": 1018.4
+        },
+        {
+          "w": "tentukan",
+          "s": 1350.0,
+          "e": 1987.8
+        },
+        {
+          "w": "kata",
+          "s": 1987.8,
+          "e": 2242.8
+        },
+        {
+          "w": "sandi",
+          "s": 2242.9,
+          "e": 2638.2
+        },
+        {
+          "w": "yang",
+          "s": 2638.2,
+          "e": 2778.5
+        },
+        {
+          "w": "aman",
+          "s": 2778.6,
+          "e": 3225.0
+        },
+        {
+          "w": "dengan",
+          "s": 3225.0,
+          "e": 3556.6
+        },
+        {
+          "w": "minimal",
+          "s": 3556.6,
+          "e": 4105.1
+        },
+        {
+          "w": "delapan",
+          "s": 4105.1,
+          "e": 4653.5
+        },
+        {
+          "w": "karakter",
+          "s": 4653.6,
+          "e": 5342.4
+        },
+        {
+          "w": "Ketikkan",
+          "s": 6198.0,
+          "e": 6797.5
+        },
+        {
+          "w": "kembali",
+          "s": 6797.5,
+          "e": 7192.9
+        },
+        {
+          "w": "kata",
+          "s": 7192.9,
+          "e": 7486.2
+        },
+        {
+          "w": "sandi",
+          "s": 7486.2,
+          "e": 7894.4
+        },
+        {
+          "w": "yang",
+          "s": 7894.4,
+          "e": 8034.7
+        },
+        {
+          "w": "persis",
+          "s": 8034.7,
+          "e": 8366.3
+        },
+        {
+          "w": "sama",
+          "s": 8366.3,
+          "e": 8749.0
+        },
+        {
+          "w": "pada",
+          "s": 8749.0,
+          "e": 9004.1
+        },
+        {
+          "w": "kolom",
+          "s": 9004.1,
+          "e": 9399.5
+        },
+        {
+          "w": "konfirmasi",
+          "s": 9399.5,
+          "e": 10190.3
+        },
+        {
+          "w": "untuk",
+          "s": 10190.3,
+          "e": 10649.5
+        },
+        {
+          "w": "memastikan",
+          "s": 10649.5,
+          "e": 11300.0
+        },
+        {
+          "w": "tidak",
+          "s": 11300.0,
+          "e": 11644.4
+        },
+        {
+          "w": "terjadi",
+          "s": 11644.4,
+          "e": 12243.9
+        },
+        {
+          "w": "kesalahan",
+          "s": 12243.9,
+          "e": 12881.6
+        },
+        {
+          "w": "ketik",
+          "s": 12881.6,
+          "e": 13264.3
+        }
+      ],
+      "sha256": "40a127acf8ecc10cdb9b032d71c3f27e9011fbed3167962c0126bdd34d910455"
+    },
+    "scene_04_submit_registrasi": {
+      "text": "Setelah seluruh kolom terisi dengan lengkap, periksa kembali data Anda. Jika sudah sesuai, klik tombol Daftarkan Akun untuk menyelesaikan proses registrasi.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_04_submit_registrasi.mp3",
+      "duration_ms": 12840.0,
+      "words": [
+        {
+          "w": "Setelah",
+          "s": 100.0,
+          "e": 635.7
+        },
+        {
+          "w": "seluruh",
+          "s": 635.7,
+          "e": 1056.6
+        },
+        {
+          "w": "kolom",
+          "s": 1056.6,
+          "e": 1413.8
+        },
+        {
+          "w": "terisi",
+          "s": 1413.8,
+          "e": 1834.7
+        },
+        {
+          "w": "dengan",
+          "s": 1834.7,
+          "e": 2179.1
+        },
+        {
+          "w": "lengkap",
+          "s": 2179.1,
+          "e": 2676.5
+        },
+        {
+          "w": "periksa",
+          "s": 2982.7,
+          "e": 3492.9
+        },
+        {
+          "w": "kembali",
+          "s": 3492.9,
+          "e": 4003.0
+        },
+        {
+          "w": "data",
+          "s": 4003.0,
+          "e": 4449.5
+        },
+        {
+          "w": "Anda",
+          "s": 4449.5,
+          "e": 5036.2
+        },
+        {
+          "w": "Jika",
+          "s": 5891.8,
+          "e": 6338.2
+        },
+        {
+          "w": "sudah",
+          "s": 6338.2,
+          "e": 6606.1
+        },
+        {
+          "w": "sesuai",
+          "s": 6606.1,
+          "e": 7282.1
+        },
+        {
+          "w": "klik",
+          "s": 7664.8,
+          "e": 7868.9
+        },
+        {
+          "w": "tombol",
+          "s": 7868.9,
+          "e": 8251.5
+        },
+        {
+          "w": "Daftarkan",
+          "s": 8251.5,
+          "e": 8787.2
+        },
+        {
+          "w": "Akun",
+          "s": 8787.2,
+          "e": 9284.7
+        },
+        {
+          "w": "untuk",
+          "s": 9284.7,
+          "e": 9756.6
+        },
+        {
+          "w": "menyelesaikan",
+          "s": 9756.6,
+          "e": 10445.4
+        },
+        {
+          "w": "proses",
+          "s": 10445.4,
+          "e": 10981.1
+        },
+        {
+          "w": "registrasi",
+          "s": 10981.1,
+          "e": 11963.2
+        }
+      ],
+      "sha256": "3c0fa09c8575c9e78507a061fa04a5d8187cf4f165ba9429997aa08e86e16952"
+    },
+    "scene_05_konfirmasi_dan_langkah_lanjut": {
+      "text": "Selamat, akun Anda telah berhasil didaftarkan dan aktif secara otomatis. Anda langsung diarahkan ke gerbang aktivasi untuk melengkapi nomor WhatsApp serta menghubungkan akun dengan data ananda di sekolah.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_05_konfirmasi_dan_langkah_lanjut.mp3",
+      "duration_ms": 15792.0,
+      "words": [
+        {
+          "w": "Selamat",
+          "s": 100.0,
+          "e": 827.0
+        },
+        {
+          "w": "akun",
+          "s": 1260.7,
+          "e": 1605.1
+        },
+        {
+          "w": "Anda",
+          "s": 1605.1,
+          "e": 1987.7
+        },
+        {
+          "w": "telah",
+          "s": 1987.8,
+          "e": 2255.6
+        },
+        {
+          "w": "berhasil",
+          "s": 2255.6,
+          "e": 2791.3
+        },
+        {
+          "w": "didaftarkan",
+          "s": 2791.3,
+          "e": 3543.9
+        },
+        {
+          "w": "dan",
+          "s": 3543.9,
+          "e": 3709.7
+        },
+        {
+          "w": "aktif",
+          "s": 3709.7,
+          "e": 4245.4
+        },
+        {
+          "w": "secara",
+          "s": 4245.4,
+          "e": 4730.1
+        },
+        {
+          "w": "otomatis",
+          "s": 4730.1,
+          "e": 5865.3
+        },
+        {
+          "w": "Anda",
+          "s": 6720.9,
+          "e": 7103.6
+        },
+        {
+          "w": "langsung",
+          "s": 7103.6,
+          "e": 7575.5
+        },
+        {
+          "w": "diarahkan",
+          "s": 7575.5,
+          "e": 8226.0
+        },
+        {
+          "w": "ke",
+          "s": 8226.0,
+          "e": 8340.8
+        },
+        {
+          "w": "gerbang",
+          "s": 8340.8,
+          "e": 8698.0
+        },
+        {
+          "w": "aktivasi",
+          "s": 8698.0,
+          "e": 9488.8
+        },
+        {
+          "w": "untuk",
+          "s": 9488.8,
+          "e": 9922.5
+        },
+        {
+          "w": "melengkapi",
+          "s": 9922.5,
+          "e": 10445.4
+        },
+        {
+          "w": "nomor",
+          "s": 10445.4,
+          "e": 10764.3
+        },
+        {
+          "w": "WhatsApp",
+          "s": 10764.3,
+          "e": 11274.5
+        },
+        {
+          "w": "serta",
+          "s": 11274.5,
+          "e": 11669.9
+        },
+        {
+          "w": "menghubungkan",
+          "s": 11669.9,
+          "e": 12282.1
+        },
+        {
+          "w": "akun",
+          "s": 12282.1,
+          "e": 12856.1
+        },
+        {
+          "w": "dengan",
+          "s": 12856.1,
+          "e": 13200.5
+        },
+        {
+          "w": "data",
+          "s": 13200.5,
+          "e": 13519.4
+        },
+        {
+          "w": "ananda",
+          "s": 13519.4,
+          "e": 14093.4
+        },
+        {
+          "w": "di",
+          "s": 14093.4,
+          "e": 14233.7
+        },
+        {
+          "w": "sekolah",
+          "s": 14233.7,
+          "e": 14922.5
+        }
+      ],
+      "sha256": "d9e2fe442e6326ac70974ab9e90eb463355e13ac60f0357349f51934758443ba"
+    },
+    "scene_06_outro": {
+      "text": "Proses pendaftaran akun orang tua pada SIASEK telah selesai dengan mudah dan aman. Terima kasih telah mengikuti panduan ini, dan selamat mendampingi kehadiran putra-putri tercinta.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_072524_e6b031\\audio\\scene_06_outro.mp3",
+      "duration_ms": 14088.0,
+      "words": [
+        {
+          "w": "Proses",
+          "s": 101.0,
+          "e": 662.2
+        },
+        {
+          "w": "pendaftaran",
+          "s": 662.2,
+          "e": 1261.8
+        },
+        {
+          "w": "akun",
+          "s": 1261.8,
+          "e": 1669.9
+        },
+        {
+          "w": "orang",
+          "s": 1669.9,
+          "e": 2027.0
+        },
+        {
+          "w": "tua",
+          "s": 2027.0,
+          "e": 2333.2
+        },
+        {
+          "w": "pada",
+          "s": 2333.2,
+          "e": 2626.5
+        },
+        {
+          "w": "SIASEK",
+          "s": 2626.5,
+          "e": 3302.5
+        },
+        {
+          "w": "telah",
+          "s": 3302.5,
+          "e": 3557.6
+        },
+        {
+          "w": "selesai",
+          "s": 3557.7,
+          "e": 4067.9
+        },
+        {
+          "w": "dengan",
+          "s": 4067.9,
+          "e": 4412.2
+        },
+        {
+          "w": "mudah",
+          "s": 4412.2,
+          "e": 4909.7
+        },
+        {
+          "w": "dan",
+          "s": 4909.7,
+          "e": 5139.3
+        },
+        {
+          "w": "aman",
+          "s": 5139.3,
+          "e": 5777.0
+        },
+        {
+          "w": "Terima",
+          "s": 6631.6,
+          "e": 7027.0
+        },
+        {
+          "w": "kasih",
+          "s": 7027.0,
+          "e": 7486.2
+        },
+        {
+          "w": "telah",
+          "s": 7486.2,
+          "e": 7805.1
+        },
+        {
+          "w": "mengikuti",
+          "s": 7805.1,
+          "e": 8315.3
+        },
+        {
+          "w": "panduan",
+          "s": 8315.3,
+          "e": 8774.5
+        },
+        {
+          "w": "ini",
+          "s": 8774.5,
+          "e": 9259.2
+        },
+        {
+          "w": "dan",
+          "s": 9667.3,
+          "e": 9896.9
+        },
+        {
+          "w": "selamat",
+          "s": 9897.0,
+          "e": 10381.6
+        },
+        {
+          "w": "mendampingi",
+          "s": 10381.6,
+          "e": 11019.4
+        },
+        {
+          "w": "kehadiran",
+          "s": 11019.4,
+          "e": 11606.1
+        },
+        {
+          "w": "putra-putri",
+          "s": 11606.1,
+          "e": 12358.7
+        },
+        {
+          "w": "tercinta",
+          "s": 12358.7,
+          "e": 13213.2
+        }
+      ],
+      "sha256": "4546a6c414eec5b5718b5782ddf0bcc766ffe7f3dab13ed2fd24c991b20e784c"
+    }
+  }
+}

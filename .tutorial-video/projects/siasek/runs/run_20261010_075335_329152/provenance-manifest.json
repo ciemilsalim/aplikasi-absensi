@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "project_id": "siasek",
+  "run_id": "run_20261010_075335_329152",
+  "engine": "TRUE_CONTINUOUS_BROWSER_VIDEO_V4",
+  "created_at": "2026-10-10T08:03:00.515637",
+  "git_commit": "untracked",
+  "plan": {
+    "path": "projects\\siasek\\runs\\run_20261010_075335_329152\\effective-plan.json",
+    "sha256": "1805cd645145c4f1be90e974dba7d6c33ef1a19b68bd552d9277c3edfc5c4071"
+  },
+  "profile": {
+    "path": ".tutorial-video/projects/siasek/project-profile.json",
+    "sha256": "c8e8b5c31f1ecaab2f17c2230eeb1c16d424e3b3c45a00acf0e9e1cbbe39b44b"
+  },
+  "artifacts": {
+    "final_video": {
+      "path": "final\\final-tutorial.mp4",
+      "sha256": "0ea04a207ed0d2d6bbbac990f45bbdce557d3660c1025960a415eb463f9fab95"
+    },
+    "raw_recording": {
+      "path": "recording\\continuous-60fps.mp4",
+      "sha256": "a970cf570191384290e37496cdc268a43e4dad58727e4693738f9ea76812b1cb"
+    },
+    "audio_master": {
+      "path": "audio\\audio-master.wav",
+      "sha256": "93b73107843d0d9abe37b0c64d1d71148fe5dc175257aacb7d73e980f619bf2f"
+    },
+    "recorded_events": {
+      "path": "recording\\events.json",
+      "sha256": "6e4e9d66232fbbf0eaa467363fd3525a8d23eb261e86f7b34cec5a0f17b88759"
+    }
+  },
+  "isolation_verified": true
+}

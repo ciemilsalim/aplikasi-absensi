@@ -693,7 +693,7 @@ def main():
     if use_intro:
         create_titlecard_video(
             ffmpeg,
-            text_title=intro_cfg.get('title', plan.get('title', 'TUTORIAL SIASEK')),
+            text_title=intro_cfg.get('title', plan.get('title', 'TUTORIAL APLIKASI')),
             text_sub=intro_cfg.get('subtitle', f"Panduan {plan.get('target_user', 'Pengguna')}"),
             duration=intro_dur,
             out_path=intro_file,

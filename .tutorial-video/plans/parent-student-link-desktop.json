@@ -1,0 +1,193 @@
+{
+  "version": "4.0.0",
+  "engine": "TRUE_CONTINUOUS_BROWSER_VIDEO_V4",
+  "project_id": "siasek",
+  "title": "Panduan Menghubungkan Data Orang Tua dengan Siswa — SIASEK",
+  "mode": "desktop",
+  "fps": 60,
+  "target_resolution": [1920, 1080],
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "voice": {
+    "name": "id-ID-GadisNeural",
+    "rate": "-2%",
+    "pitch": "+0Hz"
+  },
+  "reaction_delay_ms": 300,
+  "color_scheme": "light",
+  "setup": [
+    {
+      "do": "goto",
+      "url": "http://127.0.0.1:8000/login"
+    },
+    {
+      "do": "fill",
+      "target": "#email",
+      "value": "ortu.siasek@test-siasek.id"
+    },
+    {
+      "do": "fill",
+      "target": "#password",
+      "value": "RahasiaOrtu123!"
+    },
+    {
+      "do": "click",
+      "target": "button[type='submit']"
+    },
+    {
+      "do": "wait_for",
+      "selector": "text=Selamat Datang, Bapak/Ibu!"
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "scene_01_informasi_kontak_whatsapp",
+      "narration": "Halo Bapak dan Ibu orang tua siswa. Dalam panduan ini, kita akan mempelajari cara menghubungkan akun orang tua dengan data ananda di sekolah. Pada halaman aktivasi, kita mulai dengan melengkapi nomor WhatsApp aktif serta alamat rumah.",
+      "steps": [
+        {
+          "do": "type",
+          "target": "input[x-model='phoneNumber']",
+          "text": "085211223344"
+        },
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "type",
+          "target": "textarea[x-model='address']",
+          "text": "Jl. Mawar No. 12, Kel. Biau"
+        },
+        {
+          "do": "hold",
+          "ms": 600
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_02_lanjut_ke_hubungkan_anak",
+      "narration": "Setelah nomor kontak terisi dengan lengkap, klik tombol Lanjut ke Langkah Dua untuk mulai mencari dan menghubungkan data siswa.",
+      "steps": [
+        {
+          "do": "tap",
+          "target": "button:has-text('Lanjut ke Langkah 2: Hubungkan Anak')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Langkah 2 dari 3: Hubungkan Data Anak"
+        },
+        {
+          "do": "hold",
+          "ms": 800
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_03_pilih_kelas_dan_cari_nama",
+      "narration": "Pada langkah kedua, pilih kelas siswa terlebih dahulu. Selanjutnya, ketikkan nama anak Anda pada kolom pencarian. Sistem akan secara otomatis mendeteksi kecocokan data siswa di database sekolah.",
+      "steps": [
+        {
+          "do": "select",
+          "target": "select[x-model='selectedClassId']",
+          "value": "10"
+        },
+        {
+          "do": "hold",
+          "ms": 500
+        },
+        {
+          "do": "type",
+          "target": "input[x-model='typedStudentName']",
+          "text": "Najwa"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Siswa Ditemukan di Database"
+        },
+        {
+          "do": "hold",
+          "ms": 800
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_04_pilih_siswa_dan_masukkan_nis",
+      "narration": "Klik tombol Pilih Siswa Ini. Untuk memperoleh verifikasi otomatis secara instan, masukkan Nomor Induk Siswa ananda pada kolom kode verifikasi.",
+      "steps": [
+        {
+          "do": "tap",
+          "target": "button:has-text('Pilih Siswa Ini')"
+        },
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "type",
+          "target": "input[x-model='verificationCode']",
+          "text": "1219"
+        },
+        {
+          "do": "hold",
+          "ms": 600
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_05_hubungkan_siswa_aktif",
+      "narration": "Berikutnya, klik tombol Hubungkan Siswa Ini. Data ananda berhasil terverifikasi otomatis dan langsung berstatus aktif. Sekarang klik Lanjut ke Langkah Tiga untuk melihat ringkasan panduan.",
+      "steps": [
+        {
+          "do": "tap",
+          "target": "button:has-text('Hubungkan Siswa Ini')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Terverifikasi Aktif"
+        },
+        {
+          "do": "hold",
+          "ms": 800
+        },
+        {
+          "do": "tap",
+          "target": "button:has-text('Lanjut ke Langkah 3: Konfirmasi')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Pendaftaran Siap Digunakan!"
+        },
+        {
+          "do": "hold",
+          "ms": 800
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_06_konfirmasi_dan_masuk_dasbor",
+      "narration": "Pada langkah terakhir, periksa ringkasan fitur utama seperti pemantauan kehadiran harian dan pengajuan izin. Terakhir, klik tombol Selesai dan Masuk ke Dasbor Utama untuk mulai mendampingi kehadiran ananda tercinta. Terima kasih.",
+      "steps": [
+        {
+          "do": "tap",
+          "target": "button:has-text('Selesai & Masuk ke Dasbor Utama')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "text=Dasbor Orang Tua/Wali"
+        },
+        {
+          "do": "hold",
+          "ms": 1400
+        }
+      ],
+      "result_hold_ms": 2000
+    }
+  ]
+}

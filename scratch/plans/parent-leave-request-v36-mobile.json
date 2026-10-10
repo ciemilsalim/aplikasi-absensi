@@ -1,0 +1,512 @@
+{
+  "tutorial_id": "parent-leave-request-v36-mobile",
+  "title": "Tutorial Pengajuan Izin Orang Tua di SIASEK (Mobile)",
+  "feature": "pengajuan_izin_orang_tua",
+  "mode": "mobile",
+  "target_user": "orang_tua",
+  "variant": "mobile",
+  "target_resolution": [
+    1080,
+    1920
+  ],
+  "base_url": "http://127.0.0.1:8000",
+  "expected_duration_sec": 65,
+  "min_duration_sec": 60,
+  "max_duration_sec": 90,
+  "reaction_delay_ms": 300,
+  "intro": {
+    "title": "SIASEK MOBILE",
+    "subtitle": "Panduan Pengajuan Izin Siswa oleh Orang Tua"
+  },
+  "outro": {
+    "title": "SIASEK MOBILE",
+    "subtitle": "Pengajuan Izin Siswa Selesai. Terima kasih."
+  },
+  "expected_visual_keywords": [
+    "siasek",
+    "masuk",
+    "izin",
+    "pengajuan",
+    "permohonan",
+    "siswa"
+  ],
+  "forbidden_visual_keywords": [
+    "jurnal mengajar",
+    "presensi guru"
+  ],
+  "scenes": [
+    {
+      "scene_id": "scene_01_intro",
+      "title": "Pembukaan Portal Orang Tua",
+      "purpose": "Memperkenalkan portal orang tua pada tampilan ponsel",
+      "target_url": "http://127.0.0.1:8000/login",
+      "narration": "Selamat datang di Portal Orang Tua SIASEK. Dalam tutorial ini, kita akan mempelajari cara mengajukan izin atau sakit untuk putra-putri Anda secara praktis.",
+      "narration_segments": [
+        {
+          "narration_id": "seg_01_intro",
+          "text": "Selamat datang di Portal Orang Tua SIASEK. Dalam tutorial ini, kita akan mempelajari cara mengajukan izin atau sakit untuk putra-putri Anda secara praktis.",
+          "target_visual": "Halaman Utama SIASEK Mobile",
+          "intended_action": "view",
+          "importance": "normal",
+          "visual_required": true
+        }
+      ],
+      "duration_target": 10,
+      "highlight": false,
+      "camera_target": {
+        "x": 540,
+        "y": 960,
+        "zoom": 1.0
+      },
+      "target_bbox": {
+        "x": 40,
+        "y": 200,
+        "width": 1000,
+        "height": 1400
+      },
+      "cursor_target": {
+        "x": 540,
+        "y": 960
+      },
+      "actions": [
+        {
+          "type": "goto",
+          "url": "http://127.0.0.1:8000/login"
+        },
+        {
+          "type": "wait",
+          "ms": 1000
+        }
+      ],
+      "expected_result": "Halaman pembuka portal ditampilkan dengan jelas pada mobile portrait",
+      "expected_ui": [
+        "SIASEK",
+        "Sistem Informasi"
+      ],
+      "expected_text": [
+        "SIASEK"
+      ],
+      "expected_url_contains": "",
+      "expected_dom_state": {
+        "selectors": []
+      },
+      "forbidden_text": [
+        "Jurnal Mengajar"
+      ],
+      "verification_required": true,
+      "zoom": 1.0
+    },
+    {
+      "scene_id": "scene_02_login",
+      "title": "Masuk ke Akun Orang Tua",
+      "purpose": "Autentikasi akun orang tua",
+      "narration": "Masukkan email dan kata sandi Anda, lalu klik tombol Masuk untuk mengakses dasbor orang tua.",
+      "narration_segments": [
+        {
+          "narration_id": "seg_02_login_input",
+          "text": "Masukkan email dan kata sandi Anda, lalu klik tombol Masuk untuk mengakses dasbor orang tua.",
+          "target_visual": "Formulir Login dan Tombol Masuk",
+          "target_element": "button[type='submit']",
+          "intended_action": "click",
+          "importance": "critical",
+          "visual_required": true
+        }
+      ],
+      "duration_target": 8,
+      "highlight": true,
+      "zoom": 1.0,
+      "camera_target": {
+        "x": 540,
+        "y": 960,
+        "zoom": 1.0
+      },
+      "target_bbox": {
+        "x": 66,
+        "y": 808,
+        "width": 948,
+        "height": 530
+      },
+      "cursor_target": {
+        "x": 540,
+        "y": 1270
+      },
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "#email",
+          "value": "emil@gmail.com"
+        },
+        {
+          "type": "fill",
+          "selector": "#password",
+          "value": "password"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit']"
+        },
+        {
+          "type": "wait",
+          "ms": 1500
+        }
+      ],
+      "expected_result": "Berhasil login dan dasbor orang tua ditampilkan pada mobile",
+      "expected_ui": [
+        "Dasbor Orang Tua",
+        "Izin/Sakit"
+      ],
+      "expected_text": [
+        "Dasbor"
+      ],
+      "expected_url_contains": "parent",
+      "expected_dom_state": {
+        "selectors": [
+          "a[href*='leave-requests']"
+        ]
+      },
+      "forbidden_text": [
+        "Kredensial tidak valid"
+      ],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_03_buka_form",
+      "title": "Membuka Menu Pengajuan Izin",
+      "purpose": "Navigasi ke formulir pengajuan izin siswa via navigasi mobile",
+      "narration": "Pada menu navigasi, klik menu Pengajuan Izin untuk membuka formulir permohonan.",
+      "narration_segments": [
+        {
+          "narration_id": "seg_03_nav_menu",
+          "text": "Pada menu navigasi, klik menu Pengajuan Izin untuk membuka formulir permohonan.",
+          "target_visual": "Menu Pengajuan Izin",
+          "target_element": "a[href*='leave-requests']",
+          "intended_action": "click",
+          "importance": "important",
+          "visual_required": true
+        }
+      ],
+      "duration_target": 7,
+      "highlight": true,
+      "zoom": 1.0,
+      "camera_target": {
+        "x": 540,
+        "y": 960,
+        "zoom": 1.0
+      },
+      "target_bbox": {
+        "x": 114,
+        "y": 992,
+        "width": 853,
+        "height": 100
+      },
+      "cursor_target": {
+        "x": 540,
+        "y": 1040
+      },
+      "actions": [
+        {
+          "type": "click",
+          "selector": "a[href*='leave-requests']"
+        },
+        {
+          "type": "wait",
+          "ms": 800
+        },
+        {
+          "type": "click",
+          "selector": "a[href*='leave-requests/create']"
+        },
+        {
+          "type": "wait",
+          "ms": 1000
+        }
+      ],
+      "expected_result": "Halaman pengajuan permohonan izin terbuka",
+      "expected_ui": [
+        "Formulir Pengajuan Izin",
+        "Pilihan Siswa"
+      ],
+      "expected_text": [
+        "Formulir",
+        "Izin"
+      ],
+      "expected_url_contains": "leave-requests",
+      "expected_dom_state": {
+        "selectors": [
+          "#student_id",
+          "#type"
+        ]
+      },
+      "forbidden_text": [
+        "403 Forbidden",
+        "404 Not Found"
+      ],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_04_dropdown_anak",
+      "title": "Memilih Siswa",
+      "purpose": "Memilih anak yang akan diajukan izin",
+      "target_url": "http://127.0.0.1:8000/parent/leave-requests/create",
+      "narration": "Pilih nama anak yang akan diajukan permohonan izin pada daftar siswa.",
+      "narration_segments": [
+        {
+          "narration_id": "seg_04_student_select",
+          "text": "Pilih nama anak yang akan diajukan permohonan izin pada daftar siswa.",
+          "target_visual": "Pilihan Siswa",
+          "target_element": "#student_id",
+          "intended_action": "select",
+          "importance": "important",
+          "visual_required": true
+        }
+      ],
+      "duration_target": 7,
+      "highlight": true,
+      "zoom": 1.0,
+      "camera_target": {
+        "x": 540,
+        "y": 960,
+        "zoom": 1.0
+      },
+      "target_bbox": {
+        "x": 114,
+        "y": 757,
+        "width": 853,
+        "height": 96
+      },
+      "cursor_target": {
+        "x": 540,
+        "y": 805
+      },
+      "actions": [
+        {
+          "type": "select",
+          "selector": "#student_id",
+          "value": "6"
+        },
+        {
+          "type": "wait",
+          "ms": 800
+        }
+      ],
+      "expected_result": "Siswa terpilih pada dropdown",
+      "expected_ui": [
+        "Ghina Ulya Syarifa"
+      ],
+      "expected_text": [
+        "Ghina"
+      ],
+      "expected_url_contains": "leave-requests",
+      "expected_dom_state": {
+        "selectors": [
+          "#type"
+        ]
+      },
+      "forbidden_text": [
+        "Error"
+      ],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_05_jenis_izin",
+      "title": "Memilih Kategori Izin",
+      "purpose": "Memilih jenis izin sakit atau permohonan",
+      "target_url": "http://127.0.0.1:8000/parent/leave-requests/create",
+      "narration": "Pilih kategori permohonan izin, seperti Sakit atau Izin keperluan keluarga.",
+      "narration_segments": [
+        {
+          "narration_id": "seg_05_leave_type",
+          "text": "Pilih kategori permohonan izin, seperti Sakit atau Izin keperluan keluarga.",
+          "target_visual": "Pilihan Kategori Izin",
+          "target_element": "#type",
+          "intended_action": "select",
+          "importance": "important",
+          "visual_required": true
+        }
+      ],
+      "duration_target": 7,
+      "highlight": true,
+      "zoom": 1.0,
+      "camera_target": {
+        "x": 540,
+        "y": 960,
+        "zoom": 1.0
+      },
+      "target_bbox": {
+        "x": 114,
+        "y": 1353,
+        "width": 853,
+        "height": 96
+      },
+      "cursor_target": {
+        "x": 540,
+        "y": 1400
+      },
+      "actions": [
+        {
+          "type": "select",
+          "selector": "#type",
+          "value": "sakit"
+        },
+        {
+          "type": "wait",
+          "ms": 800
+        }
+      ],
+      "expected_result": "Kategori izin terpilih",
+      "expected_ui": [
+        "Sakit"
+      ],
+      "expected_text": [
+        "Sakit"
+      ],
+      "expected_url_contains": "leave-requests",
+      "expected_dom_state": {
+        "selectors": [
+          "#reason"
+        ]
+      },
+      "forbidden_text": [
+        "Error"
+      ],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_06_tanggal_alasan",
+      "title": "Mengisi Tanggal dan Alasan",
+      "purpose": "Mengisi rentang tanggal serta keterangan alasan izin",
+      "target_url": "http://127.0.0.1:8000/parent/leave-requests/create",
+      "narration": "Tentukan tanggal permohonan dan tuliskan alasan izin secara jelas pada kolom yang tersedia.",
+      "narration_segments": [
+        {
+          "narration_id": "seg_06_date_reason",
+          "text": "Tentukan tanggal permohonan dan tuliskan alasan izin secara jelas pada kolom yang tersedia.",
+          "target_visual": "Field Tanggal dan Keterangan Alasan",
+          "target_element": "#reason",
+          "intended_action": "type",
+          "importance": "important",
+          "visual_required": true
+        }
+      ],
+      "duration_target": 8,
+      "highlight": true,
+      "zoom": 1.0,
+      "camera_target": {
+        "x": 540,
+        "y": 960,
+        "zoom": 1.0
+      },
+      "target_bbox": {
+        "x": 114,
+        "y": 1558,
+        "width": 853,
+        "height": 204
+      },
+      "cursor_target": {
+        "x": 540,
+        "y": 1660
+      },
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "#reason",
+          "value": "Demam dan flu, istirahat di rumah sesuai anjuran dokter."
+        },
+        {
+          "type": "wait",
+          "ms": 1000
+        }
+      ],
+      "expected_result": "Tanggal dan alasan terisi lengkap",
+      "expected_ui": [
+        "Demam dan flu"
+      ],
+      "expected_text": [
+        "Demam",
+        "dokter"
+      ],
+      "expected_url_contains": "leave-requests",
+      "expected_dom_state": {
+        "selectors": [
+          "button[type='submit']"
+        ]
+      },
+      "forbidden_text": [
+        "Error"
+      ],
+      "verification_required": true
+    },
+    {
+      "scene_id": "scene_07_tombol_kirim",
+      "title": "Mengirim Permohonan Izin",
+      "purpose": "Mengirimkan formulir permohonan ke sekolah",
+      "narration": "Klik tombol Kirim Permohonan Izin. Permohonan izin berhasil dikirim ke sekolah.",
+      "narration_segments": [
+        {
+          "narration_id": "seg_07_submit_button",
+          "text": "Klik tombol Kirim Permohonan Izin.",
+          "target_visual": "Tombol Kirim Permohonan",
+          "target_element": "button[type='submit']",
+          "intended_action": "click",
+          "importance": "critical",
+          "visual_required": true
+        },
+        {
+          "narration_id": "seg_08_finish_status",
+          "text": "Permohonan izin berhasil dikirim ke sekolah.",
+          "target_visual": "Halaman Riwayat Pengajuan",
+          "target_element": "table",
+          "intended_action": "view",
+          "importance": "important",
+          "visual_required": true
+        }
+      ],
+      "duration_target": 10,
+      "highlight": true,
+      "camera_target": {
+        "x": 540,
+        "y": 960,
+        "zoom": 1.0
+      },
+      "target_bbox": {
+        "x": 436,
+        "y": 1526,
+        "width": 531,
+        "height": 100
+      },
+      "cursor_target": {
+        "x": 701,
+        "y": 1576
+      },
+      "actions": [
+        {
+          "type": "click",
+          "selector": "button[type='submit']"
+        },
+        {
+          "type": "wait",
+          "ms": 2500
+        }
+      ],
+      "expected_result": "Formulir terkirim dan halaman riwayat permohonan ditampilkan",
+      "expected_ui": [
+        "Halaman Riwayat Pengajuan Izin / Sakit",
+        "Tabel Daftar Surat Izin & Sakit"
+      ],
+      "expected_text": [
+        "Riwayat",
+        "Izin"
+      ],
+      "expected_url_contains": "leave-requests",
+      "expected_dom_state": {
+        "selectors": []
+      },
+      "forbidden_text": [
+        "Jurnal Mengajar",
+        "Pokok Bahasan"
+      ],
+      "verification_required": true,
+      "zoom": 1.0
+    }
+  ]
+}

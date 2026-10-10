@@ -13,13 +13,13 @@ WORKSPACE_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "..", ".."
 DEFAULT_CATALOG_PATH = os.path.join(WORKSPACE_ROOT, ".tutorial-video", "catalog.json")
 DEFAULT_PENDING_CATALOG_PATH = os.path.join(WORKSPACE_ROOT, ".tutorial-video", "catalog.pending.json")
 
-def get_default_catalog_data() -> dict:
+def get_default_catalog_data(app_name: str = "Aplikasi Web", technology: list = None) -> dict:
     return {
         "version": "1.0",
         "application": {
-            "name": "SIASEK (Sistem Informasi & Absensi Sekolah)",
-            "technology": ["Laravel 11", "Blade", "Tailwind CSS", "MySQL"],
-            "version": "2.3.0"
+            "name": app_name,
+            "technology": technology or ["Web Framework", "HTML5", "CSS3"],
+            "version": "1.0.0"
         },
         "tutorials": []
     }

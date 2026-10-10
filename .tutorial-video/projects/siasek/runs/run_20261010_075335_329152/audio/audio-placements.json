@@ -1,0 +1,552 @@
+{
+  "sample_rate": 48000,
+  "source": "recording/events.json",
+  "placements": [
+    {
+      "kind": "narration",
+      "at_ms": 200,
+      "dur_ms": 18792.0,
+      "ref": "scene_01_buka_registrasi"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 20266.667,
+      "dur_ms": 45.0,
+      "ref": "a:has-text('Daftar sekarang')"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 24416.667,
+      "dur_ms": 15240.0,
+      "ref": "scene_02_isi_nama_email"
+    },
+    {
+      "kind": "key",
+      "at_ms": 40200,
+      "dur_ms": 30.0,
+      "ref": "I"
+    },
+    {
+      "kind": "key",
+      "at_ms": 40316.667,
+      "dur_ms": 30.0,
+      "ref": "b"
+    },
+    {
+      "kind": "key",
+      "at_ms": 40433.333,
+      "dur_ms": 30.0,
+      "ref": "u"
+    },
+    {
+      "kind": "key",
+      "at_ms": 40533.333,
+      "dur_ms": 30.0,
+      "ref": " "
+    },
+    {
+      "kind": "key",
+      "at_ms": 40850,
+      "dur_ms": 30.0,
+      "ref": "N"
+    },
+    {
+      "kind": "key",
+      "at_ms": 40983.333,
+      "dur_ms": 30.0,
+      "ref": "u"
+    },
+    {
+      "kind": "key",
+      "at_ms": 41250,
+      "dur_ms": 30.0,
+      "ref": "r"
+    },
+    {
+      "kind": "key",
+      "at_ms": 41366.667,
+      "dur_ms": 30.0,
+      "ref": "u"
+    },
+    {
+      "kind": "key",
+      "at_ms": 41516.667,
+      "dur_ms": 30.0,
+      "ref": "l"
+    },
+    {
+      "kind": "key",
+      "at_ms": 41650,
+      "dur_ms": 30.0,
+      "ref": " "
+    },
+    {
+      "kind": "key",
+      "at_ms": 41850,
+      "dur_ms": 30.0,
+      "ref": "H"
+    },
+    {
+      "kind": "key",
+      "at_ms": 41966.667,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 42083.333,
+      "dur_ms": 30.0,
+      "ref": "d"
+    },
+    {
+      "kind": "key",
+      "at_ms": 42216.667,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 42366.667,
+      "dur_ms": 30.0,
+      "ref": "y"
+    },
+    {
+      "kind": "key",
+      "at_ms": 42516.667,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 42666.667,
+      "dur_ms": 30.0,
+      "ref": "h"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 44133.333,
+      "dur_ms": 45.0,
+      "ref": "#email"
+    },
+    {
+      "kind": "key",
+      "at_ms": 44500,
+      "dur_ms": 30.0,
+      "ref": "w"
+    },
+    {
+      "kind": "key",
+      "at_ms": 44616.667,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 44750,
+      "dur_ms": 30.0,
+      "ref": "l"
+    },
+    {
+      "kind": "key",
+      "at_ms": 44900,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 45050,
+      "dur_ms": 30.0,
+      "ref": "."
+    },
+    {
+      "kind": "key",
+      "at_ms": 45250,
+      "dur_ms": 30.0,
+      "ref": "n"
+    },
+    {
+      "kind": "key",
+      "at_ms": 45400,
+      "dur_ms": 30.0,
+      "ref": "u"
+    },
+    {
+      "kind": "key",
+      "at_ms": 45483.333,
+      "dur_ms": 30.0,
+      "ref": "r"
+    },
+    {
+      "kind": "key",
+      "at_ms": 45583.333,
+      "dur_ms": 30.0,
+      "ref": "u"
+    },
+    {
+      "kind": "key",
+      "at_ms": 45716.667,
+      "dur_ms": 30.0,
+      "ref": "l"
+    },
+    {
+      "kind": "key",
+      "at_ms": 45833.333,
+      "dur_ms": 30.0,
+      "ref": "."
+    },
+    {
+      "kind": "key",
+      "at_ms": 45966.667,
+      "dur_ms": 30.0,
+      "ref": "h"
+    },
+    {
+      "kind": "key",
+      "at_ms": 46100,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 46216.667,
+      "dur_ms": 30.0,
+      "ref": "d"
+    },
+    {
+      "kind": "key",
+      "at_ms": 46350,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 46483.333,
+      "dur_ms": 30.0,
+      "ref": "y"
+    },
+    {
+      "kind": "key",
+      "at_ms": 46600,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 46750,
+      "dur_ms": 30.0,
+      "ref": "h"
+    },
+    {
+      "kind": "key",
+      "at_ms": 46850,
+      "dur_ms": 30.0,
+      "ref": "@"
+    },
+    {
+      "kind": "key",
+      "at_ms": 47033.333,
+      "dur_ms": 30.0,
+      "ref": "t"
+    },
+    {
+      "kind": "key",
+      "at_ms": 47150,
+      "dur_ms": 30.0,
+      "ref": "e"
+    },
+    {
+      "kind": "key",
+      "at_ms": 47300,
+      "dur_ms": 30.0,
+      "ref": "s"
+    },
+    {
+      "kind": "key",
+      "at_ms": 47400,
+      "dur_ms": 30.0,
+      "ref": "t"
+    },
+    {
+      "kind": "key",
+      "at_ms": 47483.333,
+      "dur_ms": 30.0,
+      "ref": "-"
+    },
+    {
+      "kind": "key",
+      "at_ms": 47633.333,
+      "dur_ms": 30.0,
+      "ref": "s"
+    },
+    {
+      "kind": "key",
+      "at_ms": 47733.333,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 47966.667,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 48066.667,
+      "dur_ms": 30.0,
+      "ref": "s"
+    },
+    {
+      "kind": "key",
+      "at_ms": 48216.667,
+      "dur_ms": 30.0,
+      "ref": "e"
+    },
+    {
+      "kind": "key",
+      "at_ms": 48333.333,
+      "dur_ms": 30.0,
+      "ref": "k"
+    },
+    {
+      "kind": "key",
+      "at_ms": 48466.667,
+      "dur_ms": 30.0,
+      "ref": "."
+    },
+    {
+      "kind": "key",
+      "at_ms": 48616.667,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 48750,
+      "dur_ms": 30.0,
+      "ref": "d"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 50883.333,
+      "dur_ms": 14136.0,
+      "ref": "scene_03_isi_kata_sandi"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 66300,
+      "dur_ms": 45.0,
+      "ref": "#password"
+    },
+    {
+      "kind": "key",
+      "at_ms": 66666.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 66783.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 66916.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67050,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67183.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67333.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67483.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67633.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67750,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 67900,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 68033.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 68150,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 68300,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 68450,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 68566.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 70083.333,
+      "dur_ms": 45.0,
+      "ref": "#password_confirmation"
+    },
+    {
+      "kind": "key",
+      "at_ms": 70450,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 70566.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 70716.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 70816.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 70916.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 71033.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 71166.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 71416.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 71516.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 71616.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 71700,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 71800,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 71883.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 71983.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 72116.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 74250,
+      "dur_ms": 13056.0,
+      "ref": "scene_04_submit_registrasi"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 88583.333,
+      "dur_ms": 45.0,
+      "ref": "button[type='submit']"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 96733.333,
+      "dur_ms": 15792.0,
+      "ref": "scene_05_konfirmasi_dan_langkah_lanjut"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 115833.333,
+      "dur_ms": 14088.0,
+      "ref": "scene_06_outro"
+    }
+  ]
+}

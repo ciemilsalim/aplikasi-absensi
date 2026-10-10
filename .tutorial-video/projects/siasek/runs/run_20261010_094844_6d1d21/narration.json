@@ -1,0 +1,674 @@
+{
+  "voice": {
+    "name": "id-ID-GadisNeural",
+    "rate": "-2%",
+    "pitch": "+0Hz"
+  },
+  "scenes": {
+    "scene_01_buka_form_pengajuan": {
+      "text": "Halo Bapak dan Ibu orang tua siswa. Dalam panduan ini, kita akan mempelajari cara mengajukan permohonan izin atau sakit ananda melalui aplikasi SIASEK. Dari dasbor utama, sentuh tombol Ajukan Izin atau Sakit berwarna oranye pada banner selamat datang.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_094844_6d1d21\\audio\\scene_01_buka_form_pengajuan.mp3",
+      "duration_ms": 21288.0,
+      "words": [
+        {
+          "w": "Halo",
+          "s": 100.0,
+          "e": 533.7
+        },
+        {
+          "w": "Bapak",
+          "s": 533.7,
+          "e": 1031.1
+        },
+        {
+          "w": "dan",
+          "s": 1031.1,
+          "e": 1209.7
+        },
+        {
+          "w": "Ibu",
+          "s": 1209.7,
+          "e": 1605.1
+        },
+        {
+          "w": "orang",
+          "s": 1605.1,
+          "e": 1987.7
+        },
+        {
+          "w": "tua",
+          "s": 1987.8,
+          "e": 2281.1
+        },
+        {
+          "w": "siswa",
+          "s": 2281.1,
+          "e": 2982.7
+        },
+        {
+          "w": "Dalam",
+          "s": 3838.2,
+          "e": 4297.4
+        },
+        {
+          "w": "panduan",
+          "s": 4297.5,
+          "e": 4654.6
+        },
+        {
+          "w": "ini",
+          "s": 4654.6,
+          "e": 5152.0
+        },
+        {
+          "w": "kita",
+          "s": 5560.2,
+          "e": 5840.8
+        },
+        {
+          "w": "akan",
+          "s": 5840.8,
+          "e": 6147.0
+        },
+        {
+          "w": "mempelajari",
+          "s": 6147.0,
+          "e": 6720.9
+        },
+        {
+          "w": "cara",
+          "s": 6720.9,
+          "e": 7116.3
+        },
+        {
+          "w": "mengajukan",
+          "s": 7116.3,
+          "e": 7754.1
+        },
+        {
+          "w": "permohonan",
+          "s": 7754.1,
+          "e": 8277.0
+        },
+        {
+          "w": "izin",
+          "s": 8277.0,
+          "e": 8825.5
+        },
+        {
+          "w": "atau",
+          "s": 8825.5,
+          "e": 9233.7
+        },
+        {
+          "w": "sakit",
+          "s": 9233.7,
+          "e": 9654.6
+        },
+        {
+          "w": "ananda",
+          "s": 9654.6,
+          "e": 10305.1
+        },
+        {
+          "w": "melalui",
+          "s": 10305.1,
+          "e": 10853.5
+        },
+        {
+          "w": "aplikasi",
+          "s": 10853.6,
+          "e": 11618.9
+        },
+        {
+          "w": "SIASEK",
+          "s": 11618.9,
+          "e": 12218.4
+        },
+        {
+          "w": "Dari",
+          "s": 13073.0,
+          "e": 13404.6
+        },
+        {
+          "w": "dasbor",
+          "s": 13404.6,
+          "e": 13876.5
+        },
+        {
+          "w": "utama",
+          "s": 13876.5,
+          "e": 14539.8
+        },
+        {
+          "w": "sentuh",
+          "s": 14884.2,
+          "e": 15343.3
+        },
+        {
+          "w": "tombol",
+          "s": 15343.4,
+          "e": 15751.5
+        },
+        {
+          "w": "Ajukan",
+          "s": 15751.5,
+          "e": 16210.7
+        },
+        {
+          "w": "Izin",
+          "s": 16210.7,
+          "e": 16708.2
+        },
+        {
+          "w": "atau",
+          "s": 16708.2,
+          "e": 17039.8
+        },
+        {
+          "w": "Sakit",
+          "s": 17039.8,
+          "e": 17537.2
+        },
+        {
+          "w": "berwarna",
+          "s": 17537.2,
+          "e": 17996.4
+        },
+        {
+          "w": "oranye",
+          "s": 17996.4,
+          "e": 18583.2
+        },
+        {
+          "w": "pada",
+          "s": 18583.2,
+          "e": 18863.8
+        },
+        {
+          "w": "banner",
+          "s": 18863.8,
+          "e": 19297.5
+        },
+        {
+          "w": "selamat",
+          "s": 19297.5,
+          "e": 19807.7
+        },
+        {
+          "w": "datang",
+          "s": 19807.7,
+          "e": 20432.7
+        }
+      ],
+      "sha256": "e73151045a311478c521c1fb5702b3e673b20dab1c4621083cd0b0dde14af730"
+    },
+    "scene_02_pilih_siswa_dan_kategori": {
+      "text": "Pada formulir permohonan, pilih nama ananda yang diajukan izin. Kemudian tentukan kategori permohonan, misalnya kategori Sakit.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_094844_6d1d21\\audio\\scene_02_pilih_siswa_dan_kategori.mp3",
+      "duration_ms": 11712.0,
+      "words": [
+        {
+          "w": "Pada",
+          "s": 100.0,
+          "e": 559.2
+        },
+        {
+          "w": "formulir",
+          "s": 559.2,
+          "e": 1107.6
+        },
+        {
+          "w": "permohonan",
+          "s": 1107.7,
+          "e": 1987.7
+        },
+        {
+          "w": "pilih",
+          "s": 2344.9,
+          "e": 2791.3
+        },
+        {
+          "w": "nama",
+          "s": 2791.3,
+          "e": 3110.2
+        },
+        {
+          "w": "ananda",
+          "s": 3110.2,
+          "e": 3645.9
+        },
+        {
+          "w": "yang",
+          "s": 3645.9,
+          "e": 3875.5
+        },
+        {
+          "w": "diajukan",
+          "s": 3875.5,
+          "e": 4513.2
+        },
+        {
+          "w": "izin",
+          "s": 4513.2,
+          "e": 5163.8
+        },
+        {
+          "w": "Kemudian",
+          "s": 6019.4,
+          "e": 6631.6
+        },
+        {
+          "w": "tentukan",
+          "s": 6631.6,
+          "e": 7180.1
+        },
+        {
+          "w": "kategori",
+          "s": 7180.1,
+          "e": 7766.8
+        },
+        {
+          "w": "permohonan",
+          "s": 7766.8,
+          "e": 8621.4
+        },
+        {
+          "w": "misalnya",
+          "s": 8965.8,
+          "e": 9590.8
+        },
+        {
+          "w": "kategori",
+          "s": 9590.8,
+          "e": 10330.6
+        },
+        {
+          "w": "Sakit",
+          "s": 10330.6,
+          "e": 10853.6
+        }
+      ],
+      "sha256": "9b98055095e3a4ed8a7c163fb8a62bcd27cf35c5622f2dd16671373418ac27e9"
+    },
+    "scene_03_isi_tanggal_dan_alasan": {
+      "text": "Periksa tanggal mulai dan selesai izin ananda. Lalu, tuliskan keterangan dan alasan sakit secara rinci agar dapat diketahui dengan baik oleh wali kelas.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_094844_6d1d21\\audio\\scene_03_isi_tanggal_dan_alasan.mp3",
+      "duration_ms": 12960.0,
+      "words": [
+        {
+          "w": "Periksa",
+          "s": 101.0,
+          "e": 662.2
+        },
+        {
+          "w": "tanggal",
+          "s": 662.2,
+          "e": 1044.9
+        },
+        {
+          "w": "mulai",
+          "s": 1044.9,
+          "e": 1478.6
+        },
+        {
+          "w": "dan",
+          "s": 1478.6,
+          "e": 1708.2
+        },
+        {
+          "w": "selesai",
+          "s": 1708.2,
+          "e": 2180.1
+        },
+        {
+          "w": "izin",
+          "s": 2180.1,
+          "e": 2703.0
+        },
+        {
+          "w": "ananda",
+          "s": 2703.0,
+          "e": 3532.1
+        },
+        {
+          "w": "Lalu",
+          "s": 4386.8,
+          "e": 5024.5
+        },
+        {
+          "w": "tuliskan",
+          "s": 5407.1,
+          "e": 5968.3
+        },
+        {
+          "w": "keterangan",
+          "s": 5968.4,
+          "e": 6516.8
+        },
+        {
+          "w": "dan",
+          "s": 6516.8,
+          "e": 6669.9
+        },
+        {
+          "w": "alasan",
+          "s": 6669.9,
+          "e": 7141.8
+        },
+        {
+          "w": "sakit",
+          "s": 7141.8,
+          "e": 7550.0
+        },
+        {
+          "w": "secara",
+          "s": 7550.0,
+          "e": 7945.4
+        },
+        {
+          "w": "rinci",
+          "s": 7945.4,
+          "e": 8404.6
+        },
+        {
+          "w": "agar",
+          "s": 8404.6,
+          "e": 8838.2
+        },
+        {
+          "w": "dapat",
+          "s": 8838.2,
+          "e": 9182.6
+        },
+        {
+          "w": "diketahui",
+          "s": 9182.7,
+          "e": 9909.7
+        },
+        {
+          "w": "dengan",
+          "s": 9909.7,
+          "e": 10292.3
+        },
+        {
+          "w": "baik",
+          "s": 10292.3,
+          "e": 10636.7
+        },
+        {
+          "w": "oleh",
+          "s": 10636.8,
+          "e": 11083.2
+        },
+        {
+          "w": "wali",
+          "s": 11083.2,
+          "e": 11363.8
+        },
+        {
+          "w": "kelas",
+          "s": 11363.8,
+          "e": 12103.6
+        }
+      ],
+      "sha256": "4caa85d8bf30d3e8414663bf76bde811ababedf371291a6738e80424f5be2add"
+    },
+    "scene_04_kirim_permohonan": {
+      "text": "Setelah seluruh data terisi dengan lengkap, sentuh tombol Kirim Permohonan Izin di bagian bawah untuk mengirimkan surat permohonan ke sekolah.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_094844_6d1d21\\audio\\scene_04_kirim_permohonan.mp3",
+      "duration_ms": 9840.0,
+      "words": [
+        {
+          "w": "Setelah",
+          "s": 100.0,
+          "e": 623.0
+        },
+        {
+          "w": "seluruh",
+          "s": 623.0,
+          "e": 1043.9
+        },
+        {
+          "w": "data",
+          "s": 1043.9,
+          "e": 1299.0
+        },
+        {
+          "w": "terisi",
+          "s": 1299.0,
+          "e": 1745.4
+        },
+        {
+          "w": "dengan",
+          "s": 1745.4,
+          "e": 2051.5
+        },
+        {
+          "w": "lengkap",
+          "s": 2051.5,
+          "e": 2561.7
+        },
+        {
+          "w": "sentuh",
+          "s": 2906.1,
+          "e": 3365.3
+        },
+        {
+          "w": "tombol",
+          "s": 3365.3,
+          "e": 3735.2
+        },
+        {
+          "w": "Kirim",
+          "s": 3735.2,
+          "e": 4092.3
+        },
+        {
+          "w": "Permohonan",
+          "s": 4092.3,
+          "e": 4589.8
+        },
+        {
+          "w": "Izin",
+          "s": 4589.8,
+          "e": 5074.5
+        },
+        {
+          "w": "di",
+          "s": 5074.5,
+          "e": 5176.5
+        },
+        {
+          "w": "bagian",
+          "s": 5176.5,
+          "e": 5623.0
+        },
+        {
+          "w": "bawah",
+          "s": 5623.0,
+          "e": 6094.9
+        },
+        {
+          "w": "untuk",
+          "s": 6094.9,
+          "e": 6605.1
+        },
+        {
+          "w": "mengirimkan",
+          "s": 6605.1,
+          "e": 7166.3
+        },
+        {
+          "w": "surat",
+          "s": 7166.3,
+          "e": 7523.5
+        },
+        {
+          "w": "permohonan",
+          "s": 7523.5,
+          "e": 8199.5
+        },
+        {
+          "w": "ke",
+          "s": 8199.5,
+          "e": 8276.0
+        },
+        {
+          "w": "sekolah",
+          "s": 8276.0,
+          "e": 8977.5
+        }
+      ],
+      "sha256": "596e09208e26a533dd9251bb9bbe7b065c33d8d529ced0b6eef739df7749e468"
+    },
+    "scene_05_pantau_status_persetujuan": {
+      "text": "Permohonan izin telah berhasil dikirimkan. Pada tabel riwayat ini, Bapak dan Ibu dapat memantau status pengajuan terkini secara berkala. Proses perizinan ananda kini menjadi sangat mudah dan praktis!",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261010_094844_6d1d21\\audio\\scene_05_pantau_status_persetujuan.mp3",
+      "duration_ms": 17160.0,
+      "words": [
+        {
+          "w": "Permohonan",
+          "s": 101.0,
+          "e": 802.5
+        },
+        {
+          "w": "izin",
+          "s": 802.5,
+          "e": 1338.2
+        },
+        {
+          "w": "telah",
+          "s": 1338.2,
+          "e": 1593.3
+        },
+        {
+          "w": "berhasil",
+          "s": 1593.4,
+          "e": 2269.4
+        },
+        {
+          "w": "dikirimkan",
+          "s": 2269.4,
+          "e": 3340.8
+        },
+        {
+          "w": "Pada",
+          "s": 4196.2,
+          "e": 4629.8
+        },
+        {
+          "w": "tabel",
+          "s": 4629.8,
+          "e": 4987.0
+        },
+        {
+          "w": "riwayat",
+          "s": 4987.0,
+          "e": 5356.9
+        },
+        {
+          "w": "ini",
+          "s": 5356.9,
+          "e": 5841.6
+        },
+        {
+          "w": "Bapak",
+          "s": 6275.2,
+          "e": 6734.4
+        },
+        {
+          "w": "dan",
+          "s": 6734.5,
+          "e": 6900.2
+        },
+        {
+          "w": "Ibu",
+          "s": 6900.2,
+          "e": 7295.7
+        },
+        {
+          "w": "dapat",
+          "s": 7295.7,
+          "e": 7678.3
+        },
+        {
+          "w": "memantau",
+          "s": 7678.3,
+          "e": 8175.7
+        },
+        {
+          "w": "status",
+          "s": 8175.8,
+          "e": 8686.0
+        },
+        {
+          "w": "pengajuan",
+          "s": 8686.0,
+          "e": 9234.4
+        },
+        {
+          "w": "terkini",
+          "s": 9234.5,
+          "e": 9782.9
+        },
+        {
+          "w": "secara",
+          "s": 9782.9,
+          "e": 10318.6
+        },
+        {
+          "w": "berkala",
+          "s": 10318.6,
+          "e": 11032.9
+        },
+        {
+          "w": "Proses",
+          "s": 11887.5,
+          "e": 12461.5
+        },
+        {
+          "w": "perizinan",
+          "s": 12461.5,
+          "e": 13022.7
+        },
+        {
+          "w": "ananda",
+          "s": 13022.7,
+          "e": 13456.4
+        },
+        {
+          "w": "kini",
+          "s": 13456.4,
+          "e": 13890.0
+        },
+        {
+          "w": "menjadi",
+          "s": 13890.0,
+          "e": 14311.0
+        },
+        {
+          "w": "sangat",
+          "s": 14311.0,
+          "e": 14770.1
+        },
+        {
+          "w": "mudah",
+          "s": 14770.2,
+          "e": 15216.6
+        },
+        {
+          "w": "dan",
+          "s": 15216.6,
+          "e": 15458.9
+        },
+        {
+          "w": "praktis",
+          "s": 15458.9,
+          "e": 16300.7
+        }
+      ],
+      "sha256": "067b8bbbb13824b50656da8071a8c806703730b3659cbf58ef92e4b656b52e49"
+    }
+  }
+}

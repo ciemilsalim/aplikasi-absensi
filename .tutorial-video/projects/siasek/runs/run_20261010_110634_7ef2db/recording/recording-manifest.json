@@ -1,0 +1,38 @@
+{
+  "engine": "TRUE_CONTINUOUS_BROWSER_VIDEO_V4",
+  "capture_method": "Per-virtual-frame CDP Page.captureScreenshot of the live Chromium compositor; fake clock + virtual animation timeline",
+  "video_pipeline": "B (continuous browser capture) -> libx264 CFR",
+  "evidence_pipeline": "A (clean screenshots in evidence/, never used as video frames)",
+  "fps": 60,
+  "frames": 7879,
+  "duration_ms": 131316.667,
+  "frame_sources": {
+    "cdp_live_capture": 7879,
+    "still_image": 0,
+    "repeated": 0,
+    "interpolated": 0
+  },
+  "mobile": true,
+  "viewport": [
+    414,
+    736
+  ],
+  "dsf": 2.608695652173913,
+  "output": [
+    1080,
+    1920
+  ],
+  "video": "recording/continuous-60fps.mp4",
+  "video_sha256": "1ce04f4434c6940c144f43e308a21072c118bdae1cef677b4a36a39a1ff518ee",
+  "wall_clock_capture_s": 409.7,
+  "capture_speed_x_realtime": 0.321,
+  "scenes": [
+    "scene_01_buka_menu_obrolan",
+    "scene_02_pilih_kontak_wali_kelas",
+    "scene_03_kirim_pesan_wali_kelas",
+    "scene_04_hubungi_admin_sekolah",
+    "scene_05_kirim_pesan_admin_dan_selesai"
+  ],
+  "warnings": [],
+  "created_at": "2026-10-10T03:14:03.442Z"
+}

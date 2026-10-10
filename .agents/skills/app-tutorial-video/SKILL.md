@@ -1,130 +1,138 @@
 ---
 name: app-tutorial-video
-description: Smooth Motion & Cinematic UI Engine (V3.6.1) — Continuous easeInOutCubic per-frame camera zoom & pan trajectory, Lanczos-4 subpixel scaling, motion-profile cursor, match-continuity transitions, locked 0.00ms timing variance, and 17-Gate QA Suite.
+description: Professional Reusable Cross-Project Video Tutorial Engine (V4 Continuous Browser Video & V4.1 Polish) — Live Chromium compositor capture, virtual-time clock, minimum-jerk cursor, multi-framework adapters (Laravel, React/Vite, Generic Web), project profiles, declarative tutorial plans, isolated artifact provenance, and 6-Gate Continuous QA Suite (Gates 24–29).
 ---
 
-# App Tutorial Video Skill (V3.6.1 — Smooth Motion & Cinematic UI Engine)
+# App Tutorial Video Skill (V4.1 — Reusable Cross-Project Tutorial Engine)
 
-## Purpose & Core Rule
-
-Mulai versi **V3.6.1**, engine video tutorial mempertahankan **ABSOLUTE TIMING INVARIANT** dari V3.6 (0.00ms variance pada narasi, adegan, klik, dan durasi akhir) sambil meng-upgrade **KUALITAS GERAK VISUAL (Cinematic UI Motion)**:
-
-```
-"NARASI MEMBERI INSTRUKSI" (UI statis 1.0x overview)
-        ↓
-"NARASI SELESAI"
-        ↓
-"JEDA REAKSI (200–400ms)" -> "CONTINUOUS ZOOM-IN (easeInOutCubic)"
-        ↓
-"CURSOR MOTION PROFILE" (ease-in -> cruise -> ease-out -> settle >=180ms)
-        ↓
-"ACTION PERFORMED & SFX ONSET" (steady hold in focus)
-        ↓
-"RESULT HOLD" -> "CONTINUOUS ZOOM-OUT (easeInOutCubic to 1.0x)"
-        ↓
-"133ms DISSOLVE / MATCH-CONTINUITY TRANSITION"
-```
-
-1. **Continuous Smooth Zoom & Pan Engine**:
-   - **Continuous Per-Frame Interpolation**: Tidak ada stepwise zoom jump atau camera teleportation. Setiap frame diinterpolasikan dengan formula `easeInOutCubic`.
-   - **Float Subpixel Windowing**: Menggunakan `cv2.getRectSubPix` untuk mencegah spatial coordinate jitter.
-   - **Lanczos-4 Scaling**: Menggunakan `cv2.INTER_LANCZOS4` untuk mempertahankan ketajaman teks UI tanpa artefak ghosting atau bilinear blurring.
-   - **Safe Target Margins**: Zoom target maksimum default 1.60x (critical focus max 1.70x), dibatasi dengan padding 10-15% agar target tidak menyentuh tepi layar.
-
-2. **Cursor Motion Profile**:
-   - Pola gerak natural: `START -> ease-in -> cruise -> ease-out -> TARGET -> micro settle (>= 180ms) -> CLICK`.
-   - Kursor berhenti stabil dan tenang sebelum aksi klik/gesture dieksekusi.
-
-3. **Subtle Scene Transitions**:
-   - Menggunakan match-continuity untuk UI yang berkelanjutan.
-   - Menggunakan 133ms (4 frame) dissolve blend saat state halaman berubah tanpa mengubah timing boundaries atau memotong durasi video.
-
-4. **17-Gate Quality Assurance Suite**:
-   - Memvalidasi seluruh 17 Quality Gates, termasuk **Gate 17 (SMOOTH MOTION QA)**:
-     - Zoom continuity: $\max(|\Delta Z|) \le 0.08$ / frame
-     - Pan continuity: $\max(\Delta \text{pan}) \le 50.0$ px / frame
-     - Scaling engine: Lanczos-4 verified
-     - Motion evidence: 6-panel zoom contact sheet & 4-panel cursor contact sheet generated
-     - Hard timing invariant: exact 0.00ms variance with V3.6 master.
+Skill agent otonom untuk menghasilkan video tutorial aplikasi profesional berkualitas tinggi di berbagai repository proyek web (Laravel, React/Vite, Vue, Generic Web SPA/MPA) menggunakan **V4 Continuous Browser Video Engine**.
 
 ---
 
-## 17-Gate Quality Assurance Specification
+## 1. Arsitektur 5 Komponen Modular
+
+Sistem memisahkan tanggung jawab secara tegas antara engine rendering dan konfigurasi proyek:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        PROJECT PROFILE & ADAPTER                       │
+│  - project-profile.json (Identity, Base URL, Auth, Viewport, Defaults) │
+│  - adapters/ (Laravel, React+Vite, Generic Web Auto-Detection)         │
+└────────────────────────────────────┬───────────────────────────────────┘
+                                     │ configures
+                                     ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                             TUTORIAL PLAN                              │
+│  - tutorial-plan.json (Declarative Scenes, Narration, Real DOM Steps)  │
+└────────────────────────────────────┬───────────────────────────────────┘
+                                     │ executes
+                                     ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                              CORE ENGINE                               │
+│  - continuous/engine.cjs : Live Chromium virtual-time compositor (CFR) │
+│  - continuous/overlay.js : Subtitles, minimum-jerk cursor, ripples     │
+│  - continuous_pipeline.py: Pass A (TTS), B (Video), C (SFX), D (Mux)   │
+│  - continuous_qa.py      : Gates 24-29 Verification Engine             │
+└────────────────────────────────────┬───────────────────────────────────┘
+                                     │ outputs
+                                     ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                           ARTIFACT MANAGER                             │
+│  - Isolated runs: .tutorial-video/projects/<id>/runs/<run_id>/         │
+│  - Provenance manifests with SHA-256 hashes (Zero silent asset reuse)  │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### A. Core Engine (`scripts/continuous/`, `scripts/continuous_pipeline.py`)
+- **Browser Capture**: Menangkap frame live browser langsung dari Chromium compositor via CDP `Page.captureScreenshot` pada virtual time ($vt = k \times 16.667\text{ms}$). Tidak ada screenshot slideshow atau interpolasi gambar diam.
+- **Natural Motion**: Trajektori kursor dengan kurva minimum-jerk quintic, deceleration ease-out, dan micro-settle stabil ($\ge 180\text{ms}$) sebelum klik/ketukan.
+- **In-Page Subtitle & Pointer (`overlay.js`)**: Subtitle teks dinamis tanpa truncation, ripple interaksi nyata, dan native `<select>` picker sheet.
+- **Narration-First Timing**: Pass A menghasilkan audio TTS berbasis `edge-tts` dengan sample-accurate word boundaries sebelum perekaman video.
+- **SFX Synthesis**: Efek klik mouse mekanis, ketukan layar sentuh, dan keystroke typing disintesis secara deterministik dari recorded events log.
+- **Lossless Muxing**: Video stream disalin bit-exact (`-c:v copy`), audio AAC 192k 48kHz.
+
+### B. Project Adapter (`scripts/adapters/`)
+Mengenali struktur dan karakteristik aplikasi tanpa bergantung pada asumsi satu framework:
+- **`LaravelAdapter`**: Membaca `composer.json`, `routes/web.php`, controller, dan template Blade.
+- **`ReactViteAdapter`**: Membaca `package.json`, `vite.config.*`, `index.html`, dan komponen React/SPA di `src/`.
+- **`GenericWebAdapter`**: Mendukung aplikasi web berbasis HTML/JS/CSS statis atau framework apa pun.
+- **`AdapterRegistry`**: Melakukan deteksi otomatis berperingkat keyakinan (*confidence-based ranking*).
+
+### C. Project Profile (`scripts/profile.py`, `project-profile.schema.json`)
+Menyimpan konfigurasi unik proyek dalam `project-profile.json`:
+- `project_id`: Identifier unik (slug).
+- `project_name`: Nama tampilan aplikasi.
+- `base_url`: URL lokal server (misal `http://127.0.0.1:8000` atau `http://localhost:5173`).
+- `mode`: `"mobile"` (414x736 -> 1080x1920) atau `"desktop"` (1920x1080).
+- `auth`: Aturan autentikasi (`none` atau `form_login` dengan pemetaan selector & env var `TUTORIAL_EMAIL`/`TUTORIAL_PASSWORD`).
+- `workflows`: Daftar alur pengguna yang telah diverifikasi.
+
+### D. Tutorial Plan (`tutorial-plan.json`)
+Spesifikasi deklaratif yang mendefinisikan skenario video tutorial:
+- `setup`: Langkah pre-record (navigasi, login, persiapan halaman awal).
+- `scenes`: Daftar scene terstruktur:
+  - `scene_id`: Slug unik adegan.
+  - `narration`: Teks narasi suara yang dibacakan.
+  - `steps`: Interaksi nyata DOM (`tap`, `type`, `select`, `scroll`, `wait_for`, `hold`, `pointer_hide`).
+  - `result_hold_ms`: Durasi penahanan UI setelah aksi selesai.
+
+### E. Artifact Manager (`scripts/artifact_manager.py`)
+- Isolasi ketat: Disimpan per-proyek dan per-run di `.tutorial-video/projects/<project_id>/runs/<run_id>/`.
+- Zero silent asset reuse: Dilarang menggunakan ulang video/audio lama.
+- Provenance manifest: Menghasilkan `provenance-manifest.json` yang mencatat hash SHA-256 untuk video master, audio WAV, log event, file plan, dan profil proyek.
+
+---
+
+## 2. 10-Step New Project Bootstrap Workflow
+
+Saat dijalankan pada repository atau proyek web baru, jalankan urutan berikut:
+
+1. **Detect Framework & Entry Points**: Panggil `AdapterRegistry.detect(workspace_root)`.
+2. **Detect Server & Local URL**: Periksa port aktif (8000, 5173, 4173, 3000, 80) dan catat URL akses lokal.
+3. **Discover Pages & Views**: Petakan halaman publik dan komponen yang ada di repository.
+4. **Determine Authentication Needs**: Evaluasi apakah halaman tutorial membutuhkan login akun pengujian.
+5. **Map Verified Workflows**: Buat daftar skenario tutorial berdasarkan fitur nyata yang ditemukan.
+6. **Generate Project Profile & Plan**: Tulis `project-profile.json` dan starter `tutorial-plan.json`.
+7. **Preflight Selector Validation**: Jalankan preflight headless untuk memvalidasi selector DOM sebelum recording.
+8. **Inspect Prototype Scene**: Evaluasi rancangan 1 scene awal (narasi, timing, interaksi).
+9. **Record Continuous V4 Video**: Eksekusi Pass A, B, C, D melalui `continuous_pipeline.py`.
+10. **Execute Quality Gates (QA)**: Jalankan QA Gates 24–29 dan laporkan bukti kelulusan.
+
+---
+
+## 3. Command Line Interface (CLI)
+
+Gunakan `scripts/cli.py` untuk mengontrol seluruh tahapan:
+
+### A. Bootstrap Proyek Baru
+```bash
+python scripts/cli.py bootstrap --workspace-root <path> [--base-url <url>] [--mode mobile|desktop] [--record]
+```
+
+### B. Preflight Selector Validation
+```bash
+python scripts/cli.py preflight --plan <path/to/tutorial-plan.json> [--workspace-root <path>]
+```
+
+### C. Record Video Tutorial (V4 Continuous)
+```bash
+python scripts/cli.py record --plan <path/to/tutorial-plan.json> [--profile <path/to/project-profile.json>] [--project-id <id>]
+```
+
+### D. Quality Assurance Verification
+```bash
+python scripts/cli.py qa --run-dir <path/to/run_dir>
+```
+
+---
+
+## 4. Quality Assurance Specification (Gates 24–29)
 
 | Gate | Kategori QA | Syarat Kelulusan (PASS Criteria) |
 |---|---|---|
-| **Gate 1** | Technical QA | Codec H.264/AAC, resolusi 1920x1080 (desktop) atau 1080x1920 portrait (mobile) @ 30fps, durasi valid (60–90s), non-zero file size |
-| **Gate 2** | Provenance QA | Run isolation, hash manifest utuh, visual_master_hash & audio_master_hash terdata, motion engine specs terdata |
-| **Gate 3** | Content QA | Narasi sinkron dengan storyboard, expected keywords terdeteksi, forbidden keywords bersih |
-| **Gate 4** | Scene QA | Scene transition halus, intro/outro utuh, scene evidence terekstrak lengkap |
-| **Gate 5** | Audio-Visual QA | Audio loudness terstandarisasi, semua scene memiliki audio dan subtitle |
-| **Gate 6** | Focus QA | Bounding box dalam viewport, zoom level aman, subtitle collision resolved |
-| **Gate 7** | Audio Effect QA | Asset audio tersedia dan valid WAV, volume terkontrol ($\le 0.25$) |
-| **Gate 8** | Interactive Audio Realism QA | Event klik/tap sesuai mode (`physical_mouse` atau `mobile_tap`), RMS typing energy nyata terdata |
-| **Gate 9** | Mobile Experience QA | Format portrait (tinggi > lebar, rasio 9:16), zoom level aman ($\le 1.40$x), safe margin subtitle $\ge 24$px |
-| **Gate 10** | Audio Perceptual QA | Kejujuran asal audio, pengetikan terdengar (RMS > 8.0) dan tepat waktu, narasi dominan, bebas clipping |
-| **Gate 11** | Deterministic A/V Sync | Canonical event timeline synchronization, strict cross-variant isolation |
-| **Gate 12** | Frame-True A/V Sync | Click/tap audio onset $\le 20$ms dari rendered visual frame PTS, typing bounds $\le 20$ms/$\le 50$ms |
-| **Gate 13** | **Video-Master Narration Sync** | Narration strictly inside visual window (`narration_end_ms <= visual_end_ms`), zero audio bleed into next scenes |
-| **Gate 14** | **Final MP4 Audio Alignment** | Direct inspection of final MP4 demuxed audio; click onset vs video frame PTS $\le 20$ms; typing start $\le 20$ms, end $\le 50$ms |
-| **Gate 15** | **Interaction Audio Following Video** | Master timeline has `"master": "FINAL_VIDEO"`; interaction audio occurs strictly on visual frame PTS; zero orphan audio |
-| **Gate 16** | **Narration-Cued Action** | `action_start_ms >= narration_end_ms + reaction_delay_ms` ($\ge 200$ms reaction delay); zero visual action during speech |
-| **Gate 17** | **Smooth Motion & Cinematic UI** | $\max(|\Delta Z|) \le 0.08$/frame, $\max(\Delta \text{pan}) \le 50.0$px/frame, Lanczos-4 scaling, contact sheets in `motion-evidence/`, 0.00ms variance |
-       ▼ [PHASE 4 — EXTRACT VIDEO MASTER TIMELINE]
-[Timeline Extractor (scripts/extract_video_timeline.py)]
-• Inspects visual-master.mp4 frame PTS, fps, scene bounds
-• Snaps narration windows, reaction pauses, action starts, clicks, and result holds
-• OUTPUT: final-video-timeline.json & narration-cued-timeline.json
-       │
-       ▼ [PHASE 5 — NARRATION & SUBTITLE MASTER TRACK]
-[TTS Narration Engine (scripts/tts.py)]
-• Generates sample-accurate 44.1kHz master narration track & tutorial.srt
-• OUTPUT: narration.mp3, narration-cued-action-map.json, narration-word-timestamps.json
-       │
-       ▼ [PHASE 6 — AUDIO MASTER MIXING & MUX]
-[Audio Master & MUX Engine (scripts/render.py)]
-• Mixes narration + click SFX on click PTS + typing SFX on typing bounds
-• Muxes visual-master.mp4 + audio-master-for-final-video.wav + subtitles
-• OUTPUT: final-tutorial.mp4
-       │
-       ▼ [PHASE 7 — 16-GATE FINAL MP4 VALIDATION]
-[16-Gate Final MP4 Validator (scripts/validate.py)]
-• Gate 13: Video-Master Narration Sync (0 bleed, visual window fit)
-• Gate 14: Final MP4 Audio Alignment (click <= 20ms, typing start <= 20ms)
-• Gate 15: Interaction Audio Following Video ("master": "FINAL_VIDEO", 0 orphan events)
-• Gate 16: Narration-Cued Action (action_start >= narration_end + 200ms)
-• OUTPUT: narration-cued-action-audit.json, narration-cued-action-audit.md, qa-v354.md
-```
-
----
-
-## 16-Gate Quality Assurance Specification
-
-| Gate | Kategori QA | Syarat Kelulusan (PASS Criteria) |
-|---|---|---|
-| **Gate 1** | Technical QA | Codec H.264/AAC, resolusi 1920x1080 (desktop) atau 1080x1920 portrait (mobile) @ 30fps, durasi valid (60–90s), non-zero file size |
-| **Gate 2** | Provenance QA | Run isolation, hash manifest utuh, visual_master_hash & audio_master_hash terdata |
-| **Gate 3** | Content QA | Narasi sinkron dengan storyboard, expected keywords terdeteksi, forbidden keywords bersih |
-| **Gate 4** | Scene QA | Scene transition halus, intro/outro utuh, scene evidence terekstrak lengkap |
-| **Gate 5** | Audio-Visual QA | Audio loudness terstandarisasi, semua scene memiliki audio dan subtitle |
-| **Gate 6** | Focus QA | Bounding box dalam viewport, zoom level aman, subtitle collision resolved |
-| **Gate 7** | Audio Effect QA | Asset audio tersedia dan valid WAV, volume terkontrol ($\le 0.25$) |
-| **Gate 8** | Interactive Audio Realism QA | Event klik/tap sesuai mode (`physical_mouse` atau `mobile_tap`), RMS typing energy nyata terdata |
-| **Gate 9** | Mobile Experience QA | Format portrait (tinggi > lebar, rasio 9:16), zoom level aman ($\le 1.40$x), safe margin subtitle $\ge 24$px |
-| **Gate 10** | Audio Perceptual QA | Kejujuran asal audio, pengetikan terdengar (RMS > 8.0) dan tepat waktu, narasi dominan, bebas clipping |
-| **Gate 11** | Deterministic A/V Sync | Canonical event timeline synchronization, strict cross-variant isolation |
-| **Gate 12** | Frame-True A/V Sync | Click/tap audio onset $\le 20$ms dari rendered visual frame PTS, typing bounds $\le 20$ms/$\le 50$ms |
-| **Gate 13** | **Video-Master Narration Sync** | Narration strictly inside visual window (`narration_end_ms <= visual_end_ms`), zero audio bleed into next scenes |
-| **Gate 14** | **Final MP4 Audio Alignment** | Direct inspection of final MP4 demuxed audio; click onset vs video frame PTS $\le 20$ms; typing start $\le 20$ms, end $\le 50$ms |
-| **Gate 15** | **Interaction Audio Following Video** | Master timeline has `"master": "FINAL_VIDEO"`; interaction audio occurs strictly on visual frame PTS; zero orphan audio |
-| **Gate 16** | **Narration-Cued Action** | `action_start_ms >= narration_end_ms + reaction_delay_ms` ($\ge 200$ms reaction delay); zero visual action during speech |
-
----
-
-## Audio Assets & Specifications
-
-- `resources/audio/metadata.json`: Kebijakan provenance audio, klasifikasi `source_type: "synthetic"` vs `"recorded"`, dan panduan penggantian fisik.
-- `resources/audio/mouse-click.wav`: 65ms pemodelan transien saklar mekanis snap ganda (sintetis), 44.1kHz mono WAV, peak -3.2 dBFS.
-- `resources/audio/tap.wav`: 45ms ketukan lembut layar sentuh kapasitif (sintetis), 44.1kHz mono WAV, peak -4.0 dBFS.
-- `resources/audio/click.wav`: 80ms synthesized UI pop klasik V3.4.
-- `resources/audio/typing.wav`: 100ms acoustic keystroke membrane switch (sintetis).
+| **Gate 24** | **True Continuous Video** | 100% frame ditangkap dari live Chromium compositor (`cdp_live_capture_ratio = 1.0`). Nol slideshow/static image interpolation. |
+| **Gate 25** | **Duplicate Frame Analysis** | Duplikasi frame aktif dibatasi ($\le 5\%$), tidak ada freeze atau stutter saat kursor bergerak atau pengetikan. |
+| **Gate 26** | **Frame Pacing** | Constant Frame Rate tepat 60.0 FPS, durasi frame seragam ($16.667\text{ms} \pm 0.5\text{ms}$). |
+| **Gate 27** | **Motion Continuity** | Minimum-jerk quintic trajectory, zero coordinate teleportation ($\max(\Delta P) \le 25\text{px}$/frame). |
+| **Gate 28** | **Real Interaction Motion** | Event interaksi terdeteksi nyata: per-character typing, touch pulse ripples, scroll progression, dropdown commits. |
+| **Gate 29** | **Human Perceptual Motion** | Contact sheet visual terekstrak di `perceptual-evidence/perceptual_contact_sheet.png` untuk verifikasi manusia. |

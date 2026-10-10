@@ -1,34 +1,62 @@
 {
-  "title": "Cara Melakukan Absensi Guru",
-  "language": "id-ID",
-  "audience": "Guru SMP",
-  "target_duration_seconds": 300,
-  "base_url": "http://127.0.0.1:8000",
-  "voice": "id-ID-ArdiNeural",
-  "scenes": [
+  "version": "4.0.0",
+  "engine": "TRUE_CONTINUOUS_BROWSER_VIDEO_V4",
+  "project_id": "example-web-app",
+  "title": "Panduan Memulai Aplikasi Web",
+  "mode": "mobile",
+  "fps": 60,
+  "target_resolution": [1080, 1920],
+  "viewport": {
+    "width": 414,
+    "height": 736
+  },
+  "voice": {
+    "name": "id-ID-GadisNeural",
+    "rate": "-2%",
+    "pitch": "+0Hz"
+  },
+  "reaction_delay_ms": 300,
+  "color_scheme": "light",
+  "setup": [
     {
-      "id": "scene-01",
-      "name": "Pembukaan",
-      "narration": "Pada tutorial ini kita akan mempelajari cara melakukan absensi guru menggunakan aplikasi.",
-      "actions": [
-        {"type": "goto", "url": "http://127.0.0.1:8000/login"},
-        {"type": "wait", "ms": 1500}
-      ],
-      "expected_result": "Halaman login tampil dengan jelas.",
-      "duration_seconds": 10
+      "do": "goto",
+      "url": "http://127.0.0.1:8080/"
     },
     {
-      "id": "scene-02",
-      "name": "Login",
-      "narration": "Masukkan akun demo guru, kemudian tekan tombol masuk untuk membuka halaman utama aplikasi.",
-      "actions": [
-        {"type": "fill", "selector": "input[name=email]", "valueFromEnv": "TUTORIAL_EMAIL"},
-        {"type": "fill", "selector": "input[name=password]", "valueFromEnv": "TUTORIAL_PASSWORD"},
-        {"type": "click", "selector": "button[type=submit]"},
-        {"type": "wait", "ms": 1500}
+      "do": "wait_for",
+      "selector": "body"
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "scene_01_welcome",
+      "narration": "Selamat datang di panduan aplikasi. Di sini kita akan mempelajari fitur utama antarmuka.",
+      "steps": [
+        {
+          "do": "wait_for",
+          "selector": "main"
+        },
+        {
+          "do": "hold",
+          "ms": 500
+        }
       ],
-      "expected_result": "Dashboard guru tampil.",
-      "duration_seconds": 20
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_02_navigation",
+      "narration": "Ketuk menu navigasi untuk melihat bagian layanan yang tersedia.",
+      "steps": [
+        {
+          "do": "tap",
+          "target": "nav a"
+        },
+        {
+          "do": "scroll",
+          "by": 300
+        }
+      ],
+      "result_hold_ms": 1400
     }
   ]
 }
