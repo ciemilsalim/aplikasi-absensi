@@ -787,12 +787,38 @@
                                               <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Pemindai Kiosk</span>
                                           </a>
 
-                                          <a href="{{ route('permit.scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all group min-h-[44px]">
+                                          <a href="{{ route('permit.scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all group min-h-[44px] relative">
+                                              <span class="absolute top-2 right-2 inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-indigo-500 text-white shadow-2xs">Baru</span>
                                               <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
                                                   <span class="material-icons text-xl">assignment</span>
                                               </div>
                                               <span class="text-xs font-bold text-slate-800 dark:text-white truncate w-full">Scan Izin Keluar</span>
                                               <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Izin Siswa</span>
+                                          </a>
+                                      </div>
+
+                                      <!-- Fitur Baru: E-Dispensasi & Audit Trail Koreksi (2 Grid) -->
+                                      <div class="grid grid-cols-2 gap-2.5">
+                                          <a href="{{ route('admin.dispensations.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-900/40 hover:bg-indigo-100 dark:hover:bg-slate-800 transition-all min-h-[44px]">
+                                              <span class="material-icons text-indigo-600 dark:text-indigo-400 text-xl shrink-0">badge</span>
+                                              <div class="min-w-0 flex-1">
+                                                  <div class="flex items-center gap-1">
+                                                      <span class="text-xs font-bold text-indigo-950 dark:text-indigo-200 truncate">Dispensasi</span>
+                                                      <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8px] font-extrabold uppercase bg-indigo-500 text-white shrink-0">Baru</span>
+                                                  </div>
+                                                  <span class="text-[9px] text-indigo-600/80 dark:text-indigo-400 block truncate">Gerbang & Satpam</span>
+                                              </div>
+                                          </a>
+
+                                          <a href="{{ route('admin.audit_logs.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200/60 dark:border-rose-900/40 hover:bg-rose-100 dark:hover:bg-slate-800 transition-all min-h-[44px]">
+                                              <span class="material-icons text-rose-600 dark:text-rose-400 text-xl shrink-0">history_edu</span>
+                                              <div class="min-w-0 flex-1">
+                                                  <div class="flex items-center gap-1">
+                                                      <span class="text-xs font-bold text-rose-950 dark:text-rose-200 truncate">Audit Trail</span>
+                                                      <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[8px] font-extrabold uppercase bg-rose-500 text-white shrink-0">Baru</span>
+                                                  </div>
+                                                  <span class="text-[9px] text-rose-600/80 dark:text-rose-400 block truncate">Koreksi Presensi</span>
+                                              </div>
                                           </a>
                                       </div>
 
@@ -901,7 +927,8 @@
                                              <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Absensi Harian Siswa</span>
                                          </a>
 
-                                         <a href="{{ route('permit.scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all group">
+                                         <a href="{{ route('permit.scanner') }}" @click="mobileMenuOpen = false" class="flex flex-col items-center text-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-all group relative">
+                                             <span class="absolute top-2 right-2 inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-indigo-500 text-white shadow-2xs">Baru</span>
                                              <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                                                  <span class="material-icons text-xl">assignment</span>
                                              </div>
@@ -947,6 +974,16 @@
                                              <a href="{{ route('chat.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                                                  <span class="material-icons text-pink-600 dark:text-pink-400 text-xl">chat</span>
                                                  <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Obrolan Ortu</span>
+                                                 <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-amber-500 text-white ml-auto shrink-0">Baru</span>
+                                             </a>
+
+                                             <a href="{{ route('teacher.anecdotes.index', ['school_class_id' => auth()->user()->teacher?->homeroomClass?->id]) }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 hover:bg-amber-100 dark:hover:bg-slate-800 transition-all col-span-2">
+                                                 <span class="material-icons text-amber-600 dark:text-amber-400 text-xl">auto_stories</span>
+                                                 <div class="flex-1 min-w-0">
+                                                     <div class="text-xs font-bold text-amber-950 dark:text-amber-200 truncate">Catatan Anekdot Kelas</div>
+                                                     <div class="text-[10px] text-amber-600 dark:text-amber-400">Jurnal pembinaan karakter</div>
+                                                 </div>
+                                                 <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-amber-500 text-white ml-auto shrink-0">Baru</span>
                                              </a>
                                          @endif
 
@@ -954,7 +991,10 @@
                                              <a href="{{ route('teacher.extracurricular-attendance.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 p-3 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 hover:bg-amber-100 dark:hover:bg-slate-800 transition-all col-span-2">
                                                  <span class="material-icons text-amber-600 dark:text-amber-400 text-xl">military_tech</span>
                                                  <div class="flex-1 min-w-0">
-                                                     <div class="text-xs font-bold text-amber-950 dark:text-amber-200 truncate">Presensi Ekstrakurikuler</div>
+                                                     <div class="flex items-center gap-1.5">
+                                                         <div class="text-xs font-bold text-amber-950 dark:text-amber-200 truncate">Presensi Ekstrakurikuler</div>
+                                                         <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-purple-500 text-white shrink-0">Baru</span>
+                                                     </div>
                                                      <div class="text-[10px] text-amber-600 dark:text-amber-400">Pembina Kegiatan</div>
                                                  </div>
                                                  <span class="material-icons text-amber-400 text-sm">chevron_right</span>
@@ -978,14 +1018,32 @@
                                              </div>
                                          </a>
 
+                                         <a href="{{ route('parent.onboarding.index') }}" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3.5 rounded-2xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200/70 dark:border-sky-900/50 text-sky-900 dark:text-sky-200 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all">
+                                             <div class="p-2 bg-sky-500 text-white rounded-xl shadow-xs">
+                                                 <span class="material-icons text-lg">person_add_alt_1</span>
+                                             </div>
+                                             <div class="flex-1 min-w-0">
+                                                 <div class="flex items-center gap-1.5">
+                                                     <span class="text-xs font-bold truncate">Hubungkan Data Anak</span>
+                                                     <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-sky-500 text-white shrink-0">Baru</span>
+                                                 </div>
+                                                 <div class="text-[10px] text-sky-600 dark:text-sky-400">Tambah / tautkan NISN anak binaan</div>
+                                             </div>
+                                             <span class="material-icons text-xs text-sky-400 shrink-0">chevron_right</span>
+                                         </a>
+
                                          <a href="{{ route('parent.dashboard') }}#ekskul" @click="mobileMenuOpen = false" class="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                                              <div class="p-2 bg-purple-500 text-white rounded-xl shadow-xs">
                                                  <span class="material-icons text-lg">star</span>
                                              </div>
-                                             <div>
-                                                 <div class="text-xs font-bold">Kegiatan Ekstrakurikuler</div>
+                                             <div class="flex-1 min-w-0">
+                                                 <div class="flex items-center gap-1.5">
+                                                     <span class="text-xs font-bold truncate">Kegiatan Ekstrakurikuler</span>
+                                                     <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-purple-500 text-white shrink-0">Baru</span>
+                                                 </div>
                                                  <div class="text-[10px] text-slate-500 dark:text-slate-400">Jadwal & absensi ekskul putra/putri</div>
                                              </div>
+                                             <span class="material-icons text-xs text-slate-400 shrink-0">chevron_right</span>
                                          </a>
                                      </div>
                                  </div>

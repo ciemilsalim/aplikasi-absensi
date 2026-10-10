@@ -171,12 +171,12 @@
                             <li>
                                 <a href="{{ route('parent.onboarding.index') }}" :title="sidebarCollapsed ? 'Hubungkan Data Anak' : ''" 
                                    class="{{ $isOnboardingActive ? 'bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold border border-sky-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
-                                   :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
-                                    <span class="material-icons text-xl shrink-0 text-sky-500 transition-transform group-hover:scale-110">person_add</span>
-                                    <span x-show="!sidebarCollapsed" class="truncate">Hubungkan Data Anak</span>
-                                    @if($isOnboardingActive)
-                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
-                                    @endif
+                                   :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
+                                    <span class="flex gap-x-3 items-center">
+                                        <span class="material-icons text-xl shrink-0 text-sky-500 transition-transform group-hover:scale-110">person_add</span>
+                                        <span x-show="!sidebarCollapsed" class="truncate">Hubungkan Data Anak</span>
+                                    </span>
+                                    <span x-show="!sidebarCollapsed" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-sky-500 text-white shadow-2xs ml-auto">Baru</span>
                                 </a>
                             </li>
                             
@@ -201,7 +201,7 @@
                                         <span class="material-icons text-xl shrink-0 text-purple-500">star</span>
                                         <span x-show="!sidebarCollapsed" class="truncate">Ekstrakurikuler</span>
                                     </span>
-                                    <span x-show="!sidebarCollapsed" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 ml-auto">Kegiatan</span>
+                                    <span x-show="!sidebarCollapsed" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-purple-500 text-white shadow-2xs ml-auto">Baru</span>
                                 </a>
                             </li>
                             
@@ -216,8 +216,8 @@
                                     </span>
                                     @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
                                         <span class="inline-flex items-center justify-center h-4.5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-bold shadow-xs" :class="sidebarCollapsed ? 'absolute -top-1 -right-1' : ''">{{ $totalUnreadMessagesCount }}</span>
-                                    @elseif($isActive)
-                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-sky-500 ml-auto shrink-0"></span>
+                                    @else
+                                        <span x-show="!sidebarCollapsed" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-amber-500 text-white shadow-2xs ml-auto">Baru</span>
                                     @endif
                                 </a>
                             </li>
@@ -271,12 +271,12 @@
                             <li>
                                 <a href="{{ route('permit.scanner') }}" :title="sidebarCollapsed ? 'Pemindai Izin Keluar' : ''" 
                                    class="{{ $isPermitActive ? 'bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/20 shadow-xs' : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent' }} group flex items-center rounded-xl p-2.5 text-xs transition-all duration-200" 
-                                   :class="sidebarCollapsed ? 'justify-center px-2' : 'gap-x-3 px-3'">
-                                    <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110 text-indigo-600 dark:text-indigo-400">assignment</span>
-                                    <span x-show="!sidebarCollapsed" class="truncate">Pemindai Izin Keluar</span>
-                                    @if($isPermitActive)
-                                        <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-indigo-500 ml-auto shrink-0"></span>
-                                    @endif
+                                   :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between gap-x-3 px-3'">
+                                    <span class="flex gap-x-3 items-center">
+                                        <span class="material-icons text-xl shrink-0 transition-transform group-hover:scale-110 text-indigo-600 dark:text-indigo-400">assignment</span>
+                                        <span x-show="!sidebarCollapsed" class="truncate">Pemindai Izin Keluar</span>
+                                    </span>
+                                    <span x-show="!sidebarCollapsed" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-indigo-500 text-white shadow-2xs ml-auto">Baru</span>
                                 </a>
                             </li>
                         @endif
@@ -435,7 +435,10 @@
                                         <li>
                                             <a href="{{ route('teacher.anecdotes.index', ['school_class_id' => auth()->user()->teacher?->homeroomClass?->id]) }}" 
                                                class="{{ request()->routeIs('teacher.anecdotes.*') && request('school_class_id') == auth()->user()->teacher?->homeroomClass?->id ? 'text-amber-600 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                                <span>Catatan Anekdot Kelas</span>
+                                                <span class="flex items-center gap-1.5">
+                                                    <span>Catatan Anekdot Kelas</span>
+                                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-amber-500 text-white shadow-2xs">Baru</span>
+                                                </span>
                                                 @if(request()->routeIs('teacher.anecdotes.*') && request('school_class_id') == auth()->user()->teacher?->homeroomClass?->id)
                                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                                 @endif
@@ -444,7 +447,10 @@
                                         <li>
                                             <a href="{{ route('chat.index') }}" 
                                                class="{{ $isChatActive ? 'text-amber-600 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                                <span>Obrolan Ortu</span>
+                                                <span class="flex items-center gap-1.5">
+                                                    <span>Obrolan Ortu</span>
+                                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-amber-500 text-white shadow-2xs">Baru</span>
+                                                </span>
                                                 @if(isset($totalUnreadMessagesCount) && $totalUnreadMessagesCount > 0)
                                                     <span class="inline-flex items-center justify-center h-4 px-1.5 rounded-full bg-rose-500 text-white text-[9px] font-bold">{{ $totalUnreadMessagesCount }}</span>
                                                 @elseif($isChatActive)
@@ -535,7 +541,10 @@
                                         <li>
                                             <a href="{{ route('teacher.extracurricular-attendance.index') }}" 
                                                class="{{ $isEkskulIndexActive ? 'text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                                <span>Presensi & Sesi Ekskul</span>
+                                                <span class="flex items-center gap-1.5">
+                                                    <span>Presensi & Sesi Ekskul</span>
+                                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-purple-500 text-white shadow-2xs">Baru</span>
+                                                </span>
                                                 @if($isEkskulIndexActive)
                                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                                 @endif
@@ -631,9 +640,7 @@
                                 <span class="material-icons text-xl shrink-0 text-rose-500">fact_check</span>
                                 <span x-show="!sidebarCollapsed" class="truncate">Audit Trail Koreksi</span>
                             </span>
-                            @if($isAuditTrailActive)
-                                <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-rose-500 ml-auto shrink-0"></span>
-                            @endif
+                            <span x-show="!sidebarCollapsed" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-rose-500 text-white shadow-2xs ml-auto">Baru</span>
                         </a>
                     </li>
                     @endif
@@ -649,9 +656,7 @@
                                 <span class="material-icons text-xl shrink-0 text-indigo-500">confirmation_number</span>
                                 <span x-show="!sidebarCollapsed" class="truncate">E-Dispensasi Gerbang</span>
                             </span>
-                            @if($isDispensationsActive)
-                                <span x-show="!sidebarCollapsed" class="w-1.5 h-1.5 rounded-full bg-indigo-500 ml-auto shrink-0"></span>
-                            @endif
+                            <span x-show="!sidebarCollapsed" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-indigo-500 text-white shadow-2xs ml-auto">Baru</span>
                         </a>
                     </li>
                     @endif
