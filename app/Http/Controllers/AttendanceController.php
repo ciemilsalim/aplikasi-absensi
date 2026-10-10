@@ -376,6 +376,11 @@ class AttendanceController extends Controller
                     'scanned_at'   => $scannedAt,
                 ]);
 
+                // Notifikasi WhatsApp ke orang tua
+                if ($settings->get('wa_notify_clock_out', 'off') === 'on') {
+                    \App\Jobs\SendWhatsAppNotificationJob::dispatch('clock_out', $student->id, $attendance->id);
+                }
+
                 return [
                     'code' => 200,
                     'body' => [
@@ -409,6 +414,11 @@ class AttendanceController extends Controller
                 'scan_type'    => 'masuk',
                 'scanned_at'   => $scannedAt,
             ]);
+
+            // Notifikasi WhatsApp ke orang tua
+            if ($settings->get('wa_notify_clock_in', 'off') === 'on') {
+                \App\Jobs\SendWhatsAppNotificationJob::dispatch('clock_in', $student->id, $newAttendance->id);
+            }
 
             return [
                 'code' => 200,

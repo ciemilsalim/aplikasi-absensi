@@ -99,6 +99,11 @@ class CheckAbsentStudents extends Command
                     }
                 }
             }
+
+            // Kirim notifikasi WhatsApp ke orang tua jika diaktifkan
+            if ($settings->get('wa_notify_absent', 'off') === 'on') {
+                \App\Jobs\SendWhatsAppNotificationJob::dispatch('absent', $student->id, null, $today->toDateString());
+            }
         }
 
         $this->info("Proses selesai: {$alpaCount} siswa dicatat alpa, {$excusedCount} siswa dicatat dari izin/sakit disetujui.");

@@ -172,7 +172,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::middleware(['role:admin'])->group(function () {
         // Monitoring Log Scan Absensi
         Route::get('/scan-logs', [ScanLogController::class, 'index'])->name('scan-logs.index');
+        // Pengaturan Aplikasi
+        Route::get('/settings/identity', [SettingController::class, 'identity'])->name('settings.identity');
         Route::get('/settings/appearance', [SettingController::class, 'appearance'])->name('settings.appearance');
+        Route::get('/settings/attendance', [SettingController::class, 'attendance'])->name('settings.attendance');
+        Route::get('/settings/whatsapp', [SettingController::class, 'whatsapp'])->name('settings.whatsapp');
+        Route::post('/settings/whatsapp/test', [SettingController::class, 'testWhatsApp'])->name('settings.whatsapp.test');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
         // Pengumuman
@@ -214,10 +219,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Rute master data yang DIREDIRECT karena dikelola terpusat di SIPADA
     Route::middleware(['role:admin', 'sipada.redirect'])->group(
         function () {
-            // Pengaturan
-            Route::get('/settings/identity', [SettingController::class, 'identity'])->name('settings.identity');
-            Route::get('/settings/attendance', [SettingController::class, 'attendance'])->name('settings.attendance');
-
             // Manajemen Data (CRUD)
             Route::get('classes/{school_class}/assign', [SchoolClassController::class, 'showAssignForm'])->name('classes.assign');
             Route::post('classes/assign-students', [SchoolClassController::class, 'assignStudents'])->name('classes.assign.students');

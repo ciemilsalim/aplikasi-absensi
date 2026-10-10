@@ -37,6 +37,12 @@
                                     Waktu Absensi
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ route('admin.settings.whatsapp') }}" class="{{ request()->routeIs('admin.settings.whatsapp') ? 'bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400' : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300' }} w-full flex items-center gap-3 px-4 py-2 text-left text-sm font-medium rounded-md transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a.75.75 0 0 1-.974-.94 4.053 4.053 0 0 0 .54-1.815C3.393 16.73 2.25 14.49 2.25 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" /></svg>
+                                    Gateway WhatsApp
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>

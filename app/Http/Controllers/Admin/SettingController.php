@@ -39,6 +39,33 @@ class SettingController extends Controller
     }
 
     /**
+     * Menampilkan halaman pengaturan WhatsApp Gateway.
+     */
+    public function whatsapp()
+    {
+        $settings = Setting::pluck('value', 'key');
+        return view('admin.settings.whatsapp', compact('settings'));
+    }
+
+    /**
+     * Uji coba koneksi pengiriman pesan WhatsApp Gateway.
+     */
+    public function testWhatsApp(Request $request, \App\Services\Notification\WhatsAppNotificationService $service)
+    {
+        $request->validate([
+            'test_phone' => 'required|string|min:8|max:25',
+        ]);
+
+        $result = $service->testConnection($request->input('test_phone'));
+
+        if (!empty($result['success'])) {
+            return back()->with('success', 'Uji coba berhasil! ' . ($result['message'] ?? 'Pesan berhasil dikirim via gateway.'));
+        }
+
+        return back()->with('error', 'Gagal mengirim pesan uji coba: ' . ($result['message'] ?? 'Terjadi kesalahan pada gateway.'));
+    }
+
+    /**
      * Memperbarui pengaturan berdasarkan form yang disubmit.
      */
     public function update(Request $request)
@@ -86,6 +113,22 @@ class SettingController extends Controller
             $settingsToUpdate = array_merge($settingsToUpdate, $request->only($attendanceKeys));
             // PERBAIKAN: Logika untuk menangani checkbox notifikasi alpa
             $settingsToUpdate['send_absent_notification'] = $request->has('send_absent_notification') ? 'on' : 'off';
+        }
+
+        // Validasi untuk form WhatsApp Gateway
+        if ($request->has('form_type') && $request->form_type === 'whatsapp') {
+            $rules = array_merge($rules, [
+                'wa_gateway_provider' => 'required|string|in:fonnte,wablas,generic,log',
+                'wa_gateway_token' => 'nullable|string|max:500',
+                'wa_gateway_url' => 'nullable|url|max:500',
+            ]);
+
+            $settingsToUpdate['wa_gateway_provider'] = $request->input('wa_gateway_provider', 'log');
+            $settingsToUpdate['wa_gateway_token'] = $request->input('wa_gateway_token', '');
+            $settingsToUpdate['wa_gateway_url'] = $request->input('wa_gateway_url', '');
+            $settingsToUpdate['wa_notify_clock_in'] = $request->has('wa_notify_clock_in') ? 'on' : 'off';
+            $settingsToUpdate['wa_notify_clock_out'] = $request->has('wa_notify_clock_out') ? 'on' : 'off';
+            $settingsToUpdate['wa_notify_absent'] = $request->has('wa_notify_absent') ? 'on' : 'off';
         }
 
         // Jalankan validasi
