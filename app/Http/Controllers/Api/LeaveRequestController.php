@@ -69,7 +69,23 @@ class LeaveRequestController extends Controller
             'rejection_reason' => 'required_if:status,rejected'
         ]);
 
-        $leaveRequest = LeaveRequest::findOrFail($id);
+        $teacher = $request->user()?->teacher;
+
+        if (!$teacher || !$teacher->homeroomClass) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Anda bukan Wali Kelas dari kelas manapun.'
+            ], 403);
+        }
+
+        $leaveRequest = LeaveRequest::with('student')->findOrFail($id);
+
+        if (!$leaveRequest->student || $teacher->homeroomClass->id !== $leaveRequest->student->school_class_id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak. Anda bukan Wali Kelas dari siswa ini.'
+            ], 403);
+        }
 
         if ($leaveRequest->status !== 'pending') {
             return response()->json([
