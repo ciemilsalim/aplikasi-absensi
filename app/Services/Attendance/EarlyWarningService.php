@@ -40,7 +40,7 @@ class EarlyWarningService
 
         $attentionList = $students->filter(function ($student) {
             return $student->alpha_count > 0 || $student->late_count > 0;
-        })->map(function ($student) {
+        })->map(function ($student) use ($days) {
             $alpha = (int) $student->alpha_count;
             $late = (int) $student->late_count;
 
@@ -72,17 +72,26 @@ class EarlyWarningService
             $waLink = null;
             $formattedPhone = null;
 
-            if ($rawPhone) {
-                $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
-                if (str_starts_with($cleanPhone, '0')) {
-                    $cleanPhone = '62' . substr($cleanPhone, 1);
-                } elseif (!str_starts_with($cleanPhone, '62')) {
-                    $cleanPhone = '62' . $cleanPhone;
-                }
+            if (!empty($rawPhone)) {
+                $digits = preg_replace('/[^0-9]/', '', $rawPhone);
+                if (!empty($digits)) {
+                    if (str_starts_with($digits, '0')) {
+                        $cleanPhone = '62' . substr($digits, 1);
+                    } elseif (str_starts_with($digits, '8')) {
+                        $cleanPhone = '62' . $digits;
+                    } elseif (str_starts_with($digits, '62')) {
+                        $cleanPhone = $digits;
+                    } else {
+                        $cleanPhone = '62' . $digits;
+                    }
 
-                $formattedPhone = $rawPhone;
-                $message = "Yth. Orang Tua / Wali dari {$student->name},\n\nKami dari pihak sekolah ingin mengonfirmasi dan berkoordinasi terkait kehadiran ananda pada 30 hari terakhir tercatat: {$alpha}x Alpa dan {$late}x Terlambat.\n\nMohon bantuannya untuk pembinaan bersama. Terima kasih.";
-                $waLink = 'https://wa.me/' . $cleanPhone . '?text=' . rawurlencode($message);
+                    // Nomor telepon valid minimal memiliki 10 digit (misal: 628xxxxxxxx) dan maksimal 15 digit (standar E.164)
+                    if (strlen($cleanPhone) >= 10 && strlen($cleanPhone) <= 15 && preg_match('/^62[1-9][0-9]{7,12}$/', $cleanPhone)) {
+                        $formattedPhone = $rawPhone;
+                        $message = "Yth. Orang Tua / Wali dari {$student->name},\n\nKami dari pihak sekolah ingin mengonfirmasi dan berkoordinasi terkait kehadiran ananda pada {$days} hari terakhir tercatat: {$alpha}x Alpa dan {$late}x Terlambat.\n\nMohon bantuannya untuk pembinaan bersama. Terima kasih.";
+                        $waLink = 'https://wa.me/' . $cleanPhone . '?text=' . rawurlencode($message);
+                    }
+                }
             }
 
             $student->risk_level = $riskLevel;
