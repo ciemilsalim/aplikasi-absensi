@@ -106,21 +106,36 @@ class ExtracurricularController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Tahun ajaran atau semester aktif belum diatur oleh admin.'], 422);
         }
 
-        foreach ($request->attendances as $att) {
-            \App\Models\ExtracurricularAttendance::updateOrCreate(
-                [
-                    'extracurricular_id' => $extracurricularId,
-                    'student_id' => $att['student_id'],
-                    'attendance_date' => $date,
-                ],
-                [
-                    'status' => $att['status'],
-                    'teacher_id' => $teacher->id,
-                    'academic_year_id' => $academicYear->id,
-                    'semester_id' => $semester->id,
-                ]
-            );
+        // Validasi seluruh siswa adalah anggota aktif ekstrakurikuler sebelum penulisan
+        $submittedStudentIds = collect($request->attendances)->pluck('student_id')->unique();
+        $validMemberCount = $extracurricular->students()
+            ->whereIn('students.id', $submittedStudentIds)
+            ->count();
+
+        if ($validMemberCount !== $submittedStudentIds->count()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Satu atau lebih siswa bukan merupakan anggota aktif ekstrakurikuler ' . $extracurricular->name,
+            ], 422);
         }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $extracurricularId, $date, $teacher, $academicYear, $semester) {
+            foreach ($request->attendances as $att) {
+                \App\Models\ExtracurricularAttendance::updateOrCreate(
+                    [
+                        'extracurricular_id' => $extracurricularId,
+                        'student_id' => $att['student_id'],
+                        'attendance_date' => $date,
+                    ],
+                    [
+                        'status' => $att['status'],
+                        'teacher_id' => $teacher->id,
+                        'academic_year_id' => $academicYear->id,
+                        'semester_id' => $semester->id,
+                    ]
+                );
+            }
+        });
 
         return response()->json([
             'status' => 'success',

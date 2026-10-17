@@ -331,4 +331,174 @@ class ExtracurricularAttendanceApiTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    /**
+     * Skenario G (Pilot 9 — A): Siswa non-anggota ditolak:
+     * Pembina sah mengirim presensi untuk siswa yang ada di database tetapi bukan anggota kegiatan.
+     * Harus ditolak HTTP 422 dan tidak ada record baru yang tersimpan.
+     */
+    public function test_store_attendance_for_non_member_student_is_rejected(): void
+    {
+        $ctx = $this->setupExtracurricularContext();
+
+        // Siswa non-anggota: dibuat di kelas yang sama, tetapi TIDAK di-attach ke extracurricular1
+        $nonMemberStudent = Student::create([
+            'school_class_id' => $ctx['schoolClass']->id,
+            'name' => 'Budi Non Anggota',
+            'nis' => '1002',
+            'unique_id' => '550e8400-e29b-41d4-a716-446655440002',
+            'status' => 'aktif',
+        ]);
+
+        Sanctum::actingAs($ctx['userCoach1']);
+
+        $response = $this->postJson('/api/teacher/extracurriculars/attendance', [
+            'extracurricular_id' => $ctx['extracurricular1']->id,
+            'date' => '2026-10-12',
+            'attendances' => [
+                [
+                    'student_id' => $nonMemberStudent->id,
+                    'status' => 'hadir',
+                ]
+            ],
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'status' => 'error',
+        ]);
+
+        $this->assertDatabaseMissing('extracurricular_attendances', [
+            'extracurricular_id' => $ctx['extracurricular1']->id,
+            'student_id' => $nonMemberStudent->id,
+            'attendance_date' => '2026-10-12',
+        ]);
+    }
+
+    /**
+     * Skenario H (Pilot 9 — B): Batch campuran ditolak tanpa mutasi parsial:
+     * Payload berisi Siswa A (anggota sah, record awal 'izin') dan Siswa B (non-anggota).
+     * Seluruh request harus ditolak HTTP 422, record Siswa A tetap 'izin', dan Siswa B tidak memiliki record.
+     */
+    public function test_store_attendance_mixed_batch_rejects_all_and_prevents_partial_writes(): void
+    {
+        $ctx = $this->setupExtracurricularContext();
+
+        // 1. Record awal untuk Siswa A (anggota sah) berstatus 'izin'
+        $initialAttendance = ExtracurricularAttendance::create([
+            'extracurricular_id' => $ctx['extracurricular1']->id,
+            'student_id' => $ctx['student']->id,
+            'academic_year_id' => $ctx['academicYear']->id,
+            'semester_id' => $ctx['semester']->id,
+            'attendance_date' => '2026-10-12',
+            'status' => 'izin',
+            'notes' => 'Izin sebelum penolakan batch',
+        ]);
+
+        $initialCount = ExtracurricularAttendance::count();
+
+        // 2. Siswa B (non-anggota)
+        $nonMemberStudent = Student::create([
+            'school_class_id' => $ctx['schoolClass']->id,
+            'name' => 'Citra Non Anggota',
+            'nis' => '1003',
+            'unique_id' => '550e8400-e29b-41d4-a716-446655440003',
+            'status' => 'aktif',
+        ]);
+
+        Sanctum::actingAs($ctx['userCoach1']);
+
+        // 3. Kirim request batch: mencoba mengubah Siswa A menjadi 'hadir' dan mencatat Siswa B sebagai 'hadir'
+        $response = $this->postJson('/api/teacher/extracurriculars/attendance', [
+            'extracurricular_id' => $ctx['extracurricular1']->id,
+            'date' => '2026-10-12',
+            'attendances' => [
+                [
+                    'student_id' => $ctx['student']->id,
+                    'status' => 'hadir',
+                ],
+                [
+                    'student_id' => $nonMemberStudent->id,
+                    'status' => 'hadir',
+                ]
+            ],
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'status' => 'error',
+        ]);
+
+        // 4. Verifikasi atomisitas: record Siswa A tetap utuh berstatus 'izin'
+        $reloaded = $initialAttendance->fresh();
+        $this->assertNotNull($reloaded);
+        $this->assertEquals('izin', $reloaded->status);
+        $this->assertEquals('Izin sebelum penolakan batch', $reloaded->notes);
+
+        // 5. Verifikasi Siswa B tidak memiliki record sama sekali
+        $this->assertDatabaseMissing('extracurricular_attendances', [
+            'extracurricular_id' => $ctx['extracurricular1']->id,
+            'student_id' => $nonMemberStudent->id,
+            'attendance_date' => '2026-10-12',
+        ]);
+
+        // 6. Pastikan jumlah total record tidak bertambah
+        $this->assertEquals($initialCount, ExtracurricularAttendance::count());
+    }
+
+    /**
+     * Skenario I (Pilot 9 — C): Semua siswa anggota sah tetap berhasil (Multi-member Happy Path):
+     * Seluruh siswa dalam payload terdaftar sebagai anggota resmi ekstrakurikuler.
+     * Request berhasil dengan HTTP 200 dan semua record presensi tersimpan benar.
+     */
+    public function test_store_attendance_for_all_valid_members_succeeds(): void
+    {
+        $ctx = $this->setupExtracurricularContext();
+
+        // Siswa 2 sebagai anggota kedua yang sah
+        $secondMember = Student::create([
+            'school_class_id' => $ctx['schoolClass']->id,
+            'name' => 'Dewi Anggota Sah',
+            'nis' => '1004',
+            'unique_id' => '550e8400-e29b-41d4-a716-446655440004',
+            'status' => 'aktif',
+        ]);
+        $ctx['extracurricular1']->students()->attach($secondMember->id);
+
+        Sanctum::actingAs($ctx['userCoach1']);
+
+        $response = $this->postJson('/api/teacher/extracurriculars/attendance', [
+            'extracurricular_id' => $ctx['extracurricular1']->id,
+            'date' => '2026-10-12',
+            'attendances' => [
+                [
+                    'student_id' => $ctx['student']->id,
+                    'status' => 'hadir',
+                ],
+                [
+                    'student_id' => $secondMember->id,
+                    'status' => 'sakit',
+                ]
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'status' => 'success',
+        ]);
+
+        $this->assertDatabaseHas('extracurricular_attendances', [
+            'extracurricular_id' => $ctx['extracurricular1']->id,
+            'student_id' => $ctx['student']->id,
+            'status' => 'hadir',
+            'attendance_date' => '2026-10-12',
+        ]);
+
+        $this->assertDatabaseHas('extracurricular_attendances', [
+            'extracurricular_id' => $ctx['extracurricular1']->id,
+            'student_id' => $secondMember->id,
+            'status' => 'sakit',
+            'attendance_date' => '2026-10-12',
+        ]);
+    }
 }
