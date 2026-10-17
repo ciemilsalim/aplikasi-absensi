@@ -246,16 +246,25 @@ class ExtracurricularAttendanceService
             ];
         }
 
-        // 1. Cari exact match unique_id, nis, atau id
-        $student = Student::where('unique_id', $qrData)
-            ->orWhere('nis', $qrData)
-            ->orWhere('id', $qrData)
-            ->first();
+        if (strlen($qrData) > 37 && substr($qrData, -37, 1) === '-') {
+            $nis = substr($qrData, 0, -37);
+            $uniqueId = substr($qrData, -36);
 
-        // 2. Fallback jika QR formatnya {nis}-{unique_id}
-        if (!$student && str_contains($qrData, '-')) {
-            $parts = explode('-', $qrData, 2);
-            $student = Student::where('nis', $parts[0])->where('unique_id', $parts[1])->first();
+            $student = Student::where('nis', $nis)
+                ->where('unique_id', $uniqueId)
+                ->first();
+
+            if (!$student) {
+                $student = Student::where('unique_id', $qrData)
+                    ->orWhere('nis', $qrData)
+                    ->orWhere('id', $qrData)
+                    ->first();
+            }
+        } else {
+            $student = Student::where('unique_id', $qrData)
+                ->orWhere('nis', $qrData)
+                ->orWhere('id', $qrData)
+                ->first();
         }
 
         if (!$student) {

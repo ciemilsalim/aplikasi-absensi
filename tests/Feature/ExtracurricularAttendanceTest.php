@@ -277,4 +277,166 @@ class ExtracurricularAttendanceTest extends TestCase
         $printResponse->assertStatus(200);
         $printResponse->assertViewIs('teacher.extracurricular_attendance.print');
     }
+
+    public function test_coach_can_record_scan_with_hyphenated_nis_in_combined_format(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+
+        $uuid = '550e8400-e29b-41d4-a716-446655440000';
+        $hyphenatedNis = '10-01';
+
+        $student = Student::create([
+            'school_class_id' => $ctx['schoolClass']->id,
+            'name' => 'Siswa NIS Hyphen',
+            'nis' => $hyphenatedNis,
+            'unique_id' => $uuid,
+            'status' => 'aktif',
+        ]);
+        $ctx['extracurricular']->students()->attach($student->id);
+
+        $combinedQr = "{$hyphenatedNis}-{$uuid}";
+
+        $response = $this->actingAs($ctx['user'])->postJson(route('teacher.extracurricular-attendance.scan', $ctx['extracurricular']), [
+            'student_unique_id' => $combinedQr,
+            'date' => '2026-10-12',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'student' => [
+                'id' => $student->id,
+                'status' => 'hadir',
+            ]
+        ]);
+
+        $this->assertDatabaseHas('extracurricular_attendances', [
+            'extracurricular_id' => $ctx['extracurricular']->id,
+            'student_id' => $student->id,
+            'status' => 'hadir',
+        ]);
+    }
+
+    public function test_coach_can_record_scan_with_pure_uuid_qr_code(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+
+        $uuid = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+        $student = Student::create([
+            'school_class_id' => $ctx['schoolClass']->id,
+            'name' => 'Siswa Pure UUID',
+            'nis' => '1002',
+            'unique_id' => $uuid,
+            'status' => 'aktif',
+        ]);
+        $ctx['extracurricular']->students()->attach($student->id);
+
+        $response = $this->actingAs($ctx['user'])->postJson(route('teacher.extracurricular-attendance.scan', $ctx['extracurricular']), [
+            'student_unique_id' => $uuid,
+            'date' => '2026-10-12',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'student' => [
+                'id' => $student->id,
+                'status' => 'hadir',
+            ]
+        ]);
+    }
+
+    public function test_coach_can_record_scan_with_standard_combined_nis_and_uuid(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+
+        $uuid = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+        $nis = '1003';
+        $student = Student::create([
+            'school_class_id' => $ctx['schoolClass']->id,
+            'name' => 'Siswa Regular Combined',
+            'nis' => $nis,
+            'unique_id' => $uuid,
+            'status' => 'aktif',
+        ]);
+        $ctx['extracurricular']->students()->attach($student->id);
+
+        $response = $this->actingAs($ctx['user'])->postJson(route('teacher.extracurricular-attendance.scan', $ctx['extracurricular']), [
+            'student_unique_id' => "{$nis}-{$uuid}",
+            'date' => '2026-10-12',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'student' => [
+                'id' => $student->id,
+                'status' => 'hadir',
+            ]
+        ]);
+    }
+
+    public function test_coach_can_record_scan_with_plain_nis(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+
+        $nis = '1004';
+        $student = Student::create([
+            'school_class_id' => $ctx['schoolClass']->id,
+            'name' => 'Siswa Plain NIS',
+            'nis' => $nis,
+            'unique_id' => '8c9e6679-7425-40de-944b-e07fc1f90ae8',
+            'status' => 'aktif',
+        ]);
+        $ctx['extracurricular']->students()->attach($student->id);
+
+        $response = $this->actingAs($ctx['user'])->postJson(route('teacher.extracurricular-attendance.scan', $ctx['extracurricular']), [
+            'student_unique_id' => $nis,
+            'date' => '2026-10-12',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'student' => [
+                'id' => $student->id,
+                'status' => 'hadir',
+            ]
+        ]);
+    }
+
+    public function test_coach_can_record_scan_with_plain_student_id(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+
+        $response = $this->actingAs($ctx['user'])->postJson(route('teacher.extracurricular-attendance.scan', $ctx['extracurricular']), [
+            'student_unique_id' => (string) $ctx['student']->id,
+            'date' => '2026-10-12',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'student' => [
+                'id' => $ctx['student']->id,
+                'status' => 'hadir',
+            ]
+        ]);
+    }
+
+    public function test_coach_scan_with_invalid_qr_returns_404(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+
+        $response = $this->actingAs($ctx['user'])->postJson(route('teacher.extracurricular-attendance.scan', $ctx['extracurricular']), [
+            'student_unique_id' => 'invalid-random-qr-code',
+            'date' => '2026-10-12',
+        ]);
+
+        $response->assertStatus(404);
+        $response->assertJson([
+            'success' => false,
+            'message' => 'Siswa tidak ditemukan atau QR Code tidak valid.',
+        ]);
+    }
 }
