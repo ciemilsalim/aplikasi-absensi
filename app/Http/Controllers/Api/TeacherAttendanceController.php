@@ -88,13 +88,14 @@ class TeacherAttendanceController extends Controller
         }
 
         $qrData = $request->student_unique_id;
-        $parts = explode('-', $qrData, 2);
-        
-        if (count($parts) === 2) {
-            // Format gabungan: NIS-UNIQUE_ID
-            $student = Student::where('nis', $parts[0])->where('unique_id', $parts[1])->first();
+
+        // Format gabungan: NIS-UNIQUE_ID (panjang UUID = 36 karakter, didahului tanda hubung '-')
+        if (strlen($qrData) > 37 && substr($qrData, -37, 1) === '-') {
+            $nis = substr($qrData, 0, -37);
+            $uniqueId = substr($qrData, -36);
+            $student = Student::where('nis', $nis)->where('unique_id', $uniqueId)->first();
         } else {
-            // Format lama atau manual
+            // Format tunggal (hanya UUID atau hanya NIS)
             $student = Student::where('unique_id', $qrData)->orWhere('nis', $qrData)->first();
         }
         
