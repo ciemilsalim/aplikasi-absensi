@@ -79,13 +79,14 @@ class TeacherAttendanceController extends Controller
             ], 422);
         }
 
-        $user          = $request->user();
-        $teacher       = $user->teacher;
-        $homeroomClass = $teacher->homeroomClass;
+        $user    = $request->user();
+        $teacher = $user?->teacher;
 
-        if (!$homeroomClass) {
+        if (!$teacher || !$teacher->homeroomClass) {
             return response()->json(['status' => 'error', 'message' => 'Anda bukan Wali Kelas.'], 403);
         }
+
+        $homeroomClass = $teacher->homeroomClass;
 
         $qrData = $request->student_unique_id;
 

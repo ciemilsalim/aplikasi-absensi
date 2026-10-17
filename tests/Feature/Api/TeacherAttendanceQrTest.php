@@ -256,4 +256,59 @@ class TeacherAttendanceQrTest extends TestCase
             'message' => 'Siswa ini bukan bagian dari kelas Anda.',
         ]);
     }
+
+    /**
+     * Skenario 6 — Otorisasi Profil Guru:
+     * Pengguna terautentikasi tanpa profil guru tidak boleh menyebabkan 500 error,
+     * melainkan ditolak dengan HTTP 403 'Anda bukan Wali Kelas.'.
+     */
+    public function test_scan_attendance_by_user_without_teacher_profile_is_forbidden(): void
+    {
+        $userWithoutTeacher = User::factory()->create(['role' => 'user']);
+        Sanctum::actingAs($userWithoutTeacher);
+
+        $coords = $this->validCoordinates();
+        $response = $this->postJson('/api/teacher/attendance/scan', [
+            'student_unique_id' => '550e8400-e29b-41d4-a716-446655440000',
+            'latitude' => $coords['latitude'],
+            'longitude' => $coords['longitude'],
+            'type' => 'in',
+        ]);
+
+        $response->assertStatus(403);
+        $response->assertJson([
+            'status' => 'error',
+            'message' => 'Anda bukan Wali Kelas.',
+        ]);
+    }
+
+    /**
+     * Skenario 7 — Otorisasi Guru Non-Wali Kelas:
+     * Guru yang tidak memiliki kelas binaan harus ditolak dengan HTTP 403.
+     */
+    public function test_scan_attendance_by_teacher_without_homeroom_class_is_forbidden(): void
+    {
+        $user = User::factory()->create(['role' => 'teacher']);
+        Teacher::create([
+            'user_id' => $user->id,
+            'name' => 'Guru Biasa Non Wali',
+            'nip' => '199001012015011003',
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $coords = $this->validCoordinates();
+        $response = $this->postJson('/api/teacher/attendance/scan', [
+            'student_unique_id' => '550e8400-e29b-41d4-a716-446655440000',
+            'latitude' => $coords['latitude'],
+            'longitude' => $coords['longitude'],
+            'type' => 'in',
+        ]);
+
+        $response->assertStatus(403);
+        $response->assertJson([
+            'status' => 'error',
+            'message' => 'Anda bukan Wali Kelas.',
+        ]);
+    }
 }
