@@ -67,6 +67,13 @@ class ExtracurricularController extends Controller
 
     public function storeAttendance(Request $request)
     {
+        $user = $request->user();
+        $teacher = $user?->teacher;
+
+        if (!$teacher) {
+            return response()->json(['status' => 'error', 'message' => 'Anda bukan guru'], 403);
+        }
+
         $request->validate([
             'extracurricular_id' => 'required|exists:extracurriculars,id',
             'attendances' => 'required|array',
@@ -74,6 +81,20 @@ class ExtracurricularController extends Controller
             'attendances.*.status' => 'required|in:hadir,izin,sakit,alpa',
             'date' => 'nullable|date',
         ]);
+
+        $extracurricular = Extracurricular::find($request->extracurricular_id);
+        if (!$extracurricular) {
+            return response()->json(['status' => 'error', 'message' => 'Ekstrakurikuler tidak ditemukan.'], 404);
+        }
+
+        // Otorisasi: Pastikan guru ini adalah pembinanya
+        $isCoach = ($extracurricular->teacher_id == $teacher->id) || $teacher->coachingExtracurriculars()->where('extracurriculars.id', $extracurricular->id)->exists();
+        if (!$isCoach) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak. Anda bukan pembina ekstrakurikuler ' . $extracurricular->name
+            ], 403);
+        }
 
         $date = $request->date ?? Carbon::today()->toDateString();
         $extracurricularId = $request->extracurricular_id;
@@ -94,7 +115,7 @@ class ExtracurricularController extends Controller
                 ],
                 [
                     'status' => $att['status'],
-                    'teacher_id' => Auth::user()->teacher->id,
+                    'teacher_id' => $teacher->id,
                     'academic_year_id' => $academicYear->id,
                     'semester_id' => $semester->id,
                 ]
