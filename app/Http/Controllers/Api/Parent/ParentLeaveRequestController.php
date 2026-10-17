@@ -83,7 +83,7 @@ class ParentLeaveRequestController extends Controller
 
         if ($request->hasFile('attachment')) {
             $path = $request->file('attachment')->store('leave_attachments', 'public');
-            $leaveRequest->attachment_path = $path;
+            $leaveRequest->attachment = $path;
         }
 
         $leaveRequest->save();
