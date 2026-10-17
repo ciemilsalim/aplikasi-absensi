@@ -101,7 +101,52 @@
 
         {{-- Notifikasi / Peringatan Kehadiran --}}
         @if($unreadNotifications->isNotEmpty())
-            <div class="space-y-3">
+            <div x-data="{ 
+                     allDismissed: false, 
+                     isSubmitting: false,
+                     errorMessage: '',
+                     async markAllAsRead() {
+                         this.isSubmitting = true;
+                         this.errorMessage = '';
+                         try {
+                             const res = await fetch('{{ route('notifications.mark_all_read') }}', {
+                                 method: 'POST',
+                                 headers: {
+                                     'Content-Type': 'application/json',
+                                     'Accept': 'application/json',
+                                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                 }
+                             });
+                             const data = await res.json();
+                             if (res.ok && data.success) {
+                                 this.allDismissed = true;
+                             } else {
+                                 this.errorMessage = data.message || 'Gagal menandai notifikasi.';
+                             }
+                         } catch (e) {
+                             this.errorMessage = 'Terjadi kesalahan jaringan.';
+                         } finally {
+                             this.isSubmitting = false;
+                         }
+                     }
+                 }" 
+                 x-show="!allDismissed" 
+                 x-transition 
+                 class="space-y-3">
+                <div class="flex items-center justify-between px-1">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-900/70 dark:text-amber-300/70">Peringatan Kehadiran</span>
+                    <button type="button" 
+                            @click="markAllAsRead()" 
+                            :disabled="isSubmitting"
+                            class="text-xs font-semibold text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100 inline-flex items-center gap-1 transition-colors disabled:opacity-50"
+                            title="Tandai semua notifikasi sudah dibaca">
+                        <span class="material-icons text-sm" :class="{ 'animate-spin': isSubmitting }">done_all</span>
+                        <span x-text="isSubmitting ? 'Memproses...' : 'Tandai Semua Sudah Dibaca'"></span>
+                    </button>
+                </div>
+                <template x-if="errorMessage">
+                    <div class="text-xs text-rose-600 dark:text-rose-400 px-1 font-medium" x-text="errorMessage"></div>
+                </template>
                 @foreach($unreadNotifications as $notification)
                 <div x-data="{ show: true }" x-show="show" x-transition 
                      class="bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300/80 dark:border-amber-700/60 p-4 sm:p-5 rounded-3xl shadow-2xs" role="alert">
