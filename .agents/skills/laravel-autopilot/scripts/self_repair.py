@@ -28,6 +28,9 @@ EARLY_STOP_PATTERNS = {
         r'(?i)cURL error 7.*failed to connect',
         r'(?i)driver.*not supported',
         r'(?i)could not find driver',
+        # Missing external npm package (e.g. Cannot find module '@headlessui/react' or Cannot find package 'axios')
+        # Negative lookahead ensures local relative paths (./ or ../) are handled by FRONTEND_MODULE_NOT_FOUND
+        r'(?i)(?:cannot find (?:module|package)|failed to resolve (?:import|package))\s+[\'"](?!(?:\.|\/|[a-z]:\\))([@a-z0-9_\-\.\/]+)[\'"]',
     ],
     "UNSAFE_DATABASE_TARGET": [
         r'(?i)access denied for user.*@',
@@ -67,17 +70,44 @@ def diagnose_failure_output(raw_output):
     # Sanitize null bytes
     cleaned_output = raw_output.replace("\x00", "")
 
-    # Check for early stop triggers first
+    # 1. Frontend Build Configuration Error (PostCSS, Tailwind, Vite config)
+    # Check this before generic early stop so config plugin errors are attributed to config files
+    if (
+        "postcss" in cleaned_output.lower()
+        or "loading postcss plugin failed" in cleaned_output.lower()
+        or "error in postcss.config" in cleaned_output.lower()
+        or "vite.config" in cleaned_output.lower()
+        or ("tailwind" in cleaned_output.lower() and "config" in cleaned_output.lower())
+    ):
+        m_cfg = re.search(r'(?:in|Error in|at)\s+([^\s:]*(?:postcss|vite|tailwind)\.config\.[a-z0-9]+)', cleaned_output)
+        cfg_file = m_cfg.group(1).replace("\\", "/") if m_cfg else ("postcss.config.js" if "postcss" in cleaned_output.lower() else "vite.config.js")
+        return {
+            "category": "FRONTEND_BUILD_CONFIG_ERROR",
+            "summary": "Frontend asset/build configuration error",
+            "file": cfg_file,
+            "line": None,
+            "early_stop": None,
+            "likely_root_cause": "Check plugin configuration, syntax, or dependencies in config file."
+        }
+
+    # Check for early stop triggers (missing external infrastructure, DB safety, policy gates)
     for condition, patterns in EARLY_STOP_PATTERNS.items():
         for pat in patterns:
-            if re.search(pat, cleaned_output):
+            m_pat = re.search(pat, cleaned_output)
+            if m_pat:
+                matched_hint = m_pat.group(0)
+                root_cause = f"Environment or infrastructure issue matching '{pat}'. Autonomous repair stopped."
+                if condition == "MISSING_INFRASTRUCTURE" and ("cannot find" in pat.lower() or "failed to resolve" in pat.lower()):
+                    pkg_name = m_pat.group(1) if m_pat.groups() else "external package"
+                    root_cause = f"Required npm package or dependency '{pkg_name}' is missing. Dependencies must be installed before build."
+
                 return {
                     "category": "EARLY_STOP_TRIGGERED",
                     "early_stop": condition,
-                    "summary": f"Early stop condition detected: {condition}",
+                    "summary": f"Early stop condition detected: {condition} ({matched_hint})",
                     "file": None,
                     "line": None,
-                    "likely_root_cause": f"Environment or infrastructure issue matching '{pat}'. Autonomous repair stopped."
+                    "likely_root_cause": root_cause
                 }
 
     diagnosis = {
@@ -89,7 +119,47 @@ def diagnose_failure_output(raw_output):
         "likely_root_cause": "Inspect stack trace for details."
     }
 
-    # 1. Syntax Error / Parse Error
+    # 2. Frontend Syntax Error / Unterminated JSX (Vite/Rollup/ESBuild)
+    if (
+        "unterminated jsx" in cleaned_output.lower()
+        or "[vite:esbuild] transform failed" in cleaned_output.lower()
+        or ("syntaxerror" in cleaned_output and any(ext in cleaned_output for ext in [".jsx", ".tsx", ".vue", ".js", ".ts"]))
+    ):
+        diagnosis["category"] = "FRONTEND_SYNTAX_ERROR"
+        diagnosis["summary"] = "Frontend JSX/TSX syntax error"
+        diagnosis["likely_root_cause"] = "Syntax typo, unterminated JSX tag, or invalid token."
+
+        # Extract file and line: e.g., resources/js/Pages/Dashboard.jsx:24:16 or file: resources/js/...:42:10
+        m_fe_loc = re.search(r'(?:file:\s*|\s+in\s+|^|\s)([^\s:]+\.(?:jsx|tsx|vue|js|ts)):(\d+)(?::(\d+))?', cleaned_output, re.MULTILINE)
+        if m_fe_loc:
+            diagnosis["file"] = m_fe_loc.group(1).replace("\\", "/")
+            diagnosis["line"] = int(m_fe_loc.group(2))
+
+        if "unterminated jsx" in cleaned_output.lower():
+            diagnosis["summary"] = "RollupError: Unterminated JSX contents"
+            diagnosis["likely_root_cause"] = "Unclosed JSX tag or unclosed bracket in template."
+
+        return diagnosis
+
+    # 3. Frontend Module Not Found (Failed to resolve local import)
+    if "failed to resolve import" in cleaned_output.lower() or "could not resolve" in cleaned_output.lower():
+        diagnosis["category"] = "FRONTEND_MODULE_NOT_FOUND"
+        m_mod = re.search(r'(?:failed to resolve import|could not resolve)\s+["\']([^"\']+)["\'](?:\s+from\s+["\']([^"\']+)["\'])?', cleaned_output, re.IGNORECASE)
+        mod_name = m_mod.group(1) if m_mod else "unresolved module"
+        from_file = m_mod.group(2) if (m_mod and m_mod.group(2)) else None
+
+        if from_file:
+            diagnosis["file"] = from_file.replace("\\", "/")
+        else:
+            loc = re.search(r'([^\s:]+\.(?:jsx|tsx|vue|js|ts))', cleaned_output)
+            if loc:
+                diagnosis["file"] = loc.group(1).replace("\\", "/")
+
+        diagnosis["summary"] = f"Module not found: Failed to resolve import '{mod_name}'"
+        diagnosis["likely_root_cause"] = f"Local module or file '{mod_name}' does not exist, or path is mistyped."
+        return diagnosis
+
+    # 4. PHP Syntax Error / Parse Error
     if "Parse error" in cleaned_output or "syntax error" in cleaned_output or "SyntaxError" in cleaned_output:
         diagnosis["category"] = "SYNTAX_ERROR"
         m = re.search(r'(?:syntax error|Parse error)[^:]*in\s+([^\s:]+\.php)\s+on\s+line\s+(\d+)', cleaned_output)

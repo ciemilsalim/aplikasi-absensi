@@ -1834,5 +1834,151 @@ class TestPilot11FrontendBuildVerification(unittest.TestCase):
             self.assertEqual(res["status"], "NOT_RUN")
 
 
+class TestPilot12FrontendSelfRepairDiagnosis(unittest.TestCase):
+    """
+    Pilot 12 TDD Test Suite: Bounded Self-Repair Diagnosis for Frontend Build Failures
+    Tests the failure parsing and categorization in self_repair.py:
+    1. JSX SyntaxError extraction (file path, line number, category FRONTEND_SYNTAX_ERROR)
+    2. Unterminated JSX error extraction (category FRONTEND_SYNTAX_ERROR)
+    3. Local module not found / import resolution failure (category FRONTEND_MODULE_NOT_FOUND)
+    4. External npm package missing triggers EARLY_STOP_TRIGGERED (MISSING_INFRASTRUCTURE)
+    5. Build configuration failure (PostCSS/Tailwind/Vite config -> FRONTEND_BUILD_CONFIG_ERROR)
+    6. Bounded repair limit preservation (strict 3-iteration cap on session)
+    7. Gate 8 scope protection preservation (files outside approved_files, including public/build, cannot be repaired)
+    8. Robustness against malformed, null-byte, or non-string output
+    """
+
+    def test_pilot12_01_jsx_syntax_error_diagnosis(self):
+        """Scenario 1: Vite/Rollup JSX SyntaxError output extracts file, line, and categorizes as FRONTEND_SYNTAX_ERROR."""
+        raw_output = (
+            "[vite:esbuild] Transform failed with 1 error:\n"
+            "resources/js/Pages/Dashboard.jsx:24:16: ERROR: Expected \">\" but found \"div\"\n"
+            "  24 |         return <div className=\"header\"\n"
+            "     |                 ^\n"
+            "SyntaxError: Unexpected token (24:16) in resources/js/Pages/Dashboard.jsx"
+        )
+        diag = self_repair.diagnose_failure_output(raw_output)
+        self.assertEqual(diag.get("category"), "FRONTEND_SYNTAX_ERROR")
+        self.assertEqual(diag.get("file"), "resources/js/Pages/Dashboard.jsx")
+        self.assertEqual(diag.get("line"), 24)
+        self.assertIn("syntax", diag.get("summary", "").lower())
+
+    def test_pilot12_02_unterminated_jsx_diagnosis(self):
+        """Scenario 2: Rollup Unterminated JSX output identifies FRONTEND_SYNTAX_ERROR without fabricating nonexistent locations."""
+        raw_output = (
+            "RollupError: Unterminated JSX contents\n"
+            "file: resources/js/Components/Modal.jsx:42:10\n"
+            "42:   return (\n"
+            "             ^\n"
+            "error during build: RollupError: Unterminated JSX contents"
+        )
+        diag = self_repair.diagnose_failure_output(raw_output)
+        self.assertEqual(diag.get("category"), "FRONTEND_SYNTAX_ERROR")
+        self.assertEqual(diag.get("file"), "resources/js/Components/Modal.jsx")
+        self.assertEqual(diag.get("line"), 42)
+        self.assertIn("jsx", diag.get("summary", "").lower())
+
+    def test_pilot12_03_local_module_not_found(self):
+        """Scenario 3: Failed import resolution for local file is categorized as FRONTEND_MODULE_NOT_FOUND."""
+        raw_output = (
+            "[vite]: Rollup failed to resolve import \"./Components/Header\" from \"resources/js/Pages/Home.jsx\".\n"
+            "This is most likely not an issue with Vite itself, but with the project's setup.\n"
+            "error during build: Error: Could not resolve \"./Components/Header\""
+        )
+        diag = self_repair.diagnose_failure_output(raw_output)
+        self.assertEqual(diag.get("category"), "FRONTEND_MODULE_NOT_FOUND")
+        self.assertEqual(diag.get("file"), "resources/js/Pages/Home.jsx")
+        self.assertIn("header", diag.get("summary", "").lower())
+
+    def test_pilot12_04_external_package_missing_triggers_early_stop(self):
+        """Scenario 4: Missing external npm package triggers EARLY_STOP_TRIGGERED with MISSING_INFRASTRUCTURE."""
+        raw_output = (
+            "Error: Cannot find module '@headlessui/react'\n"
+            "Require stack:\n"
+            "- D:\\laragon\\www\\siasek\\aplikasi-absensi\\resources\\js\\Pages\\Profile.jsx\n"
+            "node:internal/modules/cjs/loader:1147\n"
+            "throw err;"
+        )
+        diag = self_repair.diagnose_failure_output(raw_output)
+        self.assertEqual(diag.get("category"), "EARLY_STOP_TRIGGERED")
+        self.assertEqual(diag.get("early_stop"), "MISSING_INFRASTRUCTURE")
+        self.assertIn("package", diag.get("likely_root_cause", "").lower())
+
+    def test_pilot12_05_build_configuration_error(self):
+        """Scenario 5: PostCSS/Tailwind/Vite config failure categorized as FRONTEND_BUILD_CONFIG_ERROR."""
+        raw_output = (
+            "[vite:css] [postcss] Loading PostCSS Plugin failed: Cannot find module '@tailwindcss/forms'\n"
+            "Error in postcss.config.js\n"
+            "at loadPlugin (postcss-load-config/src/plugins.js:28:11)"
+        )
+        diag = self_repair.diagnose_failure_output(raw_output)
+        self.assertEqual(diag.get("category"), "FRONTEND_BUILD_CONFIG_ERROR")
+        self.assertEqual(diag.get("file"), "postcss.config.js")
+
+    def test_pilot12_06_bounded_repair_limit_enforced(self):
+        """Scenario 6: BoundedRepairSession strictly enforces max 3 iteration limit even when handling frontend failures."""
+        session = self_repair.BoundedRepairSession("Frontend Build Fix Task", "frontend-build")
+        self.assertEqual(session.iteration, 0)
+        self.assertEqual(self_repair.MAX_REPAIR_ITERATIONS, 3)
+
+        for i in range(3):
+            can_go, msg = session.can_attempt()
+            self.assertTrue(can_go)
+            session.record_attempt(
+                hypothesis=f"Fix JSX tag in Dashboard.jsx attempt {i+1}",
+                files_modified=["resources/js/Pages/Dashboard.jsx"],
+                test_result={"status": "FAILED", "exit_code": 1, "failures": ["SyntaxError still present"]}
+            )
+
+        self.assertEqual(session.iteration, 3)
+        can_go, msg = session.can_attempt()
+        self.assertFalse(can_go)
+        self.assertEqual(session.status, "HALTED")
+        self.assertIn("3 iterations", session.stop_reason)
+
+    def test_pilot12_07_gate8_scope_protection_preserves_build_directory_invariance(self):
+        """Scenario 7: Gate 8 rejects repair attempts modifying unapproved files or build artifacts in public/build."""
+        temp_dir = tempfile.mkdtemp()
+        repo_path = Path(temp_dir).resolve()
+        try:
+            subprocess.run(["git", "init"], cwd=repo_path, capture_output=True, check=True)
+            subprocess.run(["git", "config", "user.name", "TestUser"], cwd=repo_path, capture_output=True, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo_path, capture_output=True, check=True)
+
+            build_file = repo_path / "public" / "build" / "app.js"
+            build_file.parent.mkdir(parents=True)
+            build_file.write_text("console.log('build v1');", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=repo_path, capture_output=True, check=True)
+            subprocess.run(["git", "commit", "-m", "init build file"], cwd=repo_path, capture_output=True, check=True)
+
+            snapshot = quality_gate.BaselineSnapshot.capture(repo_path, task_id="task-pilot12-scope")
+
+            # Simulate unauthorized edit to public/build/app.js during repair
+            build_file.write_text("console.log('tampered build');", encoding="utf-8")
+
+            reg = quality_gate.QualityGateRegistry(repo_path)
+            reg.evaluate_git_scope(
+                approved_files=["resources/js/Pages/Dashboard.jsx"],
+                baseline_snapshot=snapshot,
+                task_id="task-pilot12-scope"
+            )
+            self.assertEqual(reg.gates["GATE_8_GIT_SCOPE"]["status"], "FAIL")
+            self.assertIn("public/build/app.js", reg.gates["GATE_8_GIT_SCOPE"]["details"])
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_pilot12_08_robustness_on_malformed_and_null_bytes(self):
+        """Scenario 8: diagnose_failure_output safely handles None, non-string, and null-byte inputs."""
+        diag_none = self_repair.diagnose_failure_output(None)
+        self.assertEqual(diag_none["category"], "NO_OUTPUT")
+
+        diag_int = self_repair.diagnose_failure_output(12345)
+        self.assertEqual(diag_int["category"], "NO_OUTPUT")
+
+        diag_nulls = self_repair.diagnose_failure_output("SyntaxError\x00 in file.jsx\x00 on line 10")
+        self.assertNotIn("\x00", diag_nulls.get("summary", ""))
+        self.assertIn(diag_nulls["category"], ["SYNTAX_ERROR", "FRONTEND_SYNTAX_ERROR", "UNKNOWN"])
+
+
 if __name__ == "__main__":
     unittest.main()

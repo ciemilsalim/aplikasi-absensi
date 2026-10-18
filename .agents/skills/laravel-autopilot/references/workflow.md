@@ -143,8 +143,9 @@ Diagnose and resolve failures autonomously within strict safety bounds and a max
    - Capture failure diagnostics (test class, method, failing assertion, exception, file, and line number).
 3. **Step 3 — Identify Probable Root Cause & Early-Stop Check**:
    - Run `self_repair.py diagnose --text "<output>" --json`.
+   - Diagnoses PHP errors as well as Frontend Build failures (`FRONTEND_SYNTAX_ERROR`, `FRONTEND_MODULE_NOT_FOUND`, `FRONTEND_BUILD_CONFIG_ERROR`).
    - Check Early-Stop triggers immediately:
-     - Missing infrastructure or dependencies (`Connection refused`, `RedisException`, etc.).
+     - Missing infrastructure or dependencies (`Connection refused`, `RedisException`, missing external npm package/dependency).
      - Unsafe or ambiguous database target.
      - Ambiguous business requirement (`NEEDS HUMAN DECISION`).
      - Destructive or irreversible action required.
