@@ -40,13 +40,25 @@ Every Quality Gate must return exactly one of the four formal states:
 
 ---
 
-### Gate 2: PHP Syntax Gate (`GATE_2_SYNTAX`)
-- **Requirement**: Every newly created or modified PHP file must compile cleanly via `php -l` without parse errors.
-- **Verification Command**:
+### Gate 2: Syntax & Frontend Build Gate (`GATE_2_SYNTAX`)
+- **Requirement**:
+  1. **PHP Syntax**: Every newly created or modified PHP file must compile cleanly via `php -l` without parse errors.
+  2. **Frontend Build Verification (Pilot 11)**: If `package.json` defines a `build` script (e.g. Vite, React, Vue, Tailwind bundle), the build must execute and exit with code `0`.
+- **Verification Commands**:
   ```bash
+  # Check PHP files syntax
   python .agents/skills/laravel-autopilot/scripts/quality_gate.py --check-syntax <files> --json
+
+  # Check Frontend build explicitly or via core evaluation
+  python .agents/skills/laravel-autopilot/scripts/quality_gate.py --eval-core --check-frontend-build --json
   ```
-- **Pass Evidence**: Output matches `No syntax errors detected` across all touched files.
+- **Status Taxonomy for Frontend Build**:
+  - `PASS`: Build executed and completed with exit code 0.
+  - `FAIL`: Build failed (exit code non-zero, JSX/TSX syntax error, Rollup failure) or process timed out. Blocks overall PASS.
+  - `NOT_RUN`: No `package.json`, pure Blade project without asset pipeline, or explicitly bypassed with `--skip-frontend-build` (must record bypass reason; never masks unverified state as PASS).
+  - `BLOCKED`: Build is applicable, but prerequisites (Node.js, npm with Windows `.cmd` support, or `node_modules`) are missing; OR a frontend asset stack (Vite configuration or Inertia Pages) is detected but lacks a `build` script in `package.json`. Blocks overall PASS.
+- **Pass Evidence**: Clean `php -l` output across all touched PHP files AND (if applicable) successful frontend build report with exit code 0.
+
 
 ---
 

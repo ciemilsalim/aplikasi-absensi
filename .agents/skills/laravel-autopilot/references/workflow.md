@@ -100,8 +100,9 @@ Execute the smallest coherent implementation that satisfies the acceptance crite
 Prove correctness through automated checks, hardened test execution, and formal Quality Gates evaluation.
 
 ### Verification Checklist
-1. **PHP Syntax Validation**:
+1. **PHP Syntax & Frontend Build Validation (Gate 2)**:
    - Run `php -l <path-to-modified-file>` on all newly created or touched PHP files.
+   - If `package.json` contains a `build` script, run frontend build verification via `quality_gate.py --check-frontend-build` (or automatically via `--eval-core`). A build failure directly yields `FAIL` and blocks task completion.
 2. **Route List Verification**:
    - Verify newly added or modified routes appear correctly via `laravel_inspector.py --filter-route <route-name>`.
 3. **Hardened Test Execution**:
@@ -112,6 +113,7 @@ Prove correctness through automated checks, hardened test execution, and formal 
 5. **Negative Case & Authorization Checks**:
    - Explicitly test negative cases (unauthenticated 401/302, unauthorized 403, invalid input 422).
 6. **Mandatory Quality Gates & Baseline Scope Verification**:
+
    - Run `python .agents/skills/laravel-autopilot/scripts/quality_gate.py --eval-core --task-id <task-id> --approved-files <files> --json`.
    - **Process Exit-Code Contract**:
      - `0`: All evaluated gates PASS. Verification succeeded.

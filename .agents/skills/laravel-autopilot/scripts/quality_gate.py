@@ -19,7 +19,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
+
 
 # Import sibling helpers if available
 script_dir = Path(__file__).resolve().parent
@@ -504,6 +506,203 @@ class BaselineSnapshot:
         )
 
 
+def _sanitize_output(text):
+    if not text:
+        return ""
+    if "test_runner" in sys.modules and hasattr(sys.modules["test_runner"], "sanitize_text"):
+        return sys.modules["test_runner"].sanitize_text(text)
+    return str(text)
+
+
+def inspect_frontend_build_prerequisites(project_root):
+    """
+    Check prerequisites for frontend build execution (Pilot 11):
+    - Verifies package.json exists and has a 'build' script.
+    - If Vite config or Inertia views exist without a 'build' script, reports BLOCKED.
+    - Separately checks availability of Node.js and npm in PATH (with Windows .cmd support).
+    - Checks presence of node_modules directory.
+    - Note: Working tree changes and build output tracking integrity are validated by Gate 8.
+    Returns dictionary with keys:
+      is_applicable: bool
+      status: "PASS" | "NOT_RUN" | "BLOCKED"
+      reason: str
+      build_script: str | None
+      node_path: str | None
+      npm_path: str | None
+      node_modules_present: bool
+    """
+    root = Path(project_root).resolve()
+    p_json_path = root / "package.json"
+
+    res = {
+        "is_applicable": False,
+        "status": "NOT_RUN",
+        "reason": "",
+        "build_script": None,
+        "node_path": None,
+        "npm_path": None,
+        "node_modules_present": False
+    }
+
+    if not p_json_path.is_file():
+        res["reason"] = "package.json not found; frontend build is not applicable."
+        return res
+
+    try:
+        with open(p_json_path, "r", encoding="utf-8") as f:
+            pkg_data = json.load(f)
+    except Exception as e:
+        res["is_applicable"] = True
+        res["status"] = "BLOCKED"
+        res["reason"] = f"Failed to parse package.json: {e}"
+        return res
+
+    scripts = pkg_data.get("scripts", {})
+    build_script = scripts.get("build")
+    if not build_script or not isinstance(build_script, str):
+        # Check if project requires frontend build despite missing 'build' script
+        has_vite = any((root / f).is_file() for f in ["vite.config.js", "vite.config.ts", "vite.config.mjs", "vite.config.cjs"])
+        has_inertia = (root / "resources" / "js" / "Pages").is_dir()
+        if has_vite or has_inertia:
+            res["is_applicable"] = True
+            res["status"] = "BLOCKED"
+            stack_hint = "Vite configuration" if has_vite else "Inertia Pages"
+            res["reason"] = f"Frontend build is required ({stack_hint} detected) but no 'build' script is defined in package.json."
+            return res
+
+        res["reason"] = "No 'build' script defined in package.json; frontend build is not applicable."
+        return res
+
+    res["is_applicable"] = True
+    res["build_script"] = build_script
+
+    # Separate checks for Node.js and npm (with Windows executable resolution)
+    if sys.platform == "win32":
+        node_bin = shutil.which("node.exe") or shutil.which("node")
+    else:
+        node_bin = shutil.which("node")
+
+    if not node_bin:
+        res["status"] = "BLOCKED"
+        res["reason"] = "Node.js executable not found in PATH. Cannot run frontend build."
+        return res
+    res["node_path"] = node_bin
+
+    if sys.platform == "win32":
+        npm_bin = shutil.which("npm.cmd") or shutil.which("npm.exe") or shutil.which("npm.bat")
+        if not npm_bin:
+            # Fallback check for extensionless npm
+            raw_npm = shutil.which("npm")
+            if raw_npm:
+                # Extensionless script on Windows cannot execute with shell=False
+                res["status"] = "BLOCKED"
+                res["reason"] = f"Found non-executable npm script ({raw_npm}) without Windows batch wrapper (npm.cmd). Cannot execute with shell=False."
+                return res
+    else:
+        npm_bin = shutil.which("npm")
+
+    if not npm_bin:
+        res["status"] = "BLOCKED"
+        res["reason"] = "npm executable not found in PATH. Cannot run frontend build."
+        return res
+    res["npm_path"] = npm_bin
+
+    # Check node_modules
+    nm_dir = root / "node_modules"
+    if not nm_dir.is_dir():
+        res["status"] = "BLOCKED"
+        res["reason"] = "node_modules directory missing. Dependencies must be installed before build."
+        return res
+    res["node_modules_present"] = True
+
+    res["status"] = "PASS"
+    res["reason"] = "All frontend build prerequisites verified."
+    return res
+
+
+def run_frontend_build(project_root, timeout=120):
+    """
+    Execute project-defined frontend build via npm run build in a hardened subprocess.
+    - Argument array execution (shell=False)
+    - Enforces timeout (default 120s)
+    - Output sanitized and capped (500 KB)
+    """
+    root = Path(project_root).resolve()
+    prereq = inspect_frontend_build_prerequisites(root)
+    if prereq["status"] != "PASS":
+        return {
+            "status": prereq["status"],
+            "exit_code": -1 if prereq["status"] == "BLOCKED" else 0,
+            "stdout": "",
+            "stderr": "",
+            "details": prereq["reason"],
+            "duration_seconds": 0.0,
+            "prerequisites": prereq
+        }
+
+    npm_bin = prereq["npm_path"]
+    cmd = [npm_bin, "run", "build"]
+    start_time = time.time()
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=str(root),
+            capture_output=True,
+            shell=False,
+            timeout=timeout
+        )
+        elapsed = round(time.time() - start_time, 2)
+        out_raw = proc.stdout if isinstance(proc.stdout, str) else proc.stdout.decode("utf-8", errors="replace")
+        err_raw = proc.stderr if isinstance(proc.stderr, str) else proc.stderr.decode("utf-8", errors="replace")
+
+        out = _sanitize_output(out_raw[:500 * 1024])
+        err = _sanitize_output(err_raw[:500 * 1024])
+
+        if proc.returncode == 0:
+            return {
+                "status": "PASS",
+                "exit_code": 0,
+                "stdout": out,
+                "stderr": err,
+                "details": f"Frontend build completed successfully in {elapsed}s.",
+                "duration_seconds": elapsed,
+                "cmd": cmd
+            }
+        else:
+            return {
+                "status": "FAIL",
+                "exit_code": proc.returncode,
+                "stdout": out,
+                "stderr": err,
+                "details": f"Frontend build failed with exit code {proc.returncode} in {elapsed}s. {err[:300]}",
+                "duration_seconds": elapsed,
+                "cmd": cmd
+            }
+    except subprocess.TimeoutExpired:
+        elapsed = round(time.time() - start_time, 2)
+        return {
+            "status": "FAIL",
+            "exit_code": -1,
+            "stdout": "",
+            "stderr": "",
+            "details": f"Frontend build timed out after {timeout}s.",
+            "duration_seconds": elapsed,
+            "cmd": cmd
+        }
+    except Exception as e:
+        elapsed = round(time.time() - start_time, 2)
+        return {
+            "status": "FAIL",
+            "exit_code": -1,
+            "stdout": "",
+            "stderr": str(e),
+            "details": f"Frontend build execution error: {e}",
+            "duration_seconds": elapsed,
+            "cmd": cmd
+        }
+
+
 class QualityGateRegistry:
     def __init__(self, project_root="."):
         self.root = Path(project_root).resolve()
@@ -525,7 +724,67 @@ class QualityGateRegistry:
             "details": details
         }
 
+    def evaluate_frontend_build(self, skip=False):
+        """
+        Evaluate Frontend Build Verification (Pilot 11).
+        Integrates with GATE_2_SYNTAX:
+        - If skip=True: when applicable, sets NOT_RUN with explicit bypass notice (must NOT be PASS).
+        - If skip=False: executes build and updates GATE_2_SYNTAX with PASS, FAIL, or BLOCKED.
+        - Preserves existing PHP syntax evidence if already evaluated and build is not applicable.
+        """
+        prereq = inspect_frontend_build_prerequisites(self.root)
+        if not prereq.get("is_applicable"):
+            current_gate = self.gates.get("GATE_2_SYNTAX", {})
+            if current_gate.get("status") == "NOT_RUN":
+                self.set_gate("GATE_2_SYNTAX", "NOT_RUN", evidence=prereq, details=prereq.get("reason", "Frontend build not applicable."))
+            return
+
+        if skip:
+            self.set_gate(
+                "GATE_2_SYNTAX",
+                "NOT_RUN",
+                evidence={"bypassed": True, "prerequisites": prereq},
+                details="Frontend build verification was explicitly skipped/bypassed by user flag. Unverified build."
+            )
+            return
+
+        build_res = run_frontend_build(self.root)
+        status = build_res.get("status")
+
+        if status == "PASS":
+            current_gate = self.gates.get("GATE_2_SYNTAX", {})
+            if current_gate.get("status") == "FAIL":
+                return
+            self.set_gate(
+                "GATE_2_SYNTAX",
+                "PASS",
+                evidence=build_res,
+                details=build_res.get("details", "Frontend build verified successfully.")
+            )
+        elif status == "FAIL":
+            self.set_gate(
+                "GATE_2_SYNTAX",
+                "FAIL",
+                evidence=build_res,
+                details=build_res.get("details", "Frontend build failed.")
+            )
+        elif status == "BLOCKED":
+            self.set_gate(
+                "GATE_2_SYNTAX",
+                "BLOCKED",
+                evidence=build_res,
+                details=build_res.get("details", build_res.get("reason", "Frontend build blocked."))
+            )
+        else:
+            self.set_gate(
+                "GATE_2_SYNTAX",
+                "NOT_RUN",
+                evidence=build_res,
+                details=build_res.get("details", "Frontend build not run.")
+            )
+
     def evaluate_preflight(self):
+
         """Evaluate Gate 1: Workspace & Preflight."""
         try:
             report = preflight.run_preflight(self.root)
@@ -906,6 +1165,8 @@ def main():
     parser.add_argument("--approved-files", nargs="*", default=None, help="List of approved task files")
     parser.add_argument("--baseline-files", nargs="*", default=None, help="List of baseline pre-existing changed files (legacy / fallback)")
     parser.add_argument("--check-syntax", nargs="*", help="List of PHP files to check syntax for")
+    parser.add_argument("--check-frontend-build", action="store_true", help="Explicitly evaluate frontend build verification")
+    parser.add_argument("--skip-frontend-build", action="store_true", help="Bypass frontend build verification (results in NOT_RUN)")
     parser.add_argument("--json", action="store_true", help="Output in JSON format")
 
     try:
@@ -958,9 +1219,20 @@ def main():
                 authorized_baseline_modifications=args.authorized_baseline_mods,
                 baseline_changes=args.baseline_files
             )
+            # Pilot 11: Evaluate frontend build if requested or if package.json has a build script
+            if getattr(args, "check_frontend_build", False) or (inspect_frontend_build_prerequisites(args.project_path).get("is_applicable") and not getattr(args, "skip_frontend_build", False)):
+                registry.evaluate_frontend_build(skip=getattr(args, "skip_frontend_build", False))
+            elif getattr(args, "skip_frontend_build", False):
+                registry.evaluate_frontend_build(skip=True)
+
+        if getattr(args, "check_frontend_build", False) and not args.eval_core:
+            registry.evaluate_frontend_build(skip=getattr(args, "skip_frontend_build", False))
+        elif getattr(args, "skip_frontend_build", False) and not args.eval_core:
+            registry.evaluate_frontend_build(skip=True)
 
         if args.check_syntax:
             registry.evaluate_php_syntax(args.check_syntax)
+
 
         summary = registry.to_dict()["summary"]
 

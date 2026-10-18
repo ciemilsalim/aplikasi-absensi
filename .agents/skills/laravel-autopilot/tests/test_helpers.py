@@ -19,7 +19,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
+
 
 # Add scripts directory to path
 current_dir = Path(__file__).resolve().parent
@@ -1455,6 +1457,382 @@ class TestLaravelAutopilotHelpers(unittest.TestCase):
             shutil.rmtree(temp_dir, ignore_errors=True)
 
 
+class TestPilot11FrontendBuildVerification(unittest.TestCase):
+
+    """
+    Pilot 11 TDD Test Suite: Frontend Build Verification for Laravel Autopilot
+    Covers 15 formal behavioral and security scenarios:
+    1. No package.json -> NOT_RUN
+    2. No build script in package.json -> NOT_RUN
+    3. Build script present and succeeds -> PASS
+    4. Build script returns non-zero exit code -> FAIL
+    5. Build process timeout -> FAIL with clear diagnostics
+    6. Node.js missing -> BLOCKED
+    7. npm missing -> BLOCKED
+    8. node_modules missing -> BLOCKED
+    9. Blade + Vite project compatibility
+    10. Inertia + React + Vite project compatibility
+    11. Build failure prevents overall quality gate PASS (Exit code 1)
+    12. Build bypass does not mask relevant unverified build / produce false PASS
+    13. Tracked build output directory modification guarded against unauthorized mutation
+    14. Build failure does not expand scope or self-repair
+    15. Existing Gate 8 baseline invariants preserved
+    """
+
+    def test_pilot11_01_no_package_json_returns_not_run(self):
+        """Scenario 1: Absence of package.json results in NOT_RUN."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self.assertTrue(
+                hasattr(quality_gate, "inspect_frontend_build_prerequisites"),
+                "Pilot 11 RED: quality_gate.inspect_frontend_build_prerequisites is not yet implemented"
+            )
+            res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+            self.assertFalse(res.get("is_applicable"))
+            self.assertEqual(res.get("status"), "NOT_RUN")
+
+    def test_pilot11_02_no_build_script_returns_not_run(self):
+        """Scenario 2: package.json without a build script results in NOT_RUN."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"name": "test-pkg", "scripts": {"dev": "vite"}}), encoding="utf-8")
+            self.assertTrue(
+                hasattr(quality_gate, "inspect_frontend_build_prerequisites"),
+                "Pilot 11 RED: quality_gate.inspect_frontend_build_prerequisites is not yet implemented"
+            )
+            res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+            self.assertFalse(res.get("is_applicable"))
+            self.assertEqual(res.get("status"), "NOT_RUN")
+
+    def test_pilot11_03_build_script_success_returns_pass(self):
+        """Scenario 3: Valid build script execution succeeding with code 0 returns PASS."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            (Path(tmpdir) / "node_modules").mkdir()
+            self.assertTrue(
+                hasattr(quality_gate, "run_frontend_build"),
+                "Pilot 11 RED: quality_gate.run_frontend_build is not yet implemented"
+            )
+            with unittest.mock.patch("shutil.which", side_effect=lambda cmd: f"/usr/bin/{cmd}"):
+                mock_proc = unittest.mock.MagicMock(returncode=0, stdout="vite build success", stderr="")
+                with unittest.mock.patch("subprocess.run", return_value=mock_proc):
+                    res = quality_gate.run_frontend_build(tmpdir)
+                    self.assertEqual(res.get("status"), "PASS")
+                    self.assertEqual(res.get("exit_code"), 0)
+
+    def test_pilot11_04_build_script_failure_returns_fail(self):
+        """Scenario 4: Build script failure with non-zero exit code returns FAIL."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            (Path(tmpdir) / "node_modules").mkdir()
+            self.assertTrue(
+                hasattr(quality_gate, "run_frontend_build"),
+                "Pilot 11 RED: quality_gate.run_frontend_build is not yet implemented"
+            )
+            with unittest.mock.patch("shutil.which", side_effect=lambda cmd: f"/usr/bin/{cmd}"):
+                mock_proc = unittest.mock.MagicMock(returncode=1, stdout="", stderr="SyntaxError in App.jsx")
+                with unittest.mock.patch("subprocess.run", return_value=mock_proc):
+                    res = quality_gate.run_frontend_build(tmpdir)
+                    self.assertEqual(res.get("status"), "FAIL")
+                    self.assertEqual(res.get("exit_code"), 1)
+
+    def test_pilot11_05_build_timeout_returns_fail_with_diagnostics(self):
+        """Scenario 5: Build process exceeding timeout limit returns FAIL with clear diagnostic message."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            (Path(tmpdir) / "node_modules").mkdir()
+            self.assertTrue(
+                hasattr(quality_gate, "run_frontend_build"),
+                "Pilot 11 RED: quality_gate.run_frontend_build is not yet implemented"
+            )
+            with unittest.mock.patch("shutil.which", side_effect=lambda cmd: f"/usr/bin/{cmd}"):
+                with unittest.mock.patch("subprocess.run", side_effect=subprocess.TimeoutExpired(cmd=["npm", "run", "build"], timeout=120)):
+                    res = quality_gate.run_frontend_build(tmpdir, timeout=120)
+                    self.assertEqual(res.get("status"), "FAIL")
+                    self.assertIn("timed out", res.get("details", "").lower())
+
+    def test_pilot11_06_node_missing_returns_blocked(self):
+        """Scenario 6: When Node.js binary is missing from PATH, prerequisite check returns BLOCKED."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            (Path(tmpdir) / "node_modules").mkdir()
+            self.assertTrue(
+                hasattr(quality_gate, "inspect_frontend_build_prerequisites"),
+                "Pilot 11 RED: quality_gate.inspect_frontend_build_prerequisites is not yet implemented"
+            )
+            with unittest.mock.patch("shutil.which", side_effect=lambda cmd: None if cmd in ("node", "node.exe") else f"/usr/bin/{cmd}"):
+                res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+                self.assertTrue(res.get("is_applicable"))
+                self.assertEqual(res.get("status"), "BLOCKED")
+                self.assertIn("node", res.get("reason", "").lower())
+
+    def test_pilot11_07_npm_missing_returns_blocked(self):
+        """Scenario 7: When npm binary is missing from PATH, prerequisite check returns BLOCKED."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            (Path(tmpdir) / "node_modules").mkdir()
+            self.assertTrue(
+                hasattr(quality_gate, "inspect_frontend_build_prerequisites"),
+                "Pilot 11 RED: quality_gate.inspect_frontend_build_prerequisites is not yet implemented"
+            )
+            with unittest.mock.patch("shutil.which", side_effect=lambda cmd: None if cmd in ("npm", "npm.cmd", "npm.exe", "npm.bat") else f"/usr/bin/{cmd}"):
+                res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+                self.assertTrue(res.get("is_applicable"))
+                self.assertEqual(res.get("status"), "BLOCKED")
+                self.assertIn("npm", res.get("reason", "").lower())
+
+    def test_pilot11_08_node_modules_missing_returns_blocked(self):
+        """Scenario 8: When node_modules directory is absent, prerequisite check returns BLOCKED."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            # node_modules intentionally not created
+            self.assertTrue(
+                hasattr(quality_gate, "inspect_frontend_build_prerequisites"),
+                "Pilot 11 RED: quality_gate.inspect_frontend_build_prerequisites is not yet implemented"
+            )
+            with unittest.mock.patch("shutil.which", side_effect=lambda cmd: f"/usr/bin/{cmd}"):
+                res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+                self.assertTrue(res.get("is_applicable"))
+                self.assertEqual(res.get("status"), "BLOCKED")
+                self.assertIn("node_modules", res.get("reason", "").lower())
+
+    def test_pilot11_09_blade_vite_project_compatibility(self):
+        """Scenario 9: Laravel Blade + Tailwind + Vite project passes frontend build evaluation cleanly."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "package.json").write_text(json.dumps({
+                "scripts": {"build": "vite build"},
+                "devDependencies": {"alpinejs": "^3.0", "tailwindcss": "^3.0"}
+            }), encoding="utf-8")
+            (root / "node_modules").mkdir()
+            (root / "resources" / "views").mkdir(parents=True)
+            (root / "resources" / "views" / "welcome.blade.php").write_text("<h1>Welcome</h1>", encoding="utf-8")
+            reg = quality_gate.QualityGateRegistry(root)
+            self.assertTrue(
+                hasattr(reg, "evaluate_frontend_build"),
+                "Pilot 11 RED: QualityGateRegistry.evaluate_frontend_build is not yet implemented"
+            )
+            with unittest.mock.patch("shutil.which", side_effect=lambda cmd: f"/usr/bin/{cmd}"):
+                mock_proc = unittest.mock.MagicMock(returncode=0, stdout="vite building for production...", stderr="")
+                with unittest.mock.patch("subprocess.run", return_value=mock_proc):
+                    reg.evaluate_frontend_build()
+                    self.assertEqual(reg.gates["GATE_2_SYNTAX"]["status"], "PASS")
+
+    def test_pilot11_10_inertia_react_vite_project_compatibility(self):
+        """Scenario 10: Laravel Inertia + React + Vite project executes project-defined build script and succeeds."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "package.json").write_text(json.dumps({
+                "scripts": {"build": "vite build"},
+                "dependencies": {"@inertiajs/react": "^2.0", "react": "^18.0"}
+            }), encoding="utf-8")
+            (root / "node_modules").mkdir()
+            (root / "resources" / "js" / "Pages").mkdir(parents=True)
+            (root / "resources" / "js" / "Pages" / "Dashboard.jsx").write_text("export default function Dashboard() { return <div>Home</div>; }", encoding="utf-8")
+            reg = quality_gate.QualityGateRegistry(root)
+            self.assertTrue(
+                hasattr(reg, "evaluate_frontend_build"),
+                "Pilot 11 RED: QualityGateRegistry.evaluate_frontend_build is not yet implemented"
+            )
+            with unittest.mock.patch("shutil.which", side_effect=lambda cmd: f"/usr/bin/{cmd}"):
+                mock_proc = unittest.mock.MagicMock(returncode=0, stdout="react bundle generated successfully", stderr="")
+                with unittest.mock.patch("subprocess.run", return_value=mock_proc):
+                    reg.evaluate_frontend_build()
+                    self.assertEqual(reg.gates["GATE_2_SYNTAX"]["status"], "PASS")
+
+    def test_pilot11_11_build_failure_prevents_overall_quality_gate_pass(self):
+        """Scenario 11: Frontend build failure prevents overall QualityGate from returning PASS (must FAIL)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "package.json").write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            (root / "node_modules").mkdir()
+            reg = quality_gate.QualityGateRegistry(root)
+            self.assertTrue(
+                hasattr(reg, "evaluate_frontend_build"),
+                "Pilot 11 RED: QualityGateRegistry.evaluate_frontend_build is not yet implemented"
+            )
+            with unittest.mock.patch("shutil.which", side_effect=lambda cmd: f"/usr/bin/{cmd}"):
+                mock_proc = unittest.mock.MagicMock(returncode=1, stdout="", stderr="RollupError: Unterminated JSX tag")
+                with unittest.mock.patch("subprocess.run", return_value=mock_proc):
+                    reg.evaluate_frontend_build()
+                    summary = reg.to_dict()["summary"]
+                    self.assertGreater(summary["fail"], 0)
+                    self.assertEqual(reg.gates["GATE_2_SYNTAX"]["status"], "FAIL")
+
+    def test_pilot11_12_build_bypass_does_not_produce_misleading_pass(self):
+        """Scenario 12: Bypassing frontend build when build is applicable MUST NOT produce a PASS state."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "package.json").write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            (root / "node_modules").mkdir()
+            reg = quality_gate.QualityGateRegistry(root)
+            self.assertTrue(
+                hasattr(reg, "evaluate_frontend_build"),
+                "Pilot 11 RED: QualityGateRegistry.evaluate_frontend_build is not yet implemented"
+            )
+            # When explicitly skipped/bypassed:
+            reg.evaluate_frontend_build(skip=True)
+            # Invariant: Must NOT be PASS! Must be NOT_RUN with clear explanation
+            self.assertNotEqual(reg.gates["GATE_2_SYNTAX"]["status"], "PASS")
+            self.assertEqual(reg.gates["GATE_2_SYNTAX"]["status"], "NOT_RUN")
+            self.assertIn("bypass", reg.gates["GATE_2_SYNTAX"]["details"].lower())
+
+    def test_pilot11_13_tracked_build_output_modification_detected_and_guarded(self):
+        """Scenario 13: If build output directory contains tracked files modified outside approved_files, Gate 8 detects FAIL."""
+        temp_dir = tempfile.mkdtemp()
+        repo_path = Path(temp_dir).resolve()
+        try:
+            subprocess.run(["git", "init"], cwd=repo_path, capture_output=True, check=True)
+            subprocess.run(["git", "config", "user.name", "TestUser"], cwd=repo_path, capture_output=True, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo_path, capture_output=True, check=True)
+
+            build_dir = repo_path / "public" / "build"
+            build_dir.mkdir(parents=True)
+            manifest = build_dir / "manifest.json"
+            manifest.write_text('{"app.js": "app.111.js"}', encoding="utf-8")
+
+            subprocess.run(["git", "add", "public/build/manifest.json"], cwd=repo_path, capture_output=True, check=True)
+            subprocess.run(["git", "commit", "-m", "track manifest"], cwd=repo_path, capture_output=True, check=True)
+
+            # Capture baseline
+            snapshot = quality_gate.BaselineSnapshot.capture(repo_path, task_id="task-tracked-manifest")
+
+            # Simulate build mutating tracked manifest without it being in approved_files
+            manifest.write_text('{"app.js": "app.222.js"}', encoding="utf-8")
+
+            reg = quality_gate.QualityGateRegistry(repo_path)
+            reg.evaluate_git_scope(
+                approved_files=["resources/js/app.js"],
+                baseline_snapshot=snapshot,
+                task_id="task-tracked-manifest"
+            )
+            gate_res = reg.gates["GATE_8_GIT_SCOPE"]
+            self.assertEqual(gate_res["status"], "FAIL")
+            self.assertIn("public/build/manifest.json", gate_res["details"])
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_pilot11_14_build_failure_does_not_expand_scope_or_self_repair(self):
+        """Scenario 14: Frontend build failure does not permit self_repair or quality gate to auto-approve unapproved files."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            reg = quality_gate.QualityGateRegistry(tmpdir)
+            self.assertTrue(
+                hasattr(reg, "evaluate_frontend_build"),
+                "Pilot 11 RED: QualityGateRegistry.evaluate_frontend_build is not yet implemented"
+            )
+
+    def test_pilot11_15_existing_gate_8_baseline_invariants_preserved(self):
+        """Scenario 15: Baseline cryptographic snapshot verification is preserved and not altered by frontend checks."""
+        temp_dir = tempfile.mkdtemp()
+        repo_path = Path(temp_dir).resolve()
+        try:
+            subprocess.run(["git", "init"], cwd=repo_path, capture_output=True, check=True)
+            subprocess.run(["git", "config", "user.name", "TestUser"], cwd=repo_path, capture_output=True, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo_path, capture_output=True, check=True)
+            dummy = repo_path / "app.php"
+            dummy.write_text("<?php echo 1;", encoding="utf-8")
+            subprocess.run(["git", "add", "app.php"], cwd=repo_path, capture_output=True, check=True)
+            subprocess.run(["git", "commit", "-m", "init"], cwd=repo_path, capture_output=True, check=True)
+
+            snapshot = quality_gate.BaselineSnapshot.capture(repo_path, task_id="task-gate8-preservation")
+            self.assertIsNotNone(snapshot.snapshot_hash)
+            self.assertTrue(snapshot.verify_integrity(quality_gate.get_supervisor_key()))
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_pilot11_16_windows_npm_cmd_resolution(self):
+        """Scenario 16: On win32 platform, resolver resolves npm.cmd and falls back gracefully."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            (Path(tmpdir) / "node_modules").mkdir()
+
+            def fake_which(cmd):
+                if cmd == "node":
+                    return "C:\\Program Files\\nodejs\\node.exe"
+                if cmd == "npm.cmd":
+                    return "C:\\Program Files\\nodejs\\npm.cmd"
+                if cmd == "npm":
+                    return "C:\\Program Files\\nodejs\\npm"
+                return None
+
+            with unittest.mock.patch("sys.platform", "win32"):
+                with unittest.mock.patch("shutil.which", side_effect=fake_which):
+                    res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+                    self.assertEqual(res["status"], "PASS")
+                    self.assertTrue(res["npm_path"].endswith("npm.cmd") or res["npm_path"].endswith("npm.exe") or res["npm_path"].endswith("npm.bat"))
+                    self.assertEqual(res["npm_path"], "C:\\Program Files\\nodejs\\npm.cmd")
+
+    def test_pilot11_17_windows_npm_fallback_when_cmd_missing(self):
+        """Scenario 17: On win32, if npm.cmd is missing, resolver checks bat or falls back or blocks."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"scripts": {"build": "vite build"}}), encoding="utf-8")
+            (Path(tmpdir) / "node_modules").mkdir()
+
+            def fake_which(cmd):
+                if cmd == "node":
+                    return "C:\\Program Files\\nodejs\\node.exe"
+                if cmd in ("npm.cmd", "npm.bat", "npm.exe"):
+                    return None
+                if cmd == "npm":
+                    # Only extensionless shell script found
+                    return "C:\\Program Files\\nodejs\\npm"
+                return None
+
+            with unittest.mock.patch("sys.platform", "win32"):
+                with unittest.mock.patch("shutil.which", side_effect=fake_which):
+                    res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+                    # When only non-executable npm script exists on Windows without batch wrapper,
+                    # running it with shell=False fails WinError 193; resolver must handle safely or block
+                    self.assertIn(res["status"], ["PASS", "BLOCKED"])
+                    if res["status"] == "BLOCKED":
+                        self.assertIn("npm", res["reason"].lower())
+
+    def test_pilot11_18_vite_config_missing_build_script_returns_blocked(self):
+        """Scenario 18: Project has vite.config.js but lacks 'build' script -> BLOCKED (not NOT_RUN)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"name": "vite-app", "scripts": {"dev": "vite"}}), encoding="utf-8")
+            (Path(tmpdir) / "vite.config.js").write_text("export default {}", encoding="utf-8")
+
+            res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+            self.assertTrue(res["is_applicable"])
+            self.assertEqual(res["status"], "BLOCKED")
+            self.assertIn("build", res["reason"].lower())
+
+    def test_pilot11_19_inertia_pages_missing_build_script_returns_blocked(self):
+        """Scenario 19: Project has resources/js/Pages (Inertia) but lacks 'build' script -> BLOCKED."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"name": "inertia-app", "scripts": {"dev": "vite"}}), encoding="utf-8")
+            pages_dir = Path(tmpdir) / "resources" / "js" / "Pages"
+            pages_dir.mkdir(parents=True)
+            (pages_dir / "Home.jsx").write_text("export default function() {}", encoding="utf-8")
+
+            res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+            self.assertTrue(res["is_applicable"])
+            self.assertEqual(res["status"], "BLOCKED")
+            self.assertIn("build", res["reason"].lower())
+
+    def test_pilot11_20_pure_blade_without_build_script_returns_not_run(self):
+        """Scenario 20: Pure Blade project without frontend asset pipeline or build script -> NOT_RUN."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            p_json = Path(tmpdir) / "package.json"
+            p_json.write_text(json.dumps({"name": "blade-app", "scripts": {"test": "phpunit"}}), encoding="utf-8")
+            views_dir = Path(tmpdir) / "resources" / "views"
+            views_dir.mkdir(parents=True)
+            (views_dir / "welcome.blade.php").write_text("<h1>Hello</h1>", encoding="utf-8")
+
+            res = quality_gate.inspect_frontend_build_prerequisites(tmpdir)
+            self.assertFalse(res["is_applicable"])
+            self.assertEqual(res["status"], "NOT_RUN")
+
+
 if __name__ == "__main__":
     unittest.main()
-

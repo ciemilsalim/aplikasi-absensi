@@ -97,10 +97,12 @@ Skill ini berpusat pada arsitektur modular di `.agents/skills/laravel-autopilot/
 6. Jangan memasukkan dependency baru kecuali terbukti esensial.
 
 ### Fase D — Verify (Verifikasi Bertingkat & Mandatory Quality Gates)
-1. **PHP Syntax Gate**:
+1. **Syntax & Frontend Build Gate (Gate 2)**:
    ```bash
    php -l <path-to-file>
+   python .agents/skills/laravel-autopilot/scripts/quality_gate.py --check-frontend-build --json
    ```
+
 2. **Route Registration Gate**:
    ```bash
    python .agents/skills/laravel-autopilot/scripts/laravel_inspector.py --routes --filter-route <route-name> --json
