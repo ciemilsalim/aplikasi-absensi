@@ -105,6 +105,12 @@ def cmd_record(args):
         cmd += ["--headed"]
     if args.playwright:
         cmd += ["--playwright", args.playwright]
+    if getattr(args, "bgm", None):
+        cmd += ["--bgm", args.bgm]
+    if getattr(args, "bgm_genre", None):
+        cmd += ["--bgm-genre", args.bgm_genre]
+    if getattr(args, "mode", None):
+        cmd += ["--mode", args.mode]
 
     print(f"[CLI] Launching Continuous V4 Pipeline -> {run_dir}")
     res = subprocess.run(cmd)
@@ -113,15 +119,43 @@ def cmd_record(args):
 
     # Run QA automatically
     if not args.skip_qa:
-        print("[CLI] Running V4 Quality Gates (Gates 24–29)...")
+        print("[CLI] Running V4 Quality Gates (Gates 24–31)...")
         qa_rep = run_qa_gates(run_dir)
         with open(os.path.join(run_dir, "qa_v4_report.json"), "w", encoding="utf-8") as f:
             json.dump(qa_rep, f, indent=2)
         print(f"[CLI] QA Result: {qa_rep.get('overall_status')}")
 
+    # Resolve music config for manifest tracking
+    music_cfg = None
+    try:
+        from audio_mixer import resolve_music_config
+        music_cfg = resolve_music_config(
+            plan,
+            cli_bgm=getattr(args, "bgm", None),
+            cli_genre=getattr(args, "bgm_genre", None),
+            skill_root=os.path.dirname(HERE)
+        )
+    except Exception:
+        pass
+
     # Generate Provenance Manifest
-    mgr.generate_provenance_manifest(project_id, run_info["run_id"], effective_plan_path, profile_path)
+    mgr.generate_provenance_manifest(project_id, run_info["run_id"], effective_plan_path, profile_path, music_config=music_cfg)
     print(f"[CLI] Finished recording run. Isolated run directory: {run_dir}")
+    return 0
+
+
+def cmd_preview_audio(args):
+    from preview_bgm import generate_preview
+    res = generate_preview(
+        narration_path=args.narration,
+        bgm_path=args.bgm,
+        bgm_genre=args.genre,
+        out_path=args.out,
+        base_volume=args.base_volume,
+        ducking_volume=args.ducking_volume,
+        target_duration_sec=args.duration
+    )
+    print(json.dumps(res, indent=2))
     return 0
 
 
@@ -165,9 +199,22 @@ def main():
     sp_rec.add_argument("--workspace-root", default=None)
     sp_rec.add_argument("--output-dir", default=None)
     sp_rec.add_argument("--playwright", default=None)
+    sp_rec.add_argument("--bgm", default=None, help="Path to optional background music audio file")
+    sp_rec.add_argument("--bgm-genre", default=None, choices=["upbeat_jazz", "ambient"], help="BGM genre preset")
+    sp_rec.add_argument("--mode", default=None, choices=["dual", "desktop", "mobile"], help="Execution mode: dual, desktop, or mobile")
+
+    # Subcommand: preview-audio
+    sp_prev = subparsers.add_parser("preview-audio", help="Generate fast standalone audio preview with adaptive ducking")
+    sp_prev.add_argument("--narration", default=None, help="Path to optional narration WAV/MP3")
+    sp_prev.add_argument("--bgm", default=None, help="Path to custom BGM WAV file")
+    sp_prev.add_argument("--genre", default="upbeat_jazz", choices=["upbeat_jazz", "ambient"], help="BGM genre preset")
+    sp_prev.add_argument("--out", required=True, help="Output preview WAV file path")
+    sp_prev.add_argument("--base-volume", type=float, default=None, help="Base music volume level")
+    sp_prev.add_argument("--ducking-volume", type=float, default=None, help="Ducked music volume level")
+    sp_prev.add_argument("--duration", type=float, default=None, help="Target preview duration in seconds")
 
     # Subcommand: qa
-    sp_qa = subparsers.add_parser("qa", help="Run V4 Quality Assurance Gates (Gates 24-29)")
+    sp_qa = subparsers.add_parser("qa", help="Run V4 Quality Assurance Gates (Gates 24-31)")
     sp_qa.add_argument("--run-dir", required=True)
 
     args = parser.parse_args()
@@ -177,6 +224,8 @@ def main():
         sys.exit(cmd_preflight(args))
     elif args.command == "record":
         sys.exit(cmd_record(args))
+    elif args.command == "preview-audio":
+        sys.exit(cmd_preview_audio(args))
     elif args.command == "qa":
         sys.exit(cmd_qa(args))
 

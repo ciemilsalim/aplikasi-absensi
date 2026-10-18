@@ -65,19 +65,31 @@ const plan = JSON.parse(fs.readFileSync(planPath, 'utf8').replace(/^\uFEFF/, '')
 const narration = JSON.parse(fs.readFileSync(narrPath, 'utf8').replace(/^\uFEFF/, ''));
 const FPS = plan.fps || 60;
 const FRAME_MS = 1000 / FPS;
-const MOBILE = plan.mode === 'mobile';
-const VW = MOBILE ? (plan.viewport?.width || 414) : (plan.viewport?.width || 1920);
-const VH = MOBILE ? (plan.viewport?.height || 736) : (plan.viewport?.height || 1080);
-const OUT_W = plan.target_resolution ? plan.target_resolution[0] : (MOBILE ? 1080 : 1920);
+
+const modeArg = arg('mode');
+const MODE = modeArg || plan.mode || 'mobile';
+const MOBILE = MODE === 'mobile';
+
+const VW = MOBILE ? (plan.viewport?.width || 414) : (plan.desktop_viewport?.width || (plan.viewport && plan.viewport.width >= 1024 ? plan.viewport.width : 1920));
+const VH = MOBILE ? (plan.viewport?.height || 736) : (plan.desktop_viewport?.height || (plan.viewport && plan.viewport.width >= 1024 ? plan.viewport.height : 1080));
+const OUT_W = MOBILE ? (plan.target_resolution ? plan.target_resolution[0] : 1080) : (plan.desktop_target_resolution ? plan.desktop_target_resolution[0] : 1920);
 const DSF = OUT_W / VW;
 const OUT_H = Math.round(VH * DSF);
 const REACTION_MS = plan.reaction_delay_ms ?? 300;
 const SETTLE_MS = 180;
 
 const recDir = path.join(runDir, 'recording');
-const evDir = path.join(runDir, 'evidence');
-for (const d of [recDir, evDir]) { fs.rmSync(d, { recursive: true, force: true }); fs.mkdirSync(d, { recursive: true }); }
-const videoOut = path.join(recDir, 'continuous-60fps.mp4');
+const evDirArg = arg('evidence-dir');
+const evDir = evDirArg ? evDirArg : path.join(runDir, 'evidence', MODE);
+fs.mkdirSync(recDir, { recursive: true });
+fs.mkdirSync(evDir, { recursive: true });
+
+const videoOutArg = arg('video-out');
+const videoOut = videoOutArg ? videoOutArg : path.join(recDir, `continuous-${MODE}-60fps.mp4`);
+const eventsOut = arg('events-out', path.join(recDir, `events-${MODE}.json`));
+const manifestOut = arg('manifest-out', path.join(recDir, `recording-manifest-${MODE}.json`));
+const framesOut = arg('frames-out', path.join(recDir, `frames-${MODE}.jsonl`));
+
 
 // ── deterministic helpers ──────────────────────────────────────────────
 function seedOf(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -214,11 +226,21 @@ async function evidence(name) {
 
 // ── geometry ───────────────────────────────────────────────────────────
 async function bbox(selector, timeout = 8000) {
-  const loc = page.locator(selector).first();
-  await loc.waitFor({ state: 'visible', timeout });
-  const b = await loc.boundingBox();
-  if (!b) throw new Error('no bbox for ' + selector);
-  return b;
+  const t0 = Date.now();
+  while (Date.now() - t0 < timeout) {
+    const loc = page.locator(selector);
+    const count = await loc.count().catch(() => 0);
+    for (let i = 0; i < count; i++) {
+      const nth = loc.nth(i);
+      const vis = await nth.isVisible().catch(() => false);
+      if (vis) {
+        const b = await nth.boundingBox().catch(() => null);
+        if (b && b.width > 0 && b.height > 0) return b;
+      }
+    }
+    await new Promise(r => setTimeout(r, 60));
+  }
+  throw new Error('no visible bbox for ' + selector);
 }
 function subtitleReserve() { return subTrack && subTrack.pos === 'bottom' ? 120 : 0; }
 
@@ -341,6 +363,21 @@ async function stepTap(s) {
   await tapAt(x, y, { label: s.target, bbox: [b.x * DSF, b.y * DSF, b.width * DSF, b.height * DSF] });
 }
 
+async function stepMove(s) {
+  if (s.target) {
+    await ensureVisible(s.target);
+    const b = await bbox(s.target);
+    const x = b.x + b.width * (s.ax ?? 0.5), y = b.y + b.height * (s.ay ?? 0.5);
+    await moveTo(x, y);
+  } else if (typeof s.x === 'number' && typeof s.y === 'number') {
+    await moveTo(s.x, s.y);
+  }
+  if (s.hold_ms) {
+    phase = 'hold';
+    await hold(s.hold_ms);
+  }
+}
+
 async function stepType(s) {
   const loc = page.locator(s.target).first();
   const focused = await loc.evaluate(el => document.activeElement === el).catch(() => false);
@@ -410,28 +447,80 @@ async function stepSelect(s) {
 
 async function stepWaitFor(s) {
   phase = 'ui_response';
-  const budget = s.budget_ms ?? 1200;
+  const maxTimeout = s.budget_ms ?? 8000;
+  const minHold = s.min_hold_ms ?? 200;
+  const settleMs = s.settle_ms ?? 350;
   const t0 = vt();
-  const e = ev('wait_for', { selector: s.selector, budget_ms: budget });
-  await holdUntil(t0 + budget);
+  const e = ev('wait_for', { selector: s.selector, budget_ms: maxTimeout });
+
+  // Brief initial hold so click/tap animation frames register cleanly
+  if (minHold > 0) {
+    await hold(minHold);
+  }
+
+  // Poll in virtual time until target is visible or maxTimeout exceeded
   const deadline = Date.now() + 15000;
   let ok = false;
-  while (Date.now() < deadline) {
-    ok = await page.locator(s.selector).first().isVisible().catch(() => false);
+  while (Date.now() < deadline && (vt() - t0) < maxTimeout) {
+    const loc = page.locator(s.selector);
+    const count = await loc.count().catch(() => 0);
+    for (let i = 0; i < count; i++) {
+      if (await loc.nth(i).isVisible().catch(() => false)) {
+        ok = true;
+        break;
+      }
+    }
     if (ok) break;
     await tick();
   }
-  e.satisfied = ok; e.extended_ms = +(vt() - t0 - budget).toFixed(1);
+
+  if (!ok) {
+    const loc = page.locator(s.selector);
+    const count = await loc.count().catch(() => 0);
+    for (let i = 0; i < count; i++) {
+      if (await loc.nth(i).isVisible().catch(() => false)) { ok = true; break; }
+    }
+  }
+
+  e.satisfied = ok;
   if (!ok) throw new Error('wait_for not satisfied: ' + s.selector);
-  if (e.extended_ms > 0) warnings.push(`wait_for ${s.selector} exceeded budget by ${e.extended_ms}ms`);
+
+  // Natural settle time once the target element is visible
+  if (settleMs > 0) {
+    await hold(settleMs);
+  }
+  e.extended_ms = +(Math.max(0, vt() - t0 - maxTimeout)).toFixed(1);
+  e.duration_ms = +(vt() - t0).toFixed(1);
 }
 
-async function runStep(s) {
+function resolveStepForMode(s, isMobile) {
+  const stp = Object.assign({}, s);
+  if (isMobile) {
+    if (s.mobile_do) stp.do = s.mobile_do;
+    if (s.mobile_target) stp.target = s.mobile_target;
+    if (s.mobile_selector) stp.selector = s.mobile_selector;
+    if (s.mobile_text) stp.text = s.mobile_text;
+  } else {
+    if (s.desktop_do) stp.do = s.desktop_do;
+    if (s.desktop_target) stp.target = s.desktop_target;
+    if (s.desktop_selector) stp.selector = s.desktop_selector;
+    if (s.desktop_text) stp.text = s.desktop_text;
+  }
+  return stp;
+}
+
+async function runStep(rawS) {
+  const s = resolveStepForMode(rawS, MOBILE);
+  if (s.do === 'skip' || s.skip === true) return;
   switch (s.do) {
     case 'tap': return stepTap(s);
+    case 'click': return stepTap(s);
+    case 'move':
+    case 'hover':
+    case 'move_pointer': return stepMove(s);
     case 'type': return stepType(s);
     case 'select': return stepSelect(s);
-    case 'scroll': return scrollBy(s.by);
+    case 'scroll': return scrollBy(s.by ?? s.dy ?? 0);
     case 'scroll_to': return ensureVisible(s.target);
     case 'wait_for': return stepWaitFor(s);
     case 'hold': phase = 'hold'; return hold(s.ms);
@@ -472,11 +561,26 @@ function buildChunks(words, text, maxChars) {
   const T0 = Date.now();
   await page.clock.install({ time: T0 });
   await page.clock.pauseAt(T0 + 1000);
-  for (const s of (plan.setup || [])) {
+  for (const rawS of (plan.setup || [])) {
+    const s = resolveStepForMode(rawS, MOBILE);
+    if (s.do === 'skip' || s.skip === true) continue;
     if (s.do === 'goto') await page.goto(s.url, { waitUntil: 'load', timeout: 30000 });
     else if (s.do === 'fill') await page.locator(s.target).first().fill(s.value);
-    else if (s.do === 'click') await page.locator(s.target).first().click();
-    else if (s.do === 'wait_for') await page.locator(s.selector).first().waitFor({ state: 'visible', timeout: 20000 });
+    else if (s.do === 'click' || s.do === 'tap') await page.locator(s.target).first().click();
+    else if (s.do === 'wait_for') {
+      const deadline = Date.now() + 20000;
+      let ok = false;
+      while (Date.now() < deadline) {
+        const loc = page.locator(s.selector);
+        const count = await loc.count().catch(() => 0);
+        for (let i = 0; i < count; i++) {
+          if (await loc.nth(i).isVisible().catch(() => false)) { ok = true; break; }
+        }
+        if (ok) break;
+        await page.clock.runFor(100);
+      }
+      if (!ok) throw new Error('setup wait_for not satisfied: ' + s.selector);
+    }
     await page.clock.runFor(400);
   }
   await page.clock.runFor(800); // let entrance animations finish before frame 0
@@ -532,10 +636,22 @@ function buildChunks(words, text, maxChars) {
   await browser.close();
   const wallS = (Date.now() - wall0) / 1000;
   const sha = crypto.createHash('sha256').update(fs.readFileSync(videoOut)).digest('hex');
-  fs.writeFileSync(path.join(recDir, 'frames.jsonl'), framesLog.map(f => JSON.stringify(f)).join('\n') + '\n');
-  fs.writeFileSync(path.join(recDir, 'events.json'), JSON.stringify({ fps: FPS, frame_ms: FRAME_MS, dsf: DSF, viewport: [VW, VH], output: [OUT_W, OUT_H], scenes: sceneWindows, events }, null, 2));
+  const framesJsonl = framesLog.map(f => JSON.stringify(f)).join('\n') + '\n';
+  const eventsJson = JSON.stringify({ fps: FPS, frame_ms: FRAME_MS, dsf: DSF, viewport: [VW, VH], output: [OUT_W, OUT_H], mode: MODE, scenes: sceneWindows, events }, null, 2);
+
+  fs.writeFileSync(framesOut, framesJsonl);
+  fs.writeFileSync(eventsOut, eventsJson);
+  // Also write legacy default names if different
+  if (path.resolve(framesOut) !== path.resolve(path.join(recDir, 'frames.jsonl'))) {
+    fs.writeFileSync(path.join(recDir, 'frames.jsonl'), framesJsonl);
+  }
+  if (path.resolve(eventsOut) !== path.resolve(path.join(recDir, 'events.json'))) {
+    fs.writeFileSync(path.join(recDir, 'events.json'), eventsJson);
+  }
+
   const manifest = {
     engine: 'TRUE_CONTINUOUS_BROWSER_VIDEO_V4',
+    mode: MODE,
     capture_method: 'Per-virtual-frame CDP Page.captureScreenshot of the live Chromium compositor; fake clock + virtual animation timeline',
     video_pipeline: 'B (continuous browser capture) -> libx264 CFR',
     evidence_pipeline: 'A (clean screenshots in evidence/, never used as video frames)',
@@ -547,8 +663,12 @@ function buildChunks(words, text, maxChars) {
     scenes: sceneWindows.map(s => s.scene_id), warnings,
     created_at: new Date().toISOString(),
   };
-  fs.writeFileSync(path.join(recDir, 'recording-manifest.json'), JSON.stringify(manifest, null, 2));
-  log(`done: ${frame} frames (${(frame / FPS).toFixed(2)}s) in ${wallS.toFixed(1)}s wall; warnings=${warnings.length}`);
+
+  fs.writeFileSync(manifestOut, JSON.stringify(manifest, null, 2));
+  if (path.resolve(manifestOut) !== path.resolve(path.join(recDir, 'recording-manifest.json'))) {
+    fs.writeFileSync(path.join(recDir, 'recording-manifest.json'), JSON.stringify(manifest, null, 2));
+  }
+  log(`[${MODE}] done: ${frame} frames (${(frame / FPS).toFixed(2)}s) in ${wallS.toFixed(1)}s wall; warnings=${warnings.length}`);
 })().catch(async e => {
   console.error('[V4] FATAL', e && e.stack || e);
   try { if (ff) ff.stdin.end(); } catch (_) {}

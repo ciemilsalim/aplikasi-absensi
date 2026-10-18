@@ -12,13 +12,49 @@
     },
     "mode": {
       "type": "string",
-      "enum": ["feature", "module", "onboarding", "release"],
-      "default": "feature"
+      "enum": ["dual", "desktop", "mobile", "feature", "module", "onboarding", "release"],
+      "default": "dual"
+    },
+    "desktop_viewport": {
+      "type": "object",
+      "properties": {
+        "width": {"type": "integer"},
+        "height": {"type": "integer"}
+      }
+    },
+    "desktop_target_resolution": {
+      "type": "array",
+      "items": {"type": "integer"}
     },
     "target_duration_seconds": {"type": "integer", "minimum": 30, "default": 75},
     "base_url": {"type": "string"},
-    "voice": {"type": "string", "default": "id-ID-ArdiNeural"},
-    "music": {"type": "boolean", "default": false},
+    "voice": {"type": ["string", "object"], "default": "id-ID-ArdiNeural"},
+    "music": {
+      "type": ["boolean", "object"],
+      "default": false,
+      "properties": {
+        "enabled": {"type": "boolean", "default": false},
+        "genre": {"type": "string", "enum": ["upbeat_jazz", "ambient"], "default": "upbeat_jazz"},
+        "file": {"type": "string", "description": "Path to instrumental audio file (defaults to official upbeat-jazz-v1.wav)"},
+        "base_volume": {"type": "number", "default": 0.16, "minimum": 0.0, "maximum": 0.60},
+        "ducking_volume": {"type": "number", "default": 0.045, "minimum": 0.0, "maximum": 0.35},
+        "ducking_attack_ms": {"type": "integer", "default": 200, "minimum": 0},
+        "ducking_release_ms": {"type": "integer", "default": 500, "minimum": 0},
+        "fade_in_ms": {"type": "integer", "default": 1200, "minimum": 0},
+        "fade_out_ms": {"type": "integer", "default": 2500, "minimum": 0},
+        "loop": {"type": "boolean", "default": true},
+        "tempo_bpm": {"type": "integer", "default": 80}
+      }
+    },
+    "data_safety": {
+      "type": "object",
+      "properties": {
+        "isolation_method": {"type": "string", "default": "ephemeral_test_tracking"},
+        "target_database": {"type": "string"},
+        "cleanup_policy": {"type": "string", "default": "tracked_created_ids_only"},
+        "allow_production_mutations": {"type": "boolean", "default": false}
+      }
+    },
     "delays": {
       "type": "object",
       "properties": {
@@ -57,6 +93,18 @@
           "title": {"type": "string"},
           "purpose": {"type": "string"},
           "narration": {"type": "string"},
+          "narration_segments": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["text"],
+              "properties": {
+                "text": {"type": "string", "minLength": 1},
+                "pause_after_ms": {"type": "integer", "minimum": 0, "maximum": 3000}
+              }
+            }
+          },
           "duration_target": {"type": "number", "minimum": 1},
           "target_url": {"type": "string"},
           "locator": {"type": "string"},

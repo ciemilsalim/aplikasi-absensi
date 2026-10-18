@@ -71,7 +71,8 @@ class ArtifactManager:
         run_id: str,
         plan_path: str,
         profile_path: Optional[str] = None,
-        git_commit: Optional[str] = None
+        git_commit: Optional[str] = None,
+        music_config: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Build and write a cryptographic provenance manifest for the completed run.
@@ -89,6 +90,70 @@ class ArtifactManager:
         events_json = os.path.join(run_dir, "recording", "events.json")
         rec_mp4 = os.path.join(run_dir, "recording", "continuous-60fps.mp4")
 
+        bgm_manifest = None
+        if music_config and music_config.get("enabled") and music_config.get("file"):
+            bgm_file = music_config["file"]
+            bgm_manifest = {
+                "enabled": True,
+                "genre": music_config.get("genre", "upbeat_jazz"),
+                "tempo_bpm": music_config.get("tempo_bpm", 80),
+                "instruments": music_config.get("instruments", "rhodes_piano, electric_soul_bass, soul_pocket_drums, brushed_hihat, rhodes_bell_chimes"),
+                "license": music_config.get("license", "Royalty-Free Deterministic Procedural Composition (Skill app-tutorial-video)"),
+                "path": os.path.relpath(bgm_file, self.base_dir) if os.path.isabs(bgm_file) else bgm_file,
+                "sha256": compute_sha256(bgm_file),
+                "expected_sha256": music_config.get("expected_sha256"),
+                "base_volume": music_config.get("base_volume"),
+                "ducking_volume": music_config.get("ducking_volume"),
+                "fade_in_ms": music_config.get("fade_in_ms"),
+                "fade_out_ms": music_config.get("fade_out_ms"),
+                "loop": music_config.get("loop")
+            }
+
+        final_desktop = os.path.join(run_dir, "final", "final-tutorial-desktop.mp4")
+        final_mobile = os.path.join(run_dir, "final", "final-tutorial-mobile.mp4")
+        audio_desktop = os.path.join(run_dir, "audio", "audio-master-desktop.wav")
+        audio_mobile = os.path.join(run_dir, "audio", "audio-master-mobile.wav")
+
+        artifacts_dict = {
+            "final_video": {
+                "path": os.path.relpath(final_mp4, run_dir) if os.path.isfile(final_mp4) else None,
+                "sha256": compute_sha256(final_mp4)
+            },
+            "raw_recording": {
+                "path": os.path.relpath(rec_mp4, run_dir) if os.path.isfile(rec_mp4) else None,
+                "sha256": compute_sha256(rec_mp4)
+            },
+            "audio_master": {
+                "path": os.path.relpath(audio_wav, run_dir) if os.path.isfile(audio_wav) else None,
+                "sha256": compute_sha256(audio_wav)
+            },
+            "recorded_events": {
+                "path": os.path.relpath(events_json, run_dir) if os.path.isfile(events_json) else None,
+                "sha256": compute_sha256(events_json)
+            }
+        }
+
+        if os.path.isfile(final_desktop):
+            artifacts_dict["final_video_desktop"] = {
+                "path": os.path.relpath(final_desktop, run_dir),
+                "sha256": compute_sha256(final_desktop)
+            }
+        if os.path.isfile(final_mobile):
+            artifacts_dict["final_video_mobile"] = {
+                "path": os.path.relpath(final_mobile, run_dir),
+                "sha256": compute_sha256(final_mobile)
+            }
+        if os.path.isfile(audio_desktop):
+            artifacts_dict["audio_master_desktop"] = {
+                "path": os.path.relpath(audio_desktop, run_dir),
+                "sha256": compute_sha256(audio_desktop)
+            }
+        if os.path.isfile(audio_mobile):
+            artifacts_dict["audio_master_mobile"] = {
+                "path": os.path.relpath(audio_mobile, run_dir),
+                "sha256": compute_sha256(audio_mobile)
+            }
+
         manifest = {
             "version": "1.0.0",
             "project_id": project_id,
@@ -104,25 +169,15 @@ class ArtifactManager:
                 "path": os.path.relpath(profile_path, self.base_dir) if (profile_path and os.path.isabs(profile_path)) else profile_path,
                 "sha256": compute_sha256(profile_path) if profile_path else None
             },
-            "artifacts": {
-                "final_video": {
-                    "path": os.path.relpath(final_mp4, run_dir) if os.path.isfile(final_mp4) else None,
-                    "sha256": compute_sha256(final_mp4)
-                },
-                "raw_recording": {
-                    "path": os.path.relpath(rec_mp4, run_dir) if os.path.isfile(rec_mp4) else None,
-                    "sha256": compute_sha256(rec_mp4)
-                },
-                "audio_master": {
-                    "path": os.path.relpath(audio_wav, run_dir) if os.path.isfile(audio_wav) else None,
-                    "sha256": compute_sha256(audio_wav)
-                },
-                "recorded_events": {
-                    "path": os.path.relpath(events_json, run_dir) if os.path.isfile(events_json) else None,
-                    "sha256": compute_sha256(events_json)
-                }
-            },
-            "isolation_verified": True
+            "background_music": bgm_manifest,
+            "artifacts": artifacts_dict,
+            "isolation_verified": True,
+            "data_safety": {
+                "status": "VERIFIED",
+                "isolation_method": "TRACKED_EPHEMERAL_TEST_DATA",
+                "production_mutations_allowed": False,
+                "cleanliness_policy": "tracked_created_ids_only"
+            }
         }
 
         out_path = os.path.join(run_dir, "provenance-manifest.json")

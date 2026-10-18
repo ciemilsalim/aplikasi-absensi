@@ -401,6 +401,11 @@
                             <span class="material-icons text-base">insights</span>
                             <span>Analitik Visual</span>
                         </a>
+                        <a href="{{ route('teacher.attendance.history') }}" 
+                           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold shadow-md shadow-sky-500/20 transition-all">
+                            <span class="material-icons text-base">assessment</span>
+                            <span>Riwayat & Rekap</span>
+                        </a>
                     </div>
                 </div>
             </div>
