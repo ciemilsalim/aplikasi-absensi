@@ -46,10 +46,25 @@ def get_previous_evidence_hashes(project_dir, current_period_dir=None, target_bo
                             hashes[h] = file
     return hashes
 
-def capture_live_evidence(year=2026, month_num="09", month_slug="september", month_name="September"):
+def capture_live_evidence(year=2026, month_num="09", month_slug="september", month_name="September", student_count=None):
     project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
     env_path = os.path.join(project_dir, ".env.siasek-bos")
     env_vars = load_env(env_path)
+
+    # Determine student_count dynamically if not passed
+    if student_count is None:
+        primary_snap_path = os.path.join(project_dir, f"evidence/bosp/{year}/{month_num}-{month_slug}/billing/billing-snapshot.json")
+        if os.path.exists(primary_snap_path):
+            try:
+                with open(primary_snap_path, "r", encoding="utf-8") as psf:
+                    data = json.load(psf)
+                    student_count = int(data.get("active_student_count", 367))
+            except Exception:
+                student_count = 367
+        else:
+            student_count = 367
+    else:
+        student_count = int(student_count)
 
     base_url = env_vars.get("SIASEK_URL", "https://presensi-smpn1biau.zahradev.id")
     period_dir = os.path.join(project_dir, f"docs/BOSP/live-evidence/{year}/{month_num}-{month_slug}")
@@ -61,7 +76,7 @@ def capture_live_evidence(year=2026, month_num="09", month_slug="september", mon
     os.makedirs(masked_dir, exist_ok=True)
     os.makedirs(quarantine_dir, exist_ok=True)
 
-    # Hard Gate & Quarantine: move any existing September PNGs to quarantine
+    # Hard Gate & Quarantine: move any existing period PNGs to quarantine
     import shutil
     q_timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S_%f')
     for target_dir in [orig_dir, masked_dir]:
@@ -77,7 +92,7 @@ def capture_live_evidence(year=2026, month_num="09", month_slug="september", mon
     ev_specs = [
         {
             "id": "EV-01",
-            "feature": "Live Application Billing Evidence (368 Siswa Aktif)",
+            "feature": f"Live Application Billing Evidence ({student_count} Siswa Aktif)",
             "role": "ADMIN_EVIDENCE",
             "email": env_vars.get("SIASEK_ADMIN_EMAIL", "admin@admin.com"),
             "password": env_vars.get("SIASEK_ADMIN_PASSWORD", "Password123"),
@@ -217,9 +232,9 @@ def capture_live_evidence(year=2026, month_num="09", month_slug="september", mon
                         "source_role": "admin",
                         "source_page": "/admin/dashboard",
                         "source_url": base_url,
-                        "active_student_count": 368,
+                        "active_student_count": student_count,
                         "rate_per_student": 1000,
-                        "total": 368000,
+                        "total": student_count * 1000,
                         "status": "VERIFIED",
                         "frozen": False,
                         "screenshot_ref": filename
@@ -296,6 +311,7 @@ if __name__ == "__main__":
     month_num = "09"
     month_slug = "september"
     month_name = "September"
+    student_count = None
 
     for arg in sys.argv[1:]:
         if arg.startswith("--year="):
@@ -306,6 +322,8 @@ if __name__ == "__main__":
             month_slug = arg.split("=")[1]
         elif arg.startswith("--month-name="):
             month_name = arg.split("=")[1]
+        elif arg.startswith("--student-count="):
+            student_count = int(arg.split("=")[1])
 
-    success = capture_live_evidence(year, month_num, month_slug, month_name)
+    success = capture_live_evidence(year, month_num, month_slug, month_name, student_count)
     sys.exit(0 if success else 1)

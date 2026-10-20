@@ -80,6 +80,77 @@ def sanitize_text(text):
         sanitized = re.sub(pat, repl, sanitized)
     return sanitized
 
+def is_laravel_project(path):
+    """
+    Check if a given path is a valid Laravel project directory.
+    Validates presence of artisan and composer.json without mutating state.
+    """
+    if not path:
+        return False
+    try:
+        p = Path(path).resolve()
+        if not p.is_dir():
+            return False
+        return (p / "artisan").is_file() and (p / "composer.json").is_file()
+    except Exception:
+        return False
+
+
+def resolve_project_root(candidate_root=None, fallback_to_cwd=True, require_laravel=True):
+    """
+    Deterministically resolve and validate Laravel project root path.
+    Enforces a strict 4-tier precedence:
+    1. AUTOPILOT_TEST_PROJECT_ROOT environment variable (if set, must be valid).
+    2. candidate_root (if provided, validated as Laravel project).
+    3. Current working directory (if fallback_to_cwd=True and validated as Laravel project).
+    4. Explicit failure (raises RuntimeError if require_laravel=True; returns None otherwise).
+    Never silently falls back to a non-Laravel directory (e.g. global skill installation).
+    """
+    env_root = os.environ.get("AUTOPILOT_TEST_PROJECT_ROOT")
+    if env_root is not None:
+        cleaned_env = env_root.strip()
+        if not cleaned_env:
+            raise ValueError("AUTOPILOT_TEST_PROJECT_ROOT environment variable is set but empty.")
+        p = Path(cleaned_env).resolve()
+        if not p.is_dir():
+            raise FileNotFoundError(f"Configured AUTOPILOT_TEST_PROJECT_ROOT does not exist: '{cleaned_env}'")
+        if require_laravel and not is_laravel_project(p):
+            raise ValueError(f"Configured AUTOPILOT_TEST_PROJECT_ROOT is not a valid Laravel project (missing artisan or composer.json): '{cleaned_env}'")
+        return p
+
+    # Tier 2: caller-provided candidate_root
+    if candidate_root is not None:
+        try:
+            cand = Path(candidate_root).resolve()
+            if cand.is_dir():
+                if not require_laravel or is_laravel_project(cand):
+                    return cand
+        except Exception:
+            pass
+
+    # Tier 3: Current working directory
+    if fallback_to_cwd:
+        try:
+            cwd = Path.cwd().resolve()
+            if cwd.is_dir():
+                if not require_laravel or is_laravel_project(cwd):
+                    return cwd
+        except Exception:
+            pass
+
+    # Tier 4: No valid Laravel root could be determined
+    if require_laravel:
+        raise RuntimeError(
+            "Could not determine a valid Laravel project root. "
+            "Set AUTOPILOT_TEST_PROJECT_ROOT or execute from within a valid Laravel project directory."
+        )
+    return None
+
+
+# Backward-compatible alias
+resolve_test_project_root = resolve_project_root
+
+
 
 def inspect_effective_test_db(project_root):
     """

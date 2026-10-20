@@ -1,0 +1,89 @@
+{
+    "release": {
+        "name": "siasek-bos",
+        "version": "1.1",
+        "engine_version": "1.1",
+        "release_type": "evidence_generator"
+    },
+    "workspace_state": {
+        "status": "clean_at_release"
+    },
+    "period_type": "CURRENT_PERIOD",
+    "period": {
+        "start": "2026-10-01",
+        "end": "2026-10-31",
+        "evidence_cutoff": "2026-10-20"
+    },
+    "billing": {
+        "snapshot_status": "VERIFIED_SNAPSHOT",
+        "snapshot_date": "2026-10-20",
+        "final_frozen": false,
+        "frozen_at": null,
+        "source_type": "LIVE_APPLICATION",
+        "source_role": "admin",
+        "source_page": "\/admin\/dashboard",
+        "active_student_count": 367,
+        "rate_per_student": 1000,
+        "total": 367000,
+        "snapshot_file": "evidence\/bosp\/2026\/10-oktober\/billing\/billing-snapshot.json"
+    },
+    "git_period_start": "2026-10-01 00:00:00",
+    "git_period_end": "2026-10-20 23:59:59",
+    "future_evidence_detected": "NO",
+    "project_code": "SIASEK-BIAU",
+    "customer": "SMP Negeri 1 Biau",
+    "git_head": "826106d",
+    "invoice_number": "SIASEK-BIAU\/2026\/10\/002",
+    "invoice_status": "ISSUED",
+    "invoice_issued_at": "2026-10-20 10:37:25",
+    "sequence": "002",
+    "provider_contacts": [
+        "ptzahradev@gmail.com",
+        "emilsalimramadhan@gmail.com"
+    ],
+    "application_full_name": "Sistem Informasi Administrasi Sekolah",
+    "screenshots": [
+        "bukti_01_billing_oktober_2026.png",
+        "bukti_02_admin_leave_oktober_2026.png",
+        "bukti_03_teacher_attendance_oktober_2026.png",
+        "bukti_04_kepsek_dashboard_oktober_2026.png",
+        "bukti_05_parent_onboarding_oktober_2026.png",
+        "bukti_06_satpam_scanner_oktober_2026.png",
+        "bukti_07_viewer_dashboard_oktober_2026.png"
+    ],
+    "artifact_directory": "docs\/BOSP\/live-evidence\/masked\/",
+    "features": {
+        "new": 0,
+        "updated": 2,
+        "active": 3,
+        "unverified": 0
+    },
+    "roles": [
+        "Viewer",
+        "Kepala Sekolah",
+        "Guru & Wali Kelas",
+        "Orang Tua",
+        "Satpam \/ Piket",
+        "Admin \/ TU"
+    ],
+    "pdf_files": [
+        "01_invoice\/INVOICE_SIASEK_BIAU_OKTOBER_2026.pdf",
+        "02_rincian_pemanfaatan\/RINCIAN_PEMANFAATAN_SIASEK_BIAU_OKTOBER_2026.pdf",
+        "03_pembaruan_fitur\/PEMBARUAN_FITUR_SIASEK_BIAU_OKTOBER_2026.pdf",
+        "05_evidence_index\/EVIDENCE_INDEX_SIASEK_BIAU_OKTOBER_2026.pdf",
+        "FINAL\/PAKET_BOSP_SIASEK_BIAU_OKTOBER_2026.pdf"
+    ],
+    "qa_status": "PASS",
+    "qa_checks": {
+        "empty_page_qa": "PASS",
+        "content_density_qa": "PASS",
+        "screenshot_scale_qa": "PASS",
+        "orientation_qa": "PASS",
+        "table_overflow": "PASS",
+        "invoice_status_consistency": "PASS",
+        "contact_data": "PASS",
+        "siasek_name_consistency": "PASS",
+        "visual_qa": "PASS"
+    },
+    "generated_at": "2026-10-20 10:40:01"
+}

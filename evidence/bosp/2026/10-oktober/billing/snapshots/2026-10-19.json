@@ -1,0 +1,14 @@
+{
+    "period": "Oktober 2026",
+    "snapshot_date": "2026-10-19",
+    "source_type": "LIVE_APPLICATION",
+    "source_role": "admin",
+    "source_page": "/admin/dashboard",
+    "source_url": "https://presensi-smpn1biau.zahradev.id",
+    "active_student_count": 367,
+    "rate_per_student": 1000,
+    "total": 367000,
+    "status": "VERIFIED",
+    "frozen": false,
+    "screenshot_ref": "bukti_01_billing_oktober_2026.png"
+}

@@ -79,7 +79,7 @@ def diagnose_failure_output(raw_output):
         or "vite.config" in cleaned_output.lower()
         or ("tailwind" in cleaned_output.lower() and "config" in cleaned_output.lower())
     ):
-        m_cfg = re.search(r'(?:in|Error in|at)\s+([^\s:]*(?:postcss|vite|tailwind)\.config\.[a-z0-9]+)', cleaned_output)
+        m_cfg = re.search(r'(?:in|Error in|at)\s+["\']?((?:[a-zA-Z]:[\\/])?[^\s:"\']*(?:postcss|vite|tailwind)\.config\.[a-z0-9]+)', cleaned_output)
         cfg_file = m_cfg.group(1).replace("\\", "/") if m_cfg else ("postcss.config.js" if "postcss" in cleaned_output.lower() else "vite.config.js")
         return {
             "category": "FRONTEND_BUILD_CONFIG_ERROR",
@@ -123,17 +123,22 @@ def diagnose_failure_output(raw_output):
     if (
         "unterminated jsx" in cleaned_output.lower()
         or "[vite:esbuild] transform failed" in cleaned_output.lower()
-        or ("syntaxerror" in cleaned_output and any(ext in cleaned_output for ext in [".jsx", ".tsx", ".vue", ".js", ".ts"]))
+        or ("syntaxerror" in cleaned_output.lower() and any(ext in cleaned_output.lower() for ext in [".jsx", ".tsx", ".vue", ".js", ".ts"]))
     ):
         diagnosis["category"] = "FRONTEND_SYNTAX_ERROR"
         diagnosis["summary"] = "Frontend JSX/TSX syntax error"
         diagnosis["likely_root_cause"] = "Syntax typo, unterminated JSX tag, or invalid token."
 
-        # Extract file and line: e.g., resources/js/Pages/Dashboard.jsx:24:16 or file: resources/js/...:42:10
-        m_fe_loc = re.search(r'(?:file:\s*|\s+in\s+|^|\s)([^\s:]+\.(?:jsx|tsx|vue|js|ts)):(\d+)(?::(\d+))?', cleaned_output, re.MULTILINE)
+        # Extract file and line: e.g., resources/js/Pages/Dashboard.jsx:24:16, file: D:\app\create.tsx:42:10, or "D:/path with space/App.jsx":10:5
+        m_fe_loc = re.search(
+            r'(?:file:\s*|\s+in\s+|\bat\s+|^|\s)(?:["\']((?:[a-zA-Z]:[\\/])?[^"\'\r\n:]+\.(?:jsx|tsx|vue|js|ts))["\']|((?:[a-zA-Z]:[\\/])?[^\s\r\n:]+\.(?:jsx|tsx|vue|js|ts))):(\d+)(?::(\d+))?',
+            cleaned_output,
+            re.MULTILINE
+        )
         if m_fe_loc:
-            diagnosis["file"] = m_fe_loc.group(1).replace("\\", "/")
-            diagnosis["line"] = int(m_fe_loc.group(2))
+            raw_path = m_fe_loc.group(1) or m_fe_loc.group(2)
+            diagnosis["file"] = raw_path.replace("\\", "/").strip()
+            diagnosis["line"] = int(m_fe_loc.group(3))
 
         if "unterminated jsx" in cleaned_output.lower():
             diagnosis["summary"] = "RollupError: Unterminated JSX contents"
@@ -151,9 +156,13 @@ def diagnose_failure_output(raw_output):
         if from_file:
             diagnosis["file"] = from_file.replace("\\", "/")
         else:
-            loc = re.search(r'([^\s:]+\.(?:jsx|tsx|vue|js|ts))', cleaned_output)
+            loc = re.search(
+                r'(?:["\']((?:[a-zA-Z]:[\\/])?[^"\'\r\n:]+\.(?:jsx|tsx|vue|js|ts))["\']|((?:[a-zA-Z]:[\\/])?[^\s\r\n:]+\.(?:jsx|tsx|vue|js|ts)))',
+                cleaned_output
+            )
             if loc:
-                diagnosis["file"] = loc.group(1).replace("\\", "/")
+                raw_loc = loc.group(1) or loc.group(2)
+                diagnosis["file"] = raw_loc.replace("\\", "/").strip()
 
         diagnosis["summary"] = f"Module not found: Failed to resolve import '{mod_name}'"
         diagnosis["likely_root_cause"] = f"Local module or file '{mod_name}' does not exist, or path is mistyped."

@@ -2,10 +2,11 @@
     "SIASEK-BIAU": {
         "project_name": "Aplikasi Presensi SIASEK",
         "customer": "SMP Negeri 1 Biau",
-        "last_sequence": 1,
-        "last_invoice": "SIASEK-BIAU\/2026\/09\/001",
+        "last_sequence": 2,
+        "last_invoice": "SIASEK-BIAU\/2026\/10\/002",
         "issued_invoices": [
-            "SIASEK-BIAU\/2026\/09\/001"
+            "SIASEK-BIAU\/2026\/09\/001",
+            "SIASEK-BIAU\/2026\/10\/002"
         ]
     }
 }
