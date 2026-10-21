@@ -114,6 +114,18 @@ class TeacherAttendanceController extends Controller
             return response()->json(['success' => false, 'message' => $gpsValidation['message']], 422);
         }
 
+        // Cek apakah guru sudah melakukan absensi hari ini
+        $existing = TeacherAttendance::where('teacher_id', $teacher->id)
+            ->whereDate('created_at', $today)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda sudah melakukan absensi hari ini pada pukul ' . $existing->created_at->format('H:i') . ' WITA.'
+            ], 422);
+        }
+
         // 2. Decode and Save Photo Evidence
         $image = $request->photo; // your base64 encoded
         $image = str_replace('data:image/png;base64,', '', $image);

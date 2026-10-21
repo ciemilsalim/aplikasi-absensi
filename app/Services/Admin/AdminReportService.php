@@ -745,7 +745,7 @@ class AdminReportService
         $today = Carbon::today();
         $totalTeachers = Teacher::count();
         $presentToday = TeacherAttendance::whereDate('created_at', $today)
-            ->whereIn('status', ['tepat_waktu', 'terlambat'])
+            ->whereIn('status', ['tepat_waktu', 'terlambat', 'hadir'])
             ->count();
         $lateToday = TeacherAttendance::whereDate('created_at', $today)
             ->where('status', 'terlambat')

@@ -234,9 +234,11 @@ class ScheduleController extends Controller
         // 3. Cek apakah dalam jam sekolah (mengambil dari settings)
         $settings = \App\Models\Setting::pluck('value', 'key');
         $jamMasuk = $settings->get('jam_masuk', '07:30');
+        $jamMasukGuru = $settings->get('jam_masuk_guru', '07:00');
         $jamPulang = $settings->get('jam_pulang_guru') ?: $settings->get('jam_pulang', '16:00');
         
-        $startTime = Carbon::createFromTimeString($jamMasuk)->subMinutes(30);
+        $earliestStart = min($jamMasuk, $jamMasukGuru);
+        $startTime = Carbon::createFromTimeString($earliestStart)->subMinutes(30);
         $endTime = Carbon::createFromTimeString($jamPulang)->addHours(1);
         
         return $now->between($startTime, $endTime);
