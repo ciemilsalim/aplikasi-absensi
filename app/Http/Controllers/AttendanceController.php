@@ -41,7 +41,10 @@ class AttendanceController extends Controller
 
         $scanner = auth()->user();
         $settings = Setting::pluck('value', 'key');
-        $scannedAt = $request->filled('scanned_at') ? Carbon::parse($request->scanned_at) : now();
+        $appTimezone = config('app.timezone', 'Asia/Makassar');
+        $scannedAt = $request->filled('scanned_at')
+            ? Carbon::parse($request->scanned_at)->setTimezone($appTimezone)
+            : now($appTimezone);
 
         $result = $this->processSingleAttendance(
             $request->student_unique_id,
@@ -76,8 +79,12 @@ class AttendanceController extends Controller
         $failed = 0;
         $results = [];
 
+        $appTimezone = config('app.timezone', 'Asia/Makassar');
+
         foreach ($validated['scans'] as $scanItem) {
-            $scannedAt = !empty($scanItem['scanned_at']) ? Carbon::parse($scanItem['scanned_at']) : now();
+            $scannedAt = !empty($scanItem['scanned_at'])
+                ? Carbon::parse($scanItem['scanned_at'])->setTimezone($appTimezone)
+                : now($appTimezone);
             $clientUuid = $scanItem['client_uuid'] ?? null;
 
             try {
@@ -339,6 +346,31 @@ class AttendanceController extends Controller
 
                 $jamPulangSetting = $settings->get('jam_pulang', '16:00');
                 $waktuPulang = $today->copy()->setTimeFromTimeString($jamPulangSetting);
+
+                // Proteksi jeda minimal: Siswa tidak dapat absen pulang jika baru absen masuk kurang dari 15 menit
+                $clockInTime = $attendance->attendance_time ? Carbon::parse($attendance->attendance_time)->setTimezone($now->getTimezone()) : null;
+                $minutesSinceClockIn = $clockInTime ? $clockInTime->diffInMinutes($now, false) : 999;
+                if ($minutesSinceClockIn >= 0 && $minutesSinceClockIn < 15) {
+                    ScanLog::create([
+                        'user_id'        => $scanner?->id,
+                        'user_name'      => $scannerName,
+                        'user_role'      => $scannerRole,
+                        'student_id'     => $student->id,
+                        'student_name'   => $student->name,
+                        'student_nis'    => $student->nis,
+                        'scan_type'      => 'gagal',
+                        'failure_reason' => 'Scan berulang (baru saja absen masuk ' . round($minutesSinceClockIn) . ' menit lalu)',
+                        'scanned_at'     => $scannedAt,
+                    ]);
+                    return [
+                        'code' => 409,
+                        'body' => [
+                            'status' => 'already_clocked_in',
+                            'message' => 'Anda sudah berhasil absen masuk. Absen pulang belum dapat dilakukan sesaat setelah absen masuk.',
+                            'student_name' => $student->name,
+                        ],
+                    ];
+                }
 
                 if ($now->lt($waktuPulang)) {
                     ScanLog::create([

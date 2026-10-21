@@ -273,6 +273,70 @@ class KioskOfflineSyncTest extends TestCase
         $response->assertUnauthorized();
     }
 
+    public function test_browser_iso_utc_scanned_at_converts_to_local_timezone_and_marks_tepat_waktu(): void
+    {
+        $context = $this->setupKioskContext();
+
+        // Di WITA (Asia/Makassar, UTC+8):
+        // Jam 07:15 WITA tanggal 2026-10-12 setara dengan 2026-10-11T23:15:00.000Z di browser
+        $browserUtcIso = '2026-10-11T23:15:00.000Z';
+
+        $response = $this->actingAs($context['scannerUser'])
+            ->postJson(route('attendance.store'), [
+                'student_unique_id' => $context['studentA']->unique_id,
+                'latitude' => -6.200000,
+                'longitude' => 106.816666,
+                'scanned_at' => $browserUtcIso,
+            ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'status' => 'clock_in',
+                'attendance_status' => 'tepat_waktu',
+                'student_name' => 'Budi Pratama',
+            ]);
+
+        $this->assertDatabaseHas('attendances', [
+            'student_id' => $context['studentA']->id,
+            'status' => 'tepat_waktu',
+        ]);
+    }
+
+    public function test_immediate_rescan_within_cooldown_period_does_not_trigger_clock_out(): void
+    {
+        $context = $this->setupKioskContext();
+
+        // Siswa absen masuk jam 07:15
+        $firstScanTime = '2026-10-12 07:15:00';
+        $this->actingAs($context['scannerUser'])
+            ->postJson(route('attendance.store'), [
+                'student_unique_id' => $context['studentA']->unique_id,
+                'latitude' => -6.200000,
+                'longitude' => 106.816666,
+                'scanned_at' => $firstScanTime,
+            ])->assertOk();
+
+        // Siswa memindai lagi 2 menit kemudian (07:17)
+        // Sekalipun jam_pulang diatur pagi hari, proteksi jeda minimal harus mencegah clock_out
+        Setting::updateOrCreate(['key' => 'jam_pulang'], ['value' => '07:00']);
+
+        $secondResponse = $this->actingAs($context['scannerUser'])
+            ->postJson(route('attendance.store'), [
+                'student_unique_id' => $context['studentA']->unique_id,
+                'latitude' => -6.200000,
+                'longitude' => 106.816666,
+                'scanned_at' => '2026-10-12 07:17:00',
+            ]);
+
+        $secondResponse->assertStatus(409)
+            ->assertJson([
+                'status' => 'already_clocked_in',
+            ]);
+
+        $attendance = Attendance::where('student_id', $context['studentA']->id)->first();
+        $this->assertNull($attendance->checkout_time, 'Checkout time must remain NULL within cooldown period');
+    }
+
     public function test_authorized_user_can_render_kiosk_scanner_view(): void
     {
         $context = $this->setupKioskContext();
@@ -288,3 +352,5 @@ class KioskOfflineSyncTest extends TestCase
             ->assertSee('SiasekKioskDB', false);
     }
 }
+
+
