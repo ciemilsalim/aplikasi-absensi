@@ -66,19 +66,23 @@ class SSOController extends Controller
         // 1. Generate a secure random token
         $token = Str::random(60);
 
-        // 2. Clean up any previous expired tokens for this user
+        $appTimezone = config('app.timezone', 'Asia/Makassar');
+        $now = now($appTimezone);
+
+        // 2. Clean up any previous expired tokens for this user (older than 2 days)
         DB::table('sso_tokens')
             ->where('user_id', $user->id)
-            ->orWhere('expires_at', '<', now()->subMinutes(30))
+            ->orWhere('expires_at', '<', $now->copy()->subDays(2))
             ->delete();
 
-        // 3. Store the token in the shared database with a 2-hour expiration
+        // 3. Store the token in the shared database with a 24-hour expiration
+        // Token bersistem one-time use (langsung dihapus saat login), 24 jam mencegah gagal akibat perbedaan zona waktu server
         DB::table('sso_tokens')->insert([
             'user_id'    => $user->id,
             'token'      => $token,
-            'expires_at' => now()->addHours(2),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'expires_at' => $now->copy()->addHours(24),
+            'created_at' => $now,
+            'updated_at' => $now,
         ]);
 
         // 4. Get target LMS URL dynamically based on environment/host
