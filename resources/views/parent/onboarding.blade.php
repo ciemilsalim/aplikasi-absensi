@@ -26,7 +26,6 @@
             }
         }
     </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <style>
         [x-cloak] { display: none !important; }
@@ -227,6 +226,7 @@
                         <button type="button" @click="typedStudentName = matchedStudent.nameOnly; selectedStudentId = matchedStudent.student.id"
                                 class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-extrabold shadow-2xs transition-all shrink-0">
                             Pilih Siswa Ini
+                        </button>
                     </div>
                 </div>
 
@@ -637,5 +637,6 @@
             }
         }
     </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

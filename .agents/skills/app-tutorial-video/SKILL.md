@@ -1,6 +1,6 @@
 ---
 name: app-tutorial-video
-description: Professional Reusable Cross-Project Video Tutorial Engine (V4 Continuous Browser Video, V4.4 Upbeat Jazz Adaptive BGM & Dual Output) — Live Chromium compositor capture, virtual-time clock, minimum-jerk cursor, adaptive ducked background music, multi-framework adapters (Laravel, React/Vite, Generic Web), project profiles, declarative tutorial plans, isolated artifact provenance, and 8-Gate Continuous QA Suite (Gates 24–31).
+description: Professional Reusable Cross-Project Video Tutorial Engine (V4 Continuous Browser Video, V4.4 Upbeat Jazz Adaptive BGM & Dual Output, V4.6 YouTube Publisher & Upload Kit) — Live Chromium compositor capture, virtual-time clock, minimum-jerk cursor, adaptive ducked background music, multi-framework adapters (Laravel, React/Vite, Generic Web), project profiles, declarative tutorial plans, isolated artifact provenance, 8-Gate Continuous QA Suite (Gates 24–31), and automated YouTube Publishing (SEO titles, chapters/timestamps, targeted tags, YouTube Shorts auto-detection, and YouTube Data API v3 integration).
 ---
 
 # App Tutorial Video Skill (V4.4 — Production Standardization)
@@ -58,87 +58,74 @@ Preset V4.4 menjadi standar default produksi terintegrasi:
 | **Output Mode** | `dual` (Desktop & Mobile) | Menghasilkan video terpisah untuk masing-masing viewport. |
 | **Desktop Format** | `1920x1080` (16:9, Landscape) | 60.0 FPS Constant Frame Rate (CFR), libx264 high profile. |
 | **Mobile Format** | `1080x1920` (9:16, Portrait) | 60.0 FPS CFR (viewport 414×736 scaled to 1080×1920). |
-| **BGM Genre** | `upbeat_jazz` | Rhodes Soul Jazz Trio (Rhodes piano, electric bass, swung drums). |
-| **Aset Musik** | `upbeat-jazz-v1.wav` | SHA-256: `cab3b56caf103af4dd402d50265c0bc9ccc2c15bab76be5e7ff4f2d74396abaa` |
-| **Tempo BGM** | `80 BPM` | Relaxed soul pocket groove (zero saxophone). |
-| **Audio Ducking** | Base: `0.16`, Ducked: `0.045` | Attack: `200ms`, Release: `500ms`, Voice advantage: $\ge +24\text{ dB}$. |
-| **Looping & Fade** | Fade In: `1200ms`, Fade Out: `2500ms` | Crossfade seamless 24-bar loop (72.0s). |
-| **Data Safety** | `TRACKED_EPHEMERAL_TEST_DATA` | Dilarang keras memodifikasi/menghapus data bisnis nyata. |
-
-### Aturan Prioritas Konfigurasi (Precedence Hierarchy)
-Jika terjadi perbedaan nilai konfigurasi, engine menerapkan prioritas berjenjang berikut (Level 1 tertinggi):
-1. **Level 1 — Parameter CLI** (`--mode`, `--bgm`, `--bgm-genre`, `--base-volume`, `--ducking-volume`)
-2. **Level 2 — Properti Tutorial Plan** (`mode`, `music: { ... }`, `data_safety: { ... }`)
-3. **Level 3 — Profil Proyek** (`project-profile.json`)
-4. **Level 4 — Default Produksi V4.4** (Preset standar di `audio_mixer.py` & `continuous_pipeline.py`)
-
-> [!IMPORTANT]
-> **Cryptographic Asset Integrity:** Jika file musik `upbeat-jazz-v1.wav` tidak ditemukan atau SHA-256 hash-nya tidak cocok dengan `cab3b56caf103af4dd402d50265c0bc9ccc2c15bab76be5e7ff4f2d74396abaa`, proses produksi **segera dihentikan dengan pesan error fatal** (`ValueError`). Engine tidak akan pernah mengganti musik secara diam-diam.
+| **BGM Genre** | `upbeat_jazz` | Rhodes Soul Jazz Trio (Rhodes, upright bass, brushed drums, 80 BPM). |
+| **BGM Asset** | `resources/audio/music/upbeat-jazz-v1.wav` | SHA-256: `cab3b56caf103af4dd402d50265c0bc9ccc2c15bab76be5e7ff4f2d74396abaa`. |
+| **Base Volume** | `0.18` ($\approx -14\text{ LUFS}$) | Level musik saat jeda hening / tanpa narasi. |
+| **Ducking Volume**| `0.05` | Level musik saat narasi aktif (atenuasi $\ge 3\text{ dB}$, voice adv $\ge 8\text{ dB}$). |
+| **Fade In / Out** | `2.0` detik | Kurva linear fade-in di awal dan fade-out di akhir video. |
+| **Data Safety** | `TRACKED_EPHEMERAL_TEST_DATA` | Dilarang mutasi data produksi nyata; cleanup terbatas ID tes. |
 
 ---
 
-## 3. Dukungan Universal Lintas Aplikasi
+## 3. Struktur Direktori Lintas Proyek
 
-Skill ini dirancang **agnostik terhadap aplikasi sumber**:
-- **Tidak ada selector khusus aplikasi** (seperti SIASEK) yang di-hardcode ke dalam engine global.
-- Setiap aplikasi mendefinisikan alur, URL, selector, dan interaksinya sendiri di `tutorial-plan.json`.
-- Seluruh artefak disimpan terisolasi di direktori proyek: `.tutorial-video/projects/<project_id>/runs/<run_id>/`.
+Pada setiap repositori proyek target, seluruh konfigurasi dan artefak disimpan di dalam folder `.tutorial-video/` yang terisolasi:
+
+```
+<project-root>/
+├── .tutorial-video/
+│   └── projects/
+│       └── <project_id>/
+│           ├── project-profile.json       # Identitas proyek, base URL, preferensi viewport
+│           ├── tutorial-plan.json         # Rencana adegan & aksi tutorial deklaratif
+│           └── runs/
+│               └── <run_id>/              # Direktori run terisolasi per sesi perekaman
+│                   ├── effective-plan.json
+│                   ├── narration.json
+│                   ├── audio/
+│                   ├── recording/
+│                   ├── final/             # Video MP4 (Desktop & Mobile 60 FPS)
+│                   ├── perceptual-evidence/
+│                   ├── youtube/           # YouTube Metadata, Timestamps, Upload Kit & Thumbnail
+│                   ├── qa_v4_report.json
+│                   └── provenance-manifest.json
+```
 
 ---
 
-## 4. Command Line Interface (CLI)
+## 4. Panduan Perintah CLI (Unified CLI)
 
-Gunakan `scripts/cli.py` untuk mengontrol seluruh tahapan:
+CLI terpadu dijalankan melalui `python .agents/skills/app-tutorial-video/scripts/cli.py` (atau dari folder skill global):
 
 ### A. Bootstrap Proyek Baru
+Membuat profil proyek dan rencana tutorial awal secara otomatis melalui inspeksi framework (Laravel, React+Vite, Generic Web):
 ```bash
-python scripts/cli.py bootstrap --workspace-root <path> [--base-url <url>] [--mode dual|mobile|desktop] [--record]
+python .agents/skills/app-tutorial-video/scripts/cli.py bootstrap --workspace-root "." --mode dual
 ```
 
 ### B. Preflight Selector Validation
+Memvalidasi keterjangkauan route dan keberadaan seluruh selektor CSS / DOM sebelum proses rekaman:
 ```bash
-python scripts/cli.py preflight --plan <path/to/tutorial-plan.json> [--workspace-root <path>]
+python .agents/skills/app-tutorial-video/scripts/cli.py preflight --plan ".tutorial-video/projects/<id>/tutorial-plan.json"
 ```
 
-### C. Record Video Tutorial (V4 Continuous)
+### C. Perekaman Video (V4 Continuous Engine)
+Merekam video continuous, melakukan synthesis TTS, render live browser, audio ducking, muxing CFR 60 FPS, menjalankan QA otomatis, dan menyusun YouTube Upload Kit:
 ```bash
-# Default mode: Dual Output (Desktop 1920x1080 + Mobile 1080x1920) dengan Upbeat Jazz
-python scripts/cli.py record --plan <path/to/tutorial-plan.json>
+# Mode Dual (Desktop 1920x1080 & Mobile 1080x1920)
+python .agents/skills/app-tutorial-video/scripts/cli.py record --plan ".tutorial-video/projects/<id>/tutorial-plan.json" --mode dual
 
-# Override mode: Desktop Saja
-python scripts/cli.py record --plan <path/to/tutorial-plan.json> --mode desktop
+# Mode Khusus Mobile (1080x1920 Portrait)
+python .agents/skills/app-tutorial-video/scripts/cli.py record --plan ".tutorial-video/projects/<id>/tutorial-plan.json" --mode mobile
 
-# Override mode: Mobile Saja
-python scripts/cli.py record --plan <path/to/tutorial-plan.json> --mode mobile
-
-# Menggunakan BGM khusus
-python scripts/cli.py record --plan <path/to/tutorial-plan.json> --bgm <path/to/custom.wav>
+# Mode Khusus Desktop (1920x1080 Landscape)
+python .agents/skills/app-tutorial-video/scripts/cli.py record --plan ".tutorial-video/projects/<id>/tutorial-plan.json" --mode desktop
 ```
 
-### D. Quality Assurance Verification (Gates 24–31 & Checklist A–F)
+### D. Audio Preview Cepat (Tanpa Render Video)
+Menghasilkan pratinjau audio mixing dan ducking dalam hitungan detik untuk validasi akustik:
 ```bash
-python scripts/cli.py qa --run-dir <path/to/run_dir>
-```
-
-### E. Fast Audio Preview (Tanpa Browser Rendering)
-```bash
-# Preview Musik Jazz Mandiri (Standalone 35 detik)
-python scripts/preview_bgm.py --genre upbeat_jazz --duration 35 --out <path/to/preview.wav>
-
-# Preview Narasi + Ducking Musik Jazz
-python scripts/preview_bgm.py --narration <path/to/scene.mp3> --genre upbeat_jazz --out <path/to/preview.wav>
-```
-
-### F. Ardi Expression Lab & Evaluasi Suara (V4.5)
-```bash
-# Evaluasi Baseline Ardi vs Gadis (+0% dan -2%)
-python scripts/evaluate_voices.py
-
-# Ardi Expression Lab (4 Profil Pedagogis: Warm, Conversational, Expressive, Baseline + Gadis Ref)
-python scripts/evaluate_ardi_lab.py
-
-# Expressive Narration Lab (Profile D, E, F, G + Stitched Comparisons)
-python scripts/evaluate_expressive_lab.py
+python .agents/skills/app-tutorial-video/scripts/cli.py preview-audio --genre upbeat_jazz --out "preview.wav"
 ```
 
 ---
@@ -152,8 +139,11 @@ Berdasarkan konfirmasi eksplisit pengguna (*Explicit Human Approval: "Setuju —
 - **Parameter Suara**: `rate: "+0%"`, `pitch: "+0Hz"` (pacing native neural transformer).
 - **Gaya Narasi Pemenang**: **Profile F (Warm Conversational)** — Gaya instruktur yang membimbing secara hangat, santun, dan inklusif.
 
-### B. Aturan Penulisan Naskah Tutorial
-1. **Ketentuan Wajib Branding Pembukaan**: Setiap pembukaan tutorial pada scene pertama **wajib memperkenalkan nama aplikasi secara eksplisit sebagai "SIASEK Presensi"** (contoh terverifikasi: *"Halo Bapak dan Ibu Guru Wali Kelas, selamat datang di panduan aplikasi SIASEK Presensi. Hari ini kita bersama-sama akan melihat..."*).
+### B. Aturan Penulisan Naskah Tutorial (Adaptif Lintas Proyek)
+1. **Ketentuan Wajib Branding Pembukaan Dinamis**: Setiap pembukaan tutorial pada scene pertama **wajib memperkenalkan nama resmi aplikasi secara eksplisit sesuai `project_name` pada `project-profile.json` / `APP_NAME`**:
+   - **Proyek SIASEK (`aplikasi-absensi`)**: Wajib menyebut **"SIASEK Presensi"** (contoh: *"Halo Bapak dan Ibu Guru Wali Kelas, selamat datang di panduan aplikasi SIASEK Presensi. Hari ini kita bersama-sama akan melihat..."*).
+   - **Proyek Apotek (`apotek`)**: Wajib menyebut **"Apotek Sehat"** (contoh: *"Halo Rekan-Rekan Staf Farmasi dan Kasir, selamat datang di panduan aplikasi Apotek Sehat. Hari ini kita bersama-sama akan mempelajari..."*).
+   - **Proyek Lainnya**: Wajib menyebut **`<project_name>`** sesuai identitas aplikasi target dan menyapa audiens sesuai peran pengguna (`target_users`).
 2. **Kaidah Frasa Pemandu Natural**: Menggunakan frasa pembimbing yang ramah (*"kita bersama-sama..."*, *"Bagus, datanya sudah lengkap"*, *"Silakan pilih..."*) tanpa menggunakan kata pengisi informal yang canggung (*tanpa kata "Nah" atau "Hmm"*).
 3. **Struktur Klausa Berimbang**: Membatasi kalimat menjadi klausa-klausa pendek (5–8 kata per klausa) yang dipisahkan koma ritmis untuk menghindari intonasi datar (*run-on reading*).
 
@@ -190,7 +180,7 @@ Setiap eksekusi QA memvalidasi 6 seksi checklist produksi otomatis dan 8 Quality
 
 ---
 
-## 6. Protokol Keamanan Data & Isolasi Database
+## 7. Protokol Keamanan Data & Isolasi Database
 
 1. **Larangan Mutasi Data Produksi:** Dilarang keras menghapus, memperbarui, atau memasukkan data ke tabel presensi atau data bisnis nyata aplikasi selama pengujian tutorial.
 2. **Mekanisme Sandbox & Fixture:** Seluruh skenario tutorial yang membutuhkan interaksi penulisan data wajib menggunakan akun pengujian atau data uji efemeral yang dilacak secara eksplisit.
@@ -199,7 +189,55 @@ Setiap eksekusi QA memvalidasi 6 seksi checklist produksi otomatis dan 8 Quality
 
 ---
 
-## 7. Prosedur Menjalankan Pengujian (Testing Guide)
+## 8. YouTube Publishing & Dynamic Metadata Integration (V4.6)
+
+Skill secara otomatis menghasilkan paket publikasi YouTube lengkap yang disesuaikan secara dinamis dengan konten video tutorial yang baru saja direkam:
+
+### A. Fitur Metadata Otomatis & Terstruktur
+1. **Judul Video SEO Optimal (Title)**:
+   - Menghasilkan judul informatif dan menarik berdasarkan `title` rencana tutorial dan nama proyek.
+   - **Deteksi Cerdas YouTube Shorts**: Jika video berformat vertikal `9:16` (mobile) dan durasi $\le 180\text{ detik}$, judul otomatis ditambahkan tag `#Shorts` dan panjang karakter dijaga $\le 100\text{ karakter}$.
+   - Untuk format landscape `16:9`, judul diberi awalan `Tutorial: ` atau format resmi yang mudah dicari.
+2. **Daftar Isi & Timestamps Presisi (YouTube Chapters)**:
+   - Menghitung waktu awal tiap adegan secara matematis dari rekaman event browser/narration.
+   - Wajib diawali dari `00:00` agar YouTube secara otomatis membuat chapter interaktif pada video player.
+3. **Ringkasan Langkah & Deskripsi Menyeluruh (Description)**:
+   - Paragraf pembuka yang ramah dan menarik.
+   - Poin-poin langkah tutorial yang disintesis dari isi narasi aktual tiap scene.
+   - Fitur utama aplikasi, link akses, dan ajakan interaksi (CTA).
+   - Kumpulan hashtag relevan (`#SIASEK #PresensiSekolah #TutorialAplikasi #Shorts`).
+   - Panjang deskripsi dijaga dalam batas aman YouTube ($\le 5.000\text{ karakter}$).
+4. **Tag & Kata Kunci Relevan (Tags)**:
+   - Ekstraksi kata kunci kontekstual dari proyek, fitur, peran pengguna, dan judul adegan.
+   - Panjang total tag dibatasi $\le 500\text{ karakter}$.
+5. **Ekstraksi Thumbnail Siap Upload**:
+   - Memilih frame kunci terbaik dari `perceptual-evidence` atau contact sheet dan mengekspornya ke `<run_dir>/youtube/thumbnail.png`.
+6. **Kategori & Pengaturan Default**:
+   - Kategori default `27` (Pendidikan / Education) atau `28` (Sains & Teknologi).
+   - Visibilitas default: `private` (aman untuk proses review akhir sebelum dipublikasikan).
+   - `selfDeclaredMadeForKids: false`.
+
+### B. Artefak Paket Publikasi YouTube
+Pada setiap proses perekaman tutorial, folder `<run_dir>/youtube/` otomatis memuat:
+- `youtube-metadata.json`: Payload resmi yang siap dikirim langsung ke endpoint Google YouTube Data API v3 (`videos.insert`).
+- `youtube-upload-kit.md`: Dokumentasi rapi siap salin (*copy-paste*) yang memuat Judul, Deskripsi lengkap dengan Timestamps, Tag, dan instruksi upload.
+- `thumbnail.png`: File thumbnail resolusi tinggi yang siap diunggah ke YouTube Studio.
+
+### C. Panduan CLI YouTube
+```powershell
+# 1. Menghasilkan atau memperbarui paket metadata YouTube dari run yang ada:
+python .agents/skills/app-tutorial-video/scripts/cli.py youtube-pack --run-dir "<run_dir>"
+
+# 2. Login OAuth Google YouTube (hanya sekali, token disimpan di .credentials/youtube_token.json):
+python .agents/skills/app-tutorial-video/scripts/cli.py youtube-auth --client-secrets .credentials/client_secret.json
+
+# 3. Upload video langsung ke channel YouTube resmi (wajib flag --confirm-upload demi keamanan):
+python .agents/skills/app-tutorial-video/scripts/cli.py youtube-upload --run-dir "<run_dir>" --privacy private --confirm-upload
+```
+
+---
+
+## 9. Prosedur Menjalankan Pengujian (Testing Guide)
 
 Jalankan seluruh rangkaian tes otomatis menggunakan pytest:
 ```bash
@@ -211,8 +249,8 @@ Rangkaian tes mencakup:
 - `test_adaptive_bgm.py`: Pengujian algoritma audio mixing, kurva ducking, looping, stereo decoding, dan gate audio.
 - `test_dual_output.py`: Pengujian pelacakan artefak dual output desktop dan mobile.
 - `test_narration_humanized.py`: Pengujian validasi segmen narasi V4.5, fallback single string V4.4, sintesis segmented WAV 48kHz, monotonisitas word boundaries, hash BGM, zero database mutation, serta verifikasi kelengkapan Ardi Expression Lab.
+- `test_cross_project_support.py`: Pengujian multi-framework adapters (Laravel, React+Vite, Generic Web) dan resolusi dynamic workspace root.
+- `test_youtube_integration.py`: Pengujian otomatis metadata YouTube, generator timestamps/chapters, deteksi YouTube Shorts, integritas skema JSON YouTube Data API v3, dan gerbang konfirmasi upload.
 
 > [!NOTE]
 > **Batasan Verifikasi Otomatis (Taxonomy Boundary):** Evaluasi kualitas suara narasi manusia, kehangatan intonasi, dan keselarasan ekspresi dicatat dengan status `NOT_VERIFIED (AWAITING_HUMAN_LISTENING)` hingga didengarkan dan dikonfirmasi langsung oleh pengguna manusia. Metrik telemetri audio (RMS, peak dBFS, zero clipping, kelengkapan format audio) diverifikasi secara matematis dengan status `PASS`.
-
-

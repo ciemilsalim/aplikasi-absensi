@@ -45,10 +45,16 @@ if (!planPath || !narrPath || !runDir) {
 function resolvePlaywright() {
   const custom = arg('playwright') || process.env.PLAYWRIGHT_PATH;
   if (custom && fs.existsSync(custom)) return require(custom);
+  const home = process.env.USERPROFILE || process.env.HOME || '';
+  const appData = process.env.APPDATA || '';
   const candidates = [
     path.join(process.cwd(), 'node_modules', 'playwright'),
     arg('workspace-root') ? path.join(arg('workspace-root'), 'node_modules', 'playwright') : null,
+    path.resolve(__dirname, '../../node_modules', 'playwright'),
     path.resolve(__dirname, '../../../../..', 'node_modules', 'playwright'),
+    home ? path.join(home, '.gemini', 'config', 'skills', 'app-tutorial-video', 'node_modules', 'playwright') : null,
+    'D:/laragon/www/siasek/aplikasi-absensi/node_modules/playwright',
+    appData ? path.join(appData, 'npm', 'node_modules', 'playwright') : null,
   ].filter(Boolean);
   for (const c of candidates) {
     try { if (fs.existsSync(c)) return require(c); } catch (_) {}
@@ -360,7 +366,7 @@ async function stepTap(s) {
   const b = await bbox(s.target);
   const x = b.x + b.width * (s.ax ?? 0.5), y = b.y + b.height * (s.ay ?? 0.5);
   await moveTo(x, y);
-  await tapAt(x, y, { label: s.target, bbox: [b.x * DSF, b.y * DSF, b.width * DSF, b.height * DSF] });
+  await tapAt(x, y, { label: s.target, bbox: [b.x * DSF, b.y * DSF, b.width * DSF, b.height * DSF], dispatch: s.dispatch });
 }
 
 async function stepMove(s) {
@@ -552,6 +558,10 @@ function buildChunks(words, text, maxChars) {
     viewport: { width: VW, height: VH }, deviceScaleFactor: DSF, isMobile: MOBILE, hasTouch: MOBILE,
     locale: 'id-ID', timezoneId: 'Asia/Makassar', colorScheme: plan.color_scheme || 'light', reducedMotion: 'no-preference',
   });
+  const twLocal = path.resolve(__dirname, '../../resources/vendor/tailwind-cdn.js');
+  if (fs.existsSync(twLocal)) {
+    await context.route(/cdn\.tailwindcss\.com/, route => route.fulfill({ path: twLocal, contentType: 'application/javascript' }));
+  }
   await context.addInitScript({ path: path.join(__dirname, 'overlay.js') });
   page = await context.newPage();
   cdp = await context.newCDPSession(page);
@@ -565,7 +575,12 @@ function buildChunks(words, text, maxChars) {
     const s = resolveStepForMode(rawS, MOBILE);
     if (s.do === 'skip' || s.skip === true) continue;
     if (s.do === 'goto') await page.goto(s.url, { waitUntil: 'load', timeout: 30000 });
-    else if (s.do === 'fill') await page.locator(s.target).first().fill(s.value);
+    else if (s.do === 'fill') {
+      let val = s.value ?? '';
+      const envMatch = typeof val === 'string' && val.match(/^\$\{([A-Za-z0-9_]+)\}$/);
+      if (envMatch) val = process.env[envMatch[1]] || s.default_value || val;
+      await page.locator(s.target).first().fill(String(val));
+    }
     else if (s.do === 'click' || s.do === 'tap') await page.locator(s.target).first().click();
     else if (s.do === 'wait_for') {
       const deadline = Date.now() + 20000;

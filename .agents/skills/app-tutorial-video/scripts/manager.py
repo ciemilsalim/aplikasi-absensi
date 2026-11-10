@@ -32,13 +32,14 @@ if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
 from catalog import (
     load_catalog, save_catalog, print_catalog_summary,
     stage_pending_catalog, commit_pending_catalog, discard_pending_catalog,
-    load_pending_catalog, update_or_register_tutorial, DEFAULT_CATALOG_PATH
+    load_pending_catalog, update_or_register_tutorial, DEFAULT_CATALOG_PATH,
+    resolve_active_workspace_root
 )
 from inventory import build_feature_inventory, save_feature_inventory, FEATURE_WORKFLOW_DEFINITIONS
 from intelligence import analyze_changes, save_change_report
 from fingerprint import compute_feature_fingerprints
 
-WORKSPACE_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "..", ".."))
+WORKSPACE_ROOT = resolve_active_workspace_root(SCRIPT_DIR)
 
 # ──────────────────────────────────────────────────────────────────────
 # HELPER: FILE HASHING

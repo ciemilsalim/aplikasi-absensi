@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "project_id": "siasek",
+  "run_id": "run_20261101_135451_0d1728",
+  "engine": "TRUE_CONTINUOUS_BROWSER_VIDEO_V4",
+  "created_at": "2026-11-01T14:01:13.221577",
+  "git_commit": "untracked",
+  "plan": {
+    "path": "projects\\siasek\\runs\\run_20261101_135451_0d1728\\effective-plan.json",
+    "sha256": "7d736c8e50a6e4ac23bdd9f5ccd7b20143ccd43fc20b7fb1831b875338a149e7"
+  },
+  "profile": {
+    "path": ".tutorial-video/projects/siasek/project-profile.json",
+    "sha256": "6abcb66d28dd88edca3fba3a10c67a7a372ec9838ebdfb11ac25a8031213c06b"
+  },
+  "background_music": {
+    "enabled": true,
+    "genre": "upbeat_jazz",
+    "tempo_bpm": 80,
+    "instruments": "rhodes_piano, electric_soul_bass, soul_pocket_drums, brushed_hihat, rhodes_bell_chimes",
+    "license": "Royalty-Free Deterministic Procedural Composition (Skill app-tutorial-video)",
+    "path": "..\\.agents\\skills\\app-tutorial-video\\resources\\audio\\music\\upbeat-jazz-v1.wav",
+    "sha256": "cab3b56caf103af4dd402d50265c0bc9ccc2c15bab76be5e7ff4f2d74396abaa",
+    "expected_sha256": "cab3b56caf103af4dd402d50265c0bc9ccc2c15bab76be5e7ff4f2d74396abaa",
+    "base_volume": 0.16,
+    "ducking_volume": 0.045,
+    "fade_in_ms": 1200,
+    "fade_out_ms": 2500,
+    "loop": true
+  },
+  "artifacts": {
+    "final_video": {
+      "path": "final\\final-tutorial.mp4",
+      "sha256": "b8ce1c09615fc7463bf36937be5f91a8357b1f8649aed25a1664b1271d011293"
+    },
+    "raw_recording": {
+      "path": null,
+      "sha256": null
+    },
+    "audio_master": {
+      "path": "audio\\audio-master.wav",
+      "sha256": "3ba97b9351cef015499757130d2ad44f0206d5e7e2af8fa38b769412f4b2cc36"
+    },
+    "recorded_events": {
+      "path": "recording\\events.json",
+      "sha256": "88a0c2b4c577c4d1533fb5a674ec3d27bbaa4eace7e41e0891ba7bc26b097fce"
+    },
+    "final_video_mobile": {
+      "path": "final\\final-tutorial-mobile.mp4",
+      "sha256": "b8ce1c09615fc7463bf36937be5f91a8357b1f8649aed25a1664b1271d011293"
+    },
+    "audio_master_mobile": {
+      "path": "audio\\audio-master-mobile.wav",
+      "sha256": "3ba97b9351cef015499757130d2ad44f0206d5e7e2af8fa38b769412f4b2cc36"
+    }
+  },
+  "isolation_verified": true,
+  "data_safety": {
+    "status": "VERIFIED",
+    "isolation_method": "TRACKED_EPHEMERAL_TEST_DATA",
+    "production_mutations_allowed": false,
+    "cleanliness_policy": "tracked_created_ids_only"
+  }
+}

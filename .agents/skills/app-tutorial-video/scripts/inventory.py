@@ -201,12 +201,19 @@ def load_file_content(workspace_root: str, rel_path: str) -> str:
     return ""
 
 def load_directory_blade_contents(workspace_root: str, rel_dir: str) -> list[str]:
-    abs_dir = os.path.join(workspace_root, rel_dir)
+    abs_path = os.path.join(workspace_root, rel_dir)
     contents = []
-    if os.path.isdir(abs_dir):
-        for root, _, files in os.walk(abs_dir):
+    valid_exts = ('.blade.php', '.jsx', '.tsx', '.vue', '.html')
+    if os.path.isfile(abs_path) and abs_path.endswith(valid_exts):
+        try:
+            with open(abs_path, 'r', encoding='utf-8', errors='ignore') as f:
+                contents.append(f.read())
+        except Exception:
+            pass
+    elif os.path.isdir(abs_path):
+        for root, _, files in os.walk(abs_path):
             for file in sorted(files):
-                if file.endswith('.blade.php'):
+                if file.endswith(valid_exts):
                     p = os.path.join(root, file)
                     try:
                         with open(p, 'r', encoding='utf-8', errors='ignore') as f:
@@ -252,7 +259,7 @@ def build_feature_inventory(workspace_root: str, catalog_data: dict = None) -> d
     is_siasek = any(os.path.isfile(os.path.join(workspace_root, c)) for defn in FEATURE_WORKFLOW_DEFINITIONS for c in defn.get('controller_paths', []))
 
     if not is_siasek:
-        # Cross-project dynamic adapter discovery
+        # Cross-project dynamic adapter discovery with real semantic fingerprinting
         try:
             from adapters import AdapterRegistry
             reg = AdapterRegistry()
@@ -261,17 +268,28 @@ def build_feature_inventory(workspace_root: str, catalog_data: dict = None) -> d
             for df in discovered_flows:
                 fid = df['workflow_id']
                 cat_entry = catalog_tutorials.get(fid)
+                flow_path = df.get('path', '/')
+                flow_controllers = df.get('controllers', [])
+                flow_views = df.get('views', [])
+
+                route_snippets = extract_matching_route_snippets(web_routes, [re.escape(flow_path.strip('/'))] if flow_path.strip('/') else [r"Route::get"])
+                controller_contents = [load_file_content(workspace_root, cp) for cp in flow_controllers if load_file_content(workspace_root, cp)]
+                view_contents = []
+                for vd in flow_views:
+                    view_contents.extend(load_directory_blade_contents(workspace_root, vd))
+
+                fps = compute_feature_fingerprints(route_snippets, view_contents, controller_contents)
                 features.append({
                     "feature_id": fid,
                     "name": df['name'],
                     "target_users": df.get('target_users', ['user']),
-                    "routes": [df.get('path', '/')],
-                    "controllers": [],
-                    "views": [],
+                    "routes": [flow_path],
+                    "controllers": flow_controllers,
+                    "views": flow_views,
                     "status": "active",
                     "tutorial_exists": bool(cat_entry),
                     "tutorial_id": cat_entry.get('tutorial_id') if cat_entry else None,
-                    "fingerprints": {"feature_fingerprint": fid}
+                    "fingerprints": fps
                 })
         except Exception as e:
             print(f"[Inventory] Dynamic adapter fallback warning: {e}")
@@ -348,9 +366,13 @@ def save_feature_inventory(workspace_root: str, inventory_data: dict, out_path: 
     return out_path
 
 if __name__ == '__main__':
-    ws = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "..", ".."))
-    from catalog import load_catalog
-    cat = load_catalog()
+    import argparse
+    from catalog import load_catalog, resolve_active_workspace_root
+    ap = argparse.ArgumentParser(description="Build feature inventory for a project workspace")
+    ap.add_argument("--workspace-root", default=None, help="Target project workspace root")
+    args = ap.parse_args()
+    ws = resolve_active_workspace_root(SCRIPT_DIR, args.workspace_root)
+    cat = load_catalog(os.path.join(ws, ".tutorial-video", "catalog.json"))
     inv = build_feature_inventory(ws, cat)
     p = save_feature_inventory(ws, inv)
     print(f"[Inventory] Successfully generated feature inventory with {inv['total_features']} workflows: {p}")

@@ -28,10 +28,16 @@ function arg(name, fb = null) {
 function resolvePlaywright() {
   const custom = arg('playwright') || process.env.PLAYWRIGHT_PATH;
   if (custom && fs.existsSync(custom)) return require(custom);
+  const home = process.env.USERPROFILE || process.env.HOME || '';
+  const appData = process.env.APPDATA || '';
   const candidates = [
     path.join(process.cwd(), 'node_modules', 'playwright'),
     arg('workspace-root') ? path.join(arg('workspace-root'), 'node_modules', 'playwright') : null,
+    path.resolve(__dirname, '../node_modules', 'playwright'),
     path.resolve(__dirname, '../../../../..', 'node_modules', 'playwright'),
+    home ? path.join(home, '.gemini', 'config', 'skills', 'app-tutorial-video', 'node_modules', 'playwright') : null,
+    'D:/laragon/www/siasek/aplikasi-absensi/node_modules/playwright',
+    appData ? path.join(appData, 'npm', 'node_modules', 'playwright') : null,
   ].filter(Boolean);
   for (const c of candidates) {
     try { if (fs.existsSync(c)) return require(c); } catch (_) {}
@@ -55,6 +61,10 @@ const timeoutMs = parseInt(arg('timeout', '10000'), 10);
     viewport: plan.viewport || { width: 1280, height: 720 },
     isMobile: plan.mode === 'mobile'
   });
+  const twLocal = path.resolve(__dirname, '../resources/vendor/tailwind-cdn.js');
+  if (fs.existsSync(twLocal)) {
+    await context.route(/cdn\.tailwindcss\.com/, route => route.fulfill({ path: twLocal, contentType: 'application/javascript' }));
+  }
   const page = await context.newPage();
   const results = { passed: true, checks: [], errors: [] };
 
@@ -70,7 +80,10 @@ const timeoutMs = parseInt(arg('timeout', '10000'), 10);
         }
       } else if (s.do === 'fill') {
         try {
-          await page.locator(s.target).first().fill(s.value);
+          let val = s.value ?? '';
+          const envMatch = typeof val === 'string' && val.match(/^\\$\\{([A-Za-z0-9_]+)\\}$/);
+          if (envMatch) val = process.env[envMatch[1]] || s.default_value || val;
+          await page.locator(s.target).first().fill(String(val));
           results.checks.push({ step: 'setup:fill', target: s.target, status: 'OK' });
         } catch (e) {
           results.passed = false;
@@ -138,10 +151,13 @@ def validate_plan_selectors(plan_path: str, workspace_root: Optional[str] = None
     try:
         env = os.environ.copy()
         if "NODE_PATH" not in env:
-            # Add workspace node_modules and skill root
             ws_nm = os.path.join(workspace_root or os.getcwd(), "node_modules")
+            skill_nm = os.path.abspath(os.path.join(here, "..", "node_modules"))
             parent_nm = os.path.abspath(os.path.join(here, "..", "..", "..", "..", "node_modules"))
-            env["NODE_PATH"] = os.pathsep.join([p for p in [ws_nm, parent_nm] if os.path.isdir(p)])
+            global_skill_nm = os.path.expanduser("~/.gemini/config/skills/app-tutorial-video/node_modules")
+            shared_fallback_nm = r"D:\laragon\www\siasek\aplikasi-absensi\node_modules"
+            candidates_nm = [ws_nm, skill_nm, parent_nm, global_skill_nm, shared_fallback_nm]
+            env["NODE_PATH"] = os.pathsep.join([p for p in candidates_nm if os.path.isdir(p)])
 
         cmd = ["node", temp_script, "--plan", plan_path]
         if workspace_root:

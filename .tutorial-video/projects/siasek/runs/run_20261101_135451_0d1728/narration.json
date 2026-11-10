@@ -1,0 +1,785 @@
+{
+  "voice": {
+    "name": "id-ID-ArdiNeural",
+    "rate": "+0%",
+    "pitch": "+0Hz"
+  },
+  "scenes": {
+    "scene_01_masukkan_nomor_whatsapp": {
+      "text": "Selamat datang di panduan aplikasi SIASEK Presensi. Untuk menghubungkan akun Anda dengan data anak di sekolah, langkah pertama adalah melengkapi nomor kontak aktif. Ketikkan nomor telepon atau WhatsApp Anda beserta alamat singkat, lalu ketuk tombol lanjut ke langkah berikutnya.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_135451_0d1728\\audio\\scene_01_masukkan_nomor_whatsapp.wav",
+      "duration_ms": 16480.0,
+      "words": [
+        {
+          "w": "Selamat",
+          "s": 100.0,
+          "e": 487.5
+        },
+        {
+          "w": "datang",
+          "s": 487.5,
+          "e": 850.0
+        },
+        {
+          "w": "di",
+          "s": 850.0,
+          "e": 925.0
+        },
+        {
+          "w": "panduan",
+          "s": 925.0,
+          "e": 1275.0
+        },
+        {
+          "w": "aplikasi",
+          "s": 1275.0,
+          "e": 1812.5
+        },
+        {
+          "w": "SIASEK",
+          "s": 1812.5,
+          "e": 2212.5
+        },
+        {
+          "w": "Presensi",
+          "s": 2212.5,
+          "e": 2975.0
+        },
+        {
+          "w": "Untuk",
+          "s": 3825.0,
+          "e": 4075.0
+        },
+        {
+          "w": "menghubungkan",
+          "s": 4075.0,
+          "e": 4575.0
+        },
+        {
+          "w": "akun",
+          "s": 4575.0,
+          "e": 4787.5
+        },
+        {
+          "w": "Anda",
+          "s": 4787.5,
+          "e": 5062.5
+        },
+        {
+          "w": "dengan",
+          "s": 5062.5,
+          "e": 5300.0
+        },
+        {
+          "w": "data",
+          "s": 5300.0,
+          "e": 5487.5
+        },
+        {
+          "w": "anak",
+          "s": 5487.5,
+          "e": 5687.5
+        },
+        {
+          "w": "di",
+          "s": 5687.5,
+          "e": 5762.5
+        },
+        {
+          "w": "sekolah",
+          "s": 5762.5,
+          "e": 6375.0
+        },
+        {
+          "w": "langkah",
+          "s": 6687.5,
+          "e": 6975.0
+        },
+        {
+          "w": "pertama",
+          "s": 6975.0,
+          "e": 7350.0
+        },
+        {
+          "w": "adalah",
+          "s": 7350.0,
+          "e": 7625.0
+        },
+        {
+          "w": "melengkapi",
+          "s": 7625.0,
+          "e": 8025.0
+        },
+        {
+          "w": "nomor",
+          "s": 8025.0,
+          "e": 8300.0
+        },
+        {
+          "w": "kontak",
+          "s": 8300.0,
+          "e": 8600.0
+        },
+        {
+          "w": "aktif",
+          "s": 8600.0,
+          "e": 9162.5
+        },
+        {
+          "w": "Ketikkan",
+          "s": 10400.5,
+          "e": 10763.0
+        },
+        {
+          "w": "nomor",
+          "s": 10763.0,
+          "e": 10950.5
+        },
+        {
+          "w": "telepon",
+          "s": 10950.5,
+          "e": 11350.5
+        },
+        {
+          "w": "atau",
+          "s": 11350.5,
+          "e": 11550.5
+        },
+        {
+          "w": "WhatsApp",
+          "s": 11550.5,
+          "e": 11875.5
+        },
+        {
+          "w": "Anda",
+          "s": 11875.5,
+          "e": 12113.0
+        },
+        {
+          "w": "beserta",
+          "s": 12113.0,
+          "e": 12475.5
+        },
+        {
+          "w": "alamat",
+          "s": 12475.5,
+          "e": 12750.5
+        },
+        {
+          "w": "singkat",
+          "s": 12750.5,
+          "e": 13275.5
+        },
+        {
+          "w": "lalu",
+          "s": 13588.0,
+          "e": 13825.5
+        },
+        {
+          "w": "ketuk",
+          "s": 13825.5,
+          "e": 14025.5
+        },
+        {
+          "w": "tombol",
+          "s": 14025.5,
+          "e": 14288.0
+        },
+        {
+          "w": "lanjut",
+          "s": 14288.0,
+          "e": 14625.5
+        },
+        {
+          "w": "ke",
+          "s": 14625.5,
+          "e": 14700.5
+        },
+        {
+          "w": "langkah",
+          "s": 14700.5,
+          "e": 14963.0
+        },
+        {
+          "w": "berikutnya",
+          "s": 14963.0,
+          "e": 15625.5
+        }
+      ],
+      "segments_count": 2,
+      "sha256": "2fb78a9a776fcea0d73b49d6ee60c5d501bab22f4229471516bb03af7495e547"
+    },
+    "scene_02_pilih_kelas_dan_nama_anak": {
+      "text": "Pada langkah kedua, silakan pilih kelas siswa tempat anak Anda belajar saat ini. Ketikkan nama lengkap anak Anda. Fitur pencocokan cerdas SIASEK akan otomatis mendeteksi dan menampilkan siswa yang sesuai dari database sekolah.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_135451_0d1728\\audio\\scene_02_pilih_kelas_dan_nama_anak.wav",
+      "duration_ms": 14338.0,
+      "words": [
+        {
+          "w": "Pada",
+          "s": 112.5,
+          "e": 300.0
+        },
+        {
+          "w": "langkah",
+          "s": 300.0,
+          "e": 550.0
+        },
+        {
+          "w": "kedua",
+          "s": 550.0,
+          "e": 1087.5
+        },
+        {
+          "w": "silakan",
+          "s": 1362.5,
+          "e": 1787.5
+        },
+        {
+          "w": "pilih",
+          "s": 1787.5,
+          "e": 1987.5
+        },
+        {
+          "w": "kelas",
+          "s": 1987.5,
+          "e": 2175.0
+        },
+        {
+          "w": "siswa",
+          "s": 2175.0,
+          "e": 2500.0
+        },
+        {
+          "w": "tempat",
+          "s": 2500.0,
+          "e": 2775.0
+        },
+        {
+          "w": "anak",
+          "s": 2775.0,
+          "e": 3000.0
+        },
+        {
+          "w": "Anda",
+          "s": 3000.0,
+          "e": 3200.0
+        },
+        {
+          "w": "belajar",
+          "s": 3200.0,
+          "e": 3600.0
+        },
+        {
+          "w": "saat",
+          "s": 3600.0,
+          "e": 3837.5
+        },
+        {
+          "w": "ini",
+          "s": 3837.5,
+          "e": 4262.5
+        },
+        {
+          "w": "Ketikkan",
+          "s": 5462.0,
+          "e": 5912.0
+        },
+        {
+          "w": "nama",
+          "s": 5912.0,
+          "e": 6112.0
+        },
+        {
+          "w": "lengkap",
+          "s": 6112.0,
+          "e": 6412.0
+        },
+        {
+          "w": "anak",
+          "s": 6412.0,
+          "e": 6637.0
+        },
+        {
+          "w": "Anda",
+          "s": 6637.0,
+          "e": 7149.5
+        },
+        {
+          "w": "Fitur",
+          "s": 7987.0,
+          "e": 8299.5
+        },
+        {
+          "w": "pencocokan",
+          "s": 8299.5,
+          "e": 8824.5
+        },
+        {
+          "w": "cerdas",
+          "s": 8824.5,
+          "e": 9112.0
+        },
+        {
+          "w": "SIASEK",
+          "s": 9112.0,
+          "e": 9487.0
+        },
+        {
+          "w": "akan",
+          "s": 9487.0,
+          "e": 9687.0
+        },
+        {
+          "w": "otomatis",
+          "s": 9687.0,
+          "e": 10124.5
+        },
+        {
+          "w": "mendeteksi",
+          "s": 10124.5,
+          "e": 10687.0
+        },
+        {
+          "w": "dan",
+          "s": 10687.0,
+          "e": 10849.5
+        },
+        {
+          "w": "menampilkan",
+          "s": 10849.5,
+          "e": 11312.0
+        },
+        {
+          "w": "siswa",
+          "s": 11312.0,
+          "e": 11737.0
+        },
+        {
+          "w": "yang",
+          "s": 11737.0,
+          "e": 11887.0
+        },
+        {
+          "w": "sesuai",
+          "s": 11887.0,
+          "e": 12262.0
+        },
+        {
+          "w": "dari",
+          "s": 12262.0,
+          "e": 12449.5
+        },
+        {
+          "w": "database",
+          "s": 12449.5,
+          "e": 12899.5
+        },
+        {
+          "w": "sekolah",
+          "s": 12899.5,
+          "e": 13487.0
+        }
+      ],
+      "segments_count": 2,
+      "sha256": "6cb3f6d3b796860ae511e4fe942f9dc23700de222975475441c1dd134e769172"
+    },
+    "scene_03_masukkan_nis_dan_hubungkan": {
+      "text": "Selanjutnya, cantumkan Nomor Induk Siswa atau NIS anak Anda agar akun terverifikasi dan langsung aktif secara otomatis. Pilih hubungan keluarga yang sesuai, kemudian ketuk tombol Hubungkan Siswa Ini di bawah formulir.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_135451_0d1728\\audio\\scene_03_masukkan_nis_dan_hubungkan.wav",
+      "duration_ms": 13354.0,
+      "words": [
+        {
+          "w": "Selanjutnya",
+          "s": 112.5,
+          "e": 912.5
+        },
+        {
+          "w": "cantumkan",
+          "s": 1225.0,
+          "e": 1675.0
+        },
+        {
+          "w": "Nomor",
+          "s": 1675.0,
+          "e": 1887.5
+        },
+        {
+          "w": "Induk",
+          "s": 1887.5,
+          "e": 2100.0
+        },
+        {
+          "w": "Siswa",
+          "s": 2100.0,
+          "e": 2487.5
+        },
+        {
+          "w": "atau",
+          "s": 2487.5,
+          "e": 2700.0
+        },
+        {
+          "w": "NIS",
+          "s": 2700.0,
+          "e": 2887.5
+        },
+        {
+          "w": "anak",
+          "s": 2887.5,
+          "e": 3087.5
+        },
+        {
+          "w": "Anda",
+          "s": 3087.5,
+          "e": 3387.5
+        },
+        {
+          "w": "agar",
+          "s": 3387.5,
+          "e": 3637.5
+        },
+        {
+          "w": "akun",
+          "s": 3637.5,
+          "e": 3850.0
+        },
+        {
+          "w": "terverifikasi",
+          "s": 3850.0,
+          "e": 4575.0
+        },
+        {
+          "w": "dan",
+          "s": 4575.0,
+          "e": 4750.0
+        },
+        {
+          "w": "langsung",
+          "s": 4750.0,
+          "e": 5037.5
+        },
+        {
+          "w": "aktif",
+          "s": 5037.5,
+          "e": 5387.5
+        },
+        {
+          "w": "secara",
+          "s": 5387.5,
+          "e": 5687.5
+        },
+        {
+          "w": "otomatis",
+          "s": 5687.5,
+          "e": 6425.0
+        },
+        {
+          "w": "Pilih",
+          "s": 7634.5,
+          "e": 7859.5
+        },
+        {
+          "w": "hubungan",
+          "s": 7859.5,
+          "e": 8184.5
+        },
+        {
+          "w": "keluarga",
+          "s": 8184.5,
+          "e": 8572.0
+        },
+        {
+          "w": "yang",
+          "s": 8572.0,
+          "e": 8709.5
+        },
+        {
+          "w": "sesuai",
+          "s": 8709.5,
+          "e": 9322.0
+        },
+        {
+          "w": "kemudian",
+          "s": 9609.5,
+          "e": 10022.0
+        },
+        {
+          "w": "ketuk",
+          "s": 10022.0,
+          "e": 10222.0
+        },
+        {
+          "w": "tombol",
+          "s": 10222.0,
+          "e": 10484.5
+        },
+        {
+          "w": "Hubungkan",
+          "s": 10484.5,
+          "e": 10884.5
+        },
+        {
+          "w": "Siswa",
+          "s": 10884.5,
+          "e": 11184.5
+        },
+        {
+          "w": "Ini",
+          "s": 11184.5,
+          "e": 11472.0
+        },
+        {
+          "w": "di",
+          "s": 11472.0,
+          "e": 11597.0
+        },
+        {
+          "w": "bawah",
+          "s": 11597.0,
+          "e": 11872.0
+        },
+        {
+          "w": "formulir",
+          "s": 11872.0,
+          "e": 12509.5
+        }
+      ],
+      "segments_count": 2,
+      "sha256": "9bc77c178bdb035528d9238a8dc702e2695e30386176beefa0dfdb3564fdf633"
+    },
+    "scene_04_konfirmasi_dan_ke_dasbor": {
+      "text": "Data anak Anda kini telah berhasil terhubung dan tercatat aktif. Anda juga dapat menambahkan siswa lain jika memiliki lebih dari satu anak di sekolah. Ketuk tombol Lanjut ke Langkah 3 untuk menyelesaikan aktivasi, dan selamat, Anda kini dapat langsung memantau kehadiran anak Anda di sekolah.",
+      "audio": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_135451_0d1728\\audio\\scene_04_konfirmasi_dan_ke_dasbor.wav",
+      "duration_ms": 17842.0,
+      "words": [
+        {
+          "w": "Data",
+          "s": 100.0,
+          "e": 412.5
+        },
+        {
+          "w": "anak",
+          "s": 412.5,
+          "e": 612.5
+        },
+        {
+          "w": "Anda",
+          "s": 612.5,
+          "e": 825.0
+        },
+        {
+          "w": "kini",
+          "s": 825.0,
+          "e": 1125.0
+        },
+        {
+          "w": "telah",
+          "s": 1125.0,
+          "e": 1325.0
+        },
+        {
+          "w": "berhasil",
+          "s": 1325.0,
+          "e": 1712.5
+        },
+        {
+          "w": "terhubung",
+          "s": 1712.5,
+          "e": 2250.0
+        },
+        {
+          "w": "dan",
+          "s": 2250.0,
+          "e": 2425.0
+        },
+        {
+          "w": "tercatat",
+          "s": 2425.0,
+          "e": 2850.0
+        },
+        {
+          "w": "aktif",
+          "s": 2850.0,
+          "e": 3462.5
+        },
+        {
+          "w": "Anda",
+          "s": 4300.0,
+          "e": 4600.0
+        },
+        {
+          "w": "juga",
+          "s": 4600.0,
+          "e": 4837.5
+        },
+        {
+          "w": "dapat",
+          "s": 4837.5,
+          "e": 5087.5
+        },
+        {
+          "w": "menambahkan",
+          "s": 5087.5,
+          "e": 5550.0
+        },
+        {
+          "w": "siswa",
+          "s": 5550.0,
+          "e": 5862.5
+        },
+        {
+          "w": "lain",
+          "s": 5862.5,
+          "e": 6225.0
+        },
+        {
+          "w": "jika",
+          "s": 6225.0,
+          "e": 6450.0
+        },
+        {
+          "w": "memiliki",
+          "s": 6450.0,
+          "e": 6837.5
+        },
+        {
+          "w": "lebih",
+          "s": 6837.5,
+          "e": 7125.0
+        },
+        {
+          "w": "dari",
+          "s": 7125.0,
+          "e": 7300.0
+        },
+        {
+          "w": "satu",
+          "s": 7300.0,
+          "e": 7550.0
+        },
+        {
+          "w": "anak",
+          "s": 7550.0,
+          "e": 7812.5
+        },
+        {
+          "w": "di",
+          "s": 7812.5,
+          "e": 7887.5
+        },
+        {
+          "w": "sekolah",
+          "s": 7887.5,
+          "e": 8487.5
+        },
+        {
+          "w": "Ketuk",
+          "s": 9698.5,
+          "e": 9923.5
+        },
+        {
+          "w": "tombol",
+          "s": 9923.5,
+          "e": 10186.0
+        },
+        {
+          "w": "Lanjut",
+          "s": 10186.0,
+          "e": 10498.5
+        },
+        {
+          "w": "ke",
+          "s": 10498.5,
+          "e": 10573.5
+        },
+        {
+          "w": "Langkah",
+          "s": 10573.5,
+          "e": 10836.0
+        },
+        {
+          "w": "3",
+          "s": 10836.0,
+          "e": 11161.0
+        },
+        {
+          "w": "untuk",
+          "s": 11161.0,
+          "e": 11398.5
+        },
+        {
+          "w": "menyelesaikan",
+          "s": 11398.5,
+          "e": 11936.0
+        },
+        {
+          "w": "aktivasi",
+          "s": 11936.0,
+          "e": 12686.0
+        },
+        {
+          "w": "dan",
+          "s": 12961.0,
+          "e": 13161.0
+        },
+        {
+          "w": "selamat",
+          "s": 13161.0,
+          "e": 13748.5
+        },
+        {
+          "w": "Anda",
+          "s": 14023.5,
+          "e": 14248.5
+        },
+        {
+          "w": "kini",
+          "s": 14248.5,
+          "e": 14461.0
+        },
+        {
+          "w": "dapat",
+          "s": 14461.0,
+          "e": 14711.0
+        },
+        {
+          "w": "langsung",
+          "s": 14711.0,
+          "e": 15036.0
+        },
+        {
+          "w": "memantau",
+          "s": 15036.0,
+          "e": 15423.5
+        },
+        {
+          "w": "kehadiran",
+          "s": 15423.5,
+          "e": 15848.5
+        },
+        {
+          "w": "anak",
+          "s": 15848.5,
+          "e": 16061.0
+        },
+        {
+          "w": "Anda",
+          "s": 16061.0,
+          "e": 16336.0
+        },
+        {
+          "w": "di",
+          "s": 16336.0,
+          "e": 16398.5
+        },
+        {
+          "w": "sekolah",
+          "s": 16398.5,
+          "e": 16998.5
+        }
+      ],
+      "segments_count": 2,
+      "sha256": "b3b5691856943a8bbc4c5cbabf0841e1ecf84e578d2d7a5cc59523d28b1e4561"
+    }
+  }
+}

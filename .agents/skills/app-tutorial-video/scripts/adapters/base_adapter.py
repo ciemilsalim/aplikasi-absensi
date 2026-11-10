@@ -88,8 +88,21 @@ class BaseAdapter(ABC):
             success_sel = auth_cfg.get("success_selector")
 
             # Reference env vars or safe profile defaults
-            email_val = auth_cfg.get("email_value") or f"${{{auth_cfg.get('email_env', 'TUTORIAL_EMAIL')}}}"
-            pass_val = auth_cfg.get("password_value") or f"${{{auth_cfg.get('password_env', 'TUTORIAL_PASSWORD')}}}"
+            import os
+            email_env = auth_cfg.get("email_env", "TUTORIAL_EMAIL")
+            pass_env = auth_cfg.get("password_env", "TUTORIAL_PASSWORD")
+            email_val = (
+                os.environ.get(email_env)
+                or auth_cfg.get("email_value")
+                or auth_cfg.get("default_email")
+                or f"${{{email_env}}}"
+            )
+            pass_val = (
+                os.environ.get(pass_env)
+                or auth_cfg.get("password_value")
+                or auth_cfg.get("default_password")
+                or f"${{{pass_env}}}"
+            )
 
             setup_steps.append({"do": "fill", "target": email_sel, "value": email_val})
             setup_steps.append({"do": "fill", "target": pass_sel, "value": pass_val})

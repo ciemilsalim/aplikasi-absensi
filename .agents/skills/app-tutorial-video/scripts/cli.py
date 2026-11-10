@@ -4,8 +4,12 @@ cli.py — Unified Command Line Interface for App Tutorial Video Skill.
 Commands:
   bootstrap            Initialize a new project profile and starter plan.
   record               Execute V4 Continuous Browser Video recording.
-  qa                   Run 6-Gate V4 Quality Assurance on a recording run.
+  qa                   Run 8-Gate V4 Quality Assurance on a recording run.
   preflight            Verify route and selector reachability before recording.
+  preview-audio        Generate fast standalone audio preview with adaptive ducking.
+  youtube-pack         Generate or refresh tailored YouTube upload kit & metadata.
+  youtube-auth         Authenticate with Google OAuth 2.0 for YouTube Data API v3.
+  youtube-upload       Upload tutorial video directly to YouTube Channel.
 """
 
 import argparse
@@ -24,6 +28,12 @@ from continuous_qa import run_qa_gates
 from preflight import validate_plan_selectors
 from artifact_manager import ArtifactManager
 from profile import load_profile, apply_profile_to_plan
+from youtube_publisher import (
+    generate_youtube_metadata,
+    run_youtube_oauth,
+    upload_to_youtube,
+    resolve_credentials_dir,
+)
 
 
 def cmd_bootstrap(args):
@@ -140,6 +150,37 @@ def cmd_record(args):
 
     # Generate Provenance Manifest
     mgr.generate_provenance_manifest(project_id, run_info["run_id"], effective_plan_path, profile_path, music_config=music_cfg)
+
+    # Automatically generate tailored YouTube Metadata and Upload Kit
+    try:
+        print("\n[CLI] Generating tailored YouTube Upload Kit & Metadata...")
+        yt_pack = generate_youtube_metadata(
+            run_dir=run_dir,
+            plan_path=effective_plan_path,
+            profile_path=profile_path,
+            privacy=getattr(args, "youtube_privacy", "private") or "private",
+            prefer_mode=getattr(args, "mode", None)
+        )
+        print(f"[CLI] YouTube Title: '{yt_pack['title']}' ({yt_pack['chapters_count']} chapters)")
+        print(f"[CLI] YouTube Upload Kit: {yt_pack['upload_kit_md']}")
+
+        # Direct YouTube upload if requested
+        if getattr(args, "youtube_upload", False):
+            print("\n[CLI] Initiating YouTube upload...")
+            c_dir = resolve_credentials_dir(workspace_root=ws_root, explicit_dir=getattr(args, "creds_dir", None))
+            up_res = upload_to_youtube(
+                run_dir=run_dir,
+                privacy=getattr(args, "youtube_privacy", "private") or "private",
+                creds_dir=c_dir,
+                confirm_upload=getattr(args, "confirm_upload", False),
+                prefer_mode=getattr(args, "mode", None)
+            )
+            print(f"[CLI] YouTube Upload Status: {up_res.get('status')}")
+            if up_res.get("watch_url"):
+                print(f"[CLI] Video Published URL: {up_res.get('watch_url')}")
+    except Exception as e:
+        print(f"[CLI] Warning: YouTube metadata generation encountered an issue: {e}")
+
     print(f"[CLI] Finished recording run. Isolated run directory: {run_dir}")
     return 0
 
@@ -169,16 +210,71 @@ def cmd_qa(args):
     return 0 if report.get("overall_status") == "PASS" else 1
 
 
+def cmd_youtube_pack(args):
+    run_dir = os.path.abspath(args.run_dir)
+    if not os.path.isdir(run_dir):
+        print(f"[ERROR] Run directory not found: {run_dir}")
+        return 1
+
+    res = generate_youtube_metadata(
+        run_dir=run_dir,
+        privacy=args.privacy,
+        category_id=args.category_id,
+        prefer_mode=args.mode
+    )
+    print(json.dumps(res, indent=2))
+    print(f"\n[CLI] YouTube Upload Kit ready at: {res['upload_kit_md']}")
+    return 0
+
+
+def cmd_youtube_auth(args):
+    ws_root = os.path.abspath(args.workspace_root or os.getcwd())
+    c_dir = resolve_credentials_dir(workspace_root=ws_root, explicit_dir=args.creds_dir)
+    sec_path = args.client_secrets or os.path.join(c_dir, "client_secret.json")
+
+    res = run_youtube_oauth(sec_path, c_dir)
+    print(json.dumps(res, indent=2))
+    return 0 if res.get("status") == "OK" else 1
+
+
+def cmd_youtube_upload(args):
+    run_dir = os.path.abspath(args.run_dir)
+    if not os.path.isdir(run_dir):
+        print(f"[ERROR] Run directory not found: {run_dir}")
+        return 1
+
+    ws_root = os.path.abspath(args.workspace_root or os.getcwd())
+    c_dir = resolve_credentials_dir(workspace_root=ws_root, explicit_dir=args.creds_dir)
+
+    res = upload_to_youtube(
+        run_dir=run_dir,
+        privacy=args.privacy,
+        creds_dir=c_dir,
+        confirm_upload=args.confirm_upload,
+        prefer_mode=args.mode
+    )
+    print(json.dumps(res, indent=2))
+    if res.get("status") == "UPLOADED":
+        print(f"\n[SUCCESS] Video live on YouTube: {res.get('watch_url')}")
+        return 0
+    elif res.get("status") == "NEEDS_HUMAN_CONFIRMATION":
+        print(f"\n[CONFIRMATION REQUIRED] {res.get('message')}")
+        return 2
+    else:
+        print(f"\n[SETUP REQUIRED] {res.get('message')}")
+        return 1
+
+
 def main():
-    parser = argparse.ArgumentParser(description="App Tutorial Video CLI (V4 Continuous Engine)")
+    parser = argparse.ArgumentParser(description="App Tutorial Video CLI (V4 Continuous Engine & YouTube Integration)")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Subcommand: bootstrap
     sp_boot = subparsers.add_parser("bootstrap", help="Bootstrap a new project for tutorial creation")
-    sp_boot.add_argument("--workspace-root", required=True)
+    sp_boot.add_argument("--workspace-root", default=os.getcwd(), help="Target project workspace root (defaults to current working directory)")
     sp_boot.add_argument("--project-id", default=None)
     sp_boot.add_argument("--base-url", default=None)
-    sp_boot.add_argument("--mode", default="mobile", choices=["mobile", "desktop"])
+    sp_boot.add_argument("--mode", default="dual", choices=["dual", "mobile", "desktop"])
     sp_boot.add_argument("--record", action="store_true")
     sp_boot.add_argument("--output-dir", default=None)
 
@@ -202,6 +298,9 @@ def main():
     sp_rec.add_argument("--bgm", default=None, help="Path to optional background music audio file")
     sp_rec.add_argument("--bgm-genre", default=None, choices=["upbeat_jazz", "ambient"], help="BGM genre preset")
     sp_rec.add_argument("--mode", default=None, choices=["dual", "desktop", "mobile"], help="Execution mode: dual, desktop, or mobile")
+    sp_rec.add_argument("--youtube-upload", action="store_true", help="Upload immediately to YouTube after recording")
+    sp_rec.add_argument("--youtube-privacy", default="private", choices=["private", "unlisted", "public"], help="Privacy status for YouTube upload")
+    sp_rec.add_argument("--confirm-upload", action="store_true", help="Explicit human confirmation for YouTube upload")
 
     # Subcommand: preview-audio
     sp_prev = subparsers.add_parser("preview-audio", help="Generate fast standalone audio preview with adaptive ducking")
@@ -217,6 +316,28 @@ def main():
     sp_qa = subparsers.add_parser("qa", help="Run V4 Quality Assurance Gates (Gates 24-31)")
     sp_qa.add_argument("--run-dir", required=True)
 
+    # Subcommand: youtube-pack
+    sp_yt = subparsers.add_parser("youtube-pack", help="Generate or refresh tailored YouTube upload kit and metadata")
+    sp_yt.add_argument("--run-dir", required=True, help="Path to run directory")
+    sp_yt.add_argument("--privacy", default="private", choices=["private", "unlisted", "public"], help="Privacy status (default: private)")
+    sp_yt.add_argument("--category-id", default="27", help="YouTube Category ID (default: 27 Education)")
+    sp_yt.add_argument("--mode", default=None, choices=["mobile", "desktop", "dual"], help="Target video mode")
+
+    # Subcommand: youtube-auth
+    sp_yauth = subparsers.add_parser("youtube-auth", help="Authenticate with Google OAuth 2.0 for YouTube Data API v3")
+    sp_yauth.add_argument("--client-secrets", default=None, help="Path to client_secret.json (defaults to .credentials/client_secret.json)")
+    sp_yauth.add_argument("--creds-dir", default=None, help="Path to .credentials directory")
+    sp_yauth.add_argument("--workspace-root", default=None)
+
+    # Subcommand: youtube-upload
+    sp_yup = subparsers.add_parser("youtube-upload", help="Upload tutorial video to YouTube Channel")
+    sp_yup.add_argument("--run-dir", required=True, help="Path to run directory containing final video and metadata")
+    sp_yup.add_argument("--privacy", default="private", choices=["private", "unlisted", "public"], help="Privacy status (default: private)")
+    sp_yup.add_argument("--creds-dir", default=None, help="Path to .credentials directory")
+    sp_yup.add_argument("--confirm-upload", action="store_true", help="Explicit human confirmation to execute upload")
+    sp_yup.add_argument("--mode", default=None, choices=["mobile", "desktop", "dual"], help="Target video mode")
+    sp_yup.add_argument("--workspace-root", default=None)
+
     args = parser.parse_args()
     if args.command == "bootstrap":
         sys.exit(cmd_bootstrap(args))
@@ -228,6 +349,12 @@ def main():
         sys.exit(cmd_preview_audio(args))
     elif args.command == "qa":
         sys.exit(cmd_qa(args))
+    elif args.command == "youtube-pack":
+        sys.exit(cmd_youtube_pack(args))
+    elif args.command == "youtube-auth":
+        sys.exit(cmd_youtube_auth(args))
+    elif args.command == "youtube-upload":
+        sys.exit(cmd_youtube_upload(args))
 
 
 if __name__ == "__main__":

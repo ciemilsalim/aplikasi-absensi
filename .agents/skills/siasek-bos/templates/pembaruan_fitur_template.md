@@ -1,4 +1,4 @@
-# PEMBARUAN FITUR SIASEK — {{PERIOD_NAME}}
+# PEMBARUAN FITUR {{PROJECT_CODE}} — {{PERIOD_NAME}}
 
 **Periode Repository Audit**: {{PERIOD_START}} s.d. {{PERIOD_END}}  
 **Git Commit Cutoff**: `{{GIT_HEAD}}`  
@@ -8,7 +8,7 @@
 ## 1. Klasifikasi Perubahan Aplikasi vs. Infrastruktur Evidence
 
 > [!IMPORTANT]  
-> Sesuai ketentuan audit, perubahan repositori dipisahkan secara tegas antara **Fitur Aplikasi SIASEK (Bisnis)** dengan **Infrastruktur Audit / Tooling Evidence**.
+> Sesuai ketentuan audit, perubahan repositori dipisahkan secara tegas antara **Fitur Aplikasi (Bisnis)** dengan **Infrastruktur Audit / Tooling Evidence**.
 
 ---
 
@@ -25,3 +25,4 @@
 | ITEM / TOOLING | KATEGORI | GIT COMMIT / FILES | ALASAN & RISIKO |
 | :--- | :--- | :--- | :--- |
 {{INFRASTRUCTURE_ROWS}}
+

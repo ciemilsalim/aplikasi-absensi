@@ -1,0 +1,302 @@
+{
+  "version": "4.5.0",
+  "engine": "TRUE_CONTINUOUS_BROWSER_VIDEO_V4",
+  "project_id": "siasek",
+  "title": "Panduan Menghubungkan Data Siswa dengan Akun Orang Tua — SIASEK Presensi",
+  "mode": "mobile",
+  "fps": 60,
+  "target_resolution": [
+    1080,
+    1920
+  ],
+  "viewport": {
+    "width": 414,
+    "height": 736
+  },
+  "voice": {
+    "name": "id-ID-ArdiNeural",
+    "rate": "+0%",
+    "pitch": "+0Hz"
+  },
+  "music": {
+    "enabled": true,
+    "genre": "upbeat_jazz"
+  },
+  "data_safety": {
+    "isolation_method": "ephemeral_test_tracking",
+    "cleanup_policy": "tracked_created_ids_only",
+    "allow_production_mutations": false
+  },
+  "reaction_delay_ms": 300,
+  "color_scheme": "light",
+  "setup": [
+    {
+      "do": "goto",
+      "url": "http://127.0.0.1:8000/login"
+    },
+    {
+      "do": "wait_for",
+      "selector": "#email"
+    },
+    {
+      "do": "fill",
+      "target": "#email",
+      "value": "haidar@gmail.com"
+    },
+    {
+      "do": "fill",
+      "target": "#password",
+      "value": "password"
+    },
+    {
+      "do": "click",
+      "target": "button[type='submit']"
+    },
+    {
+      "do": "wait_for",
+      "selector": "input[type='tel']"
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "scene_01_masukkan_nomor_whatsapp",
+      "narration": "Selamat datang di panduan aplikasi SIASEK Presensi. Untuk menghubungkan akun Anda dengan data anak di sekolah, langkah pertama adalah melengkapi nomor kontak aktif. Ketikkan nomor telepon atau WhatsApp Anda beserta alamat singkat, lalu ketuk tombol lanjut ke langkah berikutnya.",
+      "narration_segments": [
+        {
+          "text": "Selamat datang di panduan aplikasi SIASEK Presensi. Untuk menghubungkan akun Anda dengan data anak di sekolah, langkah pertama adalah melengkapi nomor kontak aktif.",
+          "pause_after_ms": 280
+        },
+        {
+          "text": "Ketikkan nomor telepon atau WhatsApp Anda beserta alamat singkat, lalu ketuk tombol lanjut ke langkah berikutnya.",
+          "pause_after_ms": 220
+        }
+      ],
+      "steps": [
+        {
+          "do": "wait_for",
+          "selector": "input[type='tel']",
+          "budget_ms": 2000
+        },
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "scroll",
+          "by": 100
+        },
+        {
+          "do": "tap",
+          "target": "input[type='tel']"
+        },
+        {
+          "do": "type",
+          "target": "input[type='tel']",
+          "text": "085299887766"
+        },
+        {
+          "do": "hold",
+          "ms": 300
+        },
+        {
+          "do": "tap",
+          "target": "textarea[x-model='address']"
+        },
+        {
+          "do": "type",
+          "target": "textarea[x-model='address']",
+          "text": "Jl. Melati No. 15, Biau"
+        },
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "tap",
+          "target": "button:has-text('Lanjut ke Langkah 2')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "select[x-model='selectedClassId']",
+          "budget_ms": 3000
+        },
+        {
+          "do": "hold",
+          "ms": 500
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_02_pilih_kelas_dan_nama_anak",
+      "narration": "Pada langkah kedua, silakan pilih kelas siswa tempat anak Anda belajar saat ini. Ketikkan nama lengkap anak Anda. Fitur pencocokan cerdas SIASEK akan otomatis mendeteksi dan menampilkan siswa yang sesuai dari database sekolah.",
+      "narration_segments": [
+        {
+          "text": "Pada langkah kedua, silakan pilih kelas siswa tempat anak Anda belajar saat ini.",
+          "pause_after_ms": 250
+        },
+        {
+          "text": "Ketikkan nama lengkap anak Anda. Fitur pencocokan cerdas SIASEK akan otomatis mendeteksi dan menampilkan siswa yang sesuai dari database sekolah.",
+          "pause_after_ms": 220
+        }
+      ],
+      "steps": [
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "select",
+          "target": "select[x-model='selectedClassId']",
+          "value": "10",
+          "picker_title": "Pilih Kelas Siswa"
+        },
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "tap",
+          "target": "input[x-model='typedStudentName']"
+        },
+        {
+          "do": "type",
+          "target": "input[x-model='typedStudentName']",
+          "text": "Najwa Dayani"
+        },
+        {
+          "do": "wait_for",
+          "selector": "button:has-text('Pilih Siswa Ini')",
+          "budget_ms": 3000
+        },
+        {
+          "do": "hold",
+          "ms": 500
+        },
+        {
+          "do": "tap",
+          "target": "button:has-text('Pilih Siswa Ini')"
+        },
+        {
+          "do": "hold",
+          "ms": 500
+        }
+      ],
+      "result_hold_ms": 1200
+    },
+    {
+      "scene_id": "scene_03_masukkan_nis_dan_hubungkan",
+      "narration": "Selanjutnya, cantumkan Nomor Induk Siswa atau NIS anak Anda agar akun terverifikasi dan langsung aktif secara otomatis. Pilih hubungan keluarga yang sesuai, kemudian ketuk tombol Hubungkan Siswa Ini di bawah formulir.",
+      "narration_segments": [
+        {
+          "text": "Selanjutnya, cantumkan Nomor Induk Siswa atau NIS anak Anda agar akun terverifikasi dan langsung aktif secara otomatis.",
+          "pause_after_ms": 250
+        },
+        {
+          "text": "Pilih hubungan keluarga yang sesuai, kemudian ketuk tombol Hubungkan Siswa Ini di bawah formulir.",
+          "pause_after_ms": 220
+        }
+      ],
+      "steps": [
+        {
+          "do": "scroll",
+          "by": 120
+        },
+        {
+          "do": "tap",
+          "target": "input[x-model='verificationCode']"
+        },
+        {
+          "do": "type",
+          "target": "input[x-model='verificationCode']",
+          "text": "1219"
+        },
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "scroll",
+          "by": 80
+        },
+        {
+          "do": "move",
+          "target": "select[x-model='relationship']"
+        },
+        {
+          "do": "hold",
+          "ms": 300
+        },
+        {
+          "do": "tap",
+          "target": "button:has-text('Hubungkan Siswa Ini')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h5:has-text('Najwa Dayani')",
+          "budget_ms": 3000
+        },
+        {
+          "do": "hold",
+          "ms": 800
+        }
+      ],
+      "result_hold_ms": 1400
+    },
+    {
+      "scene_id": "scene_04_konfirmasi_dan_ke_dasbor",
+      "narration": "Data anak Anda kini telah berhasil terhubung dan tercatat aktif. Anda juga dapat menambahkan siswa lain jika memiliki lebih dari satu anak di sekolah. Ketuk tombol Lanjut ke Langkah 3 untuk menyelesaikan aktivasi, dan selamat, Anda kini dapat langsung memantau kehadiran anak Anda di sekolah.",
+      "narration_segments": [
+        {
+          "text": "Data anak Anda kini telah berhasil terhubung dan tercatat aktif. Anda juga dapat menambahkan siswa lain jika memiliki lebih dari satu anak di sekolah.",
+          "pause_after_ms": 250
+        },
+        {
+          "text": "Ketuk tombol Lanjut ke Langkah 3 untuk menyelesaikan aktivasi, dan selamat, Anda kini dapat langsung memantau kehadiran anak Anda di sekolah.",
+          "pause_after_ms": 300
+        }
+      ],
+      "steps": [
+        {
+          "do": "scroll",
+          "by": 140
+        },
+        {
+          "do": "hold",
+          "ms": 400
+        },
+        {
+          "do": "tap",
+          "target": "button:has-text('Lanjut ke Langkah 3')"
+        },
+        {
+          "do": "wait_for",
+          "selector": "h3:has-text('Pendaftaran Siap Digunakan!')",
+          "budget_ms": 3000
+        },
+        {
+          "do": "hold",
+          "ms": 800
+        },
+        {
+          "do": "scroll",
+          "by": 150
+        },
+        {
+          "do": "move",
+          "target": "button:has-text('Selesai & Masuk ke Dasbor Utama')"
+        },
+        {
+          "do": "tap",
+          "target": "button:has-text('Selesai & Masuk ke Dasbor Utama')",
+          "dispatch": false
+        },
+        {
+          "do": "hold",
+          "ms": 1500
+        }
+      ],
+      "result_hold_ms": 1800
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# INVOICE / TAGIHAN LAYANAN SIASEK
+# INVOICE / TAGIHAN LAYANAN {{PROJECT_CODE}}
 
 **Nomor Invoice**: {{INVOICE_NUMBER}}  
 **Status Invoice**: **[{{INVOICE_STATUS}}]**  
@@ -9,9 +9,9 @@
 
 ### ITEM LAYANAN
 
-| No | Deskripsi Layanan | Jumlah Siswa (User) | Tarif / Siswa / Bulan | Total Tagihan |
+| No | Deskripsi Layanan | {{QUANTITY_LABEL}} | {{RATE_LABEL}} | Total Tagihan |
 | :---: | :--- | :---: | ---: | ---: |
-| 1 | **{{SERVICE_NAME}}**<br><span style="font-weight: normal; color: #475569;">Layanan SaaS Presensi Digital, Portal Orang Tua, Executive Analytics & Supervisi Jurnal Guru</span> | {{STUDENT_COUNT}} Siswa | Rp{{RATE_FORMATTED}} | **Rp{{TOTAL_FORMATTED}}** |
+{{INVOICE_ITEM_ROWS}}
 
 **Terbilang**: *{{TERBILANG}}*  
 
@@ -40,4 +40,5 @@ Alamat: {{CUSTOMER_ADDRESS}}
 
 > [!NOTE]  
 > *Dokumen ini merupakan invoice resmi penagihan jasa layanan penggunaan aplikasi dari pihak penyedia.*  
-> ***Bukti pembayaran dilampirkan oleh pihak sekolah.***
+> ***Bukti pembayaran dilampirkan oleh pihak pelanggan/pengelola.***
+

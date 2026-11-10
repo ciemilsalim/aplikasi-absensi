@@ -1,7 +1,7 @@
-# EVIDENCE INDEX — {{PERIOD_NAME}}
+# EVIDENCE INDEX {{PROJECT_CODE}} — {{PERIOD_NAME}}
 
 **Periode Evidence**: {{PERIOD_START}} s.d. {{PERIOD_END}}  
-**Aplikasi**: SIASEK Live ([https://presensi-smpn1biau.zahradev.id](https://presensi-smpn1biau.zahradev.id))  
+**Aplikasi**: {{APPLICATION_NAME}} ({{LIVE_URL}})  
 
 ---
 
@@ -10,3 +10,4 @@
 | ID | FEATURE | ROLE | ROUTE | EVIDENCE TYPE | GIT REFERENCE | SCREENSHOT REF | STATUS |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
 {{EVIDENCE_INDEX_ROWS}}
+

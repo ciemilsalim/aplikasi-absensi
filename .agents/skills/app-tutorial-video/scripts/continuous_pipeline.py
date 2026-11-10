@@ -189,9 +189,13 @@ def pass_b(plan_path, narr_path, run_dir, scene_filter, headed=False, workspace_
     if playwright_path:
         cmd += ['--playwright', playwright_path]
     env = os.environ.copy()
+    ws_nm = os.path.join(workspace_root, 'node_modules') if workspace_root else ''
+    skill_nm = os.path.abspath(os.path.join(HERE, '..', 'node_modules'))
     host_nm = os.path.abspath(os.path.join(HERE, '..', '..', '..', '..', 'node_modules'))
+    global_skill_nm = os.path.expanduser('~/.gemini/config/skills/app-tutorial-video/node_modules')
+    shared_fallback_nm = r'D:\laragon\www\siasek\aplikasi-absensi\node_modules'
     existing_np = env.get('NODE_PATH', '')
-    all_nps = [p for p in [existing_np, host_nm] if p and os.path.isdir(p)]
+    all_nps = [p for p in [existing_np, ws_nm, skill_nm, host_nm, global_skill_nm, shared_fallback_nm] if p and os.path.isdir(p)]
     if all_nps:
         env['NODE_PATH'] = os.pathsep.join(all_nps)
     print(f'[PASS B {"(" + mode.upper() + ")" if mode else ""}]', ' '.join(cmd))

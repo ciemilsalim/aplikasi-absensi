@@ -8,7 +8,19 @@ import shutil
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-WORKSPACE_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "..", ".."))
+
+def resolve_active_workspace_root(script_dir: str = SCRIPT_DIR, explicit_ws: str = None) -> str:
+    if explicit_ws:
+        return os.path.abspath(explicit_ws)
+    env_ws = os.environ.get("TUTORIAL_WORKSPACE_ROOT")
+    if env_ws and os.path.isdir(env_ws):
+        return os.path.abspath(env_ws)
+    norm_sd = script_dir.replace("\\", "/").lower()
+    if "/.gemini/" in norm_sd:
+        return os.path.abspath(os.getcwd())
+    return os.path.abspath(os.path.join(script_dir, "..", "..", "..", ".."))
+
+WORKSPACE_ROOT = resolve_active_workspace_root(SCRIPT_DIR)
 
 DEFAULT_CATALOG_PATH = os.path.join(WORKSPACE_ROOT, ".tutorial-video", "catalog.json")
 DEFAULT_PENDING_CATALOG_PATH = os.path.join(WORKSPACE_ROOT, ".tutorial-video", "catalog.pending.json")

@@ -11,12 +11,19 @@ from typing import Any, Dict, Optional
 
 DEFAULT_VIEWPORTS = {
     "mobile": {"width": 414, "height": 736, "target_resolution": [1080, 1920]},
-    "desktop": {"width": 1920, "height": 1080, "target_resolution": [1920, 1080]}
+    "desktop": {"width": 1920, "height": 1080, "target_resolution": [1920, 1080]},
+    "dual": {
+        "width": 414,
+        "height": 736,
+        "target_resolution": [1080, 1920],
+        "desktop_viewport": {"width": 1920, "height": 1080},
+        "desktop_target_resolution": [1920, 1080]
+    }
 }
 
 DEFAULT_VOICE = {
-    "name": "id-ID-GadisNeural",
-    "rate": "-2%",
+    "name": "id-ID-ArdiNeural",
+    "rate": "+0%",
     "pitch": "+0Hz"
 }
 
@@ -26,13 +33,13 @@ def create_default_profile(
     project_name: str,
     base_url: str,
     framework: str = "generic_web",
-    mode: str = "mobile",
+    mode: str = "dual",
     auth: Optional[Dict[str, Any]] = None,
     server_cmd: Optional[str] = None
 ) -> Dict[str, Any]:
     """Create a new standard Project Profile dictionary."""
-    vp_cfg = DEFAULT_VIEWPORTS.get(mode, DEFAULT_VIEWPORTS["mobile"])
-    return {
+    vp_cfg = DEFAULT_VIEWPORTS.get(mode, DEFAULT_VIEWPORTS["dual"])
+    prof = {
         "version": "1.0.0",
         "project_id": project_id,
         "project_name": project_name,
@@ -55,6 +62,10 @@ def create_default_profile(
         },
         "workflows": []
     }
+    if "desktop_viewport" in vp_cfg:
+        prof["desktop_viewport"] = vp_cfg["desktop_viewport"]
+        prof["desktop_target_resolution"] = vp_cfg["desktop_target_resolution"]
+    return prof
 
 
 def load_profile(path: str) -> Dict[str, Any]:
@@ -88,10 +99,14 @@ def apply_profile_to_plan(profile: Dict[str, Any], plan: Dict[str, Any]) -> Dict
     """
     merged = dict(plan)
     merged.setdefault("project_id", profile.get("project_id"))
-    merged.setdefault("mode", profile.get("mode", "mobile"))
+    merged.setdefault("mode", profile.get("mode", "dual"))
     merged.setdefault("fps", profile.get("fps", 60))
     merged.setdefault("viewport", profile.get("viewport"))
     merged.setdefault("target_resolution", profile.get("target_resolution"))
+    if "desktop_viewport" in profile:
+        merged.setdefault("desktop_viewport", profile.get("desktop_viewport"))
+    if "desktop_target_resolution" in profile:
+        merged.setdefault("desktop_target_resolution", profile.get("desktop_target_resolution"))
     merged.setdefault("voice", profile.get("voice", DEFAULT_VOICE))
     merged.setdefault("reaction_delay_ms", profile.get("reaction_delay_ms", 300))
     merged.setdefault("color_scheme", profile.get("color_scheme", "light"))

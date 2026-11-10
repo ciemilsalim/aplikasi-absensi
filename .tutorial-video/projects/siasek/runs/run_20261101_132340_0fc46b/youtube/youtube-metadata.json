@@ -1,0 +1,48 @@
+{
+  "snippet": {
+    "title": "Panduan Registrasi Akun Orang Tua — SIASEK Presensi #Shorts",
+    "description": "Panduan Registrasi Akun Orang Tua — SIASEK Presensi\n\nVideo panduan resmi cara penggunaan fitur pada aplikasi SIASEK. Ikuti langkah-langkah mudah di bawah ini untuk memahami alur penggunaan secara lengkap.\n\n🕒 DAFTAR ISI & TIMESTAMPS:\n00:00 - Buka Halaman Registrasi\n00:18 - Isi Nama Dan Email\n00:38 - Isi Kata Sandi\n00:57 - Daftarkan Akun\n\n📌 RINGKASAN LANGKAH-LANGKAH:\n1. Buka Halaman Registrasi: Halo Bapak dan Ibu Orang Tua Wali Siswa, selamat datang di panduan aplikasi SIASEK Presensi.\n2. Isi Nama Dan Email: Pada formulir pendaftaran, masukkan Nama Lengkap Anda secara jelas dan benar.\n3. Isi Kata Sandi: Buatlah Kata Sandi yang aman, dengan panjang minimal delapan karakter.\n4. Daftarkan Akun: Setelah seluruh data terisi dengan lengkap, ketuk tombol Daftarkan Akun.\n\n✨ FITUR UTAMA & KEUNGGULAN:\n- Panduan interaktif visual beresolusi tinggi (60 FPS).\n- Navigasi responsif dan ramah pengguna.\n- Terintegrasi langsung dengan database sistem.\n\n🌐 Akses Sistem: http://localhost:8000\nJangan lupa Like, Comment, dan Subscribe untuk mendapatkan panduan fitur terbaru lainnya!\n\n#Shorts #SIASEK #TutorialAplikasi #PresensiSekolah #OrangTuaSiswa #AplikasiPendidikan",
+    "tags": [
+      "siasek",
+      "tutorial siasek",
+      "panduan siasek",
+      "tutorial aplikasi",
+      "panduan sistem",
+      "siasek presensi",
+      "presensi sekolah",
+      "absensi online",
+      "portal orang tua",
+      "wali murid",
+      "aplikasi sekolah",
+      "kehadiran siswa",
+      "tutorial absensi",
+      "registrasi",
+      "akun",
+      "orang",
+      "tua",
+      "presensi",
+      "buka halaman registrasi",
+      "isi nama dan email",
+      "isi kata sandi",
+      "daftarkan akun"
+    ],
+    "categoryId": "27",
+    "defaultLanguage": "id",
+    "defaultAudioLanguage": "id"
+  },
+  "status": {
+    "privacyStatus": "private",
+    "selfDeclaredMadeForKids": false,
+    "embeddable": true,
+    "license": "youtube"
+  },
+  "_metadata": {
+    "project_id": "siasek",
+    "video_path": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_132340_0fc46b\\final\\final-tutorial-mobile.mp4",
+    "duration_sec": 74.37,
+    "is_shorts": true,
+    "aspect_ratio": "9:16",
+    "thumbnail_path": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_132340_0fc46b\\youtube\\thumbnail.png",
+    "generated_at": "2026-11-10T05:46:20.979401+00:00"
+  }
+}

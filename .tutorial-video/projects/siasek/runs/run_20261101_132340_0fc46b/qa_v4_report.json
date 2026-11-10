@@ -1,0 +1,138 @@
+{
+  "engine": "TRUE_CONTINUOUS_BROWSER_VIDEO_V4",
+  "gates": {
+    "gate_24_true_continuous_video": {
+      "status": "PASS",
+      "total_frames": 4462,
+      "cdp_live_capture_ratio": 1.0,
+      "details": []
+    },
+    "gate_25_duplicate_frame_analysis": {
+      "status": "PASS",
+      "active_motion_frames_evaluated": 330,
+      "max_consecutive_move_duplicates": 6,
+      "max_consecutive_tap_duplicates": 0,
+      "active_motion_duplicate_ratio": 0.0424,
+      "details": []
+    },
+    "gate_26_frame_pacing": {
+      "status": "PASS",
+      "target_fps": 60,
+      "measured_fps": 60.0,
+      "cfr_status": "CONSTANT_60FPS",
+      "details": []
+    },
+    "gate_27_motion_continuity": {
+      "status": "PASS",
+      "max_pointer_step_px": 12.09,
+      "teleport_count": 0,
+      "trajectory_profile": "MINIMUM_JERK_QUINTIC",
+      "details": []
+    },
+    "gate_28_real_interaction_motion": {
+      "status": "PASS",
+      "move_events_detected": true,
+      "tap_events_detected": true,
+      "key_stroke_events_count": 60,
+      "total_event_count": 114,
+      "details": []
+    },
+    "gate_29_human_perceptual_motion": {
+      "status": "PASS",
+      "evidence_dir": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_132340_0fc46b\\perceptual-evidence",
+      "contact_sheet": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_132340_0fc46b\\perceptual-evidence\\perceptual_contact_sheet.png",
+      "sampled_frames_count": 6,
+      "details": []
+    },
+    "gate_30_audio_integrity_and_clarity": {
+      "status": "PASS",
+      "audio_stream_integrity": "PASS",
+      "bgm_contribution_verified": "NOT_APPLICABLE (BGM_DISABLED)",
+      "ducking_verified": "NOT_APPLICABLE (BGM_DISABLED)",
+      "clipping_protection": "PASS",
+      "audio_video_sync": "PASS",
+      "listening_review_status": "NOT_VERIFIED (ACOUSTIC_MEASURED_AUDIBLE)",
+      "audio_file": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_132340_0fc46b\\audio\\audio-master.wav",
+      "sample_rate": 48000,
+      "channels": 1,
+      "peak_dbfs": -4.16,
+      "rms_dbfs": -20.44,
+      "duration_diff_ms": 0.0,
+      "clipping_detected": false,
+      "bgm_mode": "DISABLED_BASELINE_CLEAN",
+      "bgm_acoustics": null,
+      "details": [],
+      "narration_completeness_verified": "PASS",
+      "word_boundary_continuity_verified": "PASS",
+      "automated_qa": "PASS",
+      "human_listening": "NOT_VERIFIED"
+    },
+    "gate_31_dual_output_verification": {
+      "status": "PASS",
+      "desktop_render_verified": "NOT_APPLICABLE",
+      "mobile_render_verified": "PASS",
+      "aspect_ratio_resolution_verified": "PASS",
+      "audio_present_in_both_outputs": "PASS",
+      "subtitle_interaction_evidence_available": "PASS",
+      "desktop_output": null,
+      "mobile_output": {
+        "path": "final\\final-tutorial-mobile.mp4",
+        "resolution": "1080x1920",
+        "fps": 60.0,
+        "duration_s": 74.37,
+        "audio_codec": "aac",
+        "is_portrait": true
+      },
+      "details": []
+    }
+  },
+  "overall_status": "PASS",
+  "production_checklist": {
+    "section_a_input_and_provenance": {
+      "status": "PASS",
+      "details": [],
+      "plan_schema_valid": "PASS",
+      "bgm_asset_sha256_verified": "PASS (BGM_DISABLED)",
+      "unique_run_id": "run_20261101_132340_0fc46b",
+      "manifest_provenance_complete": "PASS"
+    },
+    "section_b_video_quality": {
+      "status": "PASS",
+      "details": [],
+      "target_resolutions_verified": "PASS",
+      "fps_cfr_verified": "PASS"
+    },
+    "section_c_audio_engineering": {
+      "status": "PASS",
+      "details": [],
+      "clipping_protection": "PASS",
+      "ducking_dynamics_verified": "NOT_APPLICABLE (BGM_DISABLED)",
+      "bgm_audibility_verified": "NOT_APPLICABLE (BGM_DISABLED)",
+      "final_mp4_audio_streams_verified": "PASS",
+      "automated_qa": "PASS",
+      "human_listening": "NOT_VERIFIED"
+    },
+    "section_d_sync_and_subtitles": {
+      "status": "PASS",
+      "details": [],
+      "master_video_clock_sync": "PASS",
+      "subtitle_narration_alignment": "PASS",
+      "viewport_duration_explanation": "NOT_APPLICABLE (SINGLE_OUTPUT_MODE)"
+    },
+    "section_e_data_safety_and_isolation": {
+      "status": "PASS",
+      "details": [],
+      "isolation_method": "TRACKED_EPHEMERAL_TEST_DATA",
+      "production_mutation_protection": "PASS",
+      "cleanup_boundary_enforced": "PASS"
+    },
+    "section_f_final_deliverables": {
+      "status": "PASS",
+      "details": [],
+      "final_artifacts_accessible": "PASS",
+      "manifest_paths_valid": "PASS"
+    }
+  },
+  "automated_qa": "PASS",
+  "human_listening": "NOT_VERIFIED"
+}

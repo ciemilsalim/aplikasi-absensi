@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0",
+  "project_id": "siasek",
+  "project_name": "SIASEK Presensi",
+  "framework": "laravel",
+  "app_type": "web",
+  "base_url": "http://127.0.0.1:8000",
+  "local_server_cmd": "php artisan serve --port 8000",
+  "mode": "mobile",
+  "viewport": {
+    "width": 414,
+    "height": 736
+  },
+  "target_resolution": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "voice": {
+    "name": "id-ID-ArdiNeural",
+    "rate": "+0%",
+    "pitch": "+0Hz"
+  },
+  "reaction_delay_ms": 300,
+  "result_hold_ms": 1200,
+  "color_scheme": "light",
+  "auth": {
+    "type": "none"
+  },
+  "navigation_rules": {
+    "default_wait_selector": "body",
+    "page_load_timeout_ms": 20000
+  },
+  "workflows": [
+    {
+      "workflow_id": "flow_registrasi_orang_tua",
+      "name": "Registrasi Akun Orang Tua Siswa",
+      "target_users": ["orang_tua"],
+      "description": "Pendaftaran akun baru bagi orang tua atau wali siswa pada portal presensi sekolah.",
+      "path": "/register",
+      "steps": [
+        {"do": "goto", "url": "/login"},
+        {"do": "wait_for", "selector": "body"},
+        {"do": "tap", "target": "a[href*='register']"},
+        {"do": "wait_for", "selector": "#name"}
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,50 @@
+{
+  "snippet": {
+    "title": "Panduan Menghubungkan Data Siswa dengan Akun Orang Tua — SIASEK Presensi #Shorts",
+    "description": "Panduan Menghubungkan Data Siswa dengan Akun Orang Tua — SIASEK Presensi\n\nVideo panduan resmi cara penggunaan fitur pada aplikasi SIASEK. Ikuti langkah-langkah mudah di bawah ini untuk memahami alur penggunaan secara lengkap.\n\n🕒 DAFTAR ISI & TIMESTAMPS:\n00:00 - Masukkan Nomor Whatsapp\n00:31 - Pilih Kelas Dan Nama Anak\n00:57 - Masukkan Nis Dan Hubungkan\n01:21 - Konfirmasi Dan Ke Dasbor\n\n📌 RINGKASAN LANGKAH-LANGKAH:\n1. Masukkan Nomor Whatsapp: Selamat datang di panduan aplikasi SIASEK Presensi.\n2. Pilih Kelas Dan Nama Anak: Pada langkah kedua, silakan pilih kelas siswa tempat anak Anda belajar saat ini.\n3. Masukkan Nis Dan Hubungkan: Selanjutnya, cantumkan Nomor Induk Siswa atau NIS anak Anda agar akun terverifikasi dan langsung aktif secara otomatis.\n4. Konfirmasi Dan Ke Dasbor: Data anak Anda kini telah berhasil terhubung dan tercatat aktif.\n\n✨ FITUR UTAMA & KEUNGGULAN:\n- Panduan interaktif visual beresolusi tinggi (60 FPS).\n- Navigasi responsif dan ramah pengguna.\n- Terintegrasi langsung dengan database sistem.\n\n🌐 Akses Sistem: http://localhost:8000\nJangan lupa Like, Comment, dan Subscribe untuk mendapatkan panduan fitur terbaru lainnya!\n\n#Shorts #SIASEK #TutorialAplikasi #PresensiSekolah #OrangTuaSiswa #AplikasiPendidikan",
+    "tags": [
+      "siasek",
+      "tutorial siasek",
+      "panduan siasek",
+      "tutorial aplikasi",
+      "panduan sistem",
+      "siasek presensi",
+      "presensi sekolah",
+      "absensi online",
+      "portal orang tua",
+      "wali murid",
+      "aplikasi sekolah",
+      "kehadiran siswa",
+      "tutorial absensi",
+      "menghubungkan",
+      "data",
+      "siswa",
+      "akun",
+      "orang",
+      "tua",
+      "presensi",
+      "masukkan nomor whatsapp",
+      "pilih kelas dan nama anak",
+      "masukkan nis dan hubungkan",
+      "konfirmasi dan ke dasbor"
+    ],
+    "categoryId": "27",
+    "defaultLanguage": "id",
+    "defaultAudioLanguage": "id"
+  },
+  "status": {
+    "privacyStatus": "private",
+    "selfDeclaredMadeForKids": false,
+    "embeddable": true,
+    "license": "youtube"
+  },
+  "_metadata": {
+    "project_id": "siasek",
+    "video_path": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_135451_0d1728\\final\\final-tutorial-mobile.mp4",
+    "duration_sec": 108.87,
+    "is_shorts": true,
+    "aspect_ratio": "9:16",
+    "thumbnail_path": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.tutorial-video\\projects\\siasek\\runs\\run_20261101_135451_0d1728\\youtube\\thumbnail.png",
+    "generated_at": "2026-11-10T05:49:21.344426+00:00"
+  }
+}

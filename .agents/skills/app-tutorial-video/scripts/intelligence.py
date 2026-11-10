@@ -192,7 +192,12 @@ def save_change_report(workspace_root: str, report_data: dict, out_path: str = N
     return out_path
 
 if __name__ == '__main__':
-    ws = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "..", ".."))
+    import argparse
+    from catalog import resolve_active_workspace_root
+    ap = argparse.ArgumentParser(description="Analyze tutorial changes against current workspace")
+    ap.add_argument("--workspace-root", default=None, help="Target project workspace root")
+    args = ap.parse_args()
+    ws = resolve_active_workspace_root(SCRIPT_DIR, args.workspace_root)
     cat = load_catalog(os.path.join(ws, ".tutorial-video", "catalog.json"))
     inv = build_feature_inventory(ws, cat)
     rep = analyze_changes(cat, inv)

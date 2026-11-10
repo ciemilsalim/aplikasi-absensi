@@ -1,0 +1,463 @@
+{
+  "sample_rate": 48000,
+  "source": "recording\\events-mobile.json",
+  "background_music": {
+    "enabled": true,
+    "genre": "upbeat_jazz",
+    "expected_sha256": "cab3b56caf103af4dd402d50265c0bc9ccc2c15bab76be5e7ff4f2d74396abaa",
+    "file": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.agents\\skills\\app-tutorial-video\\resources\\audio\\music\\upbeat-jazz-v1.wav",
+    "base_volume": 0.16,
+    "ducking_volume": 0.045,
+    "ducking_attack_ms": 200,
+    "ducking_release_ms": 500,
+    "fade_in_ms": 1200,
+    "fade_out_ms": 2500,
+    "loop": true,
+    "tempo_bpm": 80,
+    "instruments": "rhodes_piano, electric_soul_bass, soul_pocket_drums, brushed_hihat, rhodes_bell_chimes",
+    "license": "Royalty-Free Deterministic Procedural Composition (Skill app-tutorial-video)",
+    "file_rel": "resources\\audio\\music\\upbeat-jazz-v1.wav",
+    "sha256_verified": true,
+    "sha256": "cab3b56caf103af4dd402d50265c0bc9ccc2c15bab76be5e7ff4f2d74396abaa"
+  },
+  "bgm_acoustics": {
+    "bgm_present": true,
+    "ducked_bgm_rms_dbfs": -45.85,
+    "pause_bgm_rms_dbfs": -35.33,
+    "speech_master_rms_dbfs": -18.28,
+    "measured_voice_advantage_db": 27.57,
+    "measured_ducking_attenuation_db": 10.52,
+    "audible": false
+  },
+  "placements": [
+    {
+      "kind": "narration",
+      "at_ms": 200,
+      "dur_ms": 12784.0,
+      "ref": "scene_01_buka_halaman_registrasi"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 15216.667,
+      "dur_ms": 45.0,
+      "ref": "a[href*='register']"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 18416.667,
+      "dur_ms": 11098.0,
+      "ref": "scene_02_isi_nama_dan_email"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 30783.333,
+      "dur_ms": 45.0,
+      "ref": "#name"
+    },
+    {
+      "kind": "key",
+      "at_ms": 31150,
+      "dur_ms": 30.0,
+      "ref": "S"
+    },
+    {
+      "kind": "key",
+      "at_ms": 31250,
+      "dur_ms": 30.0,
+      "ref": "r"
+    },
+    {
+      "kind": "key",
+      "at_ms": 31350,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 31500,
+      "dur_ms": 30.0,
+      "ref": " "
+    },
+    {
+      "kind": "key",
+      "at_ms": 31650,
+      "dur_ms": 30.0,
+      "ref": "W"
+    },
+    {
+      "kind": "key",
+      "at_ms": 31900,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 32033.333,
+      "dur_ms": 30.0,
+      "ref": "h"
+    },
+    {
+      "kind": "key",
+      "at_ms": 32133.333,
+      "dur_ms": 30.0,
+      "ref": "y"
+    },
+    {
+      "kind": "key",
+      "at_ms": 32283.333,
+      "dur_ms": 30.0,
+      "ref": "u"
+    },
+    {
+      "kind": "key",
+      "at_ms": 32416.667,
+      "dur_ms": 30.0,
+      "ref": "n"
+    },
+    {
+      "kind": "key",
+      "at_ms": 32533.333,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 33900,
+      "dur_ms": 45.0,
+      "ref": "#email"
+    },
+    {
+      "kind": "key",
+      "at_ms": 34266.667,
+      "dur_ms": 30.0,
+      "ref": "s"
+    },
+    {
+      "kind": "key",
+      "at_ms": 34416.667,
+      "dur_ms": 30.0,
+      "ref": "r"
+    },
+    {
+      "kind": "key",
+      "at_ms": 34550,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 34700,
+      "dur_ms": 30.0,
+      "ref": "."
+    },
+    {
+      "kind": "key",
+      "at_ms": 34900,
+      "dur_ms": 30.0,
+      "ref": "w"
+    },
+    {
+      "kind": "key",
+      "at_ms": 35050,
+      "dur_ms": 30.0,
+      "ref": "a"
+    },
+    {
+      "kind": "key",
+      "at_ms": 35183.333,
+      "dur_ms": 30.0,
+      "ref": "h"
+    },
+    {
+      "kind": "key",
+      "at_ms": 35333.333,
+      "dur_ms": 30.0,
+      "ref": "y"
+    },
+    {
+      "kind": "key",
+      "at_ms": 35483.333,
+      "dur_ms": 30.0,
+      "ref": "u"
+    },
+    {
+      "kind": "key",
+      "at_ms": 35583.333,
+      "dur_ms": 30.0,
+      "ref": "n"
+    },
+    {
+      "kind": "key",
+      "at_ms": 35700,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 35816.667,
+      "dur_ms": 30.0,
+      "ref": "@"
+    },
+    {
+      "kind": "key",
+      "at_ms": 35950,
+      "dur_ms": 30.0,
+      "ref": "c"
+    },
+    {
+      "kind": "key",
+      "at_ms": 36083.333,
+      "dur_ms": 30.0,
+      "ref": "o"
+    },
+    {
+      "kind": "key",
+      "at_ms": 36233.333,
+      "dur_ms": 30.0,
+      "ref": "n"
+    },
+    {
+      "kind": "key",
+      "at_ms": 36333.333,
+      "dur_ms": 30.0,
+      "ref": "t"
+    },
+    {
+      "kind": "key",
+      "at_ms": 36466.667,
+      "dur_ms": 30.0,
+      "ref": "o"
+    },
+    {
+      "kind": "key",
+      "at_ms": 36616.667,
+      "dur_ms": 30.0,
+      "ref": "h"
+    },
+    {
+      "kind": "key",
+      "at_ms": 36733.333,
+      "dur_ms": 30.0,
+      "ref": "."
+    },
+    {
+      "kind": "key",
+      "at_ms": 36900,
+      "dur_ms": 30.0,
+      "ref": "i"
+    },
+    {
+      "kind": "key",
+      "at_ms": 37000,
+      "dur_ms": 30.0,
+      "ref": "d"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 38983.333,
+      "dur_ms": 9994.0,
+      "ref": "scene_03_isi_kata_sandi"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 50250,
+      "dur_ms": 45.0,
+      "ref": "#password"
+    },
+    {
+      "kind": "key",
+      "at_ms": 50616.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 50733.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 50850,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 51083.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 51216.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 51333.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 51433.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 51533.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 51666.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 51750,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 51866.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 51983.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 52100,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 52233.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 53583.333,
+      "dur_ms": 45.0,
+      "ref": "#password_confirmation"
+    },
+    {
+      "kind": "key",
+      "at_ms": 53950,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 54100,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 54250,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 54366.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 54466.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 54600,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 54750,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 54850,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 55000,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 55150,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 55283.333,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 55416.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 55550,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "key",
+      "at_ms": 55666.667,
+      "dur_ms": 30.0,
+      "ref": "*"
+    },
+    {
+      "kind": "narration",
+      "at_ms": 57683.333,
+      "dur_ms": 10810.0,
+      "ref": "scene_04_daftarkan_akun"
+    },
+    {
+      "kind": "tap",
+      "at_ms": 70316.667,
+      "dur_ms": 45.0,
+      "ref": "button[type='submit']"
+    },
+    {
+      "kind": "background_music",
+      "file": "D:\\laragon\\www\\siasek\\aplikasi-absensi\\.agents\\skills\\app-tutorial-video\\resources\\audio\\music\\upbeat-jazz-v1.wav",
+      "base_volume": 0.16,
+      "ducking_volume": 0.045,
+      "at_ms": 0.0,
+      "dur_ms": 74366.7,
+      "ref": "bgm"
+    }
+  ]
+}

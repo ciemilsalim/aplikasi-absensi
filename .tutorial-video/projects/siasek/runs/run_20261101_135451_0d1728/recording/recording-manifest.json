@@ -1,0 +1,38 @@
+{
+  "engine": "TRUE_CONTINUOUS_BROWSER_VIDEO_V4",
+  "mode": "mobile",
+  "capture_method": "Per-virtual-frame CDP Page.captureScreenshot of the live Chromium compositor; fake clock + virtual animation timeline",
+  "video_pipeline": "B (continuous browser capture) -> libx264 CFR",
+  "evidence_pipeline": "A (clean screenshots in evidence/, never used as video frames)",
+  "fps": 60,
+  "frames": 6532,
+  "duration_ms": 108866.667,
+  "frame_sources": {
+    "cdp_live_capture": 6532,
+    "still_image": 0,
+    "repeated": 0,
+    "interpolated": 0
+  },
+  "mobile": true,
+  "viewport": [
+    414,
+    736
+  ],
+  "dsf": 2.608695652173913,
+  "output": [
+    1080,
+    1920
+  ],
+  "video": "recording/continuous-mobile-60fps.mp4",
+  "video_sha256": "af41dced692012768b057b117bc94c3dda350564edb96c38370e4d07b28f5dc4",
+  "wall_clock_capture_s": 229.1,
+  "capture_speed_x_realtime": 0.475,
+  "scenes": [
+    "scene_01_masukkan_nomor_whatsapp",
+    "scene_02_pilih_kelas_dan_nama_anak",
+    "scene_03_masukkan_nis_dan_hubungkan",
+    "scene_04_konfirmasi_dan_ke_dasbor"
+  ],
+  "warnings": [],
+  "created_at": "2026-11-01T05:59:45.790Z"
+}
