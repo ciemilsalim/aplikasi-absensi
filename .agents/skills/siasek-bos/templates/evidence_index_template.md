@@ -1,13 +1,13 @@
-# EVIDENCE INDEX {{PROJECT_CODE}} — {{PERIOD_NAME}}
+# INDEKS BUKTI OPERASIONAL LAYANAN {{PROJECT_CODE}} — {{PERIOD_NAME}}
 
-**Periode Evidence**: {{PERIOD_START}} s.d. {{PERIOD_END}}  
 **Aplikasi**: {{APPLICATION_NAME}} ({{LIVE_URL}})  
+**Periode Layanan**: {{PERIOD_START}} s.d. {{PERIOD_END}}  
+**Pelanggan**: {{CUSTOMER_NAME}}  
 
 ---
 
-## Tabel Indeks Bukti (Evidence Index)
+## Tabel Indeks Bukti Layanan Operasional
 
-| ID | FEATURE | ROLE | ROUTE | EVIDENCE TYPE | GIT REFERENCE | SCREENSHOT REF | STATUS |
-| :---: | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
+| KODE BUKTI | NAMA FITUR & LAYANAN | ROLE PENGGUNA | MODUL APLIKASI | JENIS BUKTI LAYANAN | LAMPIRAN GAMBAR | STATUS OPERASIONAL |
+| :---: | :--- | :--- | :--- | :--- | :--- | :---: |
 {{EVIDENCE_INDEX_ROWS}}
-

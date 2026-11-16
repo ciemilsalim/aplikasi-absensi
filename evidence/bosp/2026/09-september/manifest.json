@@ -1,8 +1,8 @@
 {
     "release": {
         "name": "siasek-bos",
-        "version": "2.0",
-        "engine_version": "2.0-universal",
+        "version": "2.1",
+        "engine_version": "2.1-universal",
         "domain_type": "SCHOOL_BOSP"
     },
     "period_type": "HISTORICAL_PERIOD_USING_VERIFIED_SNAPSHOT",
@@ -21,14 +21,15 @@
         "snapshot_date": "2026-09-28",
         "final_frozen": true,
         "source_type": "FROZEN_LIVE_SNAPSHOT",
-        "quantity": 368,
-        "unit": "Siswa",
+        "quantity": "368 Siswa",
         "rate": 1000,
+        "include_hosting": false,
+        "hosting_rate": 0,
         "total": 368000,
         "snapshot_file": "evidence\/bosp\/2026\/09-september\/billing\/billing-snapshot.json"
     },
     "invoice_number": "SIASEK-BIAU\/2026\/09\/002",
     "invoice_status": "DRAFT",
     "qa_status": "PASS",
-    "generated_at": "2026-10-28 16:01:26"
+    "generated_at": "2026-11-17 01:08:16"
 }

@@ -1,6 +1,6 @@
 ---
 name: siasek-bos
-description: Automation skill untuk menghasilkan Paket Dokumen Tagihan, Laporan Pemanfaatan, Pembaruan Fitur, dan Bukti Layanan Software (SIASEK BOSP Presensi Sekolah, Apotek Sehat, dan aplikasi SaaS/Laravel lainnya) berbasis Git, Live Application, Billing Reconciliation, dan Snapshot.
+description: Automation skill untuk menghasilkan Paket Dokumen Tagihan, Laporan Pemanfaatan, Daftar Fitur Berdasarkan Role, dan Bukti Layanan Software (SIASEK BOSP Presensi Sekolah, Apotek Sehat, dan aplikasi SaaS/Laravel lainnya) bebas dari istilah teknis/developer untuk kebutuhan SPJ/LPJ resmi.
 command_pattern: "/siasek-bos bulan <bulan> <tahun>"
 inputs:
   bulan: "Nama bulan dalam bahasa Indonesia (misal: september, agustus, oktober)"
@@ -9,40 +9,86 @@ inputs:
 
 # Universal Evidence & Billing Package Generator (`/siasek-bos`)
 
-Skill ini digunakan untuk membuat **Paket Dokumen Tagihan, Rincian Pemanfaatan Layanan, Pembaruan Fitur, dan Bukti Operasional Software** yang adaptif untuk berbagai jenis aplikasi:
-1. **Aplikasi Presensi SIASEK** (Paket Dokumen Pendukung BOSP SMP Negeri 1 Biau).
+Skill ini digunakan untuk membuat **Paket Dokumen Tagihan, Rincian Pemanfaatan Layanan, Daftar Lengkap Fitur Aplikasi Berdasarkan Role, dan Bukti Operasional Software** yang adaptif untuk berbagai jenis aplikasi:
+1. **Aplikasi Presensi SIASEK** (Paket Dokumen Pendukung SPJ/LPJ BOSP SMP Negeri 1 Biau).
 2. **Aplikasi Apotek Sehat** (Paket Bukti Layanan Manajemen Obat, POS Kasir, Resep Racikan, & Laba Rugi).
-3. **Aplikasi SaaS / Laravel Lainnya** (Otomatis mendeteksi `APP_NAME`, `APP_URL`, dan model billing proyek).
+3. **Aplikasi SaaS / Laravel Lainnya** (Otomatis mendeteksi profil aplikasi dan model billing proyek).
 
 > [!IMPORTANT]
 > - Skill ini menghasilkan **PAKET BUKTI PENYEDIA / LAYANAN** resmi dari ZahraDev (Emil Salim, S.Kom).
-> - Untuk sekolah (SIASEK), paket ini berfungsi sebagai dokumen pendukung SPJ/LPJ BOSP.
+> - Seluruh lampiran dokumen telah diformat **BEBAS DARI HAL-HAL TEKNIS** (tanpa git commit hash, tanpa path file source code, tanpa nama controller/middleware, tanpa raw route URL, dan tanpa tabel developer tooling).
+> - Lampiran langsung memuat **DAFTAR SELURUH FITUR APLIKASI BERDASARKAN ROLE PENGGUNA** sehingga siap diaudit oleh Kepala Sekolah, Komite Sekolah, Dinas Pendidikan, dan Inspektorat BOSP.
 > - **JANGAN** membuat bukti pembayaran. Bukti pembayaran dilampirkan oleh pihak pelanggan/sekolah/mitra.
 
 ---
 
-## 1. Konsep Utama Keamanan & Pembekuan Tagihan (Billing Provenance & Safety)
+## 1. Struktur Lampiran Bebas Hal Teknis (Role-Based Feature Catalog)
 
-1. **Auto-Domain & Profile Detection**:
-   Generator secara cerdas mendeteksi profil domain aplikasi (`SCHOOL_BOSP`, `APOTEK`, atau `GENERAL_SAAS`) berdasarkan folder kerja dan file konfigurasi.
-2. **Live Billing Snapshot (Bulan Berjalan)**:
-   Pada bulan berjalan (`CURRENT_PERIOD`), kuantitas billing diambil dari aplikasi live atau metrik sistem aktif.
-3. **Frozen Verified Snapshot**:
-   Ketika billing dinyatakan `VERIFIED` dan lulus `QA PASS`, hasilnya dibekukan ke `evidence/<bosp|billing>/<YYYY>/<MM>-<bulan>/billing/billing-snapshot.json`.
-4. **Historical Period Reuse**:
-   Untuk bulan yang telah berlalu (`HISTORICAL_PERIOD`), generator mengulang penggunaan **Frozen Verified Snapshot** yang ada pada direktori target untuk menjaga integritas data historis.
+Pada dokumen lampiran `03_pembaruan_fitur` (Daftar Fitur Layanan) dan `05_evidence_index` (Indeks Bukti Operasional), hal-hal teknis dihilangkan dan digantikan dengan katalog fitur fungsional lengkap yang dikelompokkan berdasarkan hak akses pengguna (*role*):
+
+### Daftar Pengelompokan Role SIASEK Presensi:
+1. **Role Administrator & Operator Sekolah (Tata Usaha)**
+   - Dashboard Statistik Kehadiran Real-Time
+   - Manajemen Data Siswa & Alokasi Rombel
+   - Pencetakan Kartu Tanda Siswa Ber-QR Code Presisi
+   - Registrasi Wajah Siswa (Face Recognition)
+   - Manajemen Pendidik & Tenaga Kependidikan (PTK)
+   - Verifikasi & Persetujuan Akun Mandiri Orang Tua
+   - Manajemen Tahun Ajaran & Kalender Pendidikan
+   - Pengaturan Jadwal Pelajaran Mingguan
+   - Intervensi Izin & Sakit Siswa Manual Terintegrasi
+   - Penerbitan Surat E-Dispensasi Siswa & Pass Gerbang
+   - Koreksi Kehadiran Resmi & Audit Trail BOSP
+   - Monitoring Scanner & Log Presensi Masuk/Pulang
+   - Rekapitulasi Laporan Presensi Lengkap (PDF & Excel)
+   - Supervisi & Validasi Jurnal Mengajar Guru
+   - Pengelolaan Kegiatan Ekstrakurikuler
+   - Saluran Komunikasi Resmi Tata Usaha - Orang Tua
+   - Pengaturan Geofencing Sekolah & Pencadangan Data Rutin
+
+2. **Role Guru & Wali Kelas**
+   - Dashboard Pengajar & Wali Kelas
+   - Presensi Mata Pelajaran (Digital & Pemindai QR Mapel)
+   - Jurnal Pembelajaran Guru Digital & Cetak Dokumen
+   - Catatan Anekdot & Observasi Karakter Siswa
+   - Validasi & Persetujuan Permohonan Izin Siswa Kelas Binaan
+   - Rekapitulasi Kehadiran Triwulan & Semester (Lampiran Rapor)
+   - Presensi Mandiri Pendidik (Wajah & Radius Koordinat)
+   - Pencatatan Presensi Kegiatan Ekstrakurikuler
+   - Konsultasi Interaktif Guru - Orang Tua
+
+3. **Role Kepala Sekolah (Executive Management)**
+   - Executive Dashboard Overview (Grafik Tren 14 Hari)
+   - Supervisi Kehadiran Dewan Guru & PTK
+   - Supervisi Keterlaksanaan Jurnal Mengajar Guru
+   - Audit & Akuntabilitas Laporan BOSP
+
+4. **Role Orang Tua / Wali Murid**
+   - Dashboard Notifikasi Kehadiran Anak Real-Time
+   - Onboarding Aktivasi Data Anak Mandiri (3 Langkah Mudah)
+   - Dukungan Multi-Anak (Parent Switcher)
+   - Pengajuan Izin & Sakit Online dari Rumah (Upload Surat Dokter)
+   - Riwayat Presensi & Catatan Wali Kelas Lengkap
+   - Pemantauan Kehadiran Ekstrakurikuler Anak
+   - Saluran Konsultasi Resmi Sekolah
+
+5. **Role Petugas Keamanan / Satpam (Piket & Gerbang)**
+   - Kiosk Pemindai Kartu Siswa (Gate Scanner) Cepat
+   - Kiosk Pemindai Wajah Siswa (Face Recognition Kiosk)
+   - Mode Pemindaian Offline & Sinkronisasi Otomatis
+   - Verifikasi Surat Izin Keluar Gerbang (Permit Scanner)
 
 ---
 
 ## 2. Alur Eksekusi Automated Workflow
 
-Saat perintah `/siasek-bos bulan <bulan> <tahun>` dipanggil (misal: `/siasek-bos bulan oktober 2026`):
+Saat perintah `/siasek-bos bulan <bulan> <tahun>` dipanggil (misal: `/siasek-bos bulan september 2026`):
 
 ```mermaid
 graph TD
     A["1. Dynamic Domain & Project Detection"] --> B["2. Check Frozen Snapshot / Live Billing"]
-    B --> C["3. Git Commit Cutoff & Feature Analysis"]
-    C --> D["4. Privacy, Role Matrix & Evidence Mapping"]
+    B --> C["3. Role-Based Feature Catalog Assembly (Non-Technical)"]
+    C --> D["4. Privacy Masking & Visual Evidence Mapping"]
     D --> E["5. QA Gate & Stale Artifact Protection"]
     E --> F["6. Generate Dynamic Markdown & PDFs"]
     F --> G["7. Manifest & CLI Output Report"]
@@ -50,19 +96,18 @@ graph TD
 
 ---
 
-## 3. Langkah-Langkah Eksekusi Skill
+## 3. Cara Menjalankan Skill
 
-### Langkah 1: Run Automation Script
-Jalankan helper script dari root repositori aplikasi manapun:
+Jalankan perintah generate paket dari root repositori aplikasi:
 
 ```bash
 php .agents/skills/siasek-bos/scripts/generate_bosp_package.php --month=<bulan> --year=<tahun>
 ```
-*(Atau jika dipanggil secara global via Antigravity, skrip otomatis mengarahkan ke root workspace aktif)*
 
-### Langkah 2: Evaluasi Output & QA Status
-- **Current Period**: Mengambil data LIVE, menyimpan `billing-snapshot.json` jika verified.
-- **Historical Period**: Menggunakan `billing-snapshot.json` yang dibekukan. Jika tidak ada snapshot terverifikasi, QA status = `BLOCKED`.
+Contoh:
+```bash
+php .agents/skills/siasek-bos/scripts/generate_bosp_package.php --month=september --year=2026
+```
 
 ---
 
@@ -79,14 +124,11 @@ evidence/bosp/2026/09-september/
 ├── 03_pembaruan_fitur/
 │   └── PEMBARUAN_FITUR_SIASEK_BIAU_SEPTEMBER_2026.pdf
 ├── 04_screenshots/
-│   ├── bukti_billing_september_2026.png
-│   └── bukti_admin_leave_intervention_september_2026.png
+│   └── bukti_01 s/d bukti_07 (.png)
 ├── 05_evidence_index/
 │   └── EVIDENCE_INDEX_SIASEK_BIAU_SEPTEMBER_2026.pdf
 ├── billing/
-│   ├── billing-snapshot.json
-│   └── snapshots/
-│       └── 2026-09-27.json
+│   └── billing-snapshot.json
 ├── FINAL/
 │   └── PAKET_BOSP_SIASEK_BIAU_SEPTEMBER_2026.pdf
 └── manifest.json
@@ -94,37 +136,8 @@ evidence/bosp/2026/09-september/
 
 ---
 
-## 5. Format Laporan Akhir CLI Output
-
-```text
-SNAPSHOT CREATED:
-YES/NO
-
-SNAPSHOT FILE:
-...
-
-STUDENT COUNT:
-...
-
-SNAPSHOT DATE:
-...
-
-FROZEN:
-YES/NO
-
-HISTORICAL REUSE:
-PASS/FAIL
-
-STALE ARTIFACT PROTECTION:
-PASS/FAIL
-
-AUGUST:
-...
-
-SEPTEMBER:
-...
-
-QA:
-PASS/BLOCKED
-```
-
+## 5. Ringkasan Kepatuhan & Jaminan Mutu (Quality Gates)
+- **Non-Technical Assurance**: Tidak ada commit hashes, git revisions, directory structures, code files, route URLs, atau tabel infrastruktur developer pada dokumen lampiran.
+- **Role Completeness**: Seluruh fitur aktif aplikasi terdaftar secara mendalam dan jelas berdasarkan peran pengguna.
+- **Visual Integrity**: Tangkapan layar bukti operasional ter-skala rapi dan beresolusi jelas.
+- **Audit Ready**: Siap digunakan langsung sebagai dokumen fisik pendukung SPJ/LPJ BOSP.
