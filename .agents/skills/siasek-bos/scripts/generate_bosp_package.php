@@ -1181,6 +1181,20 @@ $manifest = [
 ];
 file_put_contents("{$targetDir}/manifest.json", json_encode($manifest, JSON_PRETTY_PRINT));
 
+if (!empty($qaFailures)) {
+    $blockedReport = "# BLOCKED EVIDENCE REPORT — {$monthNameIndo} {$yearInput}\n\n";
+    $blockedReport .= "**Tanggal Audit**: " . date('Y-m-d H:i:s') . "\n";
+    $blockedReport .= "**Period Type**: `{$periodType}`\n";
+    $blockedReport .= "**Billing Status**: `{$billingStatus}`\n";
+    $blockedReport .= "**Snapshot Status**: `{$snapshotStatus}`\n";
+    $blockedReport .= "**QA Status**: **BLOCKED**\n\n";
+    $blockedReport .= "## Alasan Pemblokiran Paket (Blocking Reasons)\n\n";
+    foreach ($qaFailures as $fail) {
+        $blockedReport .= "- {$fail}\n";
+    }
+    file_put_contents("{$targetDir}/BLOCKED_REPORT_{$monthUpper}_{$yearInput}.md", $blockedReport);
+}
+
 // CLI Output Summary
 echo "=====================================================\n";
 echo " UNIVERSAL EVIDENCE & BILLING GENERATOR RESULT\n";

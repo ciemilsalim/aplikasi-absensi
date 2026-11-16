@@ -1,6 +1,6 @@
 # BLOCKED EVIDENCE REPORT — Juli 2026
 
-**Tanggal Audit**: 2026-09-27 14:36:10
+**Tanggal Audit**: 2026-11-17 01:37:34
 **Period Type**: `HISTORICAL_PERIOD`
 **Billing Status**: `UNVERIFIED`
 **Snapshot Status**: `UNVERIFIED`
