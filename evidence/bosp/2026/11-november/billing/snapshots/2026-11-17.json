@@ -1,0 +1,20 @@
+{
+    "period": "November 2026",
+    "snapshot_status": "VERIFIED_SNAPSHOT",
+    "snapshot_date": "2026-11-17",
+    "source_type": "LIVE_APPLICATION",
+    "source_role": "admin",
+    "source_page": "\/admin\/dashboard",
+    "source_url": "https:\/\/presensi-smpn1biau.zahradev.id",
+    "active_quantity": 367,
+    "active_student_count": 367,
+    "billing_unit": "Siswa",
+    "rate_per_unit": 1000,
+    "include_hosting": false,
+    "hosting_rate": 0,
+    "total": 367000,
+    "status": "VERIFIED",
+    "final_frozen": false,
+    "frozen_at": null,
+    "screenshot_ref": "bukti_01_billing_november_2026.png"
+}

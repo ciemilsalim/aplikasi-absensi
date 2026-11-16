@@ -927,6 +927,9 @@ foreach ($evidenceIndexItems as $evItem) {
     $candidatePaths = [
         "{$projectDir}/docs/evidence/{$imgFile}",
         "{$projectDir}/evidence/screenshots/{$imgFile}",
+        "{$projectDir}/docs/BOSP/live-evidence/{$yearInput}/{$monthFormatted}-{$monthSlug}/masked/{$imgFile}",
+        "{$projectDir}/docs/BOSP/live-evidence/{$yearInput}/{$monthFormatted}-{$monthSlug}/original/{$imgFile}",
+        "{$projectDir}/docs/BOSP/live-evidence/{$yearInput}/{$monthFormatted}-{$monthSlug}/{$imgFile}",
         "{$projectDir}/docs/BOSP/live-evidence/masked/{$imgFile}",
         "{$projectDir}/docs/BOSP/live-evidence/{$imgFile}",
         "{$ssDir}/{$imgFile}"

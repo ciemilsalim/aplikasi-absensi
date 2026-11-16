@@ -1,0 +1,35 @@
+{
+    "release": {
+        "name": "siasek-bos",
+        "version": "2.1",
+        "engine_version": "2.1-universal",
+        "domain_type": "SCHOOL_BOSP"
+    },
+    "period_type": "CURRENT_PERIOD",
+    "period": {
+        "start": "2026-11-01",
+        "end": "2026-11-30",
+        "evidence_cutoff": "2026-11-17"
+    },
+    "project": {
+        "code": "SIASEK-BIAU",
+        "name": "Aplikasi Presensi SIASEK",
+        "customer": "SMP Negeri 1 Biau"
+    },
+    "billing": {
+        "snapshot_status": "VERIFIED_SNAPSHOT",
+        "snapshot_date": "2026-11-17",
+        "final_frozen": false,
+        "source_type": "LIVE_APPLICATION",
+        "quantity": "367 Siswa",
+        "rate": 1000,
+        "include_hosting": false,
+        "hosting_rate": 0,
+        "total": 367000,
+        "snapshot_file": "evidence\/bosp\/2026\/11-november\/billing\/billing-snapshot.json"
+    },
+    "invoice_number": "SIASEK-BIAU\/2026\/11\/001",
+    "invoice_status": "DRAFT",
+    "qa_status": "PASS",
+    "generated_at": "2026-11-17 01:13:55"
+}
