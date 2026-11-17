@@ -20,7 +20,7 @@
         "snapshot_status": "FINAL_FROZEN_SNAPSHOT",
         "snapshot_date": "2026-07-31",
         "final_frozen": true,
-        "source_type": "HISTORICAL_ADMIN_SPECIFIED",
+        "source_type": "FROZEN_LIVE_SNAPSHOT",
         "quantity": "368 Siswa",
         "rate": 1000,
         "include_hosting": false,
@@ -28,9 +28,9 @@
         "total": 368000,
         "snapshot_file": "evidence\/bosp\/2026\/07-juli\/billing\/billing-snapshot.json"
     },
-    "invoice_number": "SIASEK-BIAU\/2026\/07\/001",
-    "invoice_status": "DRAFT",
+    "invoice_number": "SIASEK-BIAU\/2026\/07\/004",
+    "invoice_status": "ISSUED",
     "generation_mode": "INVOICE_ONLY",
     "qa_status": "PASS",
-    "generated_at": "2026-11-17 08:31:20"
+    "generated_at": "2026-11-17 08:32:26"
 }
