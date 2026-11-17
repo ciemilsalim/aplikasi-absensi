@@ -11,9 +11,9 @@
 
 | No | Deskripsi Layanan | Jumlah Siswa (User) | Tarif / Siswa / Bulan | Total Tagihan |
 | :---: | :--- | :---: | ---: | ---: |
-| 1 | **Jasa Layanan Penggunaan Aplikasi Presensi SIASEK**<br><span style="font-weight: normal; color: #475569;">Layanan SaaS Presensi Digital, Portal Orang Tua, Executive Analytics & Supervisi Jurnal Guru</span> |  Siswa | Rp1.000 | **Rp0** |
+| 1 | **Jasa Layanan Penggunaan Aplikasi Presensi SIASEK**<br><span style="font-weight: normal; color: #475569;">Layanan SaaS Presensi Digital, Portal Orang Tua, Executive Analytics & Supervisi Jurnal Guru</span> | 368 Siswa | Rp1.000 | **Rp368.000** |
 
-**Terbilang**: * Rupiah*  
+**Terbilang**: *Tiga Ratus Enam Puluh Delapan Ribu  Rupiah*  
 
 ---
 

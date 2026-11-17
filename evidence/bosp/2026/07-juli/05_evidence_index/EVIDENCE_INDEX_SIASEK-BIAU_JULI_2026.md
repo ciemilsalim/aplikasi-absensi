@@ -10,7 +10,7 @@
 
 | KODE BUKTI | NAMA FITUR & LAYANAN | ROLE PENGGUNA | MODUL APLIKASI | JENIS BUKTI LAYANAN | LAMPIRAN GAMBAR | STATUS OPERASIONAL |
 | :---: | :--- | :--- | :--- | :--- | :--- | :---: |
-| EV-01 | Bukti Penggunaan Aktif Aplikasi & Basis Data Siswa ( Siswa Aktif) | Administrator & Tata Usaha | Dashboard Utama & Data Siswa | Verifikasi Data Operasional | `bukti_01_billing_juli_2026.png` | **AKTIF & TERVERIFIKASI** |
+| EV-01 | Bukti Penggunaan Aktif Aplikasi & Basis Data Siswa (368 Siswa Aktif) | Administrator & Tata Usaha | Dashboard Utama & Data Siswa | Verifikasi Data Operasional | `bukti_01_billing_juli_2026.png` | **AKTIF & TERVERIFIKASI** |
 | EV-02 | Intervensi Izin & Sakit Siswa Manual Terintegrasi | Administrator & Tata Usaha | Pelayanan Perizinan Siswa | Tangkapan Layar Operasional | `bukti_02_admin_leave_juli_2026.png` | **AKTIF & TERVERIFIKASI** |
 | EV-03 | Pencatatan Presensi Mata Pelajaran & Jurnal Mengajar | Guru Mata Pelajaran & Wali Kelas | Portal Pembelajaran & Presensi Kelas | Tangkapan Layar Operasional | `bukti_03_teacher_attendance_juli_2026.png` | **AKTIF & TERVERIFIKASI** |
 | EV-04 | Executive Dashboard & Analisis Tren Kehadiran Sekolah | Kepala Sekolah | Dashboard Eksekutif & Supervisi | Tangkapan Layar Operasional | `bukti_04_kepsek_dashboard_juli_2026.png` | **AKTIF & TERVERIFIKASI** |

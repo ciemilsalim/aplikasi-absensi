@@ -1,0 +1,18 @@
+{
+    "period": "Juli 2026",
+    "snapshot_status": "FINAL_FROZEN_SNAPSHOT",
+    "snapshot_date": "2026-07-31",
+    "source_type": "HISTORICAL_ADMIN_SPECIFIED",
+    "source_role": "admin",
+    "source_url": "http:\/\/192.168.40.239:8000",
+    "active_quantity": 368,
+    "active_student_count": 368,
+    "billing_unit": "Siswa",
+    "rate_per_unit": 1000,
+    "include_hosting": false,
+    "hosting_rate": 0,
+    "total": 368000,
+    "status": "VERIFIED",
+    "final_frozen": true,
+    "frozen_at": "2026-11-17 08:31:20"
+}

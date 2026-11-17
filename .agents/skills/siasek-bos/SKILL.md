@@ -98,6 +98,7 @@ graph TD
 
 ## 3. Cara Menjalankan Skill
 
+### A. Paket Lengkap Dokumen BOSP (Invoice + Lampiran Pemanfaatan & Fitur)
 Jalankan perintah generate paket dari root repositori aplikasi:
 
 ```bash
@@ -107,6 +108,24 @@ php .agents/skills/siasek-bos/scripts/generate_bosp_package.php --month=<bulan> 
 Contoh:
 ```bash
 php .agents/skills/siasek-bos/scripts/generate_bosp_package.php --month=september --year=2026
+```
+
+### B. Mode Invoice / Tagihan Saja Tanpa Lampiran (`--invoice-only`)
+Berguna untuk bulan lampau (*historical months*) atau instansi yang hanya membutuhkan berkas Invoice resmi berdasarkan jumlah siswa/kuantitas layanan tanpa memerlukan lampiran tangkapan layar visual:
+
+```bash
+php .agents/skills/siasek-bos/scripts/generate_bosp_package.php --month=<bulan> --year=<tahun> --invoice-only [--student-count=<jumlah>]
+```
+
+Contoh untuk Juli 2026:
+```bash
+php .agents/skills/siasek-bos/scripts/generate_bosp_package.php --month=juli --year=2026 --invoice-only --student-count=368
+```
+*(Jika `--student-count` tidak diisi, sistem otomatis menggunakan basis snapshot siswa terdekat atau 368 siswa)*
+
+Untuk langsung menerbitkan nomor invoice resmi:
+```bash
+php .agents/skills/siasek-bos/scripts/generate_bosp_package.php --month=juli --year=2026 --invoice-only --student-count=368 --mode=issue
 ```
 
 ---

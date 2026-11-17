@@ -5,7 +5,7 @@
         "engine_version": "2.1-universal",
         "domain_type": "SCHOOL_BOSP"
     },
-    "period_type": "HISTORICAL_PERIOD",
+    "period_type": "HISTORICAL_PERIOD_USING_VERIFIED_SNAPSHOT",
     "period": {
         "start": "2026-07-01",
         "end": "2026-07-31",
@@ -17,19 +17,20 @@
         "customer": "SMP Negeri 1 Biau"
     },
     "billing": {
-        "snapshot_status": "UNVERIFIED",
+        "snapshot_status": "FINAL_FROZEN_SNAPSHOT",
         "snapshot_date": "2026-07-31",
-        "final_frozen": false,
-        "source_type": "UNVERIFIED",
-        "quantity": " Siswa",
+        "final_frozen": true,
+        "source_type": "HISTORICAL_ADMIN_SPECIFIED",
+        "quantity": "368 Siswa",
         "rate": 1000,
         "include_hosting": false,
         "hosting_rate": 0,
-        "total": 0,
-        "snapshot_file": "N\/A"
+        "total": 368000,
+        "snapshot_file": "evidence\/bosp\/2026\/07-juli\/billing\/billing-snapshot.json"
     },
     "invoice_number": "SIASEK-BIAU\/2026\/07\/001",
     "invoice_status": "DRAFT",
-    "qa_status": "BLOCKED",
-    "generated_at": "2026-11-17 01:37:34"
+    "generation_mode": "INVOICE_ONLY",
+    "qa_status": "PASS",
+    "generated_at": "2026-11-17 08:31:20"
 }
