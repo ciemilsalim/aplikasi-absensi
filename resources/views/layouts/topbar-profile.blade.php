@@ -36,8 +36,8 @@
     {{-- Action & Notification Icon Buttons --}}
     <div class="flex items-center gap-x-1.5 sm:gap-x-1.5">
         
-        {{-- Notifications for Kepala Sekolah / Wakasek Kurikulum --}}
-        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum']))
+        {{-- Notifications for Kepala Sekolah / Wakasek --}}
+        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']))
             @php
                 $topbarPendingJournals = 0;
                 if (\Illuminate\Support\Facades\Schema::hasTable('teaching_journals') && \Illuminate\Support\Facades\Schema::hasColumn('teaching_journals', 'is_verified')) {
@@ -175,7 +175,7 @@
                 </div>
 
                 <div class="space-y-0.5">
-                    @if(Auth::user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum']))
+                    @if(Auth::user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']))
                         <a href="{{ route('principal.dashboard') }}" 
                            class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors">
                             <span class="material-icons text-base text-indigo-500">account_balance</span>

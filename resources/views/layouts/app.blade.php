@@ -10,7 +10,7 @@
     
     if (auth()->check()) {
         $user = auth()->user();
-        if ($user->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum'])) {
+        if ($user->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan'])) {
             $isPrincipalUser = true;
             if (\Illuminate\Support\Facades\Schema::hasTable('teaching_journals') && \Illuminate\Support\Facades\Schema::hasColumn('teaching_journals', 'is_verified')) {
                 try {
@@ -335,8 +335,8 @@
                     <nav class="fixed bottom-0 inset-x-0 bg-white/95 dark:bg-slate-900/95 glass-header border-t border-slate-200/90 dark:border-slate-800 z-40 px-2 sm:px-4 lg:hidden dock-shadow safe-area-pb">
                     <div class="flex justify-around items-center max-w-lg mx-auto h-16">
                         
-                        <!-- Role: Kepala Sekolah & Wakasek Kurikulum (Executive) -->
-                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum']))
+                        <!-- Role: Kepala Sekolah & Wakasek (Executive) -->
+                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']))
                             @php $isPrincipalDash = request()->routeIs('principal.dashboard'); @endphp
                             <a href="{{ route('principal.dashboard') }}"
                                 class="nav-item group flex flex-col items-center justify-center py-1 w-full {{ $isPrincipalDash ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400' }} transition-all duration-200">
@@ -599,8 +599,8 @@
                          <!-- Menu Grid Items -->
                          <div class="overflow-y-auto pb-8 space-y-5 no-scrollbar">
                              
-                             <!-- Kepala Sekolah / Executive Section -->
-                             @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum']))
+                             <!-- Kepala Sekolah & Wakasek / Executive Section -->
+                             @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']))
                                  <!-- Executive Greeting & Status Card -->
                                  <div class="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 text-white shadow-lg border border-indigo-800/40 mb-3">
                                      <div class="flex items-center justify-between gap-3">

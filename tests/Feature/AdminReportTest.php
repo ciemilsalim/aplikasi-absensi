@@ -250,4 +250,129 @@ class AdminReportTest extends TestCase
         $response->assertStatus(200);
         $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
     }
+
+    public function test_wakasek_kurikulum_can_access_student_and_teacher_reports(): void
+    {
+        $ctx = $this->setupAdminContext();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        // 1. Rekap Siswa: Form
+        $response = $this->actingAs($wakasek)->get(route('admin.reports.create'));
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.reports.create');
+
+        // 2. Rekap Siswa: Charts Page
+        $response = $this->actingAs($wakasek)->get(route('admin.reports.charts'));
+        $response->assertStatus(200);
+
+        // 3. Rekap Siswa: Chart Data
+        $response = $this->actingAs($wakasek)->postJson(route('admin.reports.charts.data'), [
+            'target_type' => 'class',
+            'school_class_id' => $ctx['schoolClass']->id,
+            'period_type' => 'month',
+            'year' => 2026,
+            'period_value' => 10,
+        ]);
+        $response->assertStatus(200);
+
+        // 4. Rekap Siswa: Generate PDF
+        $response = $this->actingAs($wakasek)->post(route('admin.reports.generate'), [
+            'report_type' => 'class_monthly',
+            'school_class_id' => $ctx['schoolClass']->id,
+            'month' => '2026-10',
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
+
+        // 5. Rekap Guru: Index
+        $response = $this->actingAs($wakasek)->get(route('admin.reports.teacher.index', [
+            'month' => 10,
+            'year' => 2026,
+        ]));
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.reports.teacher.index');
+
+        // 6. Rekap Guru: Print PDF
+        $response = $this->actingAs($wakasek)->get(route('admin.reports.teacher.print', [
+            'month' => 10,
+            'year' => 2026,
+        ]));
+        $response->assertStatus(200);
+        $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function test_wakasek_kesiswaan_can_access_student_and_teacher_reports(): void
+    {
+        $ctx = $this->setupAdminContext();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kesiswaan']);
+
+        // 1. Rekap Siswa: Form
+        $response = $this->actingAs($wakasek)->get(route('admin.reports.create'));
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.reports.create');
+
+        // 2. Rekap Siswa: Charts Page
+        $response = $this->actingAs($wakasek)->get(route('admin.reports.charts'));
+        $response->assertStatus(200);
+
+        // 3. Rekap Siswa: Chart Data
+        $response = $this->actingAs($wakasek)->postJson(route('admin.reports.charts.data'), [
+            'target_type' => 'class',
+            'school_class_id' => $ctx['schoolClass']->id,
+            'period_type' => 'month',
+            'year' => 2026,
+            'period_value' => 10,
+        ]);
+        $response->assertStatus(200);
+
+        // 4. Rekap Siswa: Generate PDF
+        $response = $this->actingAs($wakasek)->post(route('admin.reports.generate'), [
+            'report_type' => 'class_monthly',
+            'school_class_id' => $ctx['schoolClass']->id,
+            'month' => '2026-10',
+        ]);
+        $response->assertStatus(200);
+        $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
+
+        // 5. Rekap Guru: Index
+        $response = $this->actingAs($wakasek)->get(route('admin.reports.teacher.index', [
+            'month' => 10,
+            'year' => 2026,
+        ]));
+        $response->assertStatus(200);
+        $response->assertViewIs('admin.reports.teacher.index');
+
+        // 6. Rekap Guru: Print PDF
+        $response = $this->actingAs($wakasek)->get(route('admin.reports.teacher.print', [
+            'month' => 10,
+            'year' => 2026,
+        ]));
+        $response->assertStatus(200);
+        $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function test_wakasek_is_redirected_to_principal_dashboard_from_root_dashboard(): void
+    {
+        $wakasekKurikulum = User::factory()->create(['role' => 'wakasek_kurikulum']);
+        $response = $this->actingAs($wakasekKurikulum)->get(route('dashboard'));
+        $response->assertRedirect(route('principal.dashboard'));
+
+        $wakasekKesiswaan = User::factory()->create(['role' => 'wakasek_kesiswaan']);
+        $response = $this->actingAs($wakasekKesiswaan)->get(route('dashboard'));
+        $response->assertRedirect(route('principal.dashboard'));
+    }
+
+    public function test_unauthorized_user_cannot_access_student_or_teacher_reports(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+
+        $response = $this->actingAs($user)->get(route('admin.reports.create'));
+        $response->assertStatus(403);
+
+        $response = $this->actingAs($user)->get(route('admin.reports.teacher.index'));
+        $response->assertStatus(403);
+
+        $response = $this->actingAs($user)->get(route('admin.reports.teacher.print'));
+        $response->assertStatus(403);
+    }
 }

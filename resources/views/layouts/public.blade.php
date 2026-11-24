@@ -146,7 +146,7 @@
             <div class="fixed bottom-3 inset-x-3 z-40 lg:hidden">
                 <nav class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 shadow-2xl rounded-2xl px-2 py-1 max-w-md mx-auto">
                     <div class="flex justify-around items-center h-14">
-                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum']))
+                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']))
                             <a href="{{ route('principal.dashboard') }}"
                                 class="nav-item flex flex-col items-center justify-center text-center py-1 w-full transition-colors {{ request()->routeIs('principal.dashboard') ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-500 dark:text-slate-400' }}">
                                 <span class="material-icons text-xl">account_balance</span>
@@ -306,7 +306,7 @@
                     </div>
 
                     <div class="overflow-y-auto pb-8 space-y-5">
-                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum']))
+                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']))
                             <div class="text-[11px] font-bold uppercase text-indigo-400 tracking-wider">Modul Eksekutif & Supervisi</div>
                             <div class="grid grid-cols-2 gap-3">
                                 <a href="{{ route('principal.dashboard') }}" class="flex flex-col items-center justify-center p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 hover:bg-indigo-100 rounded-2xl transition border border-indigo-200/60 dark:border-indigo-900/40 col-span-2">

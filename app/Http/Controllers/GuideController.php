@@ -26,9 +26,9 @@ class GuideController extends Controller
                 return redirect()->route('parent.guide');
             }
 
-            if ($user->hasAnyRole(['wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster'])) {
+            if ($user->hasAnyRole(['wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan', 'kepala_sekolah', 'kepala sekolah', 'headmaster'])) {
                 $role = 'supervisor';
-                $userRoleLabel = 'Pimpinan / Wakasek Kurikulum / Kepala Sekolah';
+                $userRoleLabel = 'Pimpinan / Wakasek / Kepala Sekolah';
             } elseif ($user->hasAnyRole(['admin', 'operator'])) {
                 $role = 'admin';
                 $userRoleLabel = 'Administrator & Operator';

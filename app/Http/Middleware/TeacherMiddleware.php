@@ -12,7 +12,12 @@ class TeacherMiddleware
     {
         if (auth()->check() && (
             auth()->user()->hasRole('teacher') || 
-            auth()->user()->hasAnyRole(['admin', 'operator', 'kepala_sekolah', 'kepala sekolah', 'headmaster'])
+            auth()->user()->hasAnyRole([
+                'admin', 'operator', 
+                'kepala_sekolah', 'kepala sekolah', 'headmaster',
+                'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum',
+                'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan'
+            ])
         )) {
             return $next($request);
         }

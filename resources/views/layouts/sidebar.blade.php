@@ -27,8 +27,8 @@
                 <ul role="list" class="mt-1.5 space-y-1">
                     @auth
                         {{-- Dashboard: Admin / Operator / Satpam --}}
-                        {{-- Dashboard: Kepala Sekolah (Executive) --}}
-                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
+                        {{-- Dashboard: Kepala Sekolah & Wakasek (Executive) --}}
+                        @if(auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']))
                             @php $isPrincipalDashActive = request()->routeIs('principal.dashboard'); @endphp
                             <li>
                                 <a href="{{ route('principal.dashboard') }}" :title="sidebarCollapsed ? 'Dasbor Eksekutif' : ''" 
@@ -560,7 +560,7 @@
             @endauth
             
             <!-- SECTION 3: ADMINISTRASI & SUPERVISI (ADMIN / OPERATOR / WAKASEK) -->
-            @if(Auth::check() && auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
+            @if(Auth::check() && auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
             <li>
                 <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Administrasi & Supervisi</div>
                 <ul role="list" class="mt-1.5 space-y-1.5">
@@ -662,7 +662,7 @@
                     @endif
 
                     {{-- DROPDOWN: LAPORAN PRESENSI ADMIN --}}
-                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
                     @php 
                         $isStudentReportActive = request()->routeIs(['admin.reports.create', 'admin.reports.charts', 'admin.reports.generate']);
                         $isTeacherReportActive = request()->routeIs('admin.reports.teacher.*');
@@ -697,7 +697,7 @@
                     </li>
                     @endif
 
-                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
+                    @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
                     @php $isAdminJournalActive = request()->routeIs('admin.teaching_journals.*'); @endphp
                     <li>
                         <a href="{{ route('admin.teaching_journals.index') }}" :title="sidebarCollapsed ? 'Supervisi Jurnal' : ''" 
