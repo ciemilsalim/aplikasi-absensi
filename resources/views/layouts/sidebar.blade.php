@@ -112,6 +112,15 @@
                                         </a>
                                     </li>
                                     <li>
+                                        <a href="{{ route('admin.reports.create') }}" 
+                                           class="{{ request()->routeIs('admin.reports.create') ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <span>Laporan Rekap PDF</span>
+                                            @if(request()->routeIs('admin.reports.create'))
+                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('teacher.subject.attendance.report') }}" 
                                            class="{{ $isMonitoringSubjectActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                             <span>Kehadiran Mapel</span>
@@ -572,8 +581,8 @@
                 @endif
             @endauth
             
-            <!-- SECTION 3: ADMINISTRASI & SUPERVISI (ADMIN / OPERATOR / WAKASEK) -->
-            @if(Auth::check() && auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster']))
+            <!-- SECTION 3: ADMINISTRASI & SUPERVISI (ADMIN / OPERATOR / SATPAM) -->
+            @if(Auth::check() && auth()->user()->hasAnyRole(['admin', 'operator', 'satpam', 'tu', 'tata_usaha', 'viewer']) && !auth()->user()->hasAnyRole(['kepala_sekolah', 'kepala sekolah', 'headmaster', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan']))
             <li>
                 <div x-show="!sidebarCollapsed" class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Administrasi & Supervisi</div>
                 <ul role="list" class="mt-1.5 space-y-1.5">

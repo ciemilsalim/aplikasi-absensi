@@ -108,13 +108,25 @@ class DashboardController extends Controller
 
     public function updateAttendance(Request $request)
     {
+        $user = Auth::user();
+
+        // Wakasek dan pimpinan sekolah bersikap sebagai supervisor/pembina (Read-Only)
+        // dan tidak berwenang memodifikasi catatan absensi kelas
+        if ($user?->hasAnyRole([
+            'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum',
+            'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan',
+            'kepala_sekolah', 'kepala sekolah', 'headmaster',
+        ])) {
+            return back()->with('error', 'Wakasek dan pimpinan sekolah tidak berwenang mengubah absensi pada rekap matriks kelas.');
+        }
+
         $request->validate([
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date_format:Y-m-d',
             'status' => 'required|string|in:tepat_waktu,terlambat,sakit,izin,alpa,hapus',
         ]);
 
-        $teacher = Auth::user()?->teacher;
+        $teacher = $user?->teacher;
         $student = Student::find($request->student_id);
 
         if (!$teacher || !$student || !$teacher->homeroomClass || $teacher->homeroomClass->id !== $student->school_class_id) {
@@ -181,8 +193,21 @@ class DashboardController extends Controller
             return view('teacher.dashboard-no-class', compact('teacher'));
         }
 
+        $user = Auth::user();
+        $isWakasekOrExecutive = $user?->hasAnyRole([
+            'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum',
+            'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan',
+            'kepala_sekolah', 'kepala sekolah', 'headmaster',
+        ]);
+
+        // Pastikan hanya wali kelas asli dari rombel ini yang dapat mengoreksi absensi (bukan wakasek/kepsek/pembina)
+        $canEditAttendance = !$isWakasekOrExecutive 
+            && (bool)$user?->hasRole('teacher') 
+            && ($user?->teacher?->homeroomClass?->id === $class->id);
+
         $viewData['availableClasses'] = $availableClasses;
         $viewData['canAccessAllClasses'] = $this->canAccessAllClasses();
+        $viewData['canEditAttendance'] = $canEditAttendance;
 
         return view('teacher.attendance-history', $viewData);
     }

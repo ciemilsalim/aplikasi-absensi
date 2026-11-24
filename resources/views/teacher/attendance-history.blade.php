@@ -16,7 +16,13 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+                @if(!($canEditAttendance ?? false))
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800 text-xs font-bold text-amber-700 dark:text-amber-300 shadow-2xs">
+                        <span class="material-icons text-xs text-amber-500">lock</span>
+                        <span>Mode Pratinjau (Hanya Lihat)</span>
+                    </span>
+                @endif
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs">
                     <span class="material-icons text-xs text-sky-500">calendar_month</span>
                     <span>Periode: {{ $selectedDate->isoFormat('MMMM Y') }}</span>
@@ -218,11 +224,18 @@
                 </button>
             </div>
 
-            <!-- Petunjuk Geser di Mobile (Hanya tampil saat mode matriks di mobile) -->
-            <div x-show="viewMode === 'matrix'" class="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:flex items-center gap-1">
-                <span class="material-icons text-xs">swipe</span>
-                <span>Klik tanda status untuk mengoreksi absensi</span>
-            </div>
+            <!-- Petunjuk / Status Interaksi Mode Matriks -->
+            @if($canEditAttendance ?? false)
+                <div x-show="viewMode === 'matrix'" class="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:flex items-center gap-1">
+                    <span class="material-icons text-xs">swipe</span>
+                    <span>Klik tanda status untuk mengoreksi absensi</span>
+                </div>
+            @else
+                <div x-show="viewMode === 'matrix'" class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:flex items-center gap-1.5">
+                    <span class="material-icons text-xs text-amber-500">lock</span>
+                    <span>Mode Pratinjau: Hanya Wali Kelas {{ $class->name }} yang dapat mengoreksi absensi</span>
+                </div>
+            @endif
         </div>
 
         <!-- ================= MODE 1: RINGKASAN KARTU SISWA (SANGAT COCOK DI HP) ================= -->
@@ -366,12 +379,20 @@
                                         }
                                     @endphp
                                     <td class="px-1.5 sm:px-2 py-2 text-center whitespace-nowrap {{ $date->isSunday() ? 'bg-rose-50/25 dark:bg-rose-950/10' : '' }}">
-                                        <button 
-                                            @click="openModal('{{ $attendanceId }}', '{{ $student->id }}', '{{ addslashes($student->name) }}', '{{ $dateString }}', '{{ $status }}')"
-                                            class="w-8 h-8 sm:w-7 sm:h-7 inline-flex items-center justify-center text-[11px] rounded-xl transition-transform hover:scale-110 active:scale-90 {{ $badgeColor }}"
-                                            title="Klik untuk mengubah catatan absensi">
-                                            {{ $statusText }}
-                                        </button>
+                                        @if($canEditAttendance ?? false)
+                                            <button 
+                                                @click="openModal('{{ $attendanceId }}', '{{ $student->id }}', '{{ addslashes($student->name) }}', '{{ $dateString }}', '{{ $status }}')"
+                                                class="w-8 h-8 sm:w-7 sm:h-7 inline-flex items-center justify-center text-[11px] rounded-xl transition-transform hover:scale-110 active:scale-90 cursor-pointer {{ $badgeColor }}"
+                                                title="Klik untuk mengubah catatan absensi">
+                                                {{ $statusText }}
+                                            </button>
+                                        @else
+                                            <span 
+                                                class="w-8 h-8 sm:w-7 sm:h-7 inline-flex items-center justify-center text-[11px] rounded-xl select-none cursor-default {{ $badgeColor }}"
+                                                title="Status: {{ strtoupper($status ?? 'Belum Ada Data') }} (Hanya Lihat)">
+                                                {{ $statusText }}
+                                            </span>
+                                        @endif
                                     </td>
                                 @endforeach
                                 
@@ -396,6 +417,7 @@
             </div>
         </div>
 
+        @if($canEditAttendance ?? false)
         <!-- ================= MODAL KOREKSI KEHADIRAN (TELEPORTED TO BODY) ================= -->
         <template x-teleport="body">
             <div x-show="showModal" 
@@ -472,6 +494,7 @@
                 </div>
             </div>
         </template>
+        @endif
 
         <!-- ================= MODAL CETAK TRIWULAN (TELEPORTED TO BODY) ================= -->
         <template x-teleport="body">

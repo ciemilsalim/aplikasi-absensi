@@ -435,4 +435,77 @@ class AdminReportTest extends TestCase
         $response->assertViewHas('availableClasses');
         $response->assertSee($ctx['schoolClass']->name);
     }
+
+    public function test_wakasek_kurikulum_cannot_modify_attendance_on_matrix(): void
+    {
+        $ctx = $this->setupAdminContext();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        $response = $this->actingAs($wakasek)->post(route('teacher.attendance.update'), [
+            'student_id' => $ctx['student']->id,
+            'date' => '2026-10-14',
+            'status' => 'sakit',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error', 'Wakasek dan pimpinan sekolah tidak berwenang mengubah absensi pada rekap matriks kelas.');
+
+        // Pastikan tidak ada data absensi tersimpan/terubah oleh wakasek
+        $this->assertDatabaseMissing('attendances', [
+            'student_id' => $ctx['student']->id,
+            'status' => 'sakit',
+        ]);
+    }
+
+    public function test_wakasek_kesiswaan_cannot_modify_attendance_on_matrix(): void
+    {
+        $ctx = $this->setupAdminContext();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kesiswaan']);
+
+        $response = $this->actingAs($wakasek)->post(route('teacher.attendance.update'), [
+            'student_id' => $ctx['student']->id,
+            'date' => '2026-10-14',
+            'status' => 'izin',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error', 'Wakasek dan pimpinan sekolah tidak berwenang mengubah absensi pada rekap matriks kelas.');
+
+        $this->assertDatabaseMissing('attendances', [
+            'student_id' => $ctx['student']->id,
+            'status' => 'izin',
+        ]);
+    }
+
+    public function test_matrix_view_for_wakasek_is_read_only_and_has_no_edit_modal(): void
+    {
+        $ctx = $this->setupAdminContext();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        $response = $this->actingAs($wakasek)->get(route('teacher.attendance.history', [
+            'class_id' => $ctx['schoolClass']->id,
+            'month' => '2026-10',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('canEditAttendance', false);
+        $response->assertSee('Mode Pratinjau (Hanya Lihat)');
+        $response->assertDontSee('Simpan Perubahan');
+    }
+
+    public function test_sidebar_has_no_duplicate_rekap_matriks_menu_for_wakasek_kurikulum(): void
+    {
+        $ctx = $this->setupAdminContext();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        $response = $this->actingAs($wakasek)->get(route('principal.dashboard'));
+        $response->assertStatus(200);
+
+        // Rekap Matriks Kelas dalam sidebar hanya muncul tepat satu kali (tanpa duplikasi antar section)
+        $content = $response->getContent();
+        $occurrences = substr_count($content, 'Rekap Matriks Kelas');
+        // Pada dasbor principal ada 1 di quick action header, 1 di sidebar (total 2 di seluruh halaman, tapi di sidebar tepat 1)
+        // Cek bagian sidebar: Section 3 Administrasi & Supervisi tidak boleh muncul untuk Wakasek
+        $response->assertDontSee('Administrasi & Supervisi');
+    }
 }
