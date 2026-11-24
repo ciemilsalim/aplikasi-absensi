@@ -9,12 +9,43 @@ use App\Models\Semester;
 use App\Models\Setting;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 
 class ExtracurricularAttendanceService
 {
+    /**
+     * Daftar peran yang memiliki wewenang supervisi/pemantauan seluruh ekskul.
+     */
+    protected array $supervisoryRoles = [
+        'admin', 'operator',
+        'kepala_sekolah', 'kepala sekolah', 'headmaster',
+        'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum',
+        'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan',
+    ];
+
+    /**
+     * Memeriksa apakah user login memiliki peran pimpinan/supervisi.
+     */
+    public function isSupervisoryUser(?User $user): bool
+    {
+        return (bool)$user?->hasAnyRole($this->supervisoryRoles);
+    }
+
+    /**
+     * Memeriksa hak akses untuk melihat rekapitulasi atau mencetak laporan ekskul.
+     */
+    public function checkReportOrPrintAccess(Extracurricular $extracurricular, ?Teacher $teacher, ?User $user = null): bool
+    {
+        if ($this->isSupervisoryUser($user)) {
+            return true;
+        }
+
+        return $this->checkCoachAccess($extracurricular, $teacher);
+    }
+
     /**
      * Memeriksa apakah guru login memiliki hak akses sebagai pembina ekskul ini.
      */
@@ -34,17 +65,25 @@ class ExtracurricularAttendanceService
     }
 
     /**
-     * Mengambil data dasbor daftar kegiatan ekstrakurikuler yang dibina guru.
+     * Mengambil data dasbor daftar kegiatan ekstrakurikuler yang dibina guru atau seluruh ekskul untuk supervisi.
      */
-    public function getIndexData(Teacher $teacher): array
+    public function getIndexData(?Teacher $teacher, ?User $user = null): array
     {
         $activeYear = AcademicYear::getActive();
         $activeSemester = Semester::getActive();
 
-        $extracurriculars = $teacher->coachingExtracurriculars()
-            ->with(['teachers', 'students.schoolClass'])
-            ->withCount('students')
-            ->get();
+        if ($this->isSupervisoryUser($user)) {
+            $extracurriculars = Extracurricular::with(['teachers', 'coach', 'students.schoolClass'])
+                ->withCount('students')
+                ->get();
+        } elseif ($teacher) {
+            $extracurriculars = $teacher->coachingExtracurriculars()
+                ->with(['teachers', 'students.schoolClass'])
+                ->withCount('students')
+                ->get();
+        } else {
+            $extracurriculars = collect();
+        }
 
         $ekskulIds = $extracurriculars->pluck('id');
         $today = Carbon::today()->format('Y-m-d');
@@ -417,13 +456,20 @@ class ExtracurricularAttendanceService
     /**
      * Mengambil dan mengagregasi data laporan presensi ekstrakurikuler (DRY untuk Preview & Print).
      */
-    public function getReportData(Extracurricular $extracurricular, Teacher $teacher, ?string $startDateStr = null, ?string $endDateStr = null): array
+    public function getReportData(Extracurricular $extracurricular, ?Teacher $teacher = null, ?string $startDateStr = null, ?string $endDateStr = null, ?User $user = null): array
     {
         $startDate = $startDateStr ? Carbon::parse($startDateStr) : Carbon::now()->startOfMonth();
         $endDate = $endDateStr ? Carbon::parse($endDateStr) : Carbon::now()->endOfMonth();
 
         $students = $extracurricular->students()->with('schoolClass')->orderBy('name')->get();
-        $extracurricular->load('teachers');
+        $extracurricular->load(['teachers', 'coach']);
+
+        if (!$teacher && $user?->teacher) {
+            $teacher = $user->teacher;
+        }
+        if (!$teacher) {
+            $teacher = $extracurricular->teachers->first() ?? $extracurricular->coach;
+        }
 
         $attendances = ExtracurricularAttendance::where('extracurricular_id', $extracurricular->id)
             ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])

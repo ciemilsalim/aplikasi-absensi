@@ -19,11 +19,29 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class SubjectAttendanceService
 {
+    /**
+     * Daftar peran yang memiliki wewenang eksekutif & supervisi seluruh mapel/kokurikuler.
+     */
+    protected array $executiveRoles = [
+        'admin', 'operator',
+        'kepala_sekolah', 'kepala sekolah', 'headmaster',
+        'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum',
+        'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan',
+    ];
+
+    /**
+     * Memeriksa apakah user merupakan pimpinan eksekutif / supervisi akademik.
+     */
+    public function isExecutiveUser(?User $user): bool
+    {
+        return (bool)$user?->hasAnyRole($this->executiveRoles);
+    }
     /**
      * Memeriksa otorisasi guru terhadap jadwal (baik reguler maupun kokurikuler).
      */
@@ -248,35 +266,55 @@ class SubjectAttendanceService
     }
 
     /**
-     * Mengambil riwayat absensi mata pelajaran guru untuk tanggal tertentu.
+     * Mengambil riwayat absensi mata pelajaran & kokurikuler untuk tanggal tertentu (guru atau supervisi eksekutif).
      */
-    public function getHistoryData(Teacher $teacher, ?string $dateStr = null): array
+    public function getHistoryData($teacherOrUser = null, ?string $dateStr = null, ?User $user = null): array
     {
-        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
-        $cocurricularIds = $teacher->cocurriculars()->pluck('cocurriculars.id');
+        $teacher = null;
+        if ($teacherOrUser instanceof User) {
+            $user = $teacherOrUser;
+            $teacher = $user->teacher;
+        } elseif ($teacherOrUser instanceof Teacher) {
+            $teacher = $teacherOrUser;
+        }
 
-        $attendances = SubjectAttendance::with([
+        if ($user === null && Auth::check()) {
+            $user = Auth::user();
+        }
+
+        $isExecutive = $this->isExecutiveUser($user);
+        $selectedDate = $dateStr ? Carbon::parse($dateStr) : Carbon::today();
+
+        $query = SubjectAttendance::with([
             'student',
             'schedule.teachingAssignment.subject',
             'schedule.teachingAssignment.schoolClass',
             'schedule.cocurricular',
             'schedule.schoolClass',
             'schedule.teacher'
-        ])
-            ->where(function ($q) use ($teacher, $cocurricularIds) {
-                $q->where('teacher_id', $teacher->id)
-                  ->orWhereHas('schedule', function ($sq) use ($teacher, $cocurricularIds) {
-                      $sq->where('teacher_id', $teacher->id)
-                         ->orWhereIn('cocurricular_id', $cocurricularIds);
-                  });
-            })
-            ->whereDate('created_at', $selectedDate)
-            ->get()
-            ->groupBy('schedule_id');
+        ])->whereDate('created_at', $selectedDate);
+
+        if (!$isExecutive) {
+            $cocurricularIds = $teacher ? $teacher->cocurriculars()->pluck('cocurriculars.id') : collect();
+            $query->where(function ($q) use ($teacher, $cocurricularIds) {
+                if ($teacher) {
+                    $q->where('teacher_id', $teacher->id)
+                      ->orWhereHas('schedule', function ($sq) use ($teacher, $cocurricularIds) {
+                          $sq->where('teacher_id', $teacher->id)
+                             ->orWhereIn('cocurricular_id', $cocurricularIds);
+                      });
+                } else {
+                    $q->whereRaw('1 = 0');
+                }
+            });
+        }
+
+        $attendances = $query->get()->groupBy('schedule_id');
 
         return [
             'attendances' => $attendances,
             'selectedDate' => $selectedDate,
+            'isExecutive' => $isExecutive,
         ];
     }
 
@@ -365,7 +403,7 @@ class SubjectAttendanceService
      */
     public function getReportFormData(User $user, ?Teacher $teacher): array
     {
-        $isExecutive = $user->hasAnyRole(['admin', 'operator', 'kepala_sekolah', 'kepala sekolah', 'headmaster']);
+        $isExecutive = $this->isExecutiveUser($user);
 
         if ($isExecutive) {
             $classes = SchoolClass::orderBy('name', 'asc')->pluck('name', 'id');
@@ -374,18 +412,22 @@ class SubjectAttendanceService
             $cocurricularClasses = SchoolClass::orderBy('name', 'asc')->pluck('name', 'id');
         } else {
             $assignments = TeachingAssignment::with(['schoolClass', 'subject'])
-                ->where('teacher_id', $teacher->id)
+                ->where('teacher_id', $teacher?->id)
                 ->get();
 
             $classes = $assignments->pluck('schoolClass.name', 'schoolClass.id')->filter()->unique();
             $subjects = $assignments->pluck('subject.name', 'subject.id')->filter()->unique();
 
-            $cocurricularIds = $teacher->cocurriculars()->pluck('cocurriculars.id');
+            $cocurricularIds = $teacher ? $teacher->cocurriculars()->pluck('cocurriculars.id') : collect();
             $cocurricularSchedules = Schedule::with(['cocurricular', 'schoolClass'])
                 ->where('schedule_type', 'cocurricular')
                 ->where(function ($query) use ($teacher, $cocurricularIds) {
-                    $query->where('teacher_id', $teacher->id)
-                          ->orWhereIn('cocurricular_id', $cocurricularIds);
+                    if ($teacher) {
+                        $query->where('teacher_id', $teacher->id)
+                              ->orWhereIn('cocurricular_id', $cocurricularIds);
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
                 })
                 ->get();
 
@@ -410,7 +452,7 @@ class SubjectAttendanceService
         $startDate = Carbon::parse($filters['start_date']);
         $endDate = Carbon::parse($filters['end_date']);
         $schoolClassId = $filters['school_class_id'];
-        $isExecutive = $user->hasAnyRole(['admin', 'operator', 'kepala_sekolah', 'kepala sekolah', 'headmaster']);
+        $isExecutive = $this->isExecutiveUser($user);
 
         $classInfo = SchoolClass::withoutGlobalScopes()->find($schoolClassId);
         $students = $classInfo ? $classInfo->students()->orderBy('name')->get() : collect();

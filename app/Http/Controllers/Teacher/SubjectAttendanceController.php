@@ -74,12 +74,16 @@ class SubjectAttendanceController extends Controller
      */
     public function showHistory(Request $request)
     {
-        $teacher = Auth::user()?->teacher;
-        if (!$teacher) {
+        $user = Auth::user();
+        $isExecutive = $this->service->isExecutiveUser($user);
+        $teacher = $user?->teacher;
+
+        if (!$teacher && !$isExecutive) {
             return redirect()->route('teacher.dashboard')->with('error', 'Data guru tidak ditemukan.');
         }
 
-        $data = $this->service->getHistoryData($teacher, $request->input('date'));
+        $data = $this->service->getHistoryData($teacher, $request->input('date'), $user);
+        $data['isExecutive'] = $isExecutive;
 
         return view('teacher.subject_attendance_history', $data);
     }
@@ -127,7 +131,7 @@ class SubjectAttendanceController extends Controller
     public function showReportForm()
     {
         $user = Auth::user();
-        $isExecutive = $user?->hasAnyRole(['admin', 'operator', 'kepala_sekolah', 'kepala sekolah', 'headmaster']);
+        $isExecutive = $this->service->isExecutiveUser($user);
         $teacher = $user?->teacher;
 
         if (!$teacher && !$isExecutive) {
@@ -135,6 +139,7 @@ class SubjectAttendanceController extends Controller
         }
 
         $data = $this->service->getReportFormData($user, $teacher);
+        $data['isExecutive'] = $isExecutive;
 
         return view('teacher.report_form', $data);
     }
@@ -170,6 +175,7 @@ class SubjectAttendanceController extends Controller
             return back()->with('error', $data['error']);
         }
 
+        $data['isExecutive'] = $this->service->isExecutiveUser($user);
         $data['requestInputs'] = $request->only(['start_date', 'end_date', 'school_class_id', 'subject_id', 'cocurricular_id', 'activity_type']);
 
         return view('teacher.report_preview', $data);
@@ -221,8 +227,9 @@ class SubjectAttendanceController extends Controller
         }
 
         $user = Auth::user();
+        $isExecutive = $this->service->isExecutiveUser($user);
         $teacher = $user?->teacher;
-        if (!$teacher) {
+        if (!$teacher && !$isExecutive) {
             return back()->with('error', 'Data guru tidak ditemukan.');
         }
 
@@ -232,6 +239,7 @@ class SubjectAttendanceController extends Controller
         }
 
         $data['teacher'] = $teacher;
+        $data['isExecutive'] = $isExecutive;
         $data['requestInputs'] = $request->only(['start_date', 'end_date', 'school_class_id', 'subject_id', 'cocurricular_id', 'activity_type']);
 
         return view('teacher.report_print', $data);

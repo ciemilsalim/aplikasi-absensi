@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\Cocurricular;
 use App\Models\Schedule;
 use App\Models\SchoolClass;
 use App\Models\Semester;
@@ -238,5 +239,131 @@ class SubjectAttendanceTest extends TestCase
             'trendLabels',
             'trendData'
         ]);
+    }
+
+    public function test_wakasek_kurikulum_can_view_cocurricular_report_form_and_preview_and_print(): void
+    {
+        $ctx = $this->setupTeacherWithStudentAndSchedule();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        $cocurricular = Cocurricular::create([
+            'title' => 'Proyek Penguatan Profil Pelajar Pancasila (P5)',
+            'description' => 'Tema Suara Demokrasi',
+        ]);
+
+        $cocurricularSchedule = Schedule::create([
+            'teaching_assignment_id' => $ctx['assignment']->id,
+            'schedule_type' => 'cocurricular',
+            'cocurricular_id' => $cocurricular->id,
+            'school_class_id' => $ctx['schoolClass']->id,
+            'teacher_id' => $ctx['teacher']->id,
+            'day_of_week' => 1,
+            'start_time' => '10:00:00',
+            'end_time' => '11:30:00',
+            'academic_year_id' => $ctx['academicYear']->id,
+            'semester_id' => $ctx['semester']->id,
+        ]);
+
+        // Form
+        $formResponse = $this->actingAs($wakasek)->get(route('teacher.subject.attendance.report', ['type' => 'cocurricular']));
+        $formResponse->assertStatus(200);
+        $formResponse->assertViewIs('teacher.report_form');
+        $formResponse->assertSee($cocurricular->title);
+
+        // Preview
+        $previewResponse = $this->actingAs($wakasek)->get(route('teacher.subject.attendance.preview', [
+            'activity_type' => 'cocurricular',
+            'school_class_id' => $ctx['schoolClass']->id,
+            'cocurricular_id' => $cocurricular->id,
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-10-31',
+        ]));
+        $previewResponse->assertStatus(200);
+        $previewResponse->assertViewIs('teacher.report_preview');
+        $previewResponse->assertSee($cocurricular->title);
+        $previewResponse->assertSee($ctx['student']->name);
+
+        // Print
+        $printResponse = $this->actingAs($wakasek)->get(route('teacher.subject.attendance.print', [
+            'activity_type' => 'cocurricular',
+            'school_class_id' => $ctx['schoolClass']->id,
+            'cocurricular_id' => $cocurricular->id,
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-10-31',
+        ]));
+        $printResponse->assertStatus(200);
+        $printResponse->assertViewIs('teacher.report_print');
+        $printResponse->assertSee($cocurricular->title);
+        $printResponse->assertSee($ctx['student']->name);
+    }
+
+    public function test_wakasek_kesiswaan_can_view_cocurricular_report_form_and_preview_and_print(): void
+    {
+        $ctx = $this->setupTeacherWithStudentAndSchedule();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kesiswaan']);
+
+        $cocurricular = Cocurricular::create([
+            'title' => 'Kewirausahaan Berkelanjutan',
+            'description' => 'Tema Kewirausahaan',
+        ]);
+
+        $cocurricularSchedule = Schedule::create([
+            'teaching_assignment_id' => $ctx['assignment']->id,
+            'schedule_type' => 'cocurricular',
+            'cocurricular_id' => $cocurricular->id,
+            'school_class_id' => $ctx['schoolClass']->id,
+            'teacher_id' => $ctx['teacher']->id,
+            'day_of_week' => 1,
+            'start_time' => '10:00:00',
+            'end_time' => '11:30:00',
+            'academic_year_id' => $ctx['academicYear']->id,
+            'semester_id' => $ctx['semester']->id,
+        ]);
+
+        $previewResponse = $this->actingAs($wakasek)->get(route('teacher.subject.attendance.preview', [
+            'activity_type' => 'cocurricular',
+            'school_class_id' => $ctx['schoolClass']->id,
+            'cocurricular_id' => $cocurricular->id,
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-10-31',
+        ]));
+        $previewResponse->assertStatus(200);
+        $previewResponse->assertSee($cocurricular->title);
+
+        $printResponse = $this->actingAs($wakasek)->get(route('teacher.subject.attendance.print', [
+            'activity_type' => 'cocurricular',
+            'school_class_id' => $ctx['schoolClass']->id,
+            'cocurricular_id' => $cocurricular->id,
+            'start_date' => '2026-10-01',
+            'end_date' => '2026-10-31',
+        ]));
+        $printResponse->assertStatus(200);
+        $printResponse->assertSee($cocurricular->title);
+    }
+
+    public function test_wakasek_can_view_attendance_history_for_cocurricular_and_subjects(): void
+    {
+        $ctx = $this->setupTeacherWithStudentAndSchedule();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        SubjectAttendance::create([
+            'schedule_id' => $ctx['schedule']->id,
+            'student_id' => $ctx['student']->id,
+            'teacher_id' => $ctx['teacher']->id,
+            'status' => 'hadir',
+            'notes' => 'Hadir tepat waktu',
+            'created_at' => Carbon::parse('2026-10-12 08:15:00'),
+        ]);
+
+        $historyResponse = $this->actingAs($wakasek)->get(route('teacher.subject.attendance.history', [
+            'date' => '2026-10-12',
+        ]));
+
+        $historyResponse->assertStatus(200);
+        $historyResponse->assertViewIs('teacher.subject_attendance_history');
+        $historyResponse->assertSee('Mode Supervisi Eksekutif');
+        $historyResponse->assertSee('Cetak Riwayat');
+        $historyResponse->assertSee($ctx['student']->name);
+        $historyResponse->assertSee($ctx['subject']->name);
     }
 }

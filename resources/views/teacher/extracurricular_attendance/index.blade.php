@@ -10,6 +10,12 @@
                     <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                         Presensi Ekstrakurikuler
                     </h1>
+                    @if($isSupervisory ?? false)
+                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                            <span class="material-icons text-xs">admin_panel_settings</span>
+                            <span>Mode Supervisi (Semua Ekskul)</span>
+                        </span>
+                    @endif
                     @if($activeYear && $activeSemester)
                         <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
@@ -90,7 +96,7 @@
                                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5">
                                             <span class="font-bold text-slate-700 dark:text-slate-300">{{ $memberCount }} anggota aktif</span>
                                             <span>&bull;</span>
-                                            <span class="truncate">Pembina: {{ $teacher->name }}</span>
+                                            <span class="truncate">Pembina: {{ $ekskul->teachers->pluck('name')->join(', ') ?: ($ekskul->coach?->name ?? ($teacher?->name ?? 'Belum ditentukan')) }}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -148,26 +154,44 @@
 
                         <!-- Card Action Buttons: Clear Hierarchy (Primary -> Secondary -> Tertiary) -->
                         <div class="relative z-10 pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <!-- 1. PRIMARY ACTION: Mulai Scan QR -->
-                            <a href="{{ route('teacher.extracurricular-attendance.scanner', $ekskul) }}" 
-                               class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-xs shadow-md shadow-amber-500/25 transition-all text-center">
-                                <span class="material-icons text-sm">qr_code_scanner</span>
-                                <span>Mulai Scan QR</span>
-                            </a>
+                            @php
+                                $isActualCoach = ($teacher && ($ekskul->teacher_id == $teacher->id || $teacher->coachingExtracurriculars()->where('extracurriculars.id', $ekskul->id)->exists()));
+                            @endphp
+                            @if($isActualCoach)
+                                <!-- 1. PRIMARY ACTION: Mulai Scan QR -->
+                                <a href="{{ route('teacher.extracurricular-attendance.scanner', $ekskul) }}" 
+                                   class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-xs shadow-md shadow-amber-500/25 transition-all text-center">
+                                    <span class="material-icons text-sm">qr_code_scanner</span>
+                                    <span>Mulai Scan QR</span>
+                                </a>
 
-                            <!-- 2. SECONDARY ACTION: Input Manual -->
-                            <a href="{{ route('teacher.extracurricular-attendance.create', $ekskul) }}" 
-                               class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-colors text-center shadow-2xs">
-                                <span class="material-icons text-sm text-slate-500">checklist</span>
-                                <span>Input Manual</span>
-                            </a>
+                                <!-- 2. SECONDARY ACTION: Input Manual -->
+                                <a href="{{ route('teacher.extracurricular-attendance.create', $ekskul) }}" 
+                                   class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-colors text-center shadow-2xs">
+                                    <span class="material-icons text-sm text-slate-500">checklist</span>
+                                    <span>Input Manual</span>
+                                </a>
 
-                            <!-- 3. TERTIARY ACTION: Lihat Rekap -->
-                            <a href="{{ route('teacher.extracurricular-attendance.report', $ekskul) }}" 
-                               class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-colors text-center">
-                                <span class="material-icons text-sm text-slate-400">summarize</span>
-                                <span>Lihat Rekap</span>
-                            </a>
+                                <!-- 3. TERTIARY ACTION: Lihat Rekap -->
+                                <a href="{{ route('teacher.extracurricular-attendance.report', $ekskul) }}" 
+                                   class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-colors text-center">
+                                    <span class="material-icons text-sm text-slate-400">summarize</span>
+                                    <span>Lihat Rekap</span>
+                                </a>
+                            @else
+                                <!-- Mode Supervisi: Rekap & Cetak Laporan Resmi -->
+                                <a href="{{ route('teacher.extracurricular-attendance.report', $ekskul) }}" 
+                                   class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-xs shadow-md shadow-amber-500/25 transition-all text-center sm:col-span-2">
+                                    <span class="material-icons text-sm">summarize</span>
+                                    <span>Lihat Rekap &amp; Matriks Presensi</span>
+                                </a>
+
+                                <a href="{{ route('teacher.extracurricular-attendance.print', $ekskul) }}" target="_blank"
+                                   class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-750 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-200 dark:border-rose-800 transition-colors text-center shadow-2xs">
+                                    <span class="material-icons text-sm text-rose-500">picture_as_pdf</span>
+                                    <span>Cetak PDF</span>
+                                </a>
+                            @endif
                         </div>
 
                     </div>

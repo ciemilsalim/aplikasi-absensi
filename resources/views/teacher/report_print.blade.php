@@ -251,7 +251,7 @@
                 </a>
                 <div>
                     <h1 class="text-sm font-bold text-slate-800 leading-tight">Pratinjau Cetak Rekap Kehadiran</h1>
-                    <p class="text-[11px] text-slate-500">{{ $subjectInfo->name }} - {{ $classInfo->name }} ({{ $totalStudents }} Siswa • {{ $totalMeetings }} Pertemuan)</p>
+                    <p class="text-[11px] text-slate-500">{{ isset($cocurricularInfo) && $cocurricularInfo ? $cocurricularInfo->title : ($subjectInfo?->name ?? 'Kegiatan') }} - {{ $classInfo->name }} ({{ $totalStudents }} Siswa • {{ $totalMeetings }} Pertemuan)</p>
                 </div>
             </div>
 

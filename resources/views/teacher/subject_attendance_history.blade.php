@@ -7,13 +7,24 @@
                     ['title' => 'Riwayat Absensi Mapel', 'url' => route('teacher.subject.attendance.history')]
                 ]" />
                 <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-                    Riwayat Presensi Mata Pelajaran
+                    Riwayat Presensi Mapel & Kokurikuler
                 </h1>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+                @if($isExecutive ?? false)
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-bold no-print">
+                        <span class="material-icons text-xs">admin_panel_settings</span>
+                        <span>Mode Supervisi Eksekutif</span>
+                    </span>
+                @endif
+                <button type="button" onclick="window.print()" 
+                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-bold shadow-2xs transition-all active:scale-95 no-print">
+                    <span class="material-icons text-xs text-rose-500">print</span>
+                    <span>Cetak Riwayat</span>
+                </button>
                 <a href="{{ route('teacher.anecdotes.index') }}" 
-                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-xs font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs transition-all active:scale-95">
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-xs font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shadow-2xs transition-all active:scale-95 no-print">
                     <span class="material-icons text-xs">rate_review</span>
                     <span>Rekap Catatan Anekdot</span>
                 </a>
@@ -28,7 +39,7 @@
     <div class="space-y-6">
         
         <!-- Filter Tanggal Card -->
-        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-5">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-5 no-print">
             <form action="{{ route('teacher.subject.attendance.history') }}" method="GET" class="flex flex-wrap items-center gap-3">
                 <div class="flex items-center gap-2">
                     <label for="date" class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Pilih Tanggal</label>
@@ -162,5 +173,23 @@
         @endif
 
     </div>
+
+    @push('styles')
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            .page-container, main {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+        }
+    </style>
+    @endpush
 </x-app-layout>
 

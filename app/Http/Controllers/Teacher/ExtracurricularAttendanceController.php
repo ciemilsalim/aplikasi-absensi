@@ -18,16 +18,20 @@ class ExtracurricularAttendanceController extends Controller
     ) {}
 
     /**
-     * Menampilkan daftar kegiatan ekstrakurikuler yang dibina oleh guru.
+     * Menampilkan daftar kegiatan ekstrakurikuler yang dibina oleh guru (atau semua kegiatan untuk supervisi eksekutif).
      */
     public function index()
     {
-        $teacher = Auth::user()?->teacher;
-        if (!$teacher) {
+        $user = Auth::user();
+        $teacher = $user?->teacher;
+        $isSupervisory = $this->service->isSupervisoryUser($user);
+
+        if (!$teacher && !$isSupervisory) {
             abort(403, 'Akses ditolak.');
         }
 
-        $data = $this->service->getIndexData($teacher);
+        $data = $this->service->getIndexData($teacher, $user);
+        $data['isSupervisory'] = $isSupervisory;
 
         return view('teacher.extracurricular_attendance.index', $data);
     }
@@ -159,12 +163,15 @@ class ExtracurricularAttendanceController extends Controller
      */
     public function report(Request $request, Extracurricular $extracurricular)
     {
-        $teacher = Auth::user()?->teacher;
-        if (!$this->service->checkCoachAccess($extracurricular, $teacher)) {
+        $user = Auth::user();
+        $teacher = $user?->teacher;
+
+        if (!$this->service->checkReportOrPrintAccess($extracurricular, $teacher, $user)) {
             abort(403, 'Akses ditolak.');
         }
 
-        $data = $this->service->getReportData($extracurricular, $teacher, $request->start_date, $request->end_date);
+        $data = $this->service->getReportData($extracurricular, $teacher, $request->start_date, $request->end_date, $user);
+        $data['isSupervisory'] = $this->service->isSupervisoryUser($user);
 
         return view('teacher.extracurricular_attendance.report', $data);
     }
@@ -174,12 +181,15 @@ class ExtracurricularAttendanceController extends Controller
      */
     public function print(Request $request, Extracurricular $extracurricular)
     {
-        $teacher = Auth::user()?->teacher;
-        if (!$this->service->checkCoachAccess($extracurricular, $teacher)) {
+        $user = Auth::user();
+        $teacher = $user?->teacher;
+
+        if (!$this->service->checkReportOrPrintAccess($extracurricular, $teacher, $user)) {
             abort(403, 'Akses ditolak.');
         }
 
-        $data = $this->service->getReportData($extracurricular, $teacher, $request->start_date, $request->end_date);
+        $data = $this->service->getReportData($extracurricular, $teacher, $request->start_date, $request->end_date, $user);
+        $data['isSupervisory'] = $this->service->isSupervisoryUser($user);
 
         return view('teacher.extracurricular_attendance.print', $data);
     }

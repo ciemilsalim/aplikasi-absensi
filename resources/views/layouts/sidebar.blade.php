@@ -74,11 +74,12 @@
                             @php 
                                 $isMonitoringDailyActive = request()->routeIs(['admin.reports.create', 'admin.reports.charts', 'admin.reports.generate']);
                                 $isMonitoringMatrixActive = request()->routeIs('teacher.attendance.*');
-                                $isMonitoringSubjectActive = request()->routeIs(['teacher.subject.attendance.*']) && request('type') !== 'cocurricular';
-                                $isMonitoringCocurricularActive = request()->routeIs(['teacher.subject.attendance.*']) && request('type') === 'cocurricular';
+                                $isMonitoringSubjectActive = request()->routeIs(['teacher.subject.attendance.report', 'teacher.subject.attendance.preview', 'teacher.subject.attendance.print']) && request('type') !== 'cocurricular';
+                                $isMonitoringCocurricularActive = request()->routeIs(['teacher.subject.attendance.report', 'teacher.subject.attendance.preview', 'teacher.subject.attendance.print']) && request('type') === 'cocurricular';
+                                $isMonitoringHistoryActive = request()->routeIs('teacher.subject.attendance.history');
                                 $isMonitoringTeacherActive = request()->routeIs('admin.reports.teacher.*');
-                                $isMonitoringExtraActive = request()->routeIs('admin.extracurriculars.*');
-                                $isMonitoringGroupActive = $isMonitoringDailyActive || $isMonitoringMatrixActive || $isMonitoringSubjectActive || $isMonitoringCocurricularActive || $isMonitoringTeacherActive || $isMonitoringExtraActive;
+                                $isMonitoringExtraActive = request()->routeIs(['teacher.extracurricular-attendance.*', 'admin.extracurriculars.*']);
+                                $isMonitoringGroupActive = $isMonitoringDailyActive || $isMonitoringMatrixActive || $isMonitoringSubjectActive || $isMonitoringCocurricularActive || $isMonitoringHistoryActive || $isMonitoringTeacherActive || $isMonitoringExtraActive;
                             @endphp
                             <li x-data="{ open: {{ $isMonitoringGroupActive ? 'true' : 'false' }} }" class="relative">
                                 <button @click="open = !open" :title="sidebarCollapsed ? 'Monitoring Presensi' : ''" 
@@ -139,10 +140,19 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('admin.extracurriculars.index') }}" 
+                                        <a href="{{ route('teacher.extracurricular-attendance.index') }}" 
                                            class="{{ $isMonitoringExtraActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                             <span>Kehadiran Ekskul</span>
                                             @if($isMonitoringExtraActive)
+                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('teacher.subject.attendance.history') }}" 
+                                           class="{{ $isMonitoringHistoryActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <span>Riwayat Presensi Mapel & Proyek</span>
+                                            @if($isMonitoringHistoryActive)
                                                 <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                                             @endif
                                         </a>

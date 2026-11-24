@@ -439,4 +439,88 @@ class ExtracurricularAttendanceTest extends TestCase
             'message' => 'Siswa tidak ditemukan atau QR Code tidak valid.',
         ]);
     }
+
+    public function test_wakasek_kesiswaan_can_view_extracurricular_index_and_sees_all_activities(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+        $wakasekUser = User::factory()->create(['role' => 'wakasek_kesiswaan']);
+
+        $response = $this->actingAs($wakasekUser)->get(route('teacher.extracurricular-attendance.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Mode Supervisi (Semua Ekskul)');
+        $response->assertSee($ctx['extracurricular']->name);
+        $response->assertSee('Lihat Rekap &amp; Matriks Presensi', false);
+        $response->assertSee('Cetak PDF');
+    }
+
+    public function test_wakasek_kurikulum_can_view_extracurricular_index_and_sees_all_activities(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+        $wakasekUser = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        $response = $this->actingAs($wakasekUser)->get(route('teacher.extracurricular-attendance.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Mode Supervisi (Semua Ekskul)');
+        $response->assertSee($ctx['extracurricular']->name);
+    }
+
+    public function test_wakasek_kesiswaan_can_view_extracurricular_report_and_print(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+        $wakasekUser = User::factory()->create(['role' => 'wakasek_kesiswaan']);
+
+        // View report
+        $reportResponse = $this->actingAs($wakasekUser)->get(route('teacher.extracurricular-attendance.report', $ctx['extracurricular']));
+        $reportResponse->assertStatus(200);
+        $reportResponse->assertSee($ctx['extracurricular']->name);
+        $reportResponse->assertSee($ctx['student']->name);
+
+        // View print
+        $printResponse = $this->actingAs($wakasekUser)->get(route('teacher.extracurricular-attendance.print', $ctx['extracurricular']));
+        $printResponse->assertStatus(200);
+        $printResponse->assertSee($ctx['extracurricular']->name);
+        $printResponse->assertSee($ctx['student']->name);
+    }
+
+    public function test_wakasek_kurikulum_can_view_extracurricular_report_and_print(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+        $wakasekUser = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        $reportResponse = $this->actingAs($wakasekUser)->get(route('teacher.extracurricular-attendance.report', $ctx['extracurricular']));
+        $reportResponse->assertStatus(200);
+        $reportResponse->assertSee($ctx['extracurricular']->name);
+
+        $printResponse = $this->actingAs($wakasekUser)->get(route('teacher.extracurricular-attendance.print', $ctx['extracurricular']));
+        $printResponse->assertStatus(200);
+        $printResponse->assertSee($ctx['extracurricular']->name);
+    }
+
+    public function test_wakasek_cannot_mutate_extracurricular_attendance_if_not_coach(): void
+    {
+        $ctx = $this->setupCoachWithExtracurricular();
+        $wakasekUser = User::factory()->create(['role' => 'wakasek_kesiswaan']);
+
+        // Cannot create form
+        $createResponse = $this->actingAs($wakasekUser)->get(route('teacher.extracurricular-attendance.create', $ctx['extracurricular']));
+        $createResponse->assertRedirect();
+        $createResponse->assertSessionHas('error');
+
+        // Cannot store scan
+        $scanResponse = $this->actingAs($wakasekUser)->postJson(route('teacher.extracurricular-attendance.scan', $ctx['extracurricular']), [
+            'student_unique_id' => $ctx['student']->unique_id,
+            'date' => '2026-10-12',
+        ]);
+        $scanResponse->assertStatus(403);
+
+        // Cannot mark manual
+        $manualResponse = $this->actingAs($wakasekUser)->postJson(route('teacher.extracurricular-attendance.mark_manual', $ctx['extracurricular']), [
+            'student_id' => $ctx['student']->id,
+            'status' => 'hadir',
+            'date' => '2026-10-12',
+        ]);
+        $manualResponse->assertStatus(403);
+    }
 }
