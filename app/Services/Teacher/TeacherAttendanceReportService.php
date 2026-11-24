@@ -40,15 +40,70 @@ class TeacherAttendanceReportService
     }
 
     /**
+     * Resolve school class and homeroom teacher for reporting context.
+     */
+    public function resolveReportingContext($teacher, $explicitClass = null): array
+    {
+        $class = null;
+        if ($explicitClass instanceof \App\Models\SchoolClass) {
+            $class = $explicitClass;
+        } elseif (is_numeric($explicitClass)) {
+            $class = \App\Models\SchoolClass::find($explicitClass);
+        } elseif ($teacher && $teacher->homeroomClass) {
+            $class = $teacher->homeroomClass;
+        }
+
+        $homeroomTeacher = null;
+        if ($class) {
+            $homeroomTeacher = $class->homeroomTeacher;
+        }
+        if (!$homeroomTeacher && $teacher) {
+            $homeroomTeacher = $teacher;
+        }
+
+        return [$class, $homeroomTeacher];
+    }
+
+    /**
+     * Determine role label of the user printing/viewing the report.
+     */
+    public function resolvePrintedByRole(): string
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return 'Wali Kelas';
+        }
+
+        if ($user->hasRole('wakasek_kurikulum') || $user->role === 'wakasek_kurikulum') {
+            return 'Wakasek Kurikulum';
+        }
+        if ($user->hasRole('wakasek_kesiswaan') || $user->role === 'wakasek_kesiswaan') {
+            return 'Wakasek Kesiswaan';
+        }
+        if ($user->hasRole('kepala_sekolah') || $user->role === 'kepala_sekolah') {
+            return 'Kepala Sekolah';
+        }
+        if ($user->hasRole('admin') || $user->role === 'admin') {
+            return 'Administrator';
+        }
+        if ($user->hasRole('operator') || $user->role === 'operator') {
+            return 'Operator Sekolah';
+        }
+
+        return 'Wali Kelas';
+    }
+
+    /**
      * Prepare data for showAttendanceHistory view.
      */
-    public function getAttendanceHistoryData($teacher, ?string $monthString): ?array
+    public function getAttendanceHistoryData($teacher, ?string $monthString, $explicitClass = null): ?array
     {
-        if (!$teacher || !$teacher->homeroomClass) {
+        [$class, $homeroomTeacher] = $this->resolveReportingContext($teacher, $explicitClass);
+
+        if (!$class) {
             return null;
         }
 
-        $class = $teacher->homeroomClass;
         $students = TeacherRoleContextService::getClassStudents($class);
         $studentIds = $students->pluck('id');
 
@@ -140,20 +195,22 @@ class TeacherAttendanceReportService
             'totalEffectiveWorkdays',
             'totalClassSakit',
             'totalClassIzin',
-            'totalClassAlpa'
+            'totalClassAlpa',
+            'homeroomTeacher'
         );
     }
 
     /**
      * Prepare data for printAttendance view.
      */
-    public function getPrintMonthlyAttendanceData($teacher, ?string $monthString, string $paperSize = 'a4'): ?array
+    public function getPrintMonthlyAttendanceData($teacher, ?string $monthString, string $paperSize = 'a4', $explicitClass = null): ?array
     {
-        if (!$teacher || !$teacher->homeroomClass) {
+        [$class, $homeroomTeacher] = $this->resolveReportingContext($teacher, $explicitClass);
+
+        if (!$class) {
             return null;
         }
 
-        $class = $teacher->homeroomClass;
         $students = TeacherRoleContextService::getClassStudents($class);
         $studentIds = $students->pluck('id');
 
@@ -266,8 +323,9 @@ class TeacherAttendanceReportService
         $schoolCity = $settings->get('school_city', 'Buol');
         $headmasterName = $settings->get('school_headmaster_name', '');
         $headmasterNip = $settings->get('school_headmaster_nip', '');
-        $homeroomTeacherName = $teacher->name;
-        $homeroomTeacherNip = $teacher->nip;
+        $homeroomTeacherName = $homeroomTeacher?->name ?? ($teacher?->name ?? '-');
+        $homeroomTeacherNip = $homeroomTeacher?->nip ?? ($teacher?->nip ?? '-');
+        $printedByRole = $this->resolvePrintedByRole();
         $printDate = now()->translatedFormat('d F Y, H:i:s');
 
         return compact(
@@ -282,6 +340,7 @@ class TeacherAttendanceReportService
             'totalIzin',
             'totalAlpa',
             'teacher',
+            'homeroomTeacher',
             'holidays',
             'selfStudyDays',
             'paperSize',
@@ -298,20 +357,21 @@ class TeacherAttendanceReportService
             'classAverageAttendance',
             'perfectAttendanceCount',
             'needsAttentionCount',
-            'printDate'
+            'printDate',
+            'printedByRole'
         );
     }
 
     /**
      * Generate streamed PDF for trimester attendance report.
      */
-    public function streamTrimesterPdf($teacher, int $trimester, int $year, string $paperSize = 'a4')
+    public function streamTrimesterPdf($teacher, int $trimester, int $year, string $paperSize = 'a4', $explicitClass = null)
     {
-        if (!$teacher || !$teacher->homeroomClass) {
+        [$class, $homeroomTeacher] = $this->resolveReportingContext($teacher, $explicitClass);
+
+        if (!$class) {
             return null;
         }
-
-        $class = $teacher->homeroomClass;
 
         switch ($trimester) {
             case 1:
@@ -479,7 +539,7 @@ class TeacherAttendanceReportService
             'logoBase64' => $logoBase64,
             'appName' => config('app.name', 'SIASEK'),
             'printDate' => now()->translatedFormat('d F Y, H:i:s'),
-            'userRole' => 'Wali Kelas',
+            'userRole' => $this->resolvePrintedByRole(),
             'reportData' => $reportData,
             'className' => $class->name,
             'trimester' => $trimester,
@@ -491,8 +551,8 @@ class TeacherAttendanceReportService
             'classAverageAttendance' => $classAverageAttendance,
             'perfectAttendanceCount' => $perfectAttendanceCount,
             'needsAttentionCount' => $needsAttentionCount,
-            'homeroomTeacherName' => $teacher->name,
-            'homeroomTeacherNip' => $teacher->nip,
+            'homeroomTeacherName' => $homeroomTeacher?->name ?? ($teacher?->name ?? '-'),
+            'homeroomTeacherNip' => $homeroomTeacher?->nip ?? ($teacher?->nip ?? '-'),
             'headmasterName' => $settings->get('school_headmaster_name'),
             'headmasterNip' => $settings->get('school_headmaster_nip'),
             'paperSize' => $paperSize,
@@ -511,14 +571,15 @@ class TeacherAttendanceReportService
     /**
      * Compute analytics chart data for class/student across period types.
      */
-    public function getChartData($teacher, array $params): ?array
+    public function getChartData($teacher, array $params, $explicitClass = null): ?array
     {
-        if (!$teacher || !$teacher->homeroomClass) {
+        [$class, $homeroomTeacher] = $this->resolveReportingContext($teacher, $explicitClass);
+
+        if (!$class) {
             return null;
         }
 
-        $class = $teacher->homeroomClass;
-        $cacheKey = "teacher:chart:{$teacher->id}:" . md5(json_encode($params));
+        $cacheKey = "teacher:chart:class_{$class->id}:" . md5(json_encode($params));
 
         return Cache::remember($cacheKey, 60, function () use ($class, $params) {
             $year = (int) $params['year'];
@@ -667,13 +728,14 @@ class TeacherAttendanceReportService
     /**
      * Export attendance report to Excel.
      */
-    public function downloadAttendanceExcel($teacher, ?string $monthString)
+    public function downloadAttendanceExcel($teacher, ?string $monthString, $explicitClass = null)
     {
-        if (!$teacher || !$teacher->homeroomClass) {
+        [$class, $homeroomTeacher] = $this->resolveReportingContext($teacher, $explicitClass);
+
+        if (!$class) {
             return null;
         }
 
-        $class = $teacher->homeroomClass;
         $students = TeacherRoleContextService::getClassStudents($class);
         $studentIds = $students->pluck('id');
 
@@ -775,7 +837,7 @@ class TeacherAttendanceReportService
             $totalSakit,
             $totalIzin,
             $totalAlpa,
-            $teacher,
+            $homeroomTeacher ?? $teacher,
             $schoolIdentity,
             $holidays,
             $selfStudyDays

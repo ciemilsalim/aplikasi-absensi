@@ -259,6 +259,7 @@ class PrincipalDashboardController extends Controller
                     $clsPct = round(($clsHadir / $clsStudentCount) * 100);
 
                     $classAttendanceBreakdown[] = [
+                        'id' => $cls->id,
                         'name' => $cls->name,
                         'total' => $clsStudentCount,
                         'hadir' => $clsHadir,

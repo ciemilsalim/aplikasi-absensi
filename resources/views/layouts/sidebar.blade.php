@@ -73,11 +73,12 @@
                             {{-- Dropdown: Monitoring Presensi Terpadu --}}
                             @php 
                                 $isMonitoringDailyActive = request()->routeIs(['admin.reports.create', 'admin.reports.charts', 'admin.reports.generate']);
+                                $isMonitoringMatrixActive = request()->routeIs('teacher.attendance.*');
                                 $isMonitoringSubjectActive = request()->routeIs(['teacher.subject.attendance.*']) && request('type') !== 'cocurricular';
                                 $isMonitoringCocurricularActive = request()->routeIs(['teacher.subject.attendance.*']) && request('type') === 'cocurricular';
                                 $isMonitoringTeacherActive = request()->routeIs('admin.reports.teacher.*');
                                 $isMonitoringExtraActive = request()->routeIs('admin.extracurriculars.*');
-                                $isMonitoringGroupActive = $isMonitoringDailyActive || $isMonitoringSubjectActive || $isMonitoringCocurricularActive || $isMonitoringTeacherActive || $isMonitoringExtraActive;
+                                $isMonitoringGroupActive = $isMonitoringDailyActive || $isMonitoringMatrixActive || $isMonitoringSubjectActive || $isMonitoringCocurricularActive || $isMonitoringTeacherActive || $isMonitoringExtraActive;
                             @endphp
                             <li x-data="{ open: {{ $isMonitoringGroupActive ? 'true' : 'false' }} }" class="relative">
                                 <button @click="open = !open" :title="sidebarCollapsed ? 'Monitoring Presensi' : ''" 
@@ -94,6 +95,18 @@
                                            class="{{ $isMonitoringDailyActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                             <span>Kehadiran Harian</span>
                                             @if($isMonitoringDailyActive)
+                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('teacher.attendance.history') }}" 
+                                           class="{{ $isMonitoringMatrixActive ? 'text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <span class="flex items-center gap-1.5">
+                                                <span>Rekap Matriks Kelas</span>
+                                                <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-indigo-500 text-white shadow-2xs">Lengkap</span>
+                                            </span>
+                                            @if($isMonitoringMatrixActive)
                                                 <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                                             @endif
                                         </a>
@@ -665,8 +678,9 @@
                     @if(auth()->user()->hasAnyRole(['admin', 'operator', 'wakasek_kurikulum', 'wakasek kurikulum', 'waka_kurikulum', 'waka kurikulum', 'wakasek_kesiswaan', 'wakasek kesiswaan', 'waka_kesiswaan', 'waka kesiswaan', 'kepala_sekolah', 'kepala sekolah', 'headmaster', 'viewer']))
                     @php 
                         $isStudentReportActive = request()->routeIs(['admin.reports.create', 'admin.reports.charts', 'admin.reports.generate']);
+                        $isMatrixReportActive = request()->routeIs('teacher.attendance.*');
                         $isTeacherReportActive = request()->routeIs('admin.reports.teacher.*');
-                        $isReportOpen = $isStudentReportActive || $isTeacherReportActive;
+                        $isReportOpen = $isStudentReportActive || $isMatrixReportActive || $isTeacherReportActive;
                     @endphp
                     <li x-data="{ open: {{ $isReportOpen ? 'true' : 'false' }} }" class="relative">
                         <button @click="open = !open" :title="sidebarCollapsed ? 'Laporan' : ''" 
@@ -681,6 +695,17 @@
                                 <a href="{{ route('admin.reports.create') }}" class="{{ $isStudentReportActive ? 'text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <span>Laporan Siswa</span>
                                     @if($isStudentReportActive)
+                                        <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                                    @endif
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('teacher.attendance.history') }}" class="{{ $isMatrixReportActive ? 'text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-slate-200' }} flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <span class="flex items-center gap-1.5">
+                                        <span>Rekap Matriks Kelas</span>
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500 text-white shadow-2xs">Lengkap</span>
+                                    </span>
+                                    @if($isMatrixReportActive)
                                         <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
                                     @endif
                                 </a>

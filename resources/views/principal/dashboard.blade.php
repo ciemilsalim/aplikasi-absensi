@@ -19,6 +19,12 @@
 
             <!-- Quick Action Toolbar -->
             <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                <a href="{{ route('teacher.attendance.history') }}" 
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 text-sky-700 dark:text-sky-300 font-bold text-xs border border-sky-200/60 dark:border-sky-800 transition-colors shadow-2xs">
+                    <span class="material-icons text-sm text-sky-600 dark:text-sky-400">grid_on</span>
+                    <span>Rekap Matriks Kelas</span>
+                </a>
+
                 <a href="{{ route('admin.teaching_journals.index') }}" 
                    class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition-all active:scale-95">
                     <span class="material-icons text-sm">verified_user</span>
@@ -293,13 +299,20 @@
                                         @endif
                                     </p>
                                 </div>
-                                <div class="text-right">
-                                    <span class="text-sm font-black {{ $cls['percentage'] >= 90 ? 'text-emerald-600' : ($cls['percentage'] >= 75 ? 'text-sky-600' : 'text-rose-600') }}">
-                                        {{ $cls['percentage'] }}%
-                                    </span>
-                                    <div class="w-16 bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-1 overflow-hidden">
-                                        <div class="h-1.5 rounded-full {{ $cls['percentage'] >= 90 ? 'bg-emerald-500' : ($cls['percentage'] >= 75 ? 'bg-sky-500' : 'bg-rose-500') }}" style="width: {{ $cls['percentage'] }}%"></div>
+                                <div class="text-right flex items-center gap-2.5">
+                                    <div>
+                                        <span class="text-sm font-black {{ $cls['percentage'] >= 90 ? 'text-emerald-600' : ($cls['percentage'] >= 75 ? 'text-sky-600' : 'text-rose-600') }}">
+                                            {{ $cls['percentage'] }}%
+                                        </span>
+                                        <div class="w-16 bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-1 overflow-hidden">
+                                            <div class="h-1.5 rounded-full {{ $cls['percentage'] >= 90 ? 'bg-emerald-500' : ($cls['percentage'] >= 75 ? 'bg-sky-500' : 'bg-rose-500') }}" style="width: {{ $cls['percentage'] }}%"></div>
+                                        </div>
                                     </div>
+                                    @if(!empty($cls['id']))
+                                        <a href="{{ route('teacher.attendance.print', ['class_id' => $cls['id'], 'paper_size' => 'folio']) }}" target="_blank" title="Cetak Rekap Matriks Folio Kelas {{ $cls['name'] }}" class="p-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 text-sky-600 dark:text-sky-400 transition-colors shadow-2xs">
+                                            <span class="material-icons text-sm">print</span>
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach

@@ -354,6 +354,13 @@
             <span style="color: #94a3b8; font-size: 11px;">(Ukuran: {{ strtoupper($paperSize ?? 'A4') }} Landscape)</span>
         </div>
         <form method="GET" action="{{ route('teacher.attendance.print') }}" style="display: flex; align-items: center; gap: 10px; margin: 0;">
+            @if(isset($availableClasses) && $availableClasses->count() > 1)
+            <select name="class_id" onchange="this.form.submit()" title="Pilih Kelas" style="background: #0369a1; border-color: #0284c7; font-weight: 700;">
+                @foreach($availableClasses as $c)
+                    <option value="{{ $c->id }}" {{ $c->id == $class->id ? 'selected' : '' }}>Kelas {{ $c->name }}</option>
+                @endforeach
+            </select>
+            @endif
             <input type="month" name="month" value="{{ $selectedDate->format('Y-m') }}" onchange="this.form.submit()" title="Ganti Bulan">
             <select name="paper_size" onchange="this.form.submit()" title="Pilih Ukuran Kertas">
                 <option value="a4" {{ ($paperSize ?? 'a4') === 'a4' ? 'selected' : '' }}>Kertas A4 Landscape</option>
@@ -617,7 +624,7 @@
                 Dokumen resmi dikeluarkan melalui Sistem Informasi Presensi Sekolah ({{ config('app.name', 'SIASEK') }}) &bull; Ukuran Kertas: {{ strtoupper($paperSize ?? 'A4') }} Landscape
             </div>
             <div class="doc-footer-right">
-                Dicetak pada: {{ $printDate }} &bull; Oleh: Wali Kelas
+                Dicetak pada: {{ $printDate }} &bull; Oleh: {{ $printedByRole ?? 'Wali Kelas' }}
             </div>
         </div>
     </div>

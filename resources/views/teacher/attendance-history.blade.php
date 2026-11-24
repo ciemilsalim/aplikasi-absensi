@@ -127,8 +127,18 @@
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5">
             <div class="flex flex-col lg:flex-row gap-3.5 sm:gap-4 justify-between items-stretch lg:items-center">
                 
-                <!-- Left: Month Filter Form -->
-                <form method="GET" action="{{ route('teacher.attendance.history') }}" class="flex items-center gap-2 w-full lg:w-auto">
+                <!-- Left: Month & Class Filter Form -->
+                <form method="GET" action="{{ route('teacher.attendance.history') }}" class="flex items-center gap-2 w-full lg:w-auto flex-wrap sm:flex-nowrap">
+                    @if(isset($availableClasses) && $availableClasses->count() > 1)
+                        <div class="relative flex-1 lg:flex-initial">
+                            <select name="class_id" id="class_id" onchange="this.form.submit()" 
+                                    class="w-full lg:w-auto text-xs font-bold rounded-2xl border border-sky-300 dark:border-sky-700 bg-sky-50 dark:bg-sky-950/60 text-sky-900 dark:text-sky-100 p-2.5 sm:py-2.5 sm:px-3.5 focus:ring-4 focus:ring-sky-500/15 focus:border-sky-500 transition-all shadow-2xs">
+                                @foreach($availableClasses as $c)
+                                    <option value="{{ $c->id }}" {{ $c->id == $class->id ? 'selected' : '' }}>Kelas {{ $c->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                     <div class="relative flex-1 lg:flex-initial">
                         <input type="month" name="month" id="month" value="{{ $selectedDate->format('Y-m') }}" 
                                class="w-full lg:w-auto text-xs font-bold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 text-slate-800 dark:text-slate-100 p-2.5 sm:py-2.5 sm:px-3.5 focus:ring-4 focus:ring-sky-500/15 focus:border-sky-500 transition-all">
@@ -154,16 +164,16 @@
                         <div x-show="openPrintMonthly" @click.outside="openPrintMonthly = false" x-transition 
                              class="absolute left-0 sm:right-0 sm:left-auto mt-2 w-56 rounded-2xl bg-white dark:bg-slate-850 shadow-2xl border border-slate-200 dark:border-slate-700 py-2 z-30" style="display: none;">
                             <div class="px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pilih Ukuran Kertas</div>
-                            <a href="{{ route('teacher.attendance.print', ['month' => $selectedDate->format('Y-m'), 'paper_size' => 'a4']) }}" target="_blank" 
-                               class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
+                            <a href="{{ route('teacher.attendance.print', ['month' => $selectedDate->format('Y-m'), 'paper_size' => 'a4', 'class_id' => $class->id]) }}" target="_blank" 
+                                class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
                                 <span class="material-icons text-sm text-sky-500">description</span>
                                 <div>
                                     <div class="font-bold">Kertas A4</div>
                                     <div class="text-[10px] text-slate-400 font-normal">Landscape (297 x 210 mm)</div>
                                 </div>
                             </a>
-                            <a href="{{ route('teacher.attendance.print', ['month' => $selectedDate->format('Y-m'), 'paper_size' => 'folio']) }}" target="_blank" 
-                               class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                            <a href="{{ route('teacher.attendance.print', ['month' => $selectedDate->format('Y-m'), 'paper_size' => 'folio', 'class_id' => $class->id]) }}" target="_blank" 
+                                class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                 <span class="material-icons text-sm text-indigo-500">article</span>
                                 <div>
                                     <div class="font-bold">Kertas Folio / F4</div>
@@ -181,7 +191,7 @@
                     </button>
 
                     <!-- Export Excel -->
-                    <a href="{{ route('teacher.attendance.export.excel', ['month' => $selectedDate->format('Y-m')]) }}" 
+                    <a href="{{ route('teacher.attendance.export.excel', ['month' => $selectedDate->format('Y-m'), 'class_id' => $class->id]) }}" 
                        class="col-span-1 inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-900/40 font-bold text-xs transition-colors shadow-2xs">
                         <span class="material-icons text-sm text-emerald-600 dark:text-emerald-400">table_view</span>
                         <span class="truncate">Excel</span>
@@ -485,6 +495,7 @@
                      class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden transform transition-all p-6 sm:p-7 z-10">
                     
                     <form method="GET" action="{{ route('teacher.attendance.print_trimester') }}" target="_blank" @submit="showTrimesterModal = false">
+                        <input type="hidden" name="class_id" value="{{ $class->id }}">
                         <div class="flex items-center gap-3 mb-5">
                             <div class="w-11 h-11 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                                 <span class="material-icons text-xl">picture_as_pdf</span>

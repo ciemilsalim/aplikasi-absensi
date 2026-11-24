@@ -375,4 +375,64 @@ class AdminReportTest extends TestCase
         $response = $this->actingAs($user)->get(route('admin.reports.teacher.print'));
         $response->assertStatus(403);
     }
+
+    public function test_wakasek_kurikulum_can_access_complete_student_attendance_matrix_print_for_any_class(): void
+    {
+        $ctx = $this->setupAdminContext();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        $response = $this->actingAs($wakasek)->get(route('teacher.attendance.print', [
+            'class_id' => $ctx['schoolClass']->id,
+            'month' => '2026-10',
+            'paper_size' => 'folio',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('teacher.print.attendance-report');
+        $response->assertViewHas('class');
+        $response->assertViewHas('students');
+        $response->assertViewHas('period');
+        $response->assertViewHas('attendanceSummary');
+        $response->assertViewHas('printedByRole', 'Wakasek Kurikulum');
+        $response->assertSee('LAPORAN REKAPITULASI PRESENSI BULANAN SISWA');
+        $response->assertSee($ctx['schoolClass']->name);
+    }
+
+    public function test_wakasek_kesiswaan_can_access_complete_student_attendance_matrix_print_for_any_class(): void
+    {
+        $ctx = $this->setupAdminContext();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kesiswaan']);
+
+        $response = $this->actingAs($wakasek)->get(route('teacher.attendance.print', [
+            'class_id' => $ctx['schoolClass']->id,
+            'month' => '2026-10',
+            'paper_size' => 'folio',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('teacher.print.attendance-report');
+        $response->assertViewHas('class');
+        $response->assertViewHas('students');
+        $response->assertViewHas('period');
+        $response->assertViewHas('printedByRole', 'Wakasek Kesiswaan');
+        $response->assertSee('LAPORAN REKAPITULASI PRESENSI BULANAN SISWA');
+        $response->assertSee($ctx['schoolClass']->name);
+    }
+
+    public function test_wakasek_can_access_attendance_history_for_any_class(): void
+    {
+        $ctx = $this->setupAdminContext();
+        $wakasek = User::factory()->create(['role' => 'wakasek_kurikulum']);
+
+        $response = $this->actingAs($wakasek)->get(route('teacher.attendance.history', [
+            'class_id' => $ctx['schoolClass']->id,
+            'month' => '2026-10',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('teacher.attendance-history');
+        $response->assertViewHas('class');
+        $response->assertViewHas('availableClasses');
+        $response->assertSee($ctx['schoolClass']->name);
+    }
 }

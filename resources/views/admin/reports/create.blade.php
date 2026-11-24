@@ -189,15 +189,25 @@
                                     </select>
                                 </div>
 
-                                <div x-show="reportType === 'class_monthly'">
-                                    <label for="month" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Pilih Periode Bulan <span class="text-rose-500">*</span>
-                                    </label>
-                                    <input id="month" type="month" name="month" 
-                                           class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-3 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15" 
-                                           value="{{ date('Y-m') }}" 
-                                           x-bind:required="reportType === 'class_monthly'" 
-                                           x-bind:disabled="reportType !== 'class_monthly'" />
+                                <div x-show="reportType === 'class_monthly'" class="space-y-3">
+                                    <div>
+                                        <label for="month" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                                            Pilih Periode Bulan <span class="text-rose-500">*</span>
+                                        </label>
+                                        <input id="month" type="month" name="month" 
+                                               class="w-full text-xs font-semibold rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-850 p-3 text-slate-800 dark:text-slate-100 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15" 
+                                               value="{{ date('Y-m') }}" 
+                                               x-bind:required="reportType === 'class_monthly'" 
+                                               x-bind:disabled="reportType !== 'class_monthly'" />
+                                    </div>
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <button type="button" 
+                                                onclick="const cls = document.getElementById('school_class_id').value; const m = document.getElementById('month').value; if(!cls){ alert('Silakan pilih kelas target terlebih dahulu.'); return; } window.open('{{ route('teacher.attendance.print') }}?class_id=' + cls + '&month=' + m + '&paper_size=folio', '_blank');"
+                                                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 text-sky-700 dark:text-sky-300 font-bold text-xs border border-sky-200/60 dark:border-sky-800 transition-colors shadow-2xs">
+                                            <span class="material-icons text-sm">print</span>
+                                            <span>Buka Cetak Matriks Folio (Format Lengkap Wali Kelas)</span>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div x-show="reportType === 'class_trimester'" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
